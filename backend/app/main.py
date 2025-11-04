@@ -3,6 +3,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.db.database import engine, Base
+from app.api import auth, accounts, categories
+
+# Import all routers
+from app.api import auth, accounts, categories
 
 # Create tables (solo per dev, poi useremo migrations)
 Base.metadata.create_all(bind=engine)
@@ -33,6 +37,7 @@ async def root():
 async def health():
     return {"status": "healthy"}
 
-# Importeremo i routers qui dopo
-# from app.api import auth, transactions, budgets
-# app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+# Routers
+app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
+app.include_router(accounts.router, prefix="/api/accounts", tags=["Accounts"])
+app.include_router(categories.router, prefix="/api/categories", tags=["Categories"])
