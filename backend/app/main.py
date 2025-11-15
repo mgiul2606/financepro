@@ -204,12 +204,21 @@ async def version_info():
 logger.info("Loading API routers...")
 
 try:
-    from app.api import auth, accounts, categories
+    from app.api import (
+        auth,
+        accounts,
+        categories,
+        financial_profiles,
+        transactions,
+        budgets,
+        goals
+    )
     logger.info("API modules imported successfully")
 except Exception as e:
     logger.error(f"Failed to import API modules: {e}")
     logger.warning("Application will start without API routers")
     auth = accounts = categories = None
+    financial_profiles = transactions = budgets = goals = None
 
 # Get API prefix
 API_PREFIX = get_api_prefix()
@@ -222,6 +231,14 @@ if auth:
         tags=["Authentication"]
     )
     logger.info(f"Auth router registered at {API_PREFIX}/auth")
+
+if financial_profiles:
+    app.include_router(
+        financial_profiles.router,
+        prefix=f"{API_PREFIX}/profiles",
+        tags=["Financial Profiles"]
+    )
+    logger.info(f"Financial Profiles router registered at {API_PREFIX}/profiles")
 
 if accounts:
     app.include_router(
@@ -238,5 +255,29 @@ if categories:
         tags=["Categories"]
     )
     logger.info(f"Categories router registered at {API_PREFIX}/categories")
+
+if transactions:
+    app.include_router(
+        transactions.router,
+        prefix=f"{API_PREFIX}/transactions",
+        tags=["Transactions"]
+    )
+    logger.info(f"Transactions router registered at {API_PREFIX}/transactions")
+
+if budgets:
+    app.include_router(
+        budgets.router,
+        prefix=f"{API_PREFIX}/budgets",
+        tags=["Budgets"]
+    )
+    logger.info(f"Budgets router registered at {API_PREFIX}/budgets")
+
+if goals:
+    app.include_router(
+        goals.router,
+        prefix=f"{API_PREFIX}/goals",
+        tags=["Financial Goals"]
+    )
+    logger.info(f"Goals router registered at {API_PREFIX}/goals")
 
 logger.info(f"Application startup complete. API documentation: {settings.api.docs_url}")
