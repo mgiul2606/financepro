@@ -1,0 +1,983 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FinancePro API",
+    "description": "**FinancePro** is a comprehensive personal finance management platform with AI-powered features for transaction classification, budget forecasting, and intelligent financial insights.\n\n## Features\n- Multi-account management\n- Transaction tracking with AI classification\n- Budget planning and monitoring\n- AI-powered financial insights\n- Advanced analytics and reporting\n\n## Authentication\nAll endpoints (except `/auth/*`) require Bearer JWT token authentication.",
+    "termsOfService": "https://financepro.app/terms",
+    "contact": {
+      "name": "FinancePro Support Team",
+      "url": "https://financepro.app/support",
+      "email": "support@financepro.app"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    },
+    "version": "1.0.0",
+    "x-logo": {
+      "url": "https://financepro.app/assets/logo.png",
+      "altText": "FinancePro Logo"
+    },
+    "x-api-id": "financepro-api",
+    "x-audience": "external",
+    "x-environment": "development"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Health Check",
+        "description": "Health check endpoint",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/version": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Version Info",
+        "description": "Version information",
+        "operationId": "version_info_version_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Register",
+        "description": "Registra nuovo utente",
+        "operationId": "register_api_v1_auth_register_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRegister"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Login",
+        "description": "Login e ottieni JWT token",
+        "operationId": "login_api_v1_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLogin"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Token"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Get Me",
+        "description": "Ottieni info utente corrente (test endpoint protetto)",
+        "operationId": "get_me_api_v1_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/accounts/": {
+      "get": {
+        "tags": [
+          "Accounts"
+        ],
+        "summary": "List all accounts",
+        "description": "Retrieve all accounts for the authenticated user",
+        "operationId": "list_accounts_api_v1_accounts__get",
+        "responses": {
+          "200": {
+            "description": "List of accounts retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountList"
+                },
+                "example": {
+                  "accounts": [
+                    {
+                      "id": 1,
+                      "user_id": 42,
+                      "name": "Main Checking",
+                      "initial_balance": 1000.0,
+                      "current_balance": 1250.5,
+                      "currency": "EUR",
+                      "created_at": "2025-01-15T10:30:00Z",
+                      "updated_at": "2025-01-20T14:22:00Z"
+                    }
+                  ],
+                  "total": 1
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Accounts"
+        ],
+        "summary": "Create new account",
+        "description": "Create a new financial account for the authenticated user",
+        "operationId": "create_account_api_v1_accounts__post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/accounts/{account_id}": {
+      "get": {
+        "tags": [
+          "Accounts"
+        ],
+        "summary": "Get account by ID",
+        "description": "Retrieve a specific account by its ID",
+        "operationId": "get_account_api_v1_accounts__account_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "account_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Account Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Account not found"
+          },
+          "403": {
+            "description": "Not authorized to access this account"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Accounts"
+        ],
+        "summary": "Update account",
+        "description": "Update an existing account (partial update supported)",
+        "operationId": "update_account_api_v1_accounts__account_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "account_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Account Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Accounts"
+        ],
+        "summary": "Delete account",
+        "description": "Delete an account and all its transactions (CASCADE)",
+        "operationId": "delete_account_api_v1_accounts__account_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "account_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Account Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/accounts/{account_id}/balance": {
+      "get": {
+        "tags": [
+          "Accounts"
+        ],
+        "summary": "Get account balance",
+        "description": "Get current balance for a specific account with metadata",
+        "operationId": "get_account_balance_api_v1_accounts__account_id__balance_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "account_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Account Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountBalance"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/categories": {
+      "get": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "List Categories",
+        "description": "Lista tutte le categorie disponibili (pubblico, no auth)",
+        "operationId": "list_categories_api_v1_categories_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryResponse"
+                  },
+                  "type": "array",
+                  "title": "Response List Categories Api V1 Categories Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AccountBalance": {
+        "properties": {
+          "account_id": {
+            "type": "integer",
+            "title": "Account Id",
+            "description": "Account ID"
+          },
+          "balance": {
+            "type": "string",
+            "title": "Balance",
+            "description": "Current account balance"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "description": "Account currency"
+          },
+          "last_updated": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Updated",
+            "description": "Last transaction timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "account_id",
+          "balance",
+          "currency",
+          "last_updated"
+        ],
+        "title": "AccountBalance",
+        "description": "Schema for account balance endpoint response.\nReturns current balance with metadata.",
+        "example": {
+          "account_id": 1,
+          "balance": 1250.5,
+          "currency": "EUR",
+          "last_updated": "2025-01-20T14:22:00Z"
+        }
+      },
+      "AccountCreate": {
+        "properties": {
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "description": "ISO 4217 currency code (3 uppercase letters)",
+            "default": "EUR",
+            "examples": [
+              "EUR",
+              "USD",
+              "GBP"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name",
+            "description": "Account name",
+            "examples": [
+              "Main Checking Account",
+              "Savings",
+              "Credit Card"
+            ]
+          },
+          "initial_balance": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Initial Balance",
+            "description": "Initial account balance (must be >= 0)",
+            "default": "0.00",
+            "examples": [
+              0,
+              1000.5,
+              5000
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "AccountCreate",
+        "description": "Schema for creating a new account.\nRequires name and optionally currency and initial balance.",
+        "example": {
+          "currency": "EUR",
+          "initial_balance": 1000.0,
+          "name": "Savings Account"
+        }
+      },
+      "AccountList": {
+        "properties": {
+          "accounts": {
+            "items": {
+              "$ref": "#/components/schemas/AccountResponse"
+            },
+            "type": "array",
+            "title": "Accounts"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Total number of accounts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "accounts",
+          "total"
+        ],
+        "title": "AccountList",
+        "description": "Schema for list accounts response (future: with pagination).",
+        "example": {
+          "accounts": [
+            {
+              "created_at": "2025-01-15T10:30:00Z",
+              "currency": "EUR",
+              "current_balance": 1250.5,
+              "id": 1,
+              "initial_balance": 1000.0,
+              "name": "Main Checking",
+              "updated_at": "2025-01-20T14:22:00Z",
+              "user_id": 42
+            }
+          ],
+          "total": 1
+        }
+      },
+      "AccountResponse": {
+        "properties": {
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "description": "ISO 4217 currency code (3 uppercase letters)",
+            "default": "EUR",
+            "examples": [
+              "EUR",
+              "USD",
+              "GBP"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name",
+            "description": "Account name",
+            "examples": [
+              "Main Checking Account",
+              "Savings",
+              "Credit Card"
+            ]
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id",
+            "description": "Unique account identifier"
+          },
+          "user_id": {
+            "type": "integer",
+            "title": "User Id",
+            "description": "Owner user ID"
+          },
+          "initial_balance": {
+            "type": "string",
+            "title": "Initial Balance",
+            "description": "Initial balance when account was created"
+          },
+          "current_balance": {
+            "type": "string",
+            "title": "Current Balance",
+            "description": "Current balance (initial + transactions)"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "Account creation timestamp (UTC)"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At",
+            "description": "Last update timestamp (UTC)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "id",
+          "user_id",
+          "initial_balance",
+          "current_balance",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "AccountResponse",
+        "description": "Complete account schema returned by API endpoints.\nIncludes all fields including computed current_balance.",
+        "example": {
+          "created_at": "2025-01-15T10:30:00Z",
+          "currency": "EUR",
+          "current_balance": 1250.5,
+          "id": 1,
+          "initial_balance": 1000.0,
+          "name": "Main Checking Account",
+          "updated_at": "2025-01-20T14:22:00Z",
+          "user_id": 42
+        }
+      },
+      "AccountUpdate": {
+        "properties": {
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency",
+            "description": "Updated currency code"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name",
+            "description": "Updated account name"
+          },
+          "initial_balance": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Initial Balance",
+            "description": "Updated initial balance"
+          }
+        },
+        "type": "object",
+        "title": "AccountUpdate",
+        "description": "Schema for updating an existing account.\nAll fields are optional (partial update).",
+        "example": {
+          "initial_balance": 1500.0,
+          "name": "Updated Account Name"
+        }
+      },
+      "CategoryResponse": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "icon": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "icon",
+          "color"
+        ],
+        "title": "CategoryResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Token": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type",
+            "default": "bearer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token"
+        ],
+        "title": "Token"
+      },
+      "UserLogin": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "UserLogin"
+      },
+      "UserRegister": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 8,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "UserRegister"
+      },
+      "UserResponse": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "id",
+          "is_active",
+          "created_at"
+        ],
+        "title": "UserResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT token obtained from /api/v1/auth/login endpoint. Token expires after 30 minutes."
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Health",
+      "description": "Health check and status endpoints for monitoring"
+    },
+    {
+      "name": "Authentication",
+      "description": "User authentication and authorization endpoints. Includes registration, login, token refresh, and password reset."
+    },
+    {
+      "name": "Accounts",
+      "description": "Financial accounts management. Create and manage multiple accounts (checking, savings, credit cards, investments) with multi-currency support."
+    },
+    {
+      "name": "Transactions",
+      "description": "Transaction tracking and management with AI-powered automatic categorization. Supports bulk import from CSV and manual entry."
+    },
+    {
+      "name": "Categories",
+      "description": "Transaction categories management. Organize transactions with hierarchical categories and custom tags."
+    },
+    {
+      "name": "Budgets",
+      "description": "Budget planning and monitoring. Create budgets for categories, track spending, and receive alerts when approaching limits."
+    },
+    {
+      "name": "Analytics",
+      "description": "Financial analytics and insights. Get spending trends, forecasts, and AI-powered recommendations for better financial decisions."
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ]
+}
