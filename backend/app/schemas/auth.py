@@ -13,6 +13,6 @@ class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
-class TokenData(BaseModel):
+class TokenPayload(BaseModel):
     user_id: int
     email: str
