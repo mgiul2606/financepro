@@ -259,7 +259,23 @@ class Settings(BaseSettings):
     def is_development(self) -> bool:
         """Check if running in development"""
         return self.environment == "development"
-    
+
+    # Convenience properties for common security settings
+    @property
+    def ACCESS_TOKEN_EXPIRE_MINUTES(self) -> int:
+        """Get access token expiration time in minutes"""
+        return self.security.access_token_expire_minutes
+
+    @property
+    def SECRET_KEY(self) -> str:
+        """Get JWT secret key"""
+        return self.security.secret_key
+
+    @property
+    def ALGORITHM(self) -> str:
+        """Get JWT algorithm"""
+        return self.security.algorithm
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
