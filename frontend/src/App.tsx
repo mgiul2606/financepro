@@ -13,6 +13,9 @@ import { AccountsPage } from './features/accounts';
 import { TransactionsPage } from './features/transactions/pages/TransactionsPage';
 import { BudgetsPage } from './features/budgets/pages/BudgetsPage';
 import { GoalsPage } from './features/goals';
+import { AnalyticPage } from './features/analytic/pages/AnalyticPage';
+import { OptimizationPage } from './features/optimization/pages/OptimizationPage';
+import { AIAssistantPage } from './features/ai-assistant/pages/AIAssistantPage';
 import { Settings } from './pages/Settings';
 
 // Create React Query client
@@ -46,9 +49,9 @@ function App() {
                         <Route path="/transactions" element={<TransactionsPage />} />
                         <Route path="/budgets" element={<BudgetsPage />} />
                         <Route path="/goals" element={<GoalsPage />} />
-                        <Route path="/analytics" element={<div className="p-6">Analytics (Coming Soon)</div>} />
-                        <Route path="/optimization" element={<div className="p-6">Optimization (Coming Soon)</div>} />
-                        <Route path="/ai-assistant" element={<div className="p-6">AI Assistant (Coming Soon)</div>} />
+                        <Route path="/analytics" element={<AnalyticPage />} />
+                        <Route path="/optimization" element={<OptimizationPage />} />
+                        <Route path="/ai-assistant" element={<AIAssistantPage />} />
                         <Route path="/settings" element={<Settings />} />
                         <Route path="/" element={<Navigate to="/dashboard" replace />} />
                       </Routes>
