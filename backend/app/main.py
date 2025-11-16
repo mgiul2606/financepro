@@ -113,20 +113,25 @@ def custom_openapi():
             "url": settings.api.logo_url,
             "altText": f"{settings.api.name} Logo"
         }
-    
+
+    # Ensure components exists
+    if "components" not in openapi_schema:
+        openapi_schema["components"] = {}
+
     # Security schemes
-    openapi_schema["components"]["securitySchemes"] = {
-        "bearerAuth": {
-            "type": "http",
-            "scheme": "bearer",
-            "bearerFormat": "JWT",
-            "description": (
-                f"JWT token obtained from {get_api_prefix()}/auth/login endpoint. "
-                f"Token expires after {settings.security.access_token_expire_minutes} minutes."
-            )
-        }
+    if "securitySchemes" not in openapi_schema["components"]:
+        openapi_schema["components"]["securitySchemes"] = {}
+
+    openapi_schema["components"]["securitySchemes"]["bearerAuth"] = {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": (
+            f"JWT token obtained from {get_api_prefix()}/auth/login endpoint. "
+            f"Token expires after {settings.security.access_token_expire_minutes} minutes."
+        )
     }
-    
+
     openapi_schema["security"] = [{"bearerAuth": []}]
     
     # Custom metadata
