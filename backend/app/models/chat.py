@@ -1,5 +1,5 @@
 # app/models/chat.py
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Enum as SQLEnum, Text
+from sqlalchemy import Column, String, ForeignKey, DateTime, Enum as SQLEnum, Text
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
@@ -42,7 +42,7 @@ class ChatConversation(Base):
 
     # Foreign keys
     user_id = Column(
-        Integer,
+        UUID(as_uuid=True),
         ForeignKey("users.id"),
         nullable=False,
         index=True

@@ -1,5 +1,5 @@
 # app/models/audit_log.py
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Enum as SQLEnum, Text
+from sqlalchemy import Column, String, ForeignKey, DateTime, Enum as SQLEnum, Text
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
@@ -58,7 +58,7 @@ class AuditLog(Base):
 
     # Foreign keys
     user_id = Column(
-        Integer,
+        UUID(as_uuid=True),
         ForeignKey("users.id"),
         nullable=True,
         index=True

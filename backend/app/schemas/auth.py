@@ -1,5 +1,6 @@
 # app/schemas/auth.py
 from pydantic import BaseModel, EmailStr, Field
+from uuid import UUID
 
 class UserRegister(BaseModel):
     email: EmailStr
@@ -14,5 +15,5 @@ class Token(BaseModel):
     token_type: str = "bearer"
 
 class TokenPayload(BaseModel):
-    user_id: int
+    user_id: UUID
     email: str

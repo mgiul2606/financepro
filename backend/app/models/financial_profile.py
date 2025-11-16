@@ -1,5 +1,5 @@
 # app/models/financial_profile.py
-from sqlalchemy import Column, Integer, String, Enum as SQLEnum, Boolean, DateTime, Text, ForeignKey
+from sqlalchemy import Column, String, Enum as SQLEnum, Boolean, DateTime, Text, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
@@ -59,7 +59,7 @@ class FinancialProfile(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
 
     # Foreign key to User
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
 
     # Profile information
     name = Column(String(100), nullable=False)
