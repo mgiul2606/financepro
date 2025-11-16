@@ -164,12 +164,6 @@ export const GoalForm = ({
         hint="When do you want to achieve this goal?"
         validation={{
           required: { value: true, message: 'Target date is required' },
-          validate: {
-            futureDate: (value) =>
-              !value ||
-              new Date(value) > new Date() ||
-              'Target date must be in the future',
-          },
         }}
         onValidationChange={(isValid, errors) => {
           setFieldErrors((prev) => ({ ...prev, targetDate: errors }));
