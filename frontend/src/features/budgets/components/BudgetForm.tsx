@@ -185,12 +185,6 @@ export const BudgetForm = ({
           disabled={isLoading}
           validation={{
             required: { value: true, message: 'End date is required' },
-            validate: {
-              afterStart: (value) =>
-                !formData.startDate ||
-                value >= formData.startDate ||
-                'End date must be after start date',
-            },
           }}
           onValidationChange={(isValid, errors) => {
             setFieldErrors((prev) => ({ ...prev, endDate: errors }));
