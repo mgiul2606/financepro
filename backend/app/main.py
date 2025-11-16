@@ -209,18 +209,17 @@ async def version_info():
 logger.info("Loading API routers...")
 
 try:
-    from app.api import (
-        auth,
-        accounts,
-        categories,
-        financial_profiles,
-        transactions,
-        budgets,
-        goals
-    )
+    import app.api.auth as auth
+    import app.api.accounts as accounts
+    import app.api.categories as categories
+    import app.api.financial_profiles as financial_profiles
+    import app.api.transactions as transactions
+    import app.api.budgets as budgets
+    import app.api.goals as goals
     logger.info("API modules imported successfully")
 except Exception as e:
     logger.error(f"Failed to import API modules: {e}")
+    logger.exception("Detailed error:")
     logger.warning("Application will start without API routers")
     auth = accounts = categories = None
     financial_profiles = transactions = budgets = goals = None
