@@ -1,4 +1,4 @@
-import { Budget, BudgetCreate } from '../types';
+import type { Budget, BudgetCreate, BudgetUpdate } from '../types';
 
 let mockBudgets: Budget[] = [
   {
@@ -52,6 +52,24 @@ export const mockBudgetsApi = {
     };
     mockBudgets.push(newBudget);
     return newBudget;
+  },
+
+  async getById(id: string): Promise<Budget | null> {
+    await delay(200);
+    return mockBudgets.find(b => b.id === id) || null;
+  },
+
+  async update(id: string, data: BudgetUpdate): Promise<Budget> {
+    await delay(300);
+    const index = mockBudgets.findIndex(b => b.id === id);
+    if (index === -1) throw new Error('Budget not found');
+
+    mockBudgets[index] = {
+      ...mockBudgets[index],
+      ...data,
+      updatedAt: new Date().toISOString(),
+    };
+    return mockBudgets[index];
   },
 
   async delete(id: string): Promise<void> {
