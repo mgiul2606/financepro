@@ -58,10 +58,10 @@ class User(Base):
         "FinancialProfile",
         back_populates="user",
         cascade="all, delete-orphan",
-        lazy="selectin"
+        lazy="noload"  # Don't load automatically to avoid errors if table doesn't exist
     )
-    audit_logs = relationship("AuditLog", back_populates="user", cascade="all, delete-orphan")
-    chat_conversations = relationship("ChatConversation", back_populates="user", cascade="all, delete-orphan")
+    audit_logs = relationship("AuditLog", back_populates="user", cascade="all, delete-orphan", lazy="noload")
+    chat_conversations = relationship("ChatConversation", back_populates="user", cascade="all, delete-orphan", lazy="noload")
 
     def __repr__(self) -> str:
         return f"<User(id={self.id}, email='{self.email}')>"
