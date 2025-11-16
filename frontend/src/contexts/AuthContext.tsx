@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Wrapped in useCallback per evitare re-render infiniti
   const fetchUserData = useCallback(async (authToken: string) => {
     try {
-      const response = await api.get('/api/auth/me', {
+      const response = await api.get('/auth/me', {
         headers: { Authorization: `Bearer ${authToken}` }
       });
       setUser(response.data);
@@ -61,17 +61,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [fetchUserData]); // ← Aggiunto dependency
 
   const login = async (email: string, password: string) => {
-    const response = await api.post('/api/auth/login', { email, password });
+    const response = await api.post('/auth/login', { email, password });
     const { access_token } = response.data;
-    
+
     localStorage.setItem('token', access_token);
     setToken(access_token);
-    
+
     await fetchUserData(access_token);
   };
 
   const register = async (email: string, password: string) => {
-    await api.post('/api/auth/register', { email, password });
+    await api.post('/auth/register', { email, password });
     await login(email, password);
   };
 
