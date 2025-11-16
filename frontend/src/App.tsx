@@ -9,10 +9,11 @@ import { AppLayout } from './app/layout/AppLayout';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
-// import { Accounts } from './pages/Accounts'; // Temporarily disabled - needs migration to new architecture
+import { AccountsPage } from './features/accounts';
 import { TransactionsPage } from './features/transactions/pages/TransactionsPage';
 import { BudgetsPage } from './features/budgets/pages/BudgetsPage';
-// import { ComponentsDemo } from './pages/ComponentsDemo'; // Temporarily disabled
+import { GoalsPage } from './features/goals';
+import { Settings } from './pages/Settings';
 
 // Create React Query client
 const queryClient = new QueryClient({
@@ -41,14 +42,14 @@ function App() {
                     <AppLayout>
                       <Routes>
                         <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/accounts" element={<div className="p-6">Accounts (Migration in progress)</div>} />
+                        <Route path="/accounts" element={<AccountsPage />} />
                         <Route path="/transactions" element={<TransactionsPage />} />
                         <Route path="/budgets" element={<BudgetsPage />} />
-                        <Route path="/goals" element={<div className="p-6">Goals (Coming Soon)</div>} />
+                        <Route path="/goals" element={<GoalsPage />} />
                         <Route path="/analytics" element={<div className="p-6">Analytics (Coming Soon)</div>} />
                         <Route path="/optimization" element={<div className="p-6">Optimization (Coming Soon)</div>} />
                         <Route path="/ai-assistant" element={<div className="p-6">AI Assistant (Coming Soon)</div>} />
-                        <Route path="/settings" element={<div className="p-6">Settings (Coming Soon)</div>} />
+                        <Route path="/settings" element={<Settings />} />
                         <Route path="/" element={<Navigate to="/dashboard" replace />} />
                       </Routes>
                     </AppLayout>

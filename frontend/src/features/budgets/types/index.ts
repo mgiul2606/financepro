@@ -25,3 +25,13 @@ export interface BudgetCreate {
   endDate: string;
   alertThreshold?: number;
 }
+
+export interface BudgetUpdate {
+  name?: string;
+  category?: string;
+  amount?: number;
+  period?: BudgetPeriod;
+  startDate?: string;
+  endDate?: string;
+  alertThreshold?: number;
+}
