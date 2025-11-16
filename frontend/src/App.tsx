@@ -1,42 +1,66 @@
 // src/App.tsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AuthProvider } from './contexts/AuthContext';
 import { ConfirmProvider } from './hooks/useConfirm';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { Layout } from './components/Layout';
+import { AppLayout } from './app/layout/AppLayout';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
-import { Accounts } from './pages/Accounts'; // Using V2 version
-import { ComponentsDemo } from './pages/ComponentsDemo';
+// import { Accounts } from './pages/Accounts'; // Temporarily disabled - needs migration to new architecture
+import { TransactionsPage } from './features/transactions/pages/TransactionsPage';
+import { BudgetsPage } from './features/budgets/pages/BudgetsPage';
+// import { ComponentsDemo } from './pages/ComponentsDemo'; // Temporarily disabled
+
+// Create React Query client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <ConfirmProvider>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route
-              path="/*"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Routes>
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/accounts" element={<Accounts />} />
-                      <Route path="/components-demo" element={<ComponentsDemo />} />
-                      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                    </Routes>
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </ConfirmProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <ConfirmProvider>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route
+                path="/*"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <Routes>
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/accounts" element={<div className="p-6">Accounts (Migration in progress)</div>} />
+                        <Route path="/transactions" element={<TransactionsPage />} />
+                        <Route path="/budgets" element={<BudgetsPage />} />
+                        <Route path="/goals" element={<div className="p-6">Goals (Coming Soon)</div>} />
+                        <Route path="/analytics" element={<div className="p-6">Analytics (Coming Soon)</div>} />
+                        <Route path="/optimization" element={<div className="p-6">Optimization (Coming Soon)</div>} />
+                        <Route path="/ai-assistant" element={<div className="p-6">AI Assistant (Coming Soon)</div>} />
+                        <Route path="/settings" element={<div className="p-6">Settings (Coming Soon)</div>} />
+                        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                      </Routes>
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </ConfirmProvider>
+        </AuthProvider>
+      </BrowserRouter>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   );
 }
 
