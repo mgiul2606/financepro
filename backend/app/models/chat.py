@@ -96,7 +96,7 @@ class ChatMessage(Base):
         conversation_id: Foreign key to ChatConversation
         role: Role of the message sender (USER, ASSISTANT, SYSTEM)
         content: Text content of the message
-        metadata: JSONB for additional data (charts, query results, etc.)
+        message_metadata: JSONB for additional data (charts, query results, etc.)
         timestamp: When the message was created
 
     Relationships:
@@ -120,7 +120,7 @@ class ChatMessage(Base):
     content = Column(Text, nullable=False)
 
     # Additional data (charts, query results, etc.)
-    metadata = Column(JSONB, nullable=True)
+    message_metadata = Column(JSONB, nullable=True)
 
     # Timestamp
     timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
