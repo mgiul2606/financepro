@@ -1,7 +1,7 @@
 // Mock Transactions API
 // This will be replaced with real API when backend is ready
 
-import { Transaction, TransactionCreate, TransactionUpdate, TransactionFilters } from '../types';
+import type { Transaction, TransactionCreate, TransactionUpdate, TransactionFilters } from '../types';
 
 // Mock data
 let mockTransactions: Transaction[] = [
