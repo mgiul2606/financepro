@@ -157,7 +157,7 @@ export const Settings = () => {
                   <SelectField
                     label={t('settings.timezone')}
                     options={timezoneOptions}
-                    value="Europe/Rome"
+                    defaultValue="Europe/Rome"
                   />
 
                   <div className="pt-4">
@@ -446,13 +446,13 @@ export const Settings = () => {
                         { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
                         { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' },
                       ]}
-                      value="DD/MM/YYYY"
+                      defaultValue="DD/MM/YYYY"
                     />
 
                     <SelectField
                       label={t('settings.firstDayOfWeek')}
                       options={weekDayOptions}
-                      value="monday"
+                      defaultValue="monday"
                     />
                   </form>
                 </CardBody>

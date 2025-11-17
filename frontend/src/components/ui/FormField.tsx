@@ -50,9 +50,11 @@ interface TextareaFieldProps extends BaseFieldProps, Omit<TextareaHTMLAttributes
 }
 
 // Select Field Props
-interface SelectFieldProps extends BaseFieldProps, Omit<SelectHTMLAttributes<HTMLSelectElement>, 'className'> {
+interface SelectFieldProps extends BaseFieldProps, Omit<SelectHTMLAttributes<HTMLSelectElement>, 'className' | 'onChange'> {
   options: Array<{ value: string | number; label: string; disabled?: boolean }>;
   placeholder?: string;
+  onChange?: (value: string) => void;
+  defaultValue?: string;
 }
 
 // Validation helper
@@ -422,6 +424,12 @@ export const SelectField = ({
     if (onBlur) onBlur(e);
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    if (onChange) {
+      onChange(e.target.value);
+    }
+  };
+
   return (
     <div className={cn('space-y-1', containerClassName)}>
       {label && (
@@ -435,11 +443,11 @@ export const SelectField = ({
           )}
         </label>
       )}
-      
+
       <select
         {...props}
         value={value}
-        onChange={onChange}
+        onChange={handleChange}
         onBlur={handleBlur}
         disabled={disabled}
         className={cn(
@@ -454,8 +462,8 @@ export const SelectField = ({
           <option value="" disabled>{placeholder}</option>
         )}
         {options.map((option) => (
-          <option 
-            key={option.value} 
+          <option
+            key={option.value}
             value={option.value}
             disabled={option.disabled}
           >
