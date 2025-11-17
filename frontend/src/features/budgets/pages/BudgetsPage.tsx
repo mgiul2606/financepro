@@ -1,6 +1,6 @@
 // features/budgets/pages/BudgetsPage.tsx
 import { useState } from 'react';
-import { Plus, AlertCircle, Edit, Trash2 } from 'lucide-react';
+import { Plus, AlertCircle, Edit, Trash2, Eye } from 'lucide-react';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardBody, CardFooter } from '@/core/components/atomic/Card';
 import { Button } from '@/core/components/atomic/Button';
@@ -11,6 +11,7 @@ import { Modal, ModalFooter } from '@/components/ui/Modal';
 import { Alert } from '@/components/ui/Alert';
 import { useConfirm } from '@/hooks/useConfirm';
 import { BudgetForm } from '../components/BudgetForm';
+import { BudgetDetailsModal } from '../components/BudgetDetailsModal';
 import {
   useBudgets,
   useCreateBudget,
@@ -24,6 +25,7 @@ export const BudgetsPage: React.FC = () => {
 
   // State
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [viewingBudget, setViewingBudget] = useState<Budget | null>(null);
   const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
 
   // Data fetching
