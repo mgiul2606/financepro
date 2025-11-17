@@ -6,6 +6,7 @@ import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
 import { Button } from '@/core/components/atomic/Button';
 import { Badge } from '@/core/components/atomic/Badge';
 import { Spinner } from '@/core/components/atomic/Spinner';
+import { CurrencyText, NumberText, PercentageText } from '@/core/components/atomic';
 import { useNavigate } from 'react-router-dom';
 import { useAccounts } from '@/features/accounts';
 import { useBudgets } from '@/features/budgets/hooks/useBudgets';
@@ -57,7 +58,9 @@ export const Dashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">{t('dashboard.totalBalance')}</p>
-                <h3 className="text-2xl font-bold text-gray-900">EUR {totalBalance.toFixed(2)}</h3>
+                <h3 className="text-2xl font-bold text-gray-900">
+                  <CurrencyText value={totalBalance} />
+                </h3>
                 <p className="text-xs text-gray-500 mt-1">{accounts.length} {t('dashboard.accountsCount')}</p>
               </div>
               <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -74,10 +77,13 @@ export const Dashboard = () => {
               <div>
                 <p className="text-sm text-gray-600 mb-1">{t('dashboard.budgetStatus')}</p>
                 <h3 className="text-2xl font-bold text-gray-900">
-                  {totalBudget > 0 ? ((totalBudgetSpent / totalBudget) * 100).toFixed(1) : 0}%
+                  <PercentageText
+                    value={totalBudget > 0 ? (totalBudgetSpent / totalBudget) * 100 : 0}
+                    decimals={1}
+                  />
                 </h3>
                 <p className="text-xs text-gray-500 mt-1">
-                  {totalBudgetSpent.toFixed(0)} / {totalBudget.toFixed(0)} EUR
+                  <CurrencyText value={totalBudgetSpent} decimals={0} /> / <CurrencyText value={totalBudget} decimals={0} />
                 </p>
               </div>
               <div className="h-12 w-12 bg-yellow-100 rounded-full flex items-center justify-center">
@@ -95,7 +101,7 @@ export const Dashboard = () => {
                 <p className="text-sm text-gray-600 mb-1">{t('dashboard.activeGoals')}</p>
                 <h3 className="text-2xl font-bold text-gray-900">{activeGoals}</h3>
                 <p className="text-xs text-gray-500 mt-1">
-                  {avgGoalProgress.toFixed(0)}% {t('dashboard.avgProgress')}
+                  <PercentageText value={avgGoalProgress} decimals={0} /> {t('dashboard.avgProgress')}
                 </p>
               </div>
               <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -159,18 +165,18 @@ export const Dashboard = () => {
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-gray-900">
-                        {account.currency} {balance.toFixed(2)}
+                        <CurrencyText value={balance} currency={account.currency as any} />
                       </p>
                       <div className="flex items-center gap-1 text-xs">
                         {change >= 0 ? (
                           <>
                             <ArrowUpRight className="h-3 w-3 text-green-600" />
-                            <span className="text-green-600">+{change.toFixed(2)}</span>
+                            <NumberText value={change} showSign colorCoded className="text-green-600" />
                           </>
                         ) : (
                           <>
                             <ArrowDownRight className="h-3 w-3 text-red-600" />
-                            <span className="text-red-600">{change.toFixed(2)}</span>
+                            <NumberText value={change} colorCoded className="text-red-600" />
                           </>
                         )}
                       </div>
@@ -217,7 +223,7 @@ export const Dashboard = () => {
                         }
                         size="sm"
                       >
-                        {percentage.toFixed(0)}%
+                        <PercentageText value={percentage} decimals={0} />
                       </Badge>
                     </div>
                     <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -275,7 +281,9 @@ export const Dashboard = () => {
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-600">{t('dashboard.progress')}</span>
-                        <span className="font-semibold">{percentage.toFixed(1)}%</span>
+                        <span className="font-semibold">
+                          <PercentageText value={percentage} decimals={1} />
+                        </span>
                       </div>
                       <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                         <div
@@ -285,10 +293,10 @@ export const Dashboard = () => {
                       </div>
                       <div className="flex justify-between text-xs text-gray-500">
                         <span>
-                          {goal.currency} {goal.currentAmount.toFixed(0)}
+                          <CurrencyText value={goal.currentAmount} currency={goal.currency as any} decimals={0} />
                         </span>
                         <span>
-                          {goal.currency} {goal.targetAmount.toFixed(0)}
+                          <CurrencyText value={goal.targetAmount} currency={goal.currency as any} decimals={0} />
                         </span>
                       </div>
                     </div>

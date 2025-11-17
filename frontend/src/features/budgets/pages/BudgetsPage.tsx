@@ -6,6 +6,7 @@ import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardBody, CardFooter } from '@/core/components/atomic/Card';
 import { Button } from '@/core/components/atomic/Button';
 import { Badge } from '@/core/components/atomic/Badge';
+import { CurrencyText, PercentageText, DateText } from '@/core/components/atomic';
 import { EmptyState } from '@/core/components/composite/EmptyState';
 import { Spinner } from '@/core/components/atomic/Spinner';
 import { Modal, ModalFooter } from '@/components/ui/Modal';
@@ -157,7 +158,7 @@ export const BudgetsPage: React.FC = () => {
                     subtitle={budget.category}
                     action={
                       <Badge variant={getBadgeVariant(percentage)} size="sm">
-                        {percentage.toFixed(0)}%
+                        <PercentageText value={percentage} decimals={0} />
                       </Badge>
                     }
                   />
@@ -167,7 +168,9 @@ export const BudgetsPage: React.FC = () => {
                     <div className="mb-4">
                       <div className="flex justify-between text-sm mb-2">
                         <span className="text-neutral-600">{t('budgets.spent')}</span>
-                        <span className="font-semibold">EUR {budget.spent.toFixed(2)}</span>
+                        <span className="font-semibold">
+                          <CurrencyText value={budget.spent} />
+                        </span>
                       </div>
                       <div className="w-full h-2 bg-neutral-200 rounded-full overflow-hidden">
                         <div
@@ -181,14 +184,16 @@ export const BudgetsPage: React.FC = () => {
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-neutral-600">{t('budgets.amount')}</span>
-                        <span className="font-medium">EUR {budget.amount.toFixed(2)}</span>
+                        <span className="font-medium">
+                          <CurrencyText value={budget.amount} />
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-neutral-600">{t('budgets.remaining')}</span>
                         <span
                           className={`font-medium ${remaining >= 0 ? 'text-green-600' : 'text-red-600'}`}
                         >
-                          EUR {remaining.toFixed(2)}
+                          <CurrencyText value={remaining} />
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -198,8 +203,7 @@ export const BudgetsPage: React.FC = () => {
                       <div className="flex justify-between">
                         <span className="text-neutral-600">{t('budgets.dates')}</span>
                         <span className="font-medium text-xs">
-                          {new Date(budget.startDate).toLocaleDateString()} -{' '}
-                          {new Date(budget.endDate).toLocaleDateString()}
+                          <DateText value={budget.startDate} /> - <DateText value={budget.endDate} />
                         </span>
                       </div>
                     </div>
