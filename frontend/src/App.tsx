@@ -38,36 +38,36 @@ function App() {
       <PreferencesProvider>
         <BrowserRouter>
           <AuthProvider>
-            <ProfileProvider>
-              <ConfirmProvider>
-                <Routes>
+            <ConfirmProvider>
+              <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route
                   path="/*"
                   element={
                     <ProtectedRoute>
-                      <AppLayout>
-                        <Routes>
-                          <Route path="/dashboard" element={<Dashboard />} />
-                          <Route path="/accounts" element={<AccountsPage />} />
-                          <Route path="/transactions" element={<TransactionsPage />} />
-                          <Route path="/budgets" element={<BudgetsPage />} />
-                          <Route path="/goals" element={<GoalsPage />} />
-                          <Route path="/analytics" element={<AnalyticPage />} />
-                          <Route path="/optimization" element={<OptimizationPage />} />
-                          <Route path="/ai-assistant" element={<AIAssistantPage />} />
-                          <Route path="/settings" element={<Settings />} />
-                          <Route path="/settings/profiles" element={<ProfilesPage />} />
-                          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                        </Routes>
-                      </AppLayout>
+                      <ProfileProvider>
+                        <AppLayout>
+                          <Routes>
+                            <Route path="/dashboard" element={<Dashboard />} />
+                            <Route path="/accounts" element={<AccountsPage />} />
+                            <Route path="/transactions" element={<TransactionsPage />} />
+                            <Route path="/budgets" element={<BudgetsPage />} />
+                            <Route path="/goals" element={<GoalsPage />} />
+                            <Route path="/analytics" element={<AnalyticPage />} />
+                            <Route path="/optimization" element={<OptimizationPage />} />
+                            <Route path="/ai-assistant" element={<AIAssistantPage />} />
+                            <Route path="/settings" element={<Settings />} />
+                            <Route path="/settings/profiles" element={<ProfilesPage />} />
+                            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                          </Routes>
+                        </AppLayout>
+                      </ProfileProvider>
                     </ProtectedRoute>
                   }
                 />
-                </Routes>
-              </ConfirmProvider>
-            </ProfileProvider>
+              </Routes>
+            </ConfirmProvider>
           </AuthProvider>
         </BrowserRouter>
         <ReactQueryDevtools initialIsOpen={false} />

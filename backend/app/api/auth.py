@@ -5,11 +5,13 @@ from datetime import timedelta
 
 from app.db.database import get_db
 from app.models.user import User
+from app.models.financial_profile import FinancialProfile, ProfileType
+from app.models.user_profile_selection import UserProfileSelection
 from app.schemas.auth import UserRegister, UserLogin, Token
 from app.schemas.user import UserResponse
 from app.services.auth_service import (
-    get_password_hash, 
-    verify_password, 
+    get_password_hash,
+    verify_password,
     create_access_token
 )
 from app.config import settings
@@ -19,8 +21,8 @@ router = APIRouter()
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register(user_data: UserRegister, db: Session = Depends(get_db)):
-    """Registra nuovo utente"""
-    
+    """Registra nuovo utente e crea profilo finanziario di default"""
+
     # Check se email già esiste
     existing_user = db.query(User).filter(User.email == user_data.email).first()
     if existing_user:
@@ -28,18 +30,43 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered"
         )
-    
+
     # Crea user
     hashed_password = get_password_hash(user_data.password)
     db_user = User(
         email=user_data.email,
         hashed_password=hashed_password
     )
-    
+
     db.add(db_user)
+    db.flush()  # Flush to get user.id without committing
+
+    # Crea profilo finanziario di default
+    default_profile = FinancialProfile(
+        user_id=db_user.id,
+        name="Default Profile",
+        description="Your default financial profile",
+        profile_type=ProfileType.PERSONAL,
+        default_currency="EUR",
+        is_active=True
+    )
+
+    db.add(default_profile)
+    db.flush()  # Flush to get profile.id
+
+    # Imposta il profilo di default come main_profile
+    db_user.main_profile_id = default_profile.id
+
+    # Crea la selezione profili con il profilo di default attivo
+    profile_selection = UserProfileSelection(
+        user_id=db_user.id,
+        active_profile_ids=[default_profile.id]
+    )
+
+    db.add(profile_selection)
     db.commit()
     db.refresh(db_user)
-    
+
     return db_user
 
 @router.post("/login", response_model=Token)
