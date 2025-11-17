@@ -1,6 +1,7 @@
 // src/pages/Register.tsx
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { isAxiosError } from 'axios';
 
@@ -10,7 +11,8 @@ export const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
+
+  const { t } = useTranslation();
   const { register } = useAuth();
   const navigate = useNavigate();
 
@@ -20,12 +22,12 @@ export const Register = () => {
 
     // Validation
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('auth.passwordsDoNotMatch'));
       return;
     }
 
     if (password.length < 8) {
-      setError('Password must be at least 8 characters');
+      setError(t('auth.passwordMinLength'));
       return;
     }
 
@@ -38,7 +40,7 @@ export const Register = () => {
       if (isAxiosError(err) && err.response?.data?.detail) {
                   setError(err.response.data.detail);
               } else {
-              setError('Registration failed');
+              setError(t('auth.registrationFailed'));
                }
     } finally {
       setLoading(false);
@@ -50,7 +52,7 @@ export const Register = () => {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
+            {t('auth.signUpTitle')}
           </h2>
         </div>
 
@@ -64,7 +66,7 @@ export const Register = () => {
           <div className="rounded-md shadow-sm space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
+                {t('auth.email')}
               </label>
               <input
                 id="email"
@@ -78,7 +80,7 @@ export const Register = () => {
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
+                {t('auth.password')}
               </label>
               <input
                 id="password"
@@ -92,7 +94,7 @@ export const Register = () => {
 
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Confirm Password
+                {t('auth.confirmPassword')}
               </label>
               <input
                 id="confirmPassword"
@@ -111,13 +113,13 @@ export const Register = () => {
               disabled={loading}
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
-              {loading ? 'Creating account...' : 'Sign up'}
+              {loading ? t('auth.creatingAccount') : t('auth.signUp')}
             </button>
           </div>
 
           <div className="text-center">
             <Link to="/login" className="text-sm text-blue-600 hover:text-blue-500">
-              Already have an account? Sign in
+              {t('auth.alreadyHaveAccount')} {t('auth.signInLink')}
             </Link>
           </div>
         </form>

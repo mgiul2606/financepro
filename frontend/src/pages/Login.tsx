@@ -1,6 +1,7 @@
 // src/pages/Login.tsx
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { isAxiosError } from 'axios';
 
@@ -9,7 +10,8 @@ export const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
+
+  const { t } = useTranslation();
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -25,7 +27,7 @@ export const Login = () => {
         if (isAxiosError(err) && err.response?.data?.detail) {
             setError(err.response.data.detail);
         } else {
-        setError('Login failed');
+        setError(t('auth.loginFailed'));
          }
     } finally {
         setLoading(false);
@@ -38,10 +40,10 @@ export const Login = () => {
         {/* Header */}
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            FinancePro
+            {t('auth.title')}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Sign in to your account
+            {t('auth.signInTitle')}
           </p>
         </div>
 
@@ -55,7 +57,7 @@ export const Login = () => {
 
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="email" className="sr-only">Email</label>
+              <label htmlFor="email" className="sr-only">{t('auth.email')}</label>
               <input
                 id="email"
                 name="email"
@@ -64,11 +66,11 @@ export const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
+                placeholder={t('auth.emailPlaceholder')}
               />
             </div>
             <div>
-              <label htmlFor="password" className="sr-only">Password</label>
+              <label htmlFor="password" className="sr-only">{t('auth.password')}</label>
               <input
                 id="password"
                 name="password"
@@ -77,7 +79,7 @@ export const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
+                placeholder={t('auth.passwordPlaceholder')}
               />
             </div>
           </div>
@@ -88,13 +90,13 @@ export const Login = () => {
               disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? t('auth.signingIn') : t('auth.signIn')}
             </button>
           </div>
 
           <div className="text-center">
             <Link to="/register" className="text-sm text-blue-600 hover:text-blue-500">
-              Don't have an account? Sign up
+              {t('auth.dontHaveAccount')} {t('auth.signUpLink')}
             </Link>
           </div>
         </form>
