@@ -6,6 +6,7 @@ import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardBody, CardFooter } from '@/core/components/atomic/Card';
 import { Button } from '@/core/components/atomic/Button';
 import { Badge } from '@/core/components/atomic/Badge';
+import { CurrencyText, PercentageText, DateText } from '@/core/components/atomic';
 import { EmptyState } from '@/core/components/composite/EmptyState';
 import { Spinner } from '@/core/components/atomic/Spinner';
 import { Modal, ModalFooter } from '@/components/ui/Modal';
@@ -182,7 +183,9 @@ export const GoalsPage: React.FC = () => {
                     <div className="mb-4">
                       <div className="flex justify-between text-sm mb-2">
                         <span className="text-neutral-600">{t('goals.progress')}</span>
-                        <span className="font-semibold">{percentage.toFixed(1)}%</span>
+                        <span className="font-semibold">
+                          <PercentageText value={percentage} decimals={1} />
+                        </span>
                       </div>
                       <div className="w-full h-3 bg-neutral-200 rounded-full overflow-hidden">
                         <div
@@ -197,13 +200,13 @@ export const GoalsPage: React.FC = () => {
                       <div className="flex justify-between">
                         <span className="text-neutral-600">{t('goals.current')}</span>
                         <span className="font-medium">
-                          {goal.currency} {goal.currentAmount.toFixed(2)}
+                          <CurrencyText value={goal.currentAmount} currency={goal.currency as any} />
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-neutral-600">{t('goals.target')}</span>
                         <span className="font-medium">
-                          {goal.currency} {goal.targetAmount.toFixed(2)}
+                          <CurrencyText value={goal.targetAmount} currency={goal.currency as any} />
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -211,13 +214,13 @@ export const GoalsPage: React.FC = () => {
                         <span
                           className={`font-medium ${remaining > 0 ? 'text-blue-600' : 'text-green-600'}`}
                         >
-                          {goal.currency} {remaining.toFixed(2)}
+                          <CurrencyText value={remaining} currency={goal.currency as any} />
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-neutral-600">{t('goals.targetDate')}</span>
                         <span className="font-medium text-xs">
-                          {new Date(goal.targetDate).toLocaleDateString()}
+                          <DateText value={goal.targetDate} />
                         </span>
                       </div>
                       <div className="flex justify-between">

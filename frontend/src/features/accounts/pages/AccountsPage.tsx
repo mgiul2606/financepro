@@ -6,6 +6,7 @@ import { PageHeader } from '@/core/components/composite/PageHeader';
 import { EmptyState } from '@/core/components/composite/EmptyState';
 import { Button } from '@/core/components/atomic/Button';
 import { Spinner } from '@/core/components/atomic/Spinner';
+import { CurrencyText, NumberText, PercentageText } from '@/core/components/atomic';
 import { Modal, ModalFooter } from '@/components/ui/Modal';
 import { EntityCard, EntityCardGrid } from '@/components/ui/EntityCard';
 import { Alert, BannerAlert } from '@/components/ui/Alert';
@@ -148,7 +149,7 @@ export const AccountsPage = () => {
           <div className="flex items-center justify-between">
             <span>
               <strong>{accounts.length}</strong> {accounts.length !== 1 ? t('dashboard.accountsCount') : t('dashboard.account')} •{' '}
-              <strong>{t('accounts.totalBalance')}:</strong> {calculateTotalBalance().toFixed(2)} EUR
+              <strong>{t('accounts.totalBalance')}:</strong> <CurrencyText value={calculateTotalBalance()} />
             </span>
           </div>
         </BannerAlert>
@@ -188,21 +189,20 @@ export const AccountsPage = () => {
                     label: t('accounts.currentBalance'),
                     value: (
                       <span className={`font-bold ${getBalanceColor(balance)}`}>
-                        {account.currency} {balance.toFixed(2)}
+                        <CurrencyText value={balance} currency={account.currency as any} />
                       </span>
                     ),
                     highlight: true,
                   },
                   {
                     label: t('accounts.initialBalance'),
-                    value: `${account.currency} ${initialBalance.toFixed(2)}`,
+                    value: <CurrencyText value={initialBalance} currency={account.currency as any} />,
                   },
                   {
                     label: t('accounts.change'),
                     value: (
                       <span className={change >= 0 ? 'text-green-600' : 'text-red-600'}>
-                        {change >= 0 ? '+' : ''}
-                        {change.toFixed(2)} ({changePercentage.toFixed(1)}%)
+                        <NumberText value={change} showSign /> (<PercentageText value={changePercentage} decimals={1} />)
                       </span>
                     ),
                   },

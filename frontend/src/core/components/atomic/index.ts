@@ -30,3 +30,12 @@ export type { TabsProps, TabsListProps, TabsTriggerProps, TabsContentProps } fro
 
 export { CurrencyText } from './CurrencyText';
 export type { CurrencyTextProps } from './CurrencyText';
+
+export { NumberText } from './NumberText';
+export type { NumberTextProps } from './NumberText';
+
+export { DateText, DateRangeText } from './DateText';
+export type { DateTextProps, DateRangeTextProps, DateFormat } from './DateText';
+
+export { PercentageText } from './PercentageText';
+export type { PercentageTextProps } from './PercentageText';

@@ -199,3 +199,98 @@ export const formatDateTime = (
     ...options,
   }).format(dateObj);
 };
+
+/**
+ * Format time only
+ */
+export const formatTime = (
+  date: Date | string,
+  locale: SupportedLocale = 'en-US',
+  options?: Intl.DateTimeFormatOptions
+): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+
+  return new Intl.DateTimeFormat(locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+    ...options,
+  }).format(dateObj);
+};
+
+/**
+ * Format date range
+ */
+export const formatDateRange = (
+  startDate: Date | string,
+  endDate: Date | string,
+  locale: SupportedLocale = 'en-US'
+): string => {
+  const start = typeof startDate === 'string' ? new Date(startDate) : startDate;
+  const end = typeof endDate === 'string' ? new Date(endDate) : endDate;
+
+  const formatter = new Intl.DateTimeFormat(locale, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+
+  return `${formatter.format(start)} - ${formatter.format(end)}`;
+};
+
+/**
+ * Format relative time (e.g., "2 days ago", "in 3 hours")
+ */
+export const formatRelativeTime = (
+  date: Date | string,
+  locale: SupportedLocale = 'en-US'
+): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - dateObj.getTime()) / 1000);
+
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+
+  // Define time units in seconds
+  const minute = 60;
+  const hour = minute * 60;
+  const day = hour * 24;
+  const week = day * 7;
+  const month = day * 30;
+  const year = day * 365;
+
+  if (Math.abs(diffInSeconds) < minute) {
+    return rtf.format(-diffInSeconds, 'second');
+  } else if (Math.abs(diffInSeconds) < hour) {
+    return rtf.format(-Math.floor(diffInSeconds / minute), 'minute');
+  } else if (Math.abs(diffInSeconds) < day) {
+    return rtf.format(-Math.floor(diffInSeconds / hour), 'hour');
+  } else if (Math.abs(diffInSeconds) < week) {
+    return rtf.format(-Math.floor(diffInSeconds / day), 'day');
+  } else if (Math.abs(diffInSeconds) < month) {
+    return rtf.format(-Math.floor(diffInSeconds / week), 'week');
+  } else if (Math.abs(diffInSeconds) < year) {
+    return rtf.format(-Math.floor(diffInSeconds / month), 'month');
+  } else {
+    return rtf.format(-Math.floor(diffInSeconds / year), 'year');
+  }
+};
+
+/**
+ * Format a number with custom decimal places
+ */
+export const formatNumberWithDecimals = (
+  value: number | string,
+  decimals: number = 2,
+  locale: SupportedLocale = 'en-US'
+): string => {
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+
+  if (isNaN(numValue)) {
+    return '-';
+  }
+
+  return new Intl.NumberFormat(locale, {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  }).format(numValue);
+};
