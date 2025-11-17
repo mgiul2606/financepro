@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AuthProvider } from './contexts/AuthContext';
 import { PreferencesProvider } from './contexts/PreferencesContext';
+import { ProfileProvider } from './contexts/ProfileContext';
 import { ConfirmProvider } from './hooks/useConfirm';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AppLayout } from './app/layout/AppLayout';
@@ -18,6 +19,7 @@ import { AnalyticPage } from './features/analytic/pages/AnalyticPage';
 import { OptimizationPage } from './features/optimization/pages/OptimizationPage';
 import { AIAssistantPage } from './features/ai-assistant/pages/AIAssistantPage';
 import { Settings } from './pages/Settings';
+import { ProfilesPage } from './features/profiles';
 
 // Create React Query client
 const queryClient = new QueryClient({
@@ -36,8 +38,9 @@ function App() {
       <PreferencesProvider>
         <BrowserRouter>
           <AuthProvider>
-            <ConfirmProvider>
-              <Routes>
+            <ProfileProvider>
+              <ConfirmProvider>
+                <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route
@@ -55,14 +58,16 @@ function App() {
                           <Route path="/optimization" element={<OptimizationPage />} />
                           <Route path="/ai-assistant" element={<AIAssistantPage />} />
                           <Route path="/settings" element={<Settings />} />
+                          <Route path="/settings/profiles" element={<ProfilesPage />} />
                           <Route path="/" element={<Navigate to="/dashboard" replace />} />
                         </Routes>
                       </AppLayout>
                     </ProtectedRoute>
                   }
                 />
-              </Routes>
-            </ConfirmProvider>
+                </Routes>
+              </ConfirmProvider>
+            </ProfileProvider>
           </AuthProvider>
         </BrowserRouter>
         <ReactQueryDevtools initialIsOpen={false} />

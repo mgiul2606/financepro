@@ -614,5 +614,49 @@
     "positive": "Deve essere un numero positivo",
     "integer": "Deve essere un numero intero",
     "pattern": "Formato non valido"
+  },
+  "profiles": {
+    "title": "Profili Finanziari",
+    "subtitle": "Gestisci i tuoi profili finanziari. Ogni profilo ha i propri conti, transazioni e budget.",
+    "selectProfile": "Seleziona Profilo",
+    "selectProfiles": "Seleziona Profili",
+    "multipleSelected": "{{count}} profili selezionati",
+    "loading": "Caricamento profili...",
+    "noProfiles": "Nessun profilo",
+    "noProfilesMessage": "Nessun profilo ancora. Crea il tuo primo profilo per iniziare.",
+    "createNew": "Crea Profilo",
+    "createFirst": "Crea Il Tuo Primo Profilo",
+    "createProfile": "Crea Nuovo Profilo",
+    "editProfile": "Modifica Profilo",
+    "manageProfiles": "Gestisci Profili",
+    "mainProfile": "Profilo Principale",
+    "setAsMain": "Imposta come Principale",
+    "confirmDelete": "Sei sicuro di voler eliminare questo profilo?",
+    "active": "Attivo",
+    "inactive": "Inattivo",
+    "currency": "Valuta",
+    "types": {
+      "personal": "Personale",
+      "family": "Famiglia",
+      "business": "Business"
+    },
+    "form": {
+      "name": "Nome Profilo",
+      "nameRequired": "Il nome del profilo è obbligatorio",
+      "nameMinLength": "Il nome deve essere di almeno 1 carattere",
+      "nameMaxLength": "Il nome deve essere inferiore a 100 caratteri",
+      "namePlaceholder": "Le Mie Finanze Personali",
+      "description": "Descrizione",
+      "descriptionPlaceholder": "Descrizione opzionale...",
+      "type": "Tipo Profilo",
+      "currency": "Valuta Predefinita"
+    },
+    "info": {
+      "title": "Info sui Profili",
+      "main": "Il profilo principale è usato di default per nuove transazioni, budget e obiettivi",
+      "multiple": "Puoi selezionare più profili per analisi e statistiche",
+      "types": "Ogni profilo può essere di tipo Personale, Famiglia o Business",
+      "currency": "Ogni profilo ha la propria valuta predefinita"
+    }
   }
 }

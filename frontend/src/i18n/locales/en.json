@@ -614,5 +614,49 @@
     "positive": "Must be a positive number",
     "integer": "Must be an integer",
     "pattern": "Invalid format"
+  },
+  "profiles": {
+    "title": "Financial Profiles",
+    "subtitle": "Manage your financial profiles. Each profile has its own accounts, transactions, and budgets.",
+    "selectProfile": "Select Profile",
+    "selectProfiles": "Select Profiles",
+    "multipleSelected": "{{count}} profiles selected",
+    "loading": "Loading profiles...",
+    "noProfiles": "No profiles",
+    "noProfilesMessage": "No profiles yet. Create your first profile to get started.",
+    "createNew": "Create Profile",
+    "createFirst": "Create Your First Profile",
+    "createProfile": "Create New Profile",
+    "editProfile": "Edit Profile",
+    "manageProfiles": "Manage Profiles",
+    "mainProfile": "Main Profile",
+    "setAsMain": "Set as Main Profile",
+    "confirmDelete": "Are you sure you want to delete this profile?",
+    "active": "Active",
+    "inactive": "Inactive",
+    "currency": "Currency",
+    "types": {
+      "personal": "Personal",
+      "family": "Family",
+      "business": "Business"
+    },
+    "form": {
+      "name": "Profile Name",
+      "nameRequired": "Profile name is required",
+      "nameMinLength": "Name must be at least 1 character",
+      "nameMaxLength": "Name must be less than 100 characters",
+      "namePlaceholder": "My Personal Finance",
+      "description": "Description",
+      "descriptionPlaceholder": "Optional description...",
+      "type": "Profile Type",
+      "currency": "Default Currency"
+    },
+    "info": {
+      "title": "About Profiles",
+      "main": "Main profile is used by default for new transactions, budgets, and goals",
+      "multiple": "You can select multiple profiles for analysis and statistics",
+      "types": "Each profile can be Personal, Family, or Business type",
+      "currency": "Each profile has its own default currency"
+    }
   }
 }

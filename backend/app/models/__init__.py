@@ -1,5 +1,6 @@
 # app/models/__init__.py
 from app.models.user import User
+from app.models.user_profile_selection import UserProfileSelection
 from app.models.financial_profile import FinancialProfile, ProfileType, DatabaseType
 from app.models.account import Account, AccountType
 from app.models.category import Category
@@ -24,6 +25,7 @@ from app.models.chat import ChatConversation, ChatMessage, MessageRole
 __all__ = [
     # Core models
     "User",
+    "UserProfileSelection",
     "FinancialProfile",
     "ProfileType",
     "DatabaseType",
