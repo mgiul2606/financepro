@@ -27,3 +27,6 @@ export type { BadgeProps, BadgeVariant, BadgeSize } from './Badge';
 
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './Tabs';
 export type { TabsProps, TabsListProps, TabsTriggerProps, TabsContentProps } from './Tabs';
+
+export { CurrencyText } from './CurrencyText';
+export type { CurrencyTextProps } from './CurrencyText';

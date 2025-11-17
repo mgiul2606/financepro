@@ -5,9 +5,9 @@ import { format } from 'date-fns';
 import { Modal } from '@/components/ui/Modal';
 import { Card, CardBody } from '@/core/components/atomic/Card';
 import { Badge } from '@/core/components/atomic/Badge';
+import { CurrencyText } from '@/core/components/atomic/CurrencyText';
 import type { Anomaly } from '../types';
-import { usePreferences } from '@/contexts/PreferencesContext';
-import { formatCurrency } from '@/utils/currency';
+import type { SupportedCurrency } from '@/utils/currency';
 
 interface AnomalyDetailsModalProps {
   anomaly: Anomaly;
@@ -21,7 +21,6 @@ export const AnomalyDetailsModal = ({
   onClose,
 }: AnomalyDetailsModalProps) => {
   const { t } = useTranslation();
-  const { preferences } = usePreferences();
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -109,9 +108,11 @@ export const AnomalyDetailsModal = ({
                 <DollarSign className="h-4 w-4" />
                 <span className="text-sm">{t('transactions.amount')}</span>
               </div>
-              <span className="text-sm font-semibold text-red-600">
-                {formatCurrency(anomaly.amount, anomaly.currency as any, preferences.locale)}
-              </span>
+              <CurrencyText
+                value={anomaly.amount}
+                currency={anomaly.currency as SupportedCurrency}
+                className="text-sm font-semibold text-red-600"
+              />
             </div>
 
             {anomaly.category && (

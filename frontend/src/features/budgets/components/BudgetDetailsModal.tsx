@@ -6,13 +6,13 @@ import { format } from 'date-fns';
 import { Modal } from '@/components/ui/Modal';
 import { Card, CardBody } from '@/core/components/atomic/Card';
 import { Badge } from '@/core/components/atomic/Badge';
+import { CurrencyText } from '@/core/components/atomic/CurrencyText';
 import { DataTable, type Column } from '@/core/components/composite/DataTable';
 import { EmptyState } from '@/core/components/composite/EmptyState';
 import type { Budget } from '../types';
 import { useTransactions } from '@/features/transactions/hooks/useTransactions';
 import type { Transaction } from '@/features/transactions/types';
-import { usePreferences } from '@/contexts/PreferencesContext';
-import { formatCurrency } from '@/utils/currency';
+import type { SupportedCurrency } from '@/utils/currency';
 
 interface BudgetDetailsModalProps {
   budget: Budget;
@@ -26,7 +26,6 @@ export const BudgetDetailsModal = ({
   onClose,
 }: BudgetDetailsModalProps) => {
   const { t } = useTranslation();
-  const { preferences } = usePreferences();
   const { data: allTransactions, isLoading } = useTransactions();
 
   // Filter transactions for this budget
@@ -84,7 +83,7 @@ export const BudgetDetailsModal = ({
       align: 'right',
       render: (item) => (
         <span className="text-sm font-semibold text-red-600">
-          -{formatCurrency(item.amount, item.currency as any, preferences.locale)}
+          -<CurrencyText value={item.amount} currency={item.currency as SupportedCurrency} />
         </span>
       ),
       width: '130px',
@@ -125,9 +124,7 @@ export const BudgetDetailsModal = ({
             <div className="mb-4">
               <div className="flex justify-between text-sm mb-2">
                 <span className="text-neutral-600">{t('budgets.spent')}</span>
-                <span className="font-semibold">
-                  {formatCurrency(budget.spent, 'EUR', preferences.locale)}
-                </span>
+                <CurrencyText value={budget.spent} className="font-semibold" />
               </div>
               <div className="w-full h-3 bg-neutral-200 rounded-full overflow-hidden">
                 <div
@@ -147,23 +144,24 @@ export const BudgetDetailsModal = ({
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center p-3 bg-white rounded-lg border border-neutral-200">
                 <p className="text-xs text-neutral-600 mb-1">{t('budgets.amount')}</p>
-                <p className="text-lg font-bold text-neutral-900">
-                  {formatCurrency(budget.amount, 'EUR', preferences.locale)}
-                </p>
+                <CurrencyText
+                  value={budget.amount}
+                  className="text-lg font-bold text-neutral-900"
+                />
               </div>
               <div className="text-center p-3 bg-white rounded-lg border border-neutral-200">
                 <p className="text-xs text-neutral-600 mb-1">{t('budgets.spent')}</p>
-                <p className="text-lg font-bold text-red-600">
-                  {formatCurrency(budget.spent, 'EUR', preferences.locale)}
-                </p>
+                <CurrencyText
+                  value={budget.spent}
+                  className="text-lg font-bold text-red-600"
+                />
               </div>
               <div className="text-center p-3 bg-white rounded-lg border border-neutral-200">
                 <p className="text-xs text-neutral-600 mb-1">{t('budgets.remaining')}</p>
-                <p
+                <CurrencyText
+                  value={remaining}
                   className={`text-lg font-bold ${remaining >= 0 ? 'text-green-600' : 'text-red-600'}`}
-                >
-                  {formatCurrency(remaining, 'EUR', preferences.locale)}
-                </p>
+                />
               </div>
             </div>
 
@@ -224,13 +222,10 @@ export const BudgetDetailsModal = ({
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-neutral-600">{t('analytics.average')} per transaction</span>
-                  <span className="font-semibold text-neutral-900">
-                    {formatCurrency(
-                      budget.spent / budgetTransactions.length,
-                      'EUR',
-                      preferences.locale
-                    )}
-                  </span>
+                  <CurrencyText
+                    value={budget.spent / budgetTransactions.length}
+                    className="font-semibold text-neutral-900"
+                  />
                 </div>
               </div>
             </CardBody>
