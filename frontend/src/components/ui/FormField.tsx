@@ -184,7 +184,7 @@ export const FormField = ({
         onValidationChange(validationErrors.length === 0, validationErrors);
       }
     }
-  }, [value, validation]);
+  }, [value, validation, onValidationChange]);
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     setTouched(true);
@@ -333,7 +333,7 @@ export const TextareaField = ({
         onValidationChange(validationErrors.length === 0, validationErrors);
       }
     }
-  }, [value, validation]);
+  }, [value, validation, onValidationChange]);
 
   const handleBlur = (e: React.FocusEvent<HTMLTextAreaElement>) => {
     setTouched(true);
@@ -410,12 +410,12 @@ export const SelectField = ({
     if (validation) {
       const validationErrors = validateField(value, validation);
       setInternalErrors(validationErrors);
-      
+
       if (onValidationChange) {
         onValidationChange(validationErrors.length === 0, validationErrors);
       }
     }
-  }, [value, validation]);
+  }, [value, validation, onValidationChange]);
 
   const handleBlur = (e: React.FocusEvent<HTMLSelectElement>) => {
     setTouched(true);
