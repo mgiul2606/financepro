@@ -7,6 +7,11 @@ import {
   AssistantCapability,
   AssistantResponse,
   ExplanationRequest,
+  ClassificationRequest,
+  ClassificationBatch,
+  ClassificationResult,
+  ExpenseClassification,
+  TransactionToClassify,
 } from '../types';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -380,5 +385,178 @@ export const mockAIAssistantApi = {
         archived: false,
       },
     ];
+  },
+
+  // ========== Expense Classification API ==========
+
+  classifyTransactions: async (
+    request: ClassificationRequest
+  ): Promise<ClassificationBatch> => {
+    await delay(2000); // Simulate AI processing time
+
+    const results: ClassificationResult[] = request.transactions.map((transaction) => {
+      // Mock classification logic based on merchant/description
+      let category = 'Altro';
+      let subcategory: string | undefined;
+      let confidence = 0.75;
+      let explanation = '';
+      let tags: string[] = [];
+
+      const desc = transaction.description.toLowerCase();
+      const merchant = transaction.merchant?.toLowerCase() || '';
+
+      // Grocery stores
+      if (
+        desc.includes('esselunga') ||
+        desc.includes('coop') ||
+        desc.includes('conad') ||
+        merchant.includes('esselunga')
+      ) {
+        category = 'Alimentari';
+        subcategory = 'Supermercato';
+        confidence = 0.95;
+        tags = ['spesa', 'alimentari', 'essenziale'];
+        explanation = `Classificato come "${category}" perché il merchant "${
+          transaction.merchant || transaction.description
+        }" è riconosciuto come supermercato. L'importo è coerente con una spesa alimentare tipica.`;
+      }
+      // Restaurants
+      else if (
+        desc.includes('ristorante') ||
+        desc.includes('pizza') ||
+        desc.includes('bar') ||
+        desc.includes('trattoria')
+      ) {
+        category = 'Ristoranti';
+        subcategory = 'Pranzo/Cena';
+        confidence = 0.88;
+        tags = ['ristorante', 'cibo', 'svago'];
+        explanation = `Classificato come "${category}" in base al nome del merchant che indica un locale di ristorazione. L'importo è nella media per questo tipo di spesa.`;
+      }
+      // Entertainment subscriptions
+      else if (
+        desc.includes('netflix') ||
+        desc.includes('spotify') ||
+        desc.includes('prime')
+      ) {
+        category = 'Intrattenimento';
+        subcategory = 'Abbonamenti';
+        confidence = 0.98;
+        tags = ['streaming', 'abbonamento', 'ricorrente'];
+        explanation = `Classificato come "${category} - ${subcategory}" perché si tratta di un servizio di streaming riconosciuto. È una transazione ricorrente mensile.`;
+      }
+      // Online shopping
+      else if (
+        desc.includes('amazon') ||
+        desc.includes('ebay') ||
+        merchant.includes('amazon')
+      ) {
+        category = 'Shopping';
+        subcategory = 'Online';
+        confidence = 0.82;
+        tags = ['shopping', 'online', 'e-commerce'];
+        explanation = `Classificato come "${category}" perché la transazione è stata effettuata su una piattaforma di e-commerce. La categoria specifica potrebbe variare in base ai dettagli dell'acquisto.`;
+      }
+      // Utilities
+      else if (
+        desc.includes('enel') ||
+        desc.includes('eni') ||
+        desc.includes('tim') ||
+        desc.includes('vodafone')
+      ) {
+        category = 'Utenze';
+        subcategory = desc.includes('enel') || desc.includes('eni') ? 'Energia' : 'Telefonia';
+        confidence = 0.92;
+        tags = ['bolletta', 'utenze', 'ricorrente', 'essenziale'];
+        explanation = `Classificato come "${category} - ${subcategory}" perché il merchant è un fornitore di servizi noto. Si tratta di una spesa ricorrente essenziale.`;
+      }
+      // Transport
+      else if (
+        desc.includes('eni') ||
+        desc.includes('carburante') ||
+        desc.includes('atm') ||
+        desc.includes('trenitalia')
+      ) {
+        category = 'Trasporti';
+        subcategory = desc.includes('carburante') || desc.includes('eni') ? 'Carburante' : 'Mezzi pubblici';
+        confidence = 0.85;
+        tags = ['trasporto', 'mobilità'];
+        explanation = `Classificato come "${category}" in base al merchant e al tipo di servizio. Spesa tipica per questa categoria.`;
+      }
+
+      const classification: ExpenseClassification = {
+        id: `class_${transaction.id}`,
+        transactionId: transaction.id,
+        category,
+        subcategory,
+        tags,
+        confidence,
+        explanation,
+        suggestedBy: 'ai',
+        confirmedByUser: false,
+        createdAt: new Date().toISOString(),
+      };
+
+      // Generate alternative categories
+      const alternativeCategories =
+        confidence < 0.9
+          ? [
+              {
+                category: 'Altro',
+                subcategory: 'Non categorizzato',
+                confidence: Math.max(0, 1 - confidence - 0.1),
+              },
+              {
+                category: category === 'Shopping' ? 'Intrattenimento' : 'Shopping',
+                confidence: Math.max(0, 1 - confidence - 0.2),
+              },
+            ]
+          : [];
+
+      return {
+        transactionId: transaction.id,
+        originalDescription: transaction.description,
+        classification,
+        alternativeCategories,
+      };
+    });
+
+    const totalProcessed = results.length;
+    const averageConfidence =
+      results.reduce((sum, r) => sum + r.classification.confidence, 0) / totalProcessed;
+
+    return {
+      id: `batch_${Date.now()}`,
+      results,
+      totalProcessed,
+      averageConfidence,
+      createdAt: new Date().toISOString(),
+      status: 'completed',
+    };
+  },
+
+  confirmClassification: async (
+    transactionId: string,
+    categoryId: string
+  ): Promise<ExpenseClassification> => {
+    await delay(300);
+
+    return {
+      id: `class_${transactionId}`,
+      transactionId,
+      category: categoryId,
+      subcategory: undefined,
+      tags: [],
+      confidence: 1.0,
+      explanation: 'Confermato manualmente dall\'utente',
+      suggestedBy: 'manual',
+      confirmedByUser: true,
+      createdAt: new Date().toISOString(),
+    };
+  },
+
+  rejectClassification: async (transactionId: string): Promise<void> => {
+    await delay(300);
+    console.log(`Classification rejected for transaction ${transactionId}`);
   },
 };

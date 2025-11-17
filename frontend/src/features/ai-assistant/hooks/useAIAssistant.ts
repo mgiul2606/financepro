@@ -1,9 +1,13 @@
 // AI Assistant Hooks using React Query
 
 import { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { mockAIAssistantApi } from '../api/mockAIAssistantApi';
-import type { ChatMessage, ExplanationRequest } from '../types';
+import type {
+  ChatMessage,
+  ExplanationRequest,
+  TransactionToClassify,
+} from '../types';
 
 // Query keys
 export const aiAssistantKeys = {
@@ -83,4 +87,45 @@ export const useChat = () => {
     clearMessages,
     isLoading: sendMessage.isPending,
   };
+};
+
+// ========== Expense Classification Hooks ==========
+
+export const useClassifyTransactions = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (transactions: TransactionToClassify[]) =>
+      mockAIAssistantApi.classifyTransactions({
+        transactions,
+        includeExplanation: true,
+      }),
+    onSuccess: () => {
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({ queryKey: aiAssistantKeys.all });
+    },
+  });
+};
+
+export const useConfirmClassification = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ transactionId, categoryId }: { transactionId: string; categoryId: string }) =>
+      mockAIAssistantApi.confirmClassification(transactionId, categoryId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: aiAssistantKeys.all });
+    },
+  });
+};
+
+export const useRejectClassification = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (transactionId: string) => mockAIAssistantApi.rejectClassification(transactionId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: aiAssistantKeys.all });
+    },
+  });
 };

@@ -74,3 +74,62 @@ export interface AssistantResponse {
   actions?: AssistantAction[];
   data?: any;
 }
+
+// ========== Expense Classification Types ==========
+
+export interface ExpenseClassification {
+  id: string;
+  transactionId: string;
+  category: string;
+  subcategory?: string;
+  tags: string[];
+  confidence: number; // 0-1
+  explanation: string;
+  suggestedBy: 'ai' | 'manual' | 'rule';
+  confirmedByUser: boolean;
+  createdAt: string;
+}
+
+export interface TransactionToClassify {
+  id: string;
+  amount: number;
+  description: string;
+  merchant?: string;
+  date: string;
+  accountId: number;
+  currentCategory?: string;
+  notes?: string;
+}
+
+export interface ClassificationRequest {
+  transactions: TransactionToClassify[];
+  autoConfirm?: boolean;
+  includeExplanation?: boolean;
+}
+
+export interface ClassificationResult {
+  transactionId: string;
+  originalDescription: string;
+  classification: ExpenseClassification;
+  alternativeCategories?: Array<{
+    category: string;
+    subcategory?: string;
+    confidence: number;
+  }>;
+}
+
+export interface ClassificationBatch {
+  id: string;
+  results: ClassificationResult[];
+  totalProcessed: number;
+  averageConfidence: number;
+  createdAt: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+}
+
+export interface CategorySuggestion {
+  category: string;
+  subcategory?: string;
+  confidence: number;
+  reason: string;
+}
