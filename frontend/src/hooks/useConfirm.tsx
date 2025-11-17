@@ -1,5 +1,6 @@
 // src/hooks/useConfirm.tsx
 import { useState, useCallback, createContext, useContext, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, ModalFooter } from '../components/ui/Modal';
 import { AlertTriangle, Info, AlertCircle, CheckCircle } from 'lucide-react';
 
@@ -21,38 +22,38 @@ interface ConfirmContextType {
 
 const ConfirmContext = createContext<ConfirmContextType | undefined>(undefined);
 
-const variantConfig = {
+const getVariantConfig = (t: (key: string) => string) => ({
   danger: {
     icon: <AlertTriangle className="h-12 w-12 text-red-500" />,
     confirmButtonClass: 'bg-red-600 hover:bg-red-700 text-white',
     iconBgClass: 'bg-red-100',
-    defaultTitle: 'Confirm Deletion'
+    defaultTitle: t('confirm.deletionTitle')
   },
   warning: {
     icon: <AlertCircle className="h-12 w-12 text-yellow-500" />,
     confirmButtonClass: 'bg-yellow-600 hover:bg-yellow-700 text-white',
     iconBgClass: 'bg-yellow-100',
-    defaultTitle: 'Warning'
+    defaultTitle: t('confirm.warningTitle')
   },
   info: {
     icon: <Info className="h-12 w-12 text-blue-500" />,
     confirmButtonClass: 'bg-blue-600 hover:bg-blue-700 text-white',
     iconBgClass: 'bg-blue-100',
-    defaultTitle: 'Information'
+    defaultTitle: t('confirm.infoTitle')
   },
   success: {
     icon: <CheckCircle className="h-12 w-12 text-green-500" />,
     confirmButtonClass: 'bg-green-600 hover:bg-green-700 text-white',
     iconBgClass: 'bg-green-100',
-    defaultTitle: 'Confirm'
+    defaultTitle: t('confirm.successTitle')
   },
   default: {
     icon: <Info className="h-12 w-12 text-gray-500" />,
     confirmButtonClass: 'bg-gray-600 hover:bg-gray-700 text-white',
     iconBgClass: 'bg-gray-100',
-    defaultTitle: 'Confirm Action'
+    defaultTitle: t('confirm.defaultTitle')
   }
-};
+});
 
 const buttonVariantClasses = {
   primary: 'bg-blue-600 hover:bg-blue-700 text-white',
@@ -63,6 +64,7 @@ const buttonVariantClasses = {
 
 // Provider Component
 export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
+  const { t } = useTranslation();
   const [confirmState, setConfirmState] = useState<{
     isOpen: boolean;
     options: ConfirmOptions;
@@ -109,8 +111,9 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const variant = confirmState?.options.variant || 'default';
+  const variantConfig = getVariantConfig(t);
   const config = variantConfig[variant];
-  const confirmButtonVariant = confirmState?.options.confirmButtonVariant || 
+  const confirmButtonVariant = confirmState?.options.confirmButtonVariant ||
     (variant === 'danger' ? 'danger' : 'primary');
 
   return (
@@ -148,7 +151,7 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
               disabled={loading}
               className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {confirmState.options.cancelText || 'Cancel'}
+              {confirmState.options.cancelText || t('common.cancel')}
             </button>
             <button
               type="button"
@@ -158,7 +161,7 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
                 buttonVariantClasses[confirmButtonVariant]
               }`}
             >
-              {loading ? 'Processing...' : (confirmState.options.confirmText || 'Confirm')}
+              {loading ? t('common.processing') : (confirmState.options.confirmText || t('common.confirm'))}
             </button>
           </ModalFooter>
         </Modal>
@@ -202,30 +205,32 @@ export const useDeleteConfirm = () => {
 
 export const useDiscardConfirm = () => {
   const confirm = useConfirm();
-  
+  const { t } = useTranslation();
+
   return useCallback(() => {
     return confirm({
-      title: 'Discard Changes',
-      message: 'You have unsaved changes. Are you sure you want to discard them?',
-      confirmText: 'Discard',
-      cancelText: 'Keep Editing',
+      title: t('confirm.discardChangesTitle'),
+      message: t('confirm.discardChangesMessage'),
+      confirmText: t('confirm.discard'),
+      cancelText: t('confirm.keepEditing'),
       variant: 'warning',
       confirmButtonVariant: 'warning'
     });
-  }, [confirm]);
+  }, [confirm, t]);
 };
 
 export const useSaveConfirm = () => {
   const confirm = useConfirm();
-  
+  const { t } = useTranslation();
+
   return useCallback((message?: string) => {
     return confirm({
-      title: 'Save Changes',
-      message: message || 'Do you want to save your changes?',
-      confirmText: 'Save',
-      cancelText: 'Cancel',
+      title: t('confirm.saveChangesTitle'),
+      message: message || t('confirm.saveChangesMessage'),
+      confirmText: t('common.save'),
+      cancelText: t('common.cancel'),
       variant: 'info',
       confirmButtonVariant: 'primary'
     });
-  }, [confirm]);
+  }, [confirm, t]);
 };

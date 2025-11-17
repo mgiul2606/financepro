@@ -1,5 +1,6 @@
 // src/pages/Dashboard.tsx
 import { Wallet, Target, PiggyBank, TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
 import { Button } from '@/core/components/atomic/Button';
@@ -11,6 +12,7 @@ import { useBudgets } from '@/features/budgets/hooks/useBudgets';
 import { useGoals } from '@/features/goals/hooks/useGoals';
 
 export const Dashboard = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   // Fetch data
@@ -34,7 +36,7 @@ export const Dashboard = () => {
       <div className="p-8 flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <Spinner size="lg" />
-          <p className="mt-4 text-gray-600">Loading dashboard...</p>
+          <p className="mt-4 text-gray-600">{t('dashboard.loadingDashboard')}</p>
         </div>
       </div>
     );
@@ -43,8 +45,8 @@ export const Dashboard = () => {
   return (
     <div className="p-8">
       <PageHeader
-        title="Dashboard"
-        subtitle="Overview of your financial health"
+        title={t('dashboard.title')}
+        subtitle={t('dashboard.subtitle')}
       />
 
       {/* Stats Cards */}
@@ -54,9 +56,9 @@ export const Dashboard = () => {
           <CardBody className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Total Balance</p>
+                <p className="text-sm text-gray-600 mb-1">{t('dashboard.totalBalance')}</p>
                 <h3 className="text-2xl font-bold text-gray-900">EUR {totalBalance.toFixed(2)}</h3>
-                <p className="text-xs text-gray-500 mt-1">{accounts.length} accounts</p>
+                <p className="text-xs text-gray-500 mt-1">{accounts.length} {t('dashboard.accountsCount')}</p>
               </div>
               <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
                 <Wallet className="h-6 w-6 text-blue-600" />
@@ -70,7 +72,7 @@ export const Dashboard = () => {
           <CardBody className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Budget Status</p>
+                <p className="text-sm text-gray-600 mb-1">{t('dashboard.budgetStatus')}</p>
                 <h3 className="text-2xl font-bold text-gray-900">
                   {totalBudget > 0 ? ((totalBudgetSpent / totalBudget) * 100).toFixed(1) : 0}%
                 </h3>
@@ -90,10 +92,10 @@ export const Dashboard = () => {
           <CardBody className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Active Goals</p>
+                <p className="text-sm text-gray-600 mb-1">{t('dashboard.activeGoals')}</p>
                 <h3 className="text-2xl font-bold text-gray-900">{activeGoals}</h3>
                 <p className="text-xs text-gray-500 mt-1">
-                  {avgGoalProgress.toFixed(0)}% avg progress
+                  {avgGoalProgress.toFixed(0)}% {t('dashboard.avgProgress')}
                 </p>
               </div>
               <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -108,9 +110,9 @@ export const Dashboard = () => {
           <CardBody className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">This Month</p>
+                <p className="text-sm text-gray-600 mb-1">{t('dashboard.thisMonth')}</p>
                 <h3 className="text-2xl font-bold text-green-600">+5.2%</h3>
-                <p className="text-xs text-gray-500 mt-1">vs last month</p>
+                <p className="text-xs text-gray-500 mt-1">{t('dashboard.vsLastMonth')}</p>
               </div>
               <div className="h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center">
                 <TrendingUp className="h-6 w-6 text-purple-600" />
@@ -125,11 +127,11 @@ export const Dashboard = () => {
         {/* Recent Accounts */}
         <Card variant="bordered">
           <CardHeader
-            title="Accounts"
-            subtitle={`${accounts.length} total`}
+            title={t('nav.accounts')}
+            subtitle={`${accounts.length} ${t('dashboard.total')}`}
             action={
               <Button variant="ghost" size="sm" onClick={() => navigate('/accounts')}>
-                View all
+                {t('dashboard.viewAll')}
               </Button>
             }
           />
@@ -152,7 +154,7 @@ export const Dashboard = () => {
                       </div>
                       <div>
                         <p className="font-medium text-gray-900">{account.name}</p>
-                        <p className="text-sm text-gray-500">{account.currency} Account</p>
+                        <p className="text-sm text-gray-500">{account.currency} {t('dashboard.account')}</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -177,7 +179,7 @@ export const Dashboard = () => {
                 );
               })}
               {accounts.length === 0 && (
-                <p className="text-sm text-gray-500 text-center py-4">No accounts yet</p>
+                <p className="text-sm text-gray-500 text-center py-4">{t('dashboard.noAccountsYet')}</p>
               )}
             </div>
           </CardBody>
@@ -186,11 +188,11 @@ export const Dashboard = () => {
         {/* Recent Budgets */}
         <Card variant="bordered">
           <CardHeader
-            title="Budgets"
-            subtitle={`${budgets?.length || 0} active`}
+            title={t('nav.budgets')}
+            subtitle={`${budgets?.length || 0} ${t('dashboard.active')}`}
             action={
               <Button variant="ghost" size="sm" onClick={() => navigate('/budgets')}>
-                View all
+                {t('dashboard.viewAll')}
               </Button>
             }
           />
@@ -234,7 +236,7 @@ export const Dashboard = () => {
                 );
               })}
               {(!budgets || budgets.length === 0) && (
-                <p className="text-sm text-gray-500 text-center py-4">No budgets yet</p>
+                <p className="text-sm text-gray-500 text-center py-4">{t('dashboard.noBudgetsYet')}</p>
               )}
             </div>
           </CardBody>
@@ -243,11 +245,11 @@ export const Dashboard = () => {
         {/* Recent Goals */}
         <Card variant="bordered" className="lg:col-span-2">
           <CardHeader
-            title="Goals"
-            subtitle={`${activeGoals} in progress`}
+            title={t('nav.goals')}
+            subtitle={`${activeGoals} ${t('dashboard.inProgress')}`}
             action={
               <Button variant="ghost" size="sm" onClick={() => navigate('/goals')}>
-                View all
+                {t('dashboard.viewAll')}
               </Button>
             }
           />
@@ -272,7 +274,7 @@ export const Dashboard = () => {
                     </div>
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Progress</span>
+                        <span className="text-gray-600">{t('dashboard.progress')}</span>
                         <span className="font-semibold">{percentage.toFixed(1)}%</span>
                       </div>
                       <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -294,7 +296,7 @@ export const Dashboard = () => {
                 );
               })}
               {(!goals || goals.length === 0) && (
-                <p className="text-sm text-gray-500 text-center py-4 col-span-2">No goals yet</p>
+                <p className="text-sm text-gray-500 text-center py-4 col-span-2">{t('dashboard.noGoalsYet')}</p>
               )}
             </div>
           </CardBody>

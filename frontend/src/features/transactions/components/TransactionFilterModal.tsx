@@ -218,7 +218,7 @@ export const TransactionFilterModal = ({
                     : 'bg-white border-neutral-300 text-neutral-700 hover:border-neutral-400'
                 }`}
               >
-                {category.label}
+                {t(`transactions.categories.${category.value.toLowerCase()}`)}
               </button>
             ))}
           </div>

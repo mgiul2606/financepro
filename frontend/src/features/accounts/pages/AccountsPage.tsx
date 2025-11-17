@@ -1,6 +1,7 @@
 // features/accounts/pages/AccountsPage.tsx
 import { useState } from 'react';
 import { PlusCircle, Wallet, TrendingUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { EmptyState } from '@/core/components/composite/EmptyState';
 import { Button } from '@/core/components/atomic/Button';
@@ -19,6 +20,7 @@ import {
 import type { AccountResponse, AccountCreate, AccountUpdate, AccountStatusInfo } from '../types';
 
 export const AccountsPage = () => {
+  const { t } = useTranslation();
   const confirm = useConfirm();
 
   // State
@@ -62,9 +64,9 @@ export const AccountsPage = () => {
 
   const handleDelete = async (account: AccountResponse) => {
     const confirmed = await confirm({
-      title: 'Delete Account',
-      message: `Are you sure you want to delete "${account.name}"? This will also delete all associated transactions. This action cannot be undone.`,
-      confirmText: 'Delete',
+      title: t('accounts.deleteAccount'),
+      message: t('accounts.deleteConfirm', { name: account.name }),
+      confirmText: t('common.delete'),
       variant: 'danger',
       confirmButtonVariant: 'danger',
     });
@@ -83,11 +85,11 @@ export const AccountsPage = () => {
     const balance = parseFloat(account.current_balance);
 
     if (balance < 0) {
-      return { status: 'overdrawn', label: 'Overdrawn', variant: 'error' };
+      return { status: 'overdrawn', label: t('accounts.status.overdrawn'), variant: 'error' };
     } else if (balance < 100) {
-      return { status: 'low', label: 'Low Balance', variant: 'warning' };
+      return { status: 'low', label: t('accounts.status.lowBalance'), variant: 'warning' };
     } else if (balance > 10000) {
-      return { status: 'high', label: 'High Balance', variant: 'success' };
+      return { status: 'high', label: t('accounts.status.highBalance'), variant: 'success' };
     }
 
     return undefined;
@@ -109,7 +111,7 @@ export const AccountsPage = () => {
       <div className="p-8 flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <Spinner size="lg" />
-          <p className="mt-4 text-gray-600">Loading accounts...</p>
+          <p className="mt-4 text-gray-600">{t('common.loadingEntity', { entity: t('nav.accounts').toLowerCase() })}</p>
         </div>
       </div>
     );
@@ -119,8 +121,8 @@ export const AccountsPage = () => {
     <div className="p-8">
       {/* Header */}
       <PageHeader
-        title="Accounts"
-        subtitle="Manage your financial accounts"
+        title={t('accounts.title')}
+        subtitle={t('accounts.subtitle')}
         actions={
           <Button
             variant="primary"
@@ -128,7 +130,7 @@ export const AccountsPage = () => {
             onClick={() => setShowCreateModal(true)}
             isLoading={isCreating}
           >
-            New Account
+            {t('accounts.newAccount')}
           </Button>
         }
       />
@@ -136,7 +138,7 @@ export const AccountsPage = () => {
       {/* Error Alert */}
       {loadError && (
         <Alert variant="error" closable className="mb-6">
-          Failed to load accounts. Please try again later.
+          {t('accounts.errors.loadFailed')}
         </Alert>
       )}
 
@@ -145,8 +147,8 @@ export const AccountsPage = () => {
         <BannerAlert variant="info" className="mb-6" closable={false}>
           <div className="flex items-center justify-between">
             <span>
-              <strong>{accounts.length}</strong> account{accounts.length !== 1 ? 's' : ''} •{' '}
-              <strong>Total balance:</strong> {calculateTotalBalance().toFixed(2)} EUR
+              <strong>{accounts.length}</strong> {accounts.length !== 1 ? t('dashboard.accountsCount') : t('dashboard.account')} •{' '}
+              <strong>{t('accounts.totalBalance')}:</strong> {calculateTotalBalance().toFixed(2)} EUR
             </span>
           </div>
         </BannerAlert>
@@ -156,10 +158,10 @@ export const AccountsPage = () => {
       {accounts.length === 0 ? (
         <EmptyState
           icon={<Wallet />}
-          title="No accounts yet"
-          description="Get started by creating your first account to track your finances"
+          title={t('accounts.noAccounts')}
+          description={t('accounts.noAccountsDesc')}
           action={{
-            label: 'Create Account',
+            label: t('accounts.createAccount'),
             onClick: () => setShowCreateModal(true),
             icon: <PlusCircle />,
           }}
@@ -178,12 +180,12 @@ export const AccountsPage = () => {
               <EntityCard
                 key={account.id}
                 title={account.name}
-                subtitle={`${account.currency} Account`}
+                subtitle={`${account.currency} ${t('dashboard.account')}`}
                 headerIcon={<Wallet className="h-5 w-5" />}
                 status={getBalanceStatus(account)}
                 metadata={[
                   {
-                    label: 'Current Balance',
+                    label: t('accounts.currentBalance'),
                     value: (
                       <span className={`font-bold ${getBalanceColor(balance)}`}>
                         {account.currency} {balance.toFixed(2)}
@@ -192,11 +194,11 @@ export const AccountsPage = () => {
                     highlight: true,
                   },
                   {
-                    label: 'Initial Balance',
+                    label: t('accounts.initialBalance'),
                     value: `${account.currency} ${initialBalance.toFixed(2)}`,
                   },
                   {
-                    label: 'Change',
+                    label: t('accounts.change'),
                     value: (
                       <span className={change >= 0 ? 'text-green-600' : 'text-red-600'}>
                         {change >= 0 ? '+' : ''}
@@ -210,7 +212,7 @@ export const AccountsPage = () => {
                   onDelete: () => handleDelete(account),
                   customActions: [
                     {
-                      label: 'View Transactions',
+                      label: t('accounts.viewTransactions'),
                       icon: <TrendingUp size={16} />,
                       onClick: () => {
                         // TODO: Navigate to transactions page with account filter
@@ -233,7 +235,7 @@ export const AccountsPage = () => {
           setShowCreateModal(false);
           resetCreate();
         }}
-        title="Create New Account"
+        title={t('accounts.createAccount')}
         size="md"
         preventClose={isCreating}
         footer={
@@ -246,7 +248,7 @@ export const AccountsPage = () => {
               }}
               disabled={isCreating}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               variant="primary"
@@ -254,7 +256,7 @@ export const AccountsPage = () => {
               form="account-form"
               isLoading={isCreating}
             >
-              Create Account
+              {t('accounts.createAccount')}
             </Button>
           </ModalFooter>
         }
@@ -262,7 +264,7 @@ export const AccountsPage = () => {
         <AccountForm
           onSubmit={handleCreate}
           isLoading={isCreating}
-          error={createError ? 'Failed to create account. Please try again.' : undefined}
+          error={createError ? t('accounts.errors.createFailed') : undefined}
           onClearError={resetCreate}
         />
       </Modal>
@@ -275,7 +277,7 @@ export const AccountsPage = () => {
             setEditingAccount(null);
             resetUpdate();
           }}
-          title="Edit Account"
+          title={t('accounts.editAccount')}
           size="md"
           preventClose={isUpdating}
           footer={
@@ -288,7 +290,7 @@ export const AccountsPage = () => {
                 }}
                 disabled={isUpdating}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button
                 variant="primary"
@@ -296,7 +298,7 @@ export const AccountsPage = () => {
                 form="account-form"
                 isLoading={isUpdating}
               >
-                Save Changes
+                {t('common.saveChanges')}
               </Button>
             </ModalFooter>
           }
@@ -305,7 +307,7 @@ export const AccountsPage = () => {
             account={editingAccount}
             onSubmit={handleUpdate}
             isLoading={isUpdating}
-            error={updateError ? 'Failed to update account. Please try again.' : undefined}
+            error={updateError ? t('accounts.errors.updateFailed') : undefined}
             onClearError={resetUpdate}
           />
         </Modal>
