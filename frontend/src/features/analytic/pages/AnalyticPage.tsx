@@ -5,6 +5,9 @@ import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
 import { Tabs } from '@/core/components/atomic/Tabs';
 import { Spinner } from '@/core/components/atomic/Spinner';
 import { Button } from '@/core/components/atomic/Button';
+import { CurrencyText, NumberText } from '@/core/components/atomic';
+import { formatCurrency } from '@/utils/currency';
+import { usePreferences } from '@/contexts/PreferencesContext';
 import { LineChart, PieChart, BarChart } from '@/core/components/composite/charts';
 import {
   useAnalyticOverview,
@@ -24,6 +27,7 @@ import { format } from 'date-fns';
 
 export const AnalyticPage = () => {
   const { t } = useTranslation();
+  const { preferences } = usePreferences();
   const [activeTab, setActiveTab] = useState('overview');
   const [filters] = useState({
     dateFrom: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -115,8 +119,8 @@ export const AnalyticPage = () => {
                           ]}
                           height={250}
                           formatXAxis={(value) => format(new Date(value), 'dd MMM')}
-                          formatYAxis={(value) => `€${value}`}
-                          formatTooltip={(value) => `€${value.toFixed(2)}`}
+                          formatYAxis={(value) => formatCurrency(value, preferences.currency, preferences.locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                          formatTooltip={(value) => formatCurrency(value, preferences.currency, preferences.locale)}
                         />
                       ) : null}
                     </CardBody>
@@ -136,7 +140,7 @@ export const AnalyticPage = () => {
                             color: c.color,
                           }))}
                           height={250}
-                          formatValue={(value) => `€${value.toFixed(2)}`}
+                          formatValue={(value) => formatCurrency(value, preferences.currency, preferences.locale)}
                         />
                       ) : null}
                     </CardBody>
@@ -211,8 +215,8 @@ export const AnalyticPage = () => {
                     ]}
                     height={400}
                     formatXAxis={(value) => format(new Date(value), 'dd MMM')}
-                    formatYAxis={(value) => `€${value}`}
-                    formatTooltip={(value) => `€${value.toFixed(2)}`}
+                    formatYAxis={(value) => formatCurrency(value, preferences.currency, preferences.locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    formatTooltip={(value) => formatCurrency(value, preferences.currency, preferences.locale)}
                   />
                 ) : null}
               </CardBody>
@@ -237,7 +241,7 @@ export const AnalyticPage = () => {
                         color: c.color,
                       }))}
                       height={350}
-                      formatValue={(value) => `€${value.toFixed(2)}`}
+                      formatValue={(value) => formatCurrency(value, preferences.currency, preferences.locale)}
                     />
                   ) : null}
                 </CardBody>
@@ -254,8 +258,8 @@ export const AnalyticPage = () => {
                       xAxisKey="category"
                       bars={[{ dataKey: 'amount', name: t('analytics.amount') }]}
                       height={350}
-                      formatYAxis={(value) => `€${value}`}
-                      formatTooltip={(value) => `€${value.toFixed(2)}`}
+                      formatYAxis={(value) => formatCurrency(value, preferences.currency, preferences.locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                      formatTooltip={(value) => formatCurrency(value, preferences.currency, preferences.locale)}
                       customColors={categories.map((c) => c.color || '#3b82f6')}
                     />
                   ) : null}
@@ -294,7 +298,7 @@ export const AnalyticPage = () => {
                               </div>
                             </td>
                             <td className="px-4 py-3 text-right font-semibold">
-                              €{cat.amount.toFixed(2)}
+                              <CurrencyText value={cat.amount} />
                             </td>
                             <td className="px-4 py-3 text-right text-neutral-600">
                               {cat.percentage}%
@@ -303,7 +307,7 @@ export const AnalyticPage = () => {
                               {cat.transactionCount}
                             </td>
                             <td className="px-4 py-3 text-right text-neutral-600">
-                              €{(cat.amount / cat.transactionCount).toFixed(2)}
+                              <CurrencyText value={cat.amount / cat.transactionCount} />
                             </td>
                           </tr>
                         ))}
@@ -343,13 +347,13 @@ export const AnalyticPage = () => {
                             <td className="px-4 py-3 font-medium">{merchant.merchantName}</td>
                             <td className="px-4 py-3 text-neutral-600">{merchant.category}</td>
                             <td className="px-4 py-3 text-right font-semibold">
-                              €{merchant.totalAmount.toFixed(2)}
+                              <CurrencyText value={merchant.totalAmount} />
                             </td>
                             <td className="px-4 py-3 text-right text-neutral-600">
                               {merchant.transactionCount}
                             </td>
                             <td className="px-4 py-3 text-right text-neutral-600">
-                              €{merchant.averageAmount.toFixed(2)}
+                              <CurrencyText value={merchant.averageAmount} />
                             </td>
                             <td className="px-4 py-3 text-right text-sm text-neutral-500">
                               {format(new Date(merchant.lastTransaction), 'dd/MM/yy')}
