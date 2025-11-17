@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
 import { Tabs } from '@/core/components/atomic/Tabs';
@@ -20,6 +21,7 @@ import { SavingsStrategyCard } from '../components/SavingsStrategyCard';
 import { Sparkles, TrendingDown, Target, Repeat, AlertTriangle } from 'lucide-react';
 
 export const OptimizationPage = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('overview');
 
   // Fetch data
@@ -34,11 +36,11 @@ export const OptimizationPage = () => {
   const dismissSuggestion = useDismissSuggestion();
 
   const tabs = [
-    { id: 'overview', label: 'Panoramica' },
-    { id: 'suggestions', label: 'Suggerimenti' },
-    { id: 'waste', label: 'Sprechi' },
-    { id: 'strategies', label: 'Strategie' },
-    { id: 'alternatives', label: 'Alternative' },
+    { id: 'overview', label: t('optimization.overview') },
+    { id: 'suggestions', label: t('optimization.suggestions') },
+    { id: 'waste', label: t('optimization.waste') },
+    { id: 'strategies', label: t('optimization.strategies') },
+    { id: 'alternatives', label: t('optimization.alternatives') },
   ];
 
   const handleImplementSuggestion = (id: string) => {
@@ -55,15 +57,15 @@ export const OptimizationPage = () => {
   return (
     <div className="min-h-screen bg-neutral-50">
       <PageHeader
-        title="Ottimizzazione"
-        subtitle="Suggerimenti AI per ottimizzare le tue finanze"
+        title={t('optimization.title')}
+        subtitle={t('optimization.subtitle')}
         breadcrumbs={[
-          { label: 'Home', href: '/' },
-          { label: 'Ottimizzazione' },
+          { label: t('nav.dashboard'), href: '/' },
+          { label: t('optimization.title') },
         ]}
         actions={
           <Button variant="primary" leftIcon={<Sparkles className="h-4 w-4" />}>
-            Genera Nuovi Suggerimenti
+            {t('optimization.generateSuggestions')}
           </Button>
         }
         tabs={
@@ -81,7 +83,7 @@ export const OptimizationPage = () => {
           <div className="space-y-6">
             {overviewLoading ? (
               <div className="flex justify-center py-12">
-                <Spinner size="lg" label="Caricamento panoramica..." />
+                <Spinner size="lg" label={t('optimization.loadingOverview')} />
               </div>
             ) : overview ? (
               <>
@@ -91,12 +93,12 @@ export const OptimizationPage = () => {
                     <CardBody>
                       <div className="flex items-start justify-between">
                         <div>
-                          <p className="text-sm text-neutral-600 mb-2">Risparmio Potenziale</p>
+                          <p className="text-sm text-neutral-600 mb-2">{t('optimization.potentialSavings')}</p>
                           <p className="text-2xl font-bold text-green-600">
                             €{overview.totalPotentialSavings.toLocaleString()}
                           </p>
                           <p className="text-xs text-neutral-500 mt-1">
-                            €{overview.monthlySavingsOpportunity.toFixed(2)}/mese
+                            €{overview.monthlySavingsOpportunity.toFixed(2)}{t('optimization.perMonth')}
                           </p>
                         </div>
                         <div className="p-3 bg-green-100 rounded-lg">
@@ -110,12 +112,12 @@ export const OptimizationPage = () => {
                     <CardBody>
                       <div className="flex items-start justify-between">
                         <div>
-                          <p className="text-sm text-neutral-600 mb-2">Suggerimenti Attivi</p>
+                          <p className="text-sm text-neutral-600 mb-2">{t('optimization.activeSuggestions')}</p>
                           <p className="text-2xl font-bold text-blue-600">
                             {overview.activeSuggestions}
                           </p>
                           <p className="text-xs text-neutral-500 mt-1">
-                            {overview.implementedSuggestions} implementati
+                            {overview.implementedSuggestions} {t('optimization.implemented')}
                           </p>
                         </div>
                         <div className="p-3 bg-blue-100 rounded-lg">
@@ -129,12 +131,12 @@ export const OptimizationPage = () => {
                     <CardBody>
                       <div className="flex items-start justify-between">
                         <div>
-                          <p className="text-sm text-neutral-600 mb-2">Sprechi Rilevati</p>
+                          <p className="text-sm text-neutral-600 mb-2">{t('optimization.wasteDetected')}</p>
                           <p className="text-2xl font-bold text-orange-600">
                             €{overview.wasteDetected.totalWastedAmount.toFixed(2)}
                           </p>
                           <p className="text-xs text-neutral-500 mt-1">
-                            {overview.wasteDetected.unusedSubscriptions} abbonamenti
+                            {overview.wasteDetected.unusedSubscriptions} {t('optimization.subscriptions')}
                           </p>
                         </div>
                         <div className="p-3 bg-orange-100 rounded-lg">
@@ -148,12 +150,12 @@ export const OptimizationPage = () => {
                     <CardBody>
                       <div className="flex items-start justify-between">
                         <div>
-                          <p className="text-sm text-neutral-600 mb-2">Totale Risparmiato</p>
+                          <p className="text-sm text-neutral-600 mb-2">{t('optimization.totalSaved')}</p>
                           <p className="text-2xl font-bold text-purple-600">
                             €{overview.totalSavedToDate.toLocaleString()}
                           </p>
                           <p className="text-xs text-neutral-500 mt-1">
-                            Precisione: {overview.averageAccuracy}%
+                            {t('optimization.accuracy')}: {overview.averageAccuracy}%
                           </p>
                         </div>
                         <div className="p-3 bg-purple-100 rounded-lg">
@@ -172,12 +174,12 @@ export const OptimizationPage = () => {
                         <div className="inline-flex p-3 bg-green-100 rounded-full mb-3">
                           <TrendingDown className="h-8 w-8 text-green-600" />
                         </div>
-                        <h3 className="font-semibold text-neutral-900 mb-1">Riduci Sprechi</h3>
+                        <h3 className="font-semibold text-neutral-900 mb-1">{t('optimization.reduceWaste')}</h3>
                         <p className="text-sm text-neutral-600 mb-3">
-                          {overview.wasteDetected.unusedSubscriptions} abbonamenti inutilizzati rilevati
+                          {overview.wasteDetected.unusedSubscriptions} {t('optimization.unusedSubscriptionsDetected')}
                         </p>
                         <Button variant="primary" size="sm" onClick={() => setActiveTab('waste')}>
-                          Visualizza
+                          {t('optimization.viewAction')}
                         </Button>
                       </div>
                     </CardBody>
@@ -189,12 +191,12 @@ export const OptimizationPage = () => {
                         <div className="inline-flex p-3 bg-blue-100 rounded-full mb-3">
                           <Target className="h-8 w-8 text-blue-600" />
                         </div>
-                        <h3 className="font-semibold text-neutral-900 mb-1">Strategie di Risparmio</h3>
+                        <h3 className="font-semibold text-neutral-900 mb-1">{t('optimization.savingsStrategies')}</h3>
                         <p className="text-sm text-neutral-600 mb-3">
-                          {strategies?.filter((s) => s.status === 'active').length || 0} strategie attive
+                          {strategies?.filter((s) => s.status === 'active').length || 0} {t('optimization.activeStrategies')}
                         </p>
                         <Button variant="primary" size="sm" onClick={() => setActiveTab('strategies')}>
-                          Inizia
+                          {t('optimization.startAction')}
                         </Button>
                       </div>
                     </CardBody>
@@ -206,12 +208,12 @@ export const OptimizationPage = () => {
                         <div className="inline-flex p-3 bg-purple-100 rounded-full mb-3">
                           <Repeat className="h-8 w-8 text-purple-600" />
                         </div>
-                        <h3 className="font-semibold text-neutral-900 mb-1">Alternative Migliori</h3>
+                        <h3 className="font-semibold text-neutral-900 mb-1">{t('optimization.betterAlternatives')}</h3>
                         <p className="text-sm text-neutral-600 mb-3">
-                          {alternatives?.length || 0} alternative più convenienti trovate
+                          {alternatives?.length || 0} {t('optimization.cheaperAlternativesFound')}
                         </p>
                         <Button variant="primary" size="sm" onClick={() => setActiveTab('alternatives')}>
-                          Esplora
+                          {t('optimization.exploreAction')}
                         </Button>
                       </div>
                     </CardBody>
@@ -221,10 +223,10 @@ export const OptimizationPage = () => {
                 {/* Top Suggestions Preview */}
                 <Card variant="elevated">
                   <CardHeader
-                    title="Suggerimenti Prioritari"
+                    title={t('optimization.prioritySuggestions')}
                     action={
                       <Button variant="ghost" size="sm" onClick={() => setActiveTab('suggestions')}>
-                        Vedi Tutti
+                        {t('analytics.viewAll')}
                       </Button>
                     }
                   />
@@ -244,7 +246,7 @@ export const OptimizationPage = () => {
                       </div>
                     ) : (
                       <div className="text-center py-8">
-                        <p className="text-neutral-600">Nessun suggerimento al momento</p>
+                        <p className="text-neutral-600">{t('analytics.noSuggestionsYet')}</p>
                       </div>
                     )}
                   </CardBody>
@@ -263,11 +265,10 @@ export const OptimizationPage = () => {
                   <Sparkles className="h-8 w-8 text-blue-600" />
                   <div>
                     <h3 className="font-semibold text-neutral-900 mb-1">
-                      Suggerimenti Personalizzati AI
+                      {t('optimization.personalizedSuggestions')}
                     </h3>
                     <p className="text-sm text-neutral-700">
-                      I nostri algoritmi AI analizzano continuamente le tue finanze per identificare
-                      opportunità di ottimizzazione e risparmio.
+                      {t('optimization.personalizedSuggestionsDesc')}
                     </p>
                   </div>
                 </div>
@@ -283,7 +284,7 @@ export const OptimizationPage = () => {
                 {activeSuggestions.length > 0 && (
                   <div>
                     <h3 className="text-lg font-semibold text-neutral-900 mb-4">
-                      Suggerimenti Attivi ({activeSuggestions.length})
+                      {t('optimization.activeSuggestionsCount', { count: activeSuggestions.length })}
                     </h3>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       {activeSuggestions.map((suggestion) => (
@@ -301,7 +302,7 @@ export const OptimizationPage = () => {
                 {implementedSuggestions.length > 0 && (
                   <div>
                     <h3 className="text-lg font-semibold text-neutral-900 mb-4">
-                      Suggerimenti Implementati ({implementedSuggestions.length})
+                      {t('optimization.implementedSuggestionsCount', { count: implementedSuggestions.length })}
                     </h3>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       {implementedSuggestions.map((suggestion) => (
@@ -324,11 +325,10 @@ export const OptimizationPage = () => {
                   <AlertTriangle className="h-8 w-8 text-orange-600" />
                   <div>
                     <h3 className="font-semibold text-neutral-900 mb-1">
-                      Rilevamento Sprechi Automatico
+                      {t('optimization.automaticWasteDetection')}
                     </h3>
                     <p className="text-sm text-neutral-700">
-                      Identifichiamo abbonamenti inutilizzati, servizi duplicati e spese ad alto costo
-                      ma basso utilizzo.
+                      {t('optimization.automaticWasteDetectionDesc')}
                     </p>
                   </div>
                 </div>
@@ -350,9 +350,9 @@ export const OptimizationPage = () => {
                 <CardBody>
                   <div className="text-center py-12">
                     <span className="text-5xl mb-4 block">✅</span>
-                    <p className="text-lg font-medium text-neutral-900">Nessuno spreco rilevato</p>
+                    <p className="text-lg font-medium text-neutral-900">{t('optimization.noWasteDetected')}</p>
                     <p className="text-sm text-neutral-600 mt-2">
-                      Stai gestendo le tue finanze in modo efficiente!
+                      {t('optimization.noWasteDetectedDesc')}
                     </p>
                   </div>
                 </CardBody>
@@ -363,7 +363,7 @@ export const OptimizationPage = () => {
             {duplicates && duplicates.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold text-neutral-900 mb-4">
-                  Servizi Duplicati
+                  {t('optimization.duplicateServices')}
                 </h3>
                 <div className="space-y-3">
                   {duplicates.map((duplicate) => (
@@ -380,7 +380,7 @@ export const OptimizationPage = () => {
                               </p>
                             </div>
                             <div className="text-right">
-                              <p className="text-sm text-neutral-600">Risparmio</p>
+                              <p className="text-sm text-neutral-600">{t('optimization.saving')}</p>
                               <p className="text-lg font-bold text-green-600">
                                 €{duplicate.potentialSaving.toFixed(2)}
                               </p>
@@ -421,11 +421,10 @@ export const OptimizationPage = () => {
                   <Target className="h-8 w-8 text-green-600" />
                   <div>
                     <h3 className="font-semibold text-neutral-900 mb-1">
-                      Strategie di Risparmio Personalizzate
+                      {t('optimization.personalizedSavingsStrategies')}
                     </h3>
                     <p className="text-sm text-neutral-700">
-                      Piani strutturati per raggiungere i tuoi obiettivi di risparmio con passaggi
-                      chiari e tracciamento dei progressi.
+                      {t('optimization.personalizedSavingsStrategiesDesc')}
                     </p>
                   </div>
                 </div>
@@ -455,11 +454,10 @@ export const OptimizationPage = () => {
                   <Repeat className="h-8 w-8 text-purple-600" />
                   <div>
                     <h3 className="font-semibold text-neutral-900 mb-1">
-                      Alternative Più Convenienti
+                      {t('optimization.cheaperAlternatives')}
                     </h3>
                     <p className="text-sm text-neutral-700">
-                      Confrontiamo i tuoi fornitori attuali con alternative più economiche mantenendo
-                      la stessa qualità di servizio.
+                      {t('optimization.cheaperAlternativesDesc')}
                     </p>
                   </div>
                 </div>
@@ -484,7 +482,7 @@ export const OptimizationPage = () => {
                             <p className="text-sm text-neutral-600">{alternative.reason}</p>
                           </div>
                           <div className="bg-green-100 rounded-lg p-3 text-center ml-4">
-                            <p className="text-xs text-green-700">Risparmio Annuale</p>
+                            <p className="text-xs text-green-700">{t('optimization.yearSaving')}</p>
                             <p className="text-2xl font-bold text-green-600">
                               €{alternative.yearlyProjection.toFixed(0)}
                             </p>
@@ -493,16 +491,16 @@ export const OptimizationPage = () => {
 
                         <div className="grid grid-cols-2 gap-4 border border-neutral-200 rounded-lg p-4">
                           <div>
-                            <p className="text-xs text-neutral-600 mb-2">Attuale</p>
+                            <p className="text-xs text-neutral-600 mb-2">{t('optimization.current')}</p>
                             <p className="font-semibold text-neutral-900">
                               {alternative.currentMerchant}
                             </p>
                             <p className="text-lg font-bold text-neutral-700 mt-1">
-                              €{alternative.currentAmount.toFixed(2)}/mese
+                              €{alternative.currentAmount.toFixed(2)}{t('optimization.perMonth')}
                             </p>
                           </div>
                           <div className="border-l border-neutral-200 pl-4">
-                            <p className="text-xs text-green-700 mb-2">Suggerito</p>
+                            <p className="text-xs text-green-700 mb-2">{t('optimization.suggested')}</p>
                             <div className="flex items-center gap-2">
                               <p className="font-semibold text-neutral-900">
                                 {alternative.suggestedMerchant}
@@ -512,14 +510,14 @@ export const OptimizationPage = () => {
                               </span>
                             </div>
                             <p className="text-lg font-bold text-green-600 mt-1">
-                              €{alternative.suggestedAmount.toFixed(2)}/mese
+                              €{alternative.suggestedAmount.toFixed(2)}{t('optimization.perMonth')}
                             </p>
                           </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-xs font-medium text-green-700 mb-2">Pro:</p>
+                            <p className="text-xs font-medium text-green-700 mb-2">{t('optimization.pros')}</p>
                             <ul className="space-y-1">
                               {alternative.pros.map((pro, index) => (
                                 <li key={index} className="text-sm text-neutral-700 flex items-start gap-2">
@@ -530,7 +528,7 @@ export const OptimizationPage = () => {
                             </ul>
                           </div>
                           <div>
-                            <p className="text-xs font-medium text-red-700 mb-2">Contro:</p>
+                            <p className="text-xs font-medium text-red-700 mb-2">{t('optimization.cons')}</p>
                             <ul className="space-y-1">
                               {alternative.cons.map((con, index) => (
                                 <li key={index} className="text-sm text-neutral-700 flex items-start gap-2">
@@ -544,10 +542,10 @@ export const OptimizationPage = () => {
 
                         <div className="flex items-center gap-3 pt-3 border-t border-neutral-200">
                           <Button variant="primary" size="sm">
-                            Richiedi Preventivo
+                            {t('optimization.requestQuote')}
                           </Button>
                           <Button variant="ghost" size="sm">
-                            Maggiori Info
+                            {t('optimization.moreInfo')}
                           </Button>
                         </div>
                       </div>

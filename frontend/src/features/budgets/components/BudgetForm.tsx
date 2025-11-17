@@ -1,5 +1,6 @@
 // features/budgets/components/BudgetForm.tsx
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DollarSign, Calendar } from 'lucide-react';
 import { FormField, SelectField } from '@/components/ui/FormField';
 import { Alert } from '@/components/ui/Alert';
@@ -18,25 +19,6 @@ interface BudgetFormProps {
   onClearError?: () => void;
 }
 
-const PERIOD_OPTIONS = [
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'quarterly', label: 'Quarterly' },
-  { value: 'yearly', label: 'Yearly' },
-  { value: 'custom', label: 'Custom' },
-];
-
-const CATEGORY_OPTIONS = [
-  { value: 'Groceries', label: 'Groceries' },
-  { value: 'Transportation', label: 'Transportation' },
-  { value: 'Entertainment', label: 'Entertainment' },
-  { value: 'Healthcare', label: 'Healthcare' },
-  { value: 'Shopping', label: 'Shopping' },
-  { value: 'Dining', label: 'Dining' },
-  { value: 'Utilities', label: 'Utilities' },
-  { value: 'Housing', label: 'Housing' },
-  { value: 'Other', label: 'Other' },
-];
-
 export const BudgetForm = ({
   budget,
   onSubmit,
@@ -44,7 +26,27 @@ export const BudgetForm = ({
   error,
   onClearError,
 }: BudgetFormProps) => {
+  const { t } = useTranslation();
   const isEditMode = !!budget;
+
+  const PERIOD_OPTIONS = [
+    { value: 'monthly', label: t('budgets.periods.monthly') },
+    { value: 'quarterly', label: t('budgets.periods.quarterly') },
+    { value: 'yearly', label: t('budgets.periods.yearly') },
+    { value: 'custom', label: t('budgets.periods.custom') },
+  ];
+
+  const CATEGORY_OPTIONS = [
+    { value: 'Groceries', label: t('budgets.categories.groceries') },
+    { value: 'Transportation', label: t('budgets.categories.transportation') },
+    { value: 'Entertainment', label: t('budgets.categories.entertainment') },
+    { value: 'Healthcare', label: t('budgets.categories.healthcare') },
+    { value: 'Shopping', label: t('budgets.categories.shopping') },
+    { value: 'Dining', label: t('budgets.categories.dining') },
+    { value: 'Utilities', label: t('budgets.categories.utilities') },
+    { value: 'Housing', label: t('budgets.categories.housing') },
+    { value: 'Other', label: t('budgets.categories.other') },
+  ];
 
   const [formData, setFormData] = useState<BudgetCreate>({
     name: budget?.name || '',
@@ -99,16 +101,16 @@ export const BudgetForm = ({
       )}
 
       <FormField
-        label="Budget Name"
+        label={t('budgets.name')}
         required
         value={formData.name}
         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-        placeholder="e.g., Monthly Groceries Budget"
+        placeholder={t('budgets.namePlaceholder')}
         disabled={isLoading}
         validation={{
-          required: { value: true, message: 'Budget name is required' },
-          minLength: { value: 1, message: 'Budget name is required' },
-          maxLength: { value: 100, message: 'Budget name must not exceed 100 characters' },
+          required: { value: true, message: t('budgets.errors.nameRequired') },
+          minLength: { value: 1, message: t('budgets.errors.nameRequired') },
+          maxLength: { value: 100, message: t('budgets.errors.nameTooLong') },
         }}
         onValidationChange={(isValid, errors) => {
           setFieldErrors((prev) => ({ ...prev, name: errors }));
@@ -117,29 +119,29 @@ export const BudgetForm = ({
       />
 
       <SelectField
-        label="Category"
+        label={t('budgets.category')}
         required
         value={formData.category}
         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
         options={CATEGORY_OPTIONS}
         disabled={isLoading}
-        hint="Select the spending category for this budget"
+        hint={t('budgets.categoryHint')}
       />
 
       <FormField
-        label="Budget Amount"
+        label={t('budgets.amount')}
         type="number"
         step="0.01"
         required
         value={formData.amount}
         onChange={(e) => setFormData({ ...formData, amount: parseFloat(e.target.value) || 0 })}
-        placeholder="0.00"
+        placeholder={t('budgets.amountPlaceholder')}
         icon={<DollarSign className="h-5 w-5 text-gray-400" />}
         disabled={isLoading}
-        hint="Set the maximum amount you plan to spend"
+        hint={t('budgets.amountHint')}
         validation={{
-          required: { value: true, message: 'Budget amount is required' },
-          min: { value: 0.01, message: 'Budget amount must be greater than 0' },
+          required: { value: true, message: t('budgets.errors.amountRequired') },
+          min: { value: 0.01, message: t('budgets.errors.amountPositive') },
         }}
         onValidationChange={(isValid, errors) => {
           setFieldErrors((prev) => ({ ...prev, amount: errors }));
@@ -148,18 +150,18 @@ export const BudgetForm = ({
       />
 
       <SelectField
-        label="Period"
+        label={t('budgets.period')}
         required
         value={formData.period}
         onChange={(e) => setFormData({ ...formData, period: e.target.value as BudgetPeriod })}
         options={PERIOD_OPTIONS}
         disabled={isLoading}
-        hint="Select the budget period"
+        hint={t('budgets.periodHint')}
       />
 
       <div className="grid grid-cols-2 gap-4">
         <FormField
-          label="Start Date"
+          label={t('budgets.startDate')}
           type="date"
           required
           value={formData.startDate}
@@ -167,7 +169,7 @@ export const BudgetForm = ({
           icon={<Calendar className="h-5 w-5 text-gray-400" />}
           disabled={isLoading}
           validation={{
-            required: { value: true, message: 'Start date is required' },
+            required: { value: true, message: t('budgets.errors.startDateRequired') },
           }}
           onValidationChange={(isValid, errors) => {
             setFieldErrors((prev) => ({ ...prev, startDate: errors }));
@@ -176,7 +178,7 @@ export const BudgetForm = ({
         />
 
         <FormField
-          label="End Date"
+          label={t('budgets.endDate')}
           type="date"
           required
           value={formData.endDate}
@@ -184,7 +186,7 @@ export const BudgetForm = ({
           icon={<Calendar className="h-5 w-5 text-gray-400" />}
           disabled={isLoading}
           validation={{
-            required: { value: true, message: 'End date is required' },
+            required: { value: true, message: t('budgets.errors.endDateRequired') },
           }}
           onValidationChange={(isValid, errors) => {
             setFieldErrors((prev) => ({ ...prev, endDate: errors }));
@@ -194,19 +196,19 @@ export const BudgetForm = ({
       </div>
 
       <FormField
-        label="Alert Threshold (%)"
+        label={t('budgets.alertThreshold')}
         type="number"
         step="1"
         value={formData.alertThreshold}
         onChange={(e) =>
           setFormData({ ...formData, alertThreshold: parseInt(e.target.value) || 80 })
         }
-        placeholder="80"
+        placeholder={t('budgets.alertThresholdPlaceholder')}
         disabled={isLoading}
-        hint="Get notified when spending reaches this percentage (0-100)"
+        hint={t('budgets.alertThresholdHint')}
         validation={{
-          min: { value: 0, message: 'Threshold must be at least 0%' },
-          max: { value: 100, message: 'Threshold cannot exceed 100%' },
+          min: { value: 0, message: t('budgets.errors.thresholdMin') },
+          max: { value: 100, message: t('budgets.errors.thresholdMax') },
         }}
         onValidationChange={(isValid, errors) => {
           setFieldErrors((prev) => ({ ...prev, alertThreshold: errors }));
@@ -216,18 +218,18 @@ export const BudgetForm = ({
 
       {isEditMode && budget && (
         <div className="rounded-lg bg-blue-50 p-4 border border-blue-200">
-          <h4 className="text-sm font-medium text-blue-900 mb-2">Current Progress</h4>
+          <h4 className="text-sm font-medium text-blue-900 mb-2">{t('budgets.currentProgress')}</h4>
           <div className="text-sm text-blue-700 space-y-1">
             <p>
-              <span className="font-medium">Spent:</span> EUR {budget.spent.toFixed(2)} /{' '}
+              <span className="font-medium">{t('budgets.spent')}:</span> EUR {budget.spent.toFixed(2)} /{' '}
               {budget.amount.toFixed(2)}
             </p>
             <p>
-              <span className="font-medium">Remaining:</span> EUR{' '}
+              <span className="font-medium">{t('budgets.remaining')}:</span> EUR{' '}
               {(budget.amount - budget.spent).toFixed(2)}
             </p>
             <p>
-              <span className="font-medium">Status:</span>{' '}
+              <span className="font-medium">{t('budgets.status')}:</span>{' '}
               <span className="capitalize">{budget.status}</span>
             </p>
           </div>

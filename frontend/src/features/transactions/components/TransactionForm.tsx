@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../../../core/components/atomic/Button';
 import { Input } from '../../../core/components/atomic/Input';
 import { Select } from '../../../core/components/atomic/Select';
@@ -27,30 +28,31 @@ export interface TransactionFormProps {
   isLoading?: boolean;
 }
 
-const transactionTypes: { value: TransactionType; label: string }[] = [
-  { value: 'income', label: 'Income' },
-  { value: 'expense', label: 'Expense' },
-  { value: 'transfer', label: 'Transfer' },
-];
-
-const categories = [
-  { value: 'Salary', label: 'Salary' },
-  { value: 'Groceries', label: 'Groceries' },
-  { value: 'Rent', label: 'Rent / Housing' },
-  { value: 'Transport', label: 'Transport' },
-  { value: 'Entertainment', label: 'Entertainment' },
-  { value: 'Healthcare', label: 'Healthcare' },
-  { value: 'Shopping', label: 'Shopping' },
-  { value: 'Utilities', label: 'Utilities' },
-  { value: 'Other', label: 'Other' },
-];
-
 export const TransactionForm: React.FC<TransactionFormProps> = ({
   onSubmit,
   onCancel,
   initialData,
   isLoading = false,
 }) => {
+  const { t } = useTranslation();
+
+  const transactionTypes: { value: TransactionType; label: string }[] = [
+    { value: 'income', label: t('transactions.types.income') },
+    { value: 'expense', label: t('transactions.types.expense') },
+    { value: 'transfer', label: t('transactions.types.transfer') },
+  ];
+
+  const categories = [
+    { value: 'Salary', label: t('transactions.categories.salary') },
+    { value: 'Groceries', label: t('transactions.categories.groceries') },
+    { value: 'Rent', label: t('transactions.categories.rent') },
+    { value: 'Transport', label: t('transactions.categories.transport') },
+    { value: 'Entertainment', label: t('transactions.categories.entertainment') },
+    { value: 'Healthcare', label: t('transactions.categories.healthcare') },
+    { value: 'Shopping', label: t('transactions.categories.shopping') },
+    { value: 'Utilities', label: t('transactions.categories.utilities') },
+    { value: 'Other', label: t('transactions.categories.other') },
+  ];
   const {
     register,
     handleSubmit,
@@ -77,7 +79,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <Select
-          label="Type"
+          label={t('transactions.type')}
           options={transactionTypes}
           error={errors.type?.message}
           fullWidth
@@ -86,10 +88,10 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
         />
 
         <Input
-          label="Amount"
+          label={t('transactions.amount')}
           type="number"
           step="0.01"
-          placeholder="0.00"
+          placeholder={t('transactions.amountPlaceholder')}
           error={errors.amount?.message}
           fullWidth
           required
@@ -98,8 +100,8 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
       </div>
 
       <Input
-        label="Description"
-        placeholder="What is this transaction for?"
+        label={t('transactions.description')}
+        placeholder={t('transactions.descriptionPlaceholder')}
         error={errors.description?.message}
         fullWidth
         required
@@ -108,8 +110,8 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 
       <div className="grid grid-cols-2 gap-4">
         <Select
-          label="Category"
-          placeholder="Select a category"
+          label={t('transactions.category')}
+          placeholder={t('transactions.categoryPlaceholder')}
           options={categories}
           error={errors.category?.message}
           fullWidth
@@ -117,7 +119,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
         />
 
         <Input
-          label="Date"
+          label={t('transactions.date')}
           type="date"
           error={errors.date?.message}
           fullWidth
@@ -127,8 +129,8 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
       </div>
 
       <Input
-        label="Merchant / Payee"
-        placeholder="e.g., SuperMarket SpA"
+        label={t('transactions.merchant')}
+        placeholder={t('transactions.merchantPlaceholder')}
         error={errors.merchantName?.message}
         fullWidth
         {...register('merchantName')}
@@ -136,7 +138,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 
       <div className="grid grid-cols-2 gap-4">
         <Input
-          label="Currency"
+          label={t('accounts.currency')}
           placeholder="EUR"
           error={errors.currency?.message}
           fullWidth
@@ -144,7 +146,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
         />
 
         <Input
-          label="Account ID"
+          label={t('transactions.accountId')}
           type="number"
           error={errors.accountId?.message}
           fullWidth
@@ -156,11 +158,11 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
       <div className="flex justify-end gap-3 pt-4 border-t border-neutral-200">
         {onCancel && (
           <Button type="button" variant="secondary" onClick={onCancel}>
-            Cancel
+            {t('common.cancel')}
           </Button>
         )}
         <Button type="submit" variant="primary" isLoading={isLoading}>
-          {initialData ? 'Update Transaction' : 'Create Transaction'}
+          {initialData ? t('transactions.updateTransaction') : t('transactions.createTransaction')}
         </Button>
       </div>
     </form>

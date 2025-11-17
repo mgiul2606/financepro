@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardBody } from '@/core/components/atomic/Card';
 import { Badge } from '@/core/components/atomic/Badge';
@@ -21,6 +22,7 @@ import type { TransactionToClassify, ClassificationBatch } from '../types';
 type TabType = 'chat' | 'classification';
 
 export const AIAssistantPage = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabType>('chat');
 
   // Chat hooks
@@ -64,12 +66,12 @@ export const AIAssistantPage = () => {
   const tabs = [
     {
       id: 'chat' as const,
-      label: 'Chat AI',
+      label: t('aiAssistant.chatTab'),
       icon: <MessageCircle className="h-4 w-4" />,
     },
     {
       id: 'classification' as const,
-      label: 'Classificazione Spese',
+      label: t('aiAssistant.classificationTab'),
       icon: <FileText className="h-4 w-4" />,
     },
   ];
@@ -78,16 +80,16 @@ export const AIAssistantPage = () => {
     <div className="flex flex-col h-screen bg-neutral-50">
       {/* Header */}
       <PageHeader
-        title="AI Assistant"
-        subtitle="Il tuo assistente finanziario intelligente"
-        breadcrumbs={[{ label: 'Home', href: '/' }, { label: 'AI Assistant' }]}
+        title={t('aiAssistant.title')}
+        subtitle={t('aiAssistant.subtitle')}
+        breadcrumbs={[{ label: t('nav.dashboard'), href: '/' }, { label: t('aiAssistant.title') }]}
         actions={
           activeTab === 'chat' && messages.length > 0 ? (
             <button
               onClick={clearMessages}
               className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
             >
-              Nuova Conversazione
+              {t('aiAssistant.newConversation')}
             </button>
           ) : null
         }
@@ -129,11 +131,10 @@ export const AIAssistantPage = () => {
                       <Bot className="h-10 w-10 text-white" />
                     </div>
                     <h2 className="text-2xl font-bold text-neutral-900 mb-2">
-                      Ciao! Sono il tuo Assistente AI
+                      {t('aiAssistant.welcomeTitle')}
                     </h2>
                     <p className="text-neutral-600 max-w-xl mx-auto">
-                      Posso aiutarti ad analizzare le tue finanze, rispondere a domande, generare
-                      report e fornirti insights personalizzati. Chiedimi qualsiasi cosa!
+                      {t('aiAssistant.welcomeMessage')}
                     </p>
                   </div>
 
@@ -141,7 +142,7 @@ export const AIAssistantPage = () => {
                   <div>
                     <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center gap-2">
                       <Sparkles className="h-4 w-4" />
-                      Domande Frequenti
+                      {t('aiAssistant.frequentQuestions')}
                     </h3>
                     {queriesLoading ? (
                       <Spinner size="sm" />
@@ -166,7 +167,7 @@ export const AIAssistantPage = () => {
                   {/* Capabilities */}
                   <div>
                     <h3 className="text-sm font-semibold text-neutral-700 mb-3">
-                      Cosa posso fare per te
+                      {t('aiAssistant.whatCanIDo')}
                     </h3>
                     {capabilitiesLoading ? (
                       <Spinner size="sm" />
@@ -204,24 +205,24 @@ export const AIAssistantPage = () => {
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h4 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
                       <Sparkles className="h-4 w-4" />
-                      Suggerimenti per iniziare
+                      {t('aiAssistant.tipsTitle')}
                     </h4>
                     <ul className="space-y-2 text-sm text-blue-800">
                       <li className="flex items-start gap-2">
                         <span>•</span>
-                        <span>Fai domande specifiche per ottenere risposte più accurate</span>
+                        <span>{t('aiAssistant.tip1')}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span>•</span>
-                        <span>Puoi chiedere spiegazioni sui suggerimenti di ottimizzazione</span>
+                        <span>{t('aiAssistant.tip2')}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span>•</span>
-                        <span>Usa il linguaggio naturale, comprendo anche domande complesse</span>
+                        <span>{t('aiAssistant.tip3')}</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <span>•</span>
-                        <span>Posso aiutarti a creare budget, obiettivi e analizzare anomalie</span>
+                        <span>{t('aiAssistant.tip4')}</span>
                       </li>
                     </ul>
                   </div>
@@ -279,7 +280,7 @@ export const AIAssistantPage = () => {
                 <div className="max-w-4xl mx-auto">
                   <div className="flex items-center gap-2 overflow-x-auto">
                     <span className="text-xs font-medium text-neutral-600 whitespace-nowrap">
-                      Suggerimenti:
+                      {t('aiAssistant.suggestions')}
                     </span>
                     {quickQueries.slice(0, 4).map((query) => (
                       <Badge

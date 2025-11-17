@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
 import { Tabs } from '@/core/components/atomic/Tabs';
@@ -22,6 +23,7 @@ import { Filter, Download, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 
 export const AnalyticPage = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('overview');
   const [filters] = useState({
     dateFrom: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
@@ -38,31 +40,31 @@ export const AnalyticPage = () => {
   const { data: reports, isLoading: reportsLoading } = useReports(filters);
 
   const tabs = [
-    { id: 'overview', label: 'Panoramica' },
-    { id: 'trends', label: 'Andamenti' },
-    { id: 'categories', label: 'Categorie' },
-    { id: 'merchants', label: 'Merchant' },
-    { id: 'anomalies', label: 'Anomalie' },
-    { id: 'patterns', label: 'Ricorrenze' },
-    { id: 'reports', label: 'Report' },
+    { id: 'overview', label: t('analytics.overview') },
+    { id: 'trends', label: t('analytics.trends') },
+    { id: 'categories', label: t('analytics.categories') },
+    { id: 'merchants', label: t('analytics.merchants') },
+    { id: 'anomalies', label: t('analytics.anomalies') },
+    { id: 'patterns', label: t('analytics.patterns') },
+    { id: 'reports', label: t('analytics.reports') },
   ];
 
   return (
     <div className="min-h-screen bg-neutral-50">
       <PageHeader
-        title="Analytics"
-        subtitle="Analisi avanzata delle tue finanze"
+        title={t('analytics.title')}
+        subtitle={t('analytics.subtitle')}
         breadcrumbs={[
-          { label: 'Home', href: '/' },
-          { label: 'Analytics' },
+          { label: t('nav.dashboard'), href: '/' },
+          { label: t('analytics.title') },
         ]}
         actions={
           <>
             <Button variant="secondary" leftIcon={<Filter className="h-4 w-4" />}>
-              Filtri
+              {t('analytics.filters')}
             </Button>
             <Button variant="primary" leftIcon={<Download className="h-4 w-4" />}>
-              Esporta
+              {t('common.export')}
             </Button>
           </>
         }
@@ -80,7 +82,7 @@ export const AnalyticPage = () => {
         <div className="flex items-center gap-2 text-sm text-neutral-600">
           <Calendar className="h-4 w-4" />
           <span>
-            Periodo: {format(new Date(filters.dateFrom), 'dd MMM yyyy')} -{' '}
+            {t('analytics.period')}: {format(new Date(filters.dateFrom), 'dd MMM yyyy')} -{' '}
             {format(new Date(filters.dateTo), 'dd MMM yyyy')}
           </span>
         </div>
@@ -90,7 +92,7 @@ export const AnalyticPage = () => {
           <div className="space-y-6">
             {overviewLoading ? (
               <div className="flex justify-center py-12">
-                <Spinner size="lg" label="Caricamento panoramica..." />
+                <Spinner size="lg" label={t('analytics.loadingOverview')} />
               </div>
             ) : overview ? (
               <>
@@ -99,7 +101,7 @@ export const AnalyticPage = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Time Series Chart */}
                   <Card variant="elevated">
-                    <CardHeader title="Andamento Spese e Entrate" />
+                    <CardHeader title={t('analytics.incomeExpensesTrend')} />
                     <CardBody>
                       {timeSeriesLoading ? (
                         <Spinner />
@@ -108,8 +110,8 @@ export const AnalyticPage = () => {
                           data={timeSeriesData}
                           xAxisKey="date"
                           lines={[
-                            { dataKey: 'income', name: 'Entrate', stroke: '#10b981' },
-                            { dataKey: 'expenses', name: 'Uscite', stroke: '#ef4444' },
+                            { dataKey: 'income', name: t('analytics.income'), stroke: '#10b981' },
+                            { dataKey: 'expenses', name: t('analytics.expenses'), stroke: '#ef4444' },
                           ]}
                           height={250}
                           formatXAxis={(value) => format(new Date(value), 'dd MMM')}
@@ -122,7 +124,7 @@ export const AnalyticPage = () => {
 
                   {/* Category Breakdown */}
                   <Card variant="elevated">
-                    <CardHeader title="Distribuzione per Categoria" />
+                    <CardHeader title={t('analytics.categoryDistribution')} />
                     <CardBody>
                       {categoriesLoading ? (
                         <Spinner />
@@ -147,7 +149,7 @@ export const AnalyticPage = () => {
                     <CardBody>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-neutral-600">Categoria Top</p>
+                          <p className="text-sm text-neutral-600">{t('analytics.topCategory')}</p>
                           <p className="text-lg font-bold text-neutral-900">{overview.topCategory}</p>
                         </div>
                         <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -161,7 +163,7 @@ export const AnalyticPage = () => {
                     <CardBody>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-neutral-600">Transazioni</p>
+                          <p className="text-sm text-neutral-600">{t('analytics.transactionCount')}</p>
                           <p className="text-lg font-bold text-neutral-900">{overview.transactionCount}</p>
                         </div>
                         <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -175,7 +177,7 @@ export const AnalyticPage = () => {
                     <CardBody>
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-neutral-600">Anomalie Rilevate</p>
+                          <p className="text-sm text-neutral-600">{t('analytics.anomaliesDetected')}</p>
                           <p className="text-lg font-bold text-neutral-900">{anomalies?.length || 0}</p>
                         </div>
                         <div className="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center">
@@ -194,7 +196,7 @@ export const AnalyticPage = () => {
         {activeTab === 'trends' && (
           <div className="space-y-6">
             <Card variant="elevated">
-              <CardHeader title="Andamento Temporale" />
+              <CardHeader title={t('analytics.temporalTrend')} />
               <CardBody>
                 {timeSeriesLoading ? (
                   <Spinner />
@@ -203,9 +205,9 @@ export const AnalyticPage = () => {
                     data={timeSeriesData}
                     xAxisKey="date"
                     lines={[
-                      { dataKey: 'income', name: 'Entrate', stroke: '#10b981' },
-                      { dataKey: 'expenses', name: 'Uscite', stroke: '#ef4444' },
-                      { dataKey: 'balance', name: 'Saldo', stroke: '#3b82f6' },
+                      { dataKey: 'income', name: t('analytics.income'), stroke: '#10b981' },
+                      { dataKey: 'expenses', name: t('analytics.expenses'), stroke: '#ef4444' },
+                      { dataKey: 'balance', name: t('analytics.balance'), stroke: '#3b82f6' },
                     ]}
                     height={400}
                     formatXAxis={(value) => format(new Date(value), 'dd MMM')}
@@ -223,7 +225,7 @@ export const AnalyticPage = () => {
           <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card variant="elevated">
-                <CardHeader title="Distribuzione Categorie (Torta)" />
+                <CardHeader title={t('analytics.categoryBreakdown')} />
                 <CardBody>
                   {categoriesLoading ? (
                     <Spinner />
@@ -242,7 +244,7 @@ export const AnalyticPage = () => {
               </Card>
 
               <Card variant="elevated">
-                <CardHeader title="Categorie per Importo (Barre)" />
+                <CardHeader title={t('analytics.categoryByAmount')} />
                 <CardBody>
                   {categoriesLoading ? (
                     <Spinner />
@@ -250,7 +252,7 @@ export const AnalyticPage = () => {
                     <BarChart
                       data={categories}
                       xAxisKey="category"
-                      bars={[{ dataKey: 'amount', name: 'Importo' }]}
+                      bars={[{ dataKey: 'amount', name: t('analytics.amount') }]}
                       height={350}
                       formatYAxis={(value) => `€${value}`}
                       formatTooltip={(value) => `€${value.toFixed(2)}`}
@@ -263,7 +265,7 @@ export const AnalyticPage = () => {
 
             {/* Category Details Table */}
             <Card variant="elevated">
-              <CardHeader title="Dettaglio Categorie" />
+              <CardHeader title={t('analytics.categoryDetails')} />
               <CardBody>
                 {categoriesLoading ? (
                   <Spinner />
@@ -272,11 +274,11 @@ export const AnalyticPage = () => {
                     <table className="w-full">
                       <thead className="border-b-2 border-neutral-200 bg-neutral-50">
                         <tr>
-                          <th className="px-4 py-3 text-left text-sm font-semibold">Categoria</th>
-                          <th className="px-4 py-3 text-right text-sm font-semibold">Importo</th>
-                          <th className="px-4 py-3 text-right text-sm font-semibold">%</th>
-                          <th className="px-4 py-3 text-right text-sm font-semibold">Transazioni</th>
-                          <th className="px-4 py-3 text-right text-sm font-semibold">Media</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold">{t('analytics.category')}</th>
+                          <th className="px-4 py-3 text-right text-sm font-semibold">{t('analytics.amount')}</th>
+                          <th className="px-4 py-3 text-right text-sm font-semibold">{t('analytics.percentage')}</th>
+                          <th className="px-4 py-3 text-right text-sm font-semibold">{t('analytics.transactionCount')}</th>
+                          <th className="px-4 py-3 text-right text-sm font-semibold">{t('analytics.average')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -318,7 +320,7 @@ export const AnalyticPage = () => {
         {activeTab === 'merchants' && (
           <div className="space-y-6">
             <Card variant="elevated">
-              <CardHeader title="Top Merchant per Spesa" />
+              <CardHeader title={t('analytics.topMerchants')} />
               <CardBody>
                 {merchantsLoading ? (
                   <Spinner />
@@ -327,12 +329,12 @@ export const AnalyticPage = () => {
                     <table className="w-full">
                       <thead className="border-b-2 border-neutral-200 bg-neutral-50">
                         <tr>
-                          <th className="px-4 py-3 text-left text-sm font-semibold">Merchant</th>
-                          <th className="px-4 py-3 text-left text-sm font-semibold">Categoria</th>
-                          <th className="px-4 py-3 text-right text-sm font-semibold">Totale</th>
-                          <th className="px-4 py-3 text-right text-sm font-semibold">Transazioni</th>
-                          <th className="px-4 py-3 text-right text-sm font-semibold">Media</th>
-                          <th className="px-4 py-3 text-right text-sm font-semibold">Ultima</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold">{t('analytics.merchant')}</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold">{t('analytics.category')}</th>
+                          <th className="px-4 py-3 text-right text-sm font-semibold">{t('analytics.total')}</th>
+                          <th className="px-4 py-3 text-right text-sm font-semibold">{t('analytics.transactionCount')}</th>
+                          <th className="px-4 py-3 text-right text-sm font-semibold">{t('analytics.average')}</th>
+                          <th className="px-4 py-3 text-right text-sm font-semibold">{t('analytics.last')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -372,11 +374,10 @@ export const AnalyticPage = () => {
                   <span className="text-3xl">🔍</span>
                   <div>
                     <h3 className="font-semibold text-neutral-900 mb-1">
-                      Rilevamento Anomalie AI
+                      {t('analytics.anomalyDetection')}
                     </h3>
                     <p className="text-sm text-neutral-700">
-                      Il sistema ha analizzato le tue transazioni e identificato alcune anomalie che potrebbero
-                      richiedere la tua attenzione.
+                      {t('analytics.anomalyDetectionDesc')}
                     </p>
                   </div>
                 </div>
@@ -398,9 +399,9 @@ export const AnalyticPage = () => {
                 <CardBody>
                   <div className="text-center py-12">
                     <span className="text-5xl mb-4 block">✅</span>
-                    <p className="text-lg font-medium text-neutral-900">Nessuna anomalia rilevata</p>
+                    <p className="text-lg font-medium text-neutral-900">{t('analytics.noAnomalies')}</p>
                     <p className="text-sm text-neutral-600 mt-2">
-                      Tutte le tue transazioni sembrano normali
+                      {t('analytics.noAnomaliesDesc')}
                     </p>
                   </div>
                 </CardBody>
@@ -418,10 +419,10 @@ export const AnalyticPage = () => {
                   <span className="text-3xl">🔄</span>
                   <div>
                     <h3 className="font-semibold text-neutral-900 mb-1">
-                      Pattern Ricorrenti Rilevati
+                      {t('analytics.recurringPatternsDetected')}
                     </h3>
                     <p className="text-sm text-neutral-700">
-                      Il sistema ha identificato transazioni ricorrenti e può prevedere le prossime occorrenze.
+                      {t('analytics.recurringPatternsDesc')}
                     </p>
                   </div>
                 </div>
@@ -451,10 +452,10 @@ export const AnalyticPage = () => {
                   <span className="text-3xl">📊</span>
                   <div>
                     <h3 className="font-semibold text-neutral-900 mb-1">
-                      Report Generati dall'AI
+                      {t('analytics.aiGeneratedReports')}
                     </h3>
                     <p className="text-sm text-neutral-700">
-                      Report periodici generati automaticamente con insights e raccomandazioni personalizzate.
+                      {t('analytics.aiGeneratedReportsDesc')}
                     </p>
                   </div>
                 </div>

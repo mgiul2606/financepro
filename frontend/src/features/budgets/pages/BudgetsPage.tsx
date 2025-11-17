@@ -1,6 +1,7 @@
 // features/budgets/pages/BudgetsPage.tsx
 import { useState } from 'react';
 import { Plus, AlertCircle, Edit, Trash2, Eye } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardBody, CardFooter } from '@/core/components/atomic/Card';
 import { Button } from '@/core/components/atomic/Button';
@@ -21,6 +22,7 @@ import {
 import type { Budget, BudgetCreate, BudgetUpdate } from '../types';
 
 export const BudgetsPage: React.FC = () => {
+  const { t } = useTranslation();
   const confirm = useConfirm();
 
   // State
@@ -61,9 +63,9 @@ export const BudgetsPage: React.FC = () => {
 
   const handleDelete = async (budget: Budget) => {
     const confirmed = await confirm({
-      title: 'Delete Budget',
-      message: `Are you sure you want to delete "${budget.name}"? This action cannot be undone.`,
-      confirmText: 'Delete',
+      title: t('budgets.deleteBudget'),
+      message: t('budgets.deleteConfirm', { name: budget.name }),
+      confirmText: t('common.delete'),
       variant: 'danger',
       confirmButtonVariant: 'danger',
     });
@@ -97,7 +99,7 @@ export const BudgetsPage: React.FC = () => {
       <div className="p-8 flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <Spinner size="lg" />
-          <p className="mt-4 text-gray-600">Loading budgets...</p>
+          <p className="mt-4 text-gray-600">{t('common.loadingEntity', { entity: t('nav.budgets').toLowerCase() })}</p>
         </div>
       </div>
     );
@@ -106,9 +108,9 @@ export const BudgetsPage: React.FC = () => {
   return (
     <div className="h-full flex flex-col">
       <PageHeader
-        title="Budgets"
-        subtitle="Plan and monitor your spending across categories"
-        breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Budgets' }]}
+        title={t('budgets.title')}
+        subtitle={t('budgets.subtitle')}
+        breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: t('budgets.title') }]}
         actions={
           <Button
             variant="primary"
@@ -116,7 +118,7 @@ export const BudgetsPage: React.FC = () => {
             onClick={() => setShowCreateModal(true)}
             isLoading={createMutation.isPending}
           >
-            Create Budget
+            {t('budgets.createBudget')}
           </Button>
         }
       />
@@ -125,7 +127,7 @@ export const BudgetsPage: React.FC = () => {
         {/* Error Alert */}
         {loadError && (
           <Alert variant="error" closable className="mb-6">
-            Failed to load budgets. Please try again later.
+            {t('budgets.errors.loadFailed')}
           </Alert>
         )}
 
@@ -133,10 +135,10 @@ export const BudgetsPage: React.FC = () => {
         {!isLoading && budgets && budgets.length === 0 ? (
           <EmptyState
             icon={<AlertCircle />}
-            title="No budgets yet"
-            description="Create your first budget to start tracking your spending"
+            title={t('budgets.noBudgets')}
+            description={t('budgets.noBudgetsDesc')}
             action={{
-              label: 'Create Budget',
+              label: t('budgets.createBudget'),
               onClick: () => setShowCreateModal(true),
               icon: <Plus className="h-4 w-4" />,
             }}
@@ -164,7 +166,7 @@ export const BudgetsPage: React.FC = () => {
                     {/* Progress Bar */}
                     <div className="mb-4">
                       <div className="flex justify-between text-sm mb-2">
-                        <span className="text-neutral-600">Spent</span>
+                        <span className="text-neutral-600">{t('budgets.spent')}</span>
                         <span className="font-semibold">EUR {budget.spent.toFixed(2)}</span>
                       </div>
                       <div className="w-full h-2 bg-neutral-200 rounded-full overflow-hidden">
@@ -178,11 +180,11 @@ export const BudgetsPage: React.FC = () => {
                     {/* Budget Info */}
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-neutral-600">Budget</span>
+                        <span className="text-neutral-600">{t('budgets.amount')}</span>
                         <span className="font-medium">EUR {budget.amount.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-neutral-600">Remaining</span>
+                        <span className="text-neutral-600">{t('budgets.remaining')}</span>
                         <span
                           className={`font-medium ${remaining >= 0 ? 'text-green-600' : 'text-red-600'}`}
                         >
@@ -190,11 +192,11 @@ export const BudgetsPage: React.FC = () => {
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-neutral-600">Period</span>
+                        <span className="text-neutral-600">{t('budgets.period')}</span>
                         <span className="font-medium capitalize">{budget.period}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-neutral-600">Dates</span>
+                        <span className="text-neutral-600">{t('budgets.dates')}</span>
                         <span className="font-medium text-xs">
                           {new Date(budget.startDate).toLocaleDateString()} -{' '}
                           {new Date(budget.endDate).toLocaleDateString()}
@@ -213,7 +215,7 @@ export const BudgetsPage: React.FC = () => {
                         onClick={() => setEditingBudget(budget)}
                         fullWidth
                       >
-                        Edit
+                        {t('common.edit')}
                       </Button>
                       <Button
                         variant="ghost"
@@ -223,7 +225,7 @@ export const BudgetsPage: React.FC = () => {
                         fullWidth
                         className="text-red-600 hover:bg-red-50"
                       >
-                        Delete
+                        {t('common.delete')}
                       </Button>
                     </div>
                   </CardFooter>
@@ -238,7 +240,7 @@ export const BudgetsPage: React.FC = () => {
       <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        title="Create New Budget"
+        title={t('budgets.createBudget')}
         size="md"
         preventClose={createMutation.isPending}
         footer={
@@ -248,7 +250,7 @@ export const BudgetsPage: React.FC = () => {
               onClick={() => setShowCreateModal(false)}
               disabled={createMutation.isPending}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               variant="primary"
@@ -256,7 +258,7 @@ export const BudgetsPage: React.FC = () => {
               form="budget-form"
               isLoading={createMutation.isPending}
             >
-              Create Budget
+              {t('budgets.createBudget')}
             </Button>
           </ModalFooter>
         }
@@ -264,7 +266,7 @@ export const BudgetsPage: React.FC = () => {
         <BudgetForm
           onSubmit={handleCreate}
           isLoading={createMutation.isPending}
-          error={createMutation.error ? 'Failed to create budget. Please try again.' : undefined}
+          error={createMutation.error ? t('budgets.errors.createFailed') : undefined}
           onClearError={createMutation.reset}
         />
       </Modal>
@@ -274,7 +276,7 @@ export const BudgetsPage: React.FC = () => {
         <Modal
           isOpen={true}
           onClose={() => setEditingBudget(null)}
-          title="Edit Budget"
+          title={t('budgets.editBudget')}
           size="md"
           preventClose={updateMutation.isPending}
           footer={
@@ -284,7 +286,7 @@ export const BudgetsPage: React.FC = () => {
                 onClick={() => setEditingBudget(null)}
                 disabled={updateMutation.isPending}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button
                 variant="primary"
@@ -292,7 +294,7 @@ export const BudgetsPage: React.FC = () => {
                 form="budget-form"
                 isLoading={updateMutation.isPending}
               >
-                Save Changes
+                {t('common.saveChanges')}
               </Button>
             </ModalFooter>
           }
@@ -301,7 +303,7 @@ export const BudgetsPage: React.FC = () => {
             budget={editingBudget}
             onSubmit={handleUpdate}
             isLoading={updateMutation.isPending}
-            error={updateMutation.error ? 'Failed to update budget. Please try again.' : undefined}
+            error={updateMutation.error ? t('budgets.errors.updateFailed') : undefined}
             onClearError={updateMutation.reset}
           />
         </Modal>

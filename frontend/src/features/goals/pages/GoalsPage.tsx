@@ -1,6 +1,7 @@
 // features/goals/pages/GoalsPage.tsx
 import { useState } from 'react';
 import { Plus, Target, Edit, Trash2, TrendingUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardBody, CardFooter } from '@/core/components/atomic/Card';
 import { Button } from '@/core/components/atomic/Button';
@@ -15,6 +16,7 @@ import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal } from '../hooks/
 import type { Goal, GoalCreate, GoalUpdate } from '../types';
 
 export const GoalsPage: React.FC = () => {
+  const { t } = useTranslation();
   const confirm = useConfirm();
 
   // State
@@ -54,9 +56,9 @@ export const GoalsPage: React.FC = () => {
 
   const handleDelete = async (goal: Goal) => {
     const confirmed = await confirm({
-      title: 'Delete Goal',
-      message: `Are you sure you want to delete "${goal.name}"? This action cannot be undone.`,
-      confirmText: 'Delete',
+      title: t('goals.deleteGoal'),
+      message: t('goals.deleteConfirm', { name: goal.name }),
+      confirmText: t('common.delete'),
       variant: 'danger',
       confirmButtonVariant: 'danger',
     });
@@ -106,7 +108,7 @@ export const GoalsPage: React.FC = () => {
       <div className="p-8 flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <Spinner size="lg" />
-          <p className="mt-4 text-gray-600">Loading goals...</p>
+          <p className="mt-4 text-gray-600">{t('common.loadingEntity', { entity: t('nav.goals').toLowerCase() })}</p>
         </div>
       </div>
     );
@@ -115,9 +117,9 @@ export const GoalsPage: React.FC = () => {
   return (
     <div className="h-full flex flex-col">
       <PageHeader
-        title="Goals"
-        subtitle="Track and achieve your financial goals"
-        breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Goals' }]}
+        title={t('goals.title')}
+        subtitle={t('goals.subtitle')}
+        breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: t('goals.title') }]}
         actions={
           <Button
             variant="primary"
@@ -125,7 +127,7 @@ export const GoalsPage: React.FC = () => {
             onClick={() => setShowCreateModal(true)}
             isLoading={createMutation.isPending}
           >
-            Create Goal
+            {t('goals.createGoal')}
           </Button>
         }
       />
@@ -134,7 +136,7 @@ export const GoalsPage: React.FC = () => {
         {/* Error Alert */}
         {loadError && (
           <Alert variant="error" closable className="mb-6">
-            Failed to load goals. Please try again later.
+            {t('goals.errors.loadFailed')}
           </Alert>
         )}
 
@@ -142,10 +144,10 @@ export const GoalsPage: React.FC = () => {
         {!isLoading && goals && goals.length === 0 ? (
           <EmptyState
             icon={<Target />}
-            title="No goals yet"
-            description="Start tracking your financial goals and make your dreams come true"
+            title={t('goals.noGoals')}
+            description={t('goals.noGoalsDesc')}
             action={{
-              label: 'Create Goal',
+              label: t('goals.createGoal'),
               onClick: () => setShowCreateModal(true),
               icon: <Plus className="h-4 w-4" />,
             }}
@@ -162,7 +164,7 @@ export const GoalsPage: React.FC = () => {
                 <Card key={goal.id} variant="elevated">
                   <CardHeader
                     title={goal.name}
-                    subtitle={goal.category || 'General'}
+                    subtitle={goal.category ? t(`goals.categories.${goal.category}`) : t('goals.categories.general')}
                     action={
                       <Badge variant={getPriorityVariant(goal.priority)} size="sm">
                         {goal.priority}
@@ -179,7 +181,7 @@ export const GoalsPage: React.FC = () => {
                     {/* Progress Bar */}
                     <div className="mb-4">
                       <div className="flex justify-between text-sm mb-2">
-                        <span className="text-neutral-600">Progress</span>
+                        <span className="text-neutral-600">{t('goals.progress')}</span>
                         <span className="font-semibold">{percentage.toFixed(1)}%</span>
                       </div>
                       <div className="w-full h-3 bg-neutral-200 rounded-full overflow-hidden">
@@ -193,19 +195,19 @@ export const GoalsPage: React.FC = () => {
                     {/* Goal Info */}
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-neutral-600">Current</span>
+                        <span className="text-neutral-600">{t('goals.current')}</span>
                         <span className="font-medium">
                           {goal.currency} {goal.currentAmount.toFixed(2)}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-neutral-600">Target</span>
+                        <span className="text-neutral-600">{t('goals.target')}</span>
                         <span className="font-medium">
                           {goal.currency} {goal.targetAmount.toFixed(2)}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-neutral-600">Remaining</span>
+                        <span className="text-neutral-600">{t('budgets.remaining')}</span>
                         <span
                           className={`font-medium ${remaining > 0 ? 'text-blue-600' : 'text-green-600'}`}
                         >
@@ -213,17 +215,17 @@ export const GoalsPage: React.FC = () => {
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-neutral-600">Target Date</span>
+                        <span className="text-neutral-600">{t('goals.targetDate')}</span>
                         <span className="font-medium text-xs">
                           {new Date(goal.targetDate).toLocaleDateString()}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-neutral-600">Days Left</span>
+                        <span className="text-neutral-600">{t('goals.daysLeft')}</span>
                         <span
                           className={`font-medium ${daysRemaining < 30 ? 'text-red-600' : daysRemaining < 90 ? 'text-yellow-600' : 'text-green-600'}`}
                         >
-                          {daysRemaining > 0 ? daysRemaining : 0} days
+                          {daysRemaining > 0 ? daysRemaining : 0} {t('goals.daysUnit')}
                         </span>
                       </div>
                     </div>
@@ -239,7 +241,7 @@ export const GoalsPage: React.FC = () => {
                         onClick={() => console.log('Add contribution:', goal.id)}
                         fullWidth
                       >
-                        Add
+                        {t('common.add')}
                       </Button>
                       <Button
                         variant="ghost"
@@ -248,7 +250,7 @@ export const GoalsPage: React.FC = () => {
                         onClick={() => setEditingGoal(goal)}
                         fullWidth
                       >
-                        Edit
+                        {t('common.edit')}
                       </Button>
                       <Button
                         variant="ghost"
@@ -257,7 +259,7 @@ export const GoalsPage: React.FC = () => {
                         onClick={() => handleDelete(goal)}
                         className="text-red-600 hover:bg-red-50"
                       >
-                        Delete
+                        {t('common.delete')}
                       </Button>
                     </div>
                   </CardFooter>
@@ -272,7 +274,7 @@ export const GoalsPage: React.FC = () => {
       <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        title="Create New Goal"
+        title={t('goals.createGoal')}
         size="md"
         preventClose={createMutation.isPending}
         footer={
@@ -282,7 +284,7 @@ export const GoalsPage: React.FC = () => {
               onClick={() => setShowCreateModal(false)}
               disabled={createMutation.isPending}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               variant="primary"
@@ -290,7 +292,7 @@ export const GoalsPage: React.FC = () => {
               form="goal-form"
               isLoading={createMutation.isPending}
             >
-              Create Goal
+              {t('goals.createGoal')}
             </Button>
           </ModalFooter>
         }
@@ -298,7 +300,7 @@ export const GoalsPage: React.FC = () => {
         <GoalForm
           onSubmit={handleCreate}
           isLoading={createMutation.isPending}
-          error={createMutation.error ? 'Failed to create goal. Please try again.' : undefined}
+          error={createMutation.error ? t('goals.errors.createFailed') : undefined}
           onClearError={createMutation.reset}
         />
       </Modal>
@@ -308,7 +310,7 @@ export const GoalsPage: React.FC = () => {
         <Modal
           isOpen={true}
           onClose={() => setEditingGoal(null)}
-          title="Edit Goal"
+          title={t('goals.editGoal')}
           size="md"
           preventClose={updateMutation.isPending}
           footer={
@@ -318,7 +320,7 @@ export const GoalsPage: React.FC = () => {
                 onClick={() => setEditingGoal(null)}
                 disabled={updateMutation.isPending}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button
                 variant="primary"
@@ -326,7 +328,7 @@ export const GoalsPage: React.FC = () => {
                 form="goal-form"
                 isLoading={updateMutation.isPending}
               >
-                Save Changes
+                {t('common.saveChanges')}
               </Button>
             </ModalFooter>
           }
@@ -335,7 +337,7 @@ export const GoalsPage: React.FC = () => {
             goal={editingGoal}
             onSubmit={handleUpdate}
             isLoading={updateMutation.isPending}
-            error={updateMutation.error ? 'Failed to update goal. Please try again.' : undefined}
+            error={updateMutation.error ? t('goals.errors.updateFailed') : undefined}
             onClearError={updateMutation.reset}
           />
         </Modal>

@@ -1,5 +1,6 @@
 // features/accounts/components/AccountForm.tsx
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Wallet } from 'lucide-react';
 import { FormField, SelectField } from '@/components/ui/FormField';
 import { Alert } from '@/components/ui/Alert';
@@ -18,14 +19,6 @@ interface AccountFormProps {
   onClearError?: () => void;
 }
 
-const CURRENCY_OPTIONS = [
-  { value: 'EUR', label: 'EUR (€)' },
-  { value: 'USD', label: 'USD ($)' },
-  { value: 'GBP', label: 'GBP (£)' },
-  { value: 'CHF', label: 'CHF (Fr)' },
-  { value: 'JPY', label: 'JPY (¥)' },
-];
-
 export const AccountForm = ({
   account,
   onSubmit,
@@ -33,7 +26,16 @@ export const AccountForm = ({
   error,
   onClearError,
 }: AccountFormProps) => {
+  const { t } = useTranslation();
   const isEditMode = !!account;
+
+  const CURRENCY_OPTIONS = [
+    { value: 'EUR', label: t('settings.currencies.EUR') },
+    { value: 'USD', label: t('settings.currencies.USD') },
+    { value: 'GBP', label: t('settings.currencies.GBP') },
+    { value: 'CHF', label: t('settings.currencies.CHF') },
+    { value: 'JPY', label: t('settings.currencies.JPY') },
+  ];
 
   const [formData, setFormData] = useState<AccountCreate>({
     name: account?.name || '',
@@ -80,17 +82,17 @@ export const AccountForm = ({
       )}
 
       <FormField
-        label="Account Name"
+        label={t('accounts.accountName')}
         required
         value={formData.name}
         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-        placeholder="e.g., Main Account, Savings..."
+        placeholder={t('accounts.accountNamePlaceholder')}
         icon={<Wallet className="h-5 w-5 text-gray-400" />}
         disabled={isLoading}
         validation={{
-          required: { value: true, message: 'Account name is required' },
-          minLength: { value: 1, message: 'Account name is required' },
-          maxLength: { value: 100, message: 'Account name must not exceed 100 characters' },
+          required: { value: true, message: t('accounts.errors.nameRequired') },
+          minLength: { value: 1, message: t('accounts.errors.nameRequired') },
+          maxLength: { value: 100, message: t('accounts.errors.nameTooLong') },
         }}
         onValidationChange={(isValid, errors) => {
           setFieldErrors((prev) => ({ ...prev, name: errors }));
@@ -99,17 +101,17 @@ export const AccountForm = ({
       />
 
       <SelectField
-        label="Currency"
+        label={t('accounts.currency')}
         required
         value={formData.currency}
         onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
         options={CURRENCY_OPTIONS}
         disabled={isLoading}
-        hint="Select the currency for this account"
+        hint={t('accounts.currencyHint')}
       />
 
       <FormField
-        label="Initial Balance"
+        label={t('accounts.initialBalance')}
         type="number"
         step="0.01"
         required
@@ -121,12 +123,12 @@ export const AccountForm = ({
         disabled={isLoading}
         hint={
           isEditMode
-            ? 'Changing this will affect the account balance calculation'
-            : 'Enter the current balance of this account'
+            ? t('accounts.initialBalanceHintEdit')
+            : t('accounts.initialBalanceHint')
         }
         validation={{
-          required: { value: true, message: 'Initial balance is required' },
-          min: { value: 0, message: 'Initial balance cannot be negative' },
+          required: { value: true, message: t('accounts.errors.balanceRequired') },
+          min: { value: 0, message: t('accounts.errors.balanceNegative') },
         }}
         onValidationChange={(isValid, errors) => {
           setFieldErrors((prev) => ({ ...prev, initial_balance: errors }));
@@ -136,14 +138,14 @@ export const AccountForm = ({
 
       {isEditMode && account && (
         <div className="rounded-lg bg-blue-50 p-4 border border-blue-200">
-          <h4 className="text-sm font-medium text-blue-900 mb-2">Current Information</h4>
+          <h4 className="text-sm font-medium text-blue-900 mb-2">{t('accounts.currentInfo')}</h4>
           <div className="text-sm text-blue-700 space-y-1">
             <p>
-              <span className="font-medium">Current Balance:</span>{' '}
+              <span className="font-medium">{t('accounts.currentBalance')}:</span>{' '}
               {account.currency} {parseFloat(account.current_balance).toFixed(2)}
             </p>
             <p>
-              <span className="font-medium">Created:</span>{' '}
+              <span className="font-medium">{t('accounts.created')}:</span>{' '}
               {new Date(account.created_at).toLocaleDateString()}
             </p>
           </div>
