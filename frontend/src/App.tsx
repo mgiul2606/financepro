@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AuthProvider } from './contexts/AuthContext';
+import { PreferencesProvider } from './contexts/PreferencesContext';
 import { ConfirmProvider } from './hooks/useConfirm';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AppLayout } from './app/layout/AppLayout';
@@ -32,38 +33,40 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider>
-          <ConfirmProvider>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route
-                path="/*"
-                element={
-                  <ProtectedRoute>
-                    <AppLayout>
-                      <Routes>
-                        <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/accounts" element={<AccountsPage />} />
-                        <Route path="/transactions" element={<TransactionsPage />} />
-                        <Route path="/budgets" element={<BudgetsPage />} />
-                        <Route path="/goals" element={<GoalsPage />} />
-                        <Route path="/analytics" element={<AnalyticPage />} />
-                        <Route path="/optimization" element={<OptimizationPage />} />
-                        <Route path="/ai-assistant" element={<AIAssistantPage />} />
-                        <Route path="/settings" element={<Settings />} />
-                        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                      </Routes>
-                    </AppLayout>
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
-          </ConfirmProvider>
-        </AuthProvider>
-      </BrowserRouter>
-      <ReactQueryDevtools initialIsOpen={false} />
+      <PreferencesProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <ConfirmProvider>
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route
+                  path="/*"
+                  element={
+                    <ProtectedRoute>
+                      <AppLayout>
+                        <Routes>
+                          <Route path="/dashboard" element={<Dashboard />} />
+                          <Route path="/accounts" element={<AccountsPage />} />
+                          <Route path="/transactions" element={<TransactionsPage />} />
+                          <Route path="/budgets" element={<BudgetsPage />} />
+                          <Route path="/goals" element={<GoalsPage />} />
+                          <Route path="/analytics" element={<AnalyticPage />} />
+                          <Route path="/optimization" element={<OptimizationPage />} />
+                          <Route path="/ai-assistant" element={<AIAssistantPage />} />
+                          <Route path="/settings" element={<Settings />} />
+                          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                        </Routes>
+                      </AppLayout>
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
+            </ConfirmProvider>
+          </AuthProvider>
+        </BrowserRouter>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </PreferencesProvider>
     </QueryClientProvider>
   );
 }
