@@ -6,7 +6,7 @@ from typing import Annotated, List
 from app.db.database import get_db
 from app.models.user import User
 from app.models.account import Account
-from app.models.financial_profile import FinancialProfile
+from app.models.financial_profile import FinancialProfile, ProfileType
 from app.schemas.account import (
     AccountCreate,
     AccountUpdate,
@@ -108,7 +108,7 @@ async def create_account(
         financial_profile = FinancialProfile(
             user_id=current_user.id,
             name="Personal Finance",
-            profile_type="personal",
+            profile_type=ProfileType.PERSONAL,
             default_currency="EUR",
             is_active=True
         )
