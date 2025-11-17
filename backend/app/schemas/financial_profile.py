@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel, Field, ConfigDict, computed_field
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 from app.models import ProfileType, DatabaseType
 
@@ -192,6 +192,93 @@ class FinancialProfileListResponse(BaseModel):
                     }
                 ],
                 "total": 1
+            }
+        }
+    )
+
+
+class ProfileSelectionUpdate(BaseModel):
+    """
+    Schema for updating user's active profile selection.
+    """
+    active_profile_ids: List[UUID] = Field(
+        ...,
+        description="List of profile IDs currently selected for multi-profile operations",
+        min_length=0
+    )
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "active_profile_ids": [
+                    "550e8400-e29b-41d4-a716-446655440000",
+                    "550e8400-e29b-41d4-a716-446655440001"
+                ]
+            }
+        }
+    )
+
+
+class ProfileSelectionResponse(BaseModel):
+    """
+    Schema for profile selection response.
+    """
+    id: UUID = Field(..., description="Selection record ID")
+    user_id: UUID = Field(..., description="User ID")
+    active_profile_ids: List[UUID] = Field(
+        ...,
+        description="List of active profile IDs"
+    )
+    created_at: datetime = Field(..., description="Selection creation timestamp (UTC)")
+    updated_at: datetime = Field(..., description="Last update timestamp (UTC)")
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            "example": {
+                "id": "550e8400-e29b-41d4-a716-446655440002",
+                "user_id": "550e8400-e29b-41d4-a716-446655440003",
+                "active_profile_ids": [
+                    "550e8400-e29b-41d4-a716-446655440000",
+                    "550e8400-e29b-41d4-a716-446655440001"
+                ],
+                "created_at": "2025-01-15T10:30:00Z",
+                "updated_at": "2025-01-20T14:22:00Z"
+            }
+        }
+    )
+
+
+class MainProfileUpdate(BaseModel):
+    """
+    Schema for setting user's main profile.
+    """
+    main_profile_id: UUID = Field(
+        ...,
+        description="Profile ID to set as main profile"
+    )
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "main_profile_id": "550e8400-e29b-41d4-a716-446655440000"
+            }
+        }
+    )
+
+
+class MainProfileResponse(BaseModel):
+    """
+    Schema for main profile response.
+    """
+    user_id: UUID = Field(..., description="User ID")
+    main_profile_id: Optional[UUID] = Field(None, description="Main profile ID")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "user_id": "550e8400-e29b-41d4-a716-446655440003",
+                "main_profile_id": "550e8400-e29b-41d4-a716-446655440000"
             }
         }
     )

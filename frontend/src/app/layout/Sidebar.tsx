@@ -15,6 +15,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { useState } from 'react';
+import { ProfileSelector } from '../../features/profiles/components/ProfileSelector';
 
 export interface NavItem {
   label: string;
@@ -100,6 +101,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
           )}
         </button>
       </div>
+
+      {/* Profile Selector */}
+      {!isCollapsed && (
+        <div className="px-2 py-3 border-b border-neutral-800">
+          <ProfileSelector />
+        </div>
+      )}
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-2">
