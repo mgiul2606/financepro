@@ -18,12 +18,18 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Add main_profile_id column to users table
+    # Add main_profile_id column to users table with ForeignKey
     op.add_column(
         'users',
         sa.Column('main_profile_id', postgresql.UUID(as_uuid=True), nullable=True)
     )
     op.create_index('ix_users_main_profile_id', 'users', ['main_profile_id'])
+    op.create_foreign_key(
+        'fk_users_main_profile_id',
+        'users', 'financial_profiles',
+        ['main_profile_id'], ['id'],
+        ondelete='SET NULL'
+    )
 
     # Create user_profile_selections table
     op.create_table(
@@ -45,5 +51,6 @@ def downgrade() -> None:
     op.drop_table('user_profile_selections')
 
     # Remove main_profile_id column from users table
+    op.drop_constraint('fk_users_main_profile_id', 'users', type_='foreignkey')
     op.drop_index('ix_users_main_profile_id', 'users')
     op.drop_column('users', 'main_profile_id')

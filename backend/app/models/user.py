@@ -37,7 +37,12 @@ class User(Base):
     hashed_password = Column(String(255), nullable=False)
 
     # Main financial profile (for default operations)
-    main_profile_id = Column(UUID(as_uuid=True), nullable=True, index=True)
+    main_profile_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("financial_profiles.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True
+    )
 
     # User information
     full_name = Column(String(255), nullable=True)
@@ -60,8 +65,15 @@ class User(Base):
     financial_profiles = relationship(
         "FinancialProfile",
         back_populates="user",
+        foreign_keys="FinancialProfile.user_id",
         cascade="all, delete-orphan",
         lazy="noload"  # Don't load automatically to avoid errors if table doesn't exist
+    )
+    main_profile = relationship(
+        "FinancialProfile",
+        foreign_keys=[main_profile_id],
+        lazy="noload",
+        uselist=False
     )
     profile_selection = relationship(
         "UserProfileSelection",

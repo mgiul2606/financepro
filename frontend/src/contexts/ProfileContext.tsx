@@ -64,27 +64,14 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [selectionData]);
 
-  // Initialize: if no profiles selected, select the first one or main one
+  // Initialize: if no profiles selected, select the main one or first one
   useEffect(() => {
-    if (profiles.length > 0 && activeProfileIds.length === 0) {
-      const firstProfile = profiles[0];
-      if (firstProfile) {
-        setActiveProfileIds([firstProfile.id]);
-        updateSelectionMutation.mutate({ active_profile_ids: [firstProfile.id] });
-      }
+    if (profiles.length > 0 && activeProfileIds.length === 0 && mainProfileId) {
+      // Select main profile by default
+      setActiveProfileIds([mainProfileId]);
+      updateSelectionMutation.mutate({ active_profile_ids: [mainProfileId] });
     }
-  }, [profiles, activeProfileIds.length]);
-
-  // Set main profile as first active if no main profile set
-  useEffect(() => {
-    if (profiles.length > 0 && !mainProfileId) {
-      const firstProfile = profiles[0];
-      if (firstProfile) {
-        setMainProfileId(firstProfile.id);
-        setMainProfileMutation.mutate({ main_profile_id: firstProfile.id });
-      }
-    }
-  }, [profiles, mainProfileId]);
+  }, [profiles.length, activeProfileIds.length, mainProfileId]);
 
   // Get active profile objects
   const activeProfiles = profiles.filter((p) => activeProfileIds.includes(p.id));
