@@ -1,6 +1,7 @@
 // src/pages/Settings.tsx
 import { useState } from 'react';
 import { User, Bell, Shield, Globe } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/core/components/atomic/Tabs';
@@ -8,22 +9,97 @@ import { FormField, SelectField } from '@/components/ui/FormField';
 import { Button } from '@/core/components/atomic/Button';
 import { Toggle } from '@/core/components/atomic/Toggle';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePreferences } from '@/contexts/PreferencesContext';
+import type { SupportedCurrency, SupportedLocale } from '@/utils/currency';
 
 export const Settings = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
+  const { preferences, updatePreferences } = usePreferences();
   const [activeTab, setActiveTab] = useState('profile');
 
-  // Settings state (would be managed via API in production)
+  // Local state for notifications (in a real app, these would be synced with backend)
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(false);
-  const [budgetAlerts, setBudgetAlerts] = useState(true);
-  const [goalReminders, setGoalReminders] = useState(true);
+
+  // Language options
+  const languageOptions = [
+    { value: 'en', label: t('settings.languages.en') },
+    { value: 'it', label: t('settings.languages.it') },
+  ];
+
+  // Locale options
+  const localeOptions = [
+    { value: 'en-US', label: t('settings.locales.en-US') },
+    { value: 'en-GB', label: t('settings.locales.en-GB') },
+    { value: 'it-IT', label: t('settings.locales.it-IT') },
+    { value: 'de-DE', label: t('settings.locales.de-DE') },
+    { value: 'fr-FR', label: t('settings.locales.fr-FR') },
+    { value: 'es-ES', label: t('settings.locales.es-ES') },
+  ];
+
+  // Currency options
+  const currencyOptions = [
+    { value: 'EUR', label: t('settings.currencies.EUR') },
+    { value: 'USD', label: t('settings.currencies.USD') },
+    { value: 'GBP', label: t('settings.currencies.GBP') },
+    { value: 'CHF', label: t('settings.currencies.CHF') },
+    { value: 'JPY', label: t('settings.currencies.JPY') },
+  ];
+
+  // Theme options
+  const themeOptions = [
+    { value: 'light', label: t('settings.themes.light') },
+    { value: 'dark', label: t('settings.themes.dark') },
+    { value: 'system', label: t('settings.themes.system') },
+  ];
+
+  // Date range options
+  const dateRangeOptions = [
+    { value: '7days', label: t('settings.dateRanges.7days') },
+    { value: '30days', label: t('settings.dateRanges.30days') },
+    { value: '90days', label: t('settings.dateRanges.90days') },
+    { value: '1year', label: t('settings.dateRanges.1year') },
+    { value: 'all', label: t('settings.dateRanges.all') },
+  ];
+
+  // AI Proactivity options
+  const aiProactivityOptions = [
+    { value: 'minimal', label: t('settings.proactivityLevels.minimal') },
+    { value: 'moderate', label: t('settings.proactivityLevels.moderate') },
+    { value: 'proactive', label: t('settings.proactivityLevels.proactive') },
+  ];
+
+  // Week day options
+  const weekDayOptions = [
+    { value: 'monday', label: t('settings.weekDays.monday') },
+    { value: 'sunday', label: t('settings.weekDays.sunday') },
+  ];
+
+  // Timezone options
+  const timezoneOptions = [
+    { value: 'UTC', label: 'UTC' },
+    { value: 'Europe/Rome', label: 'Europe/Rome' },
+    { value: 'Europe/London', label: 'Europe/London' },
+    { value: 'Europe/Paris', label: 'Europe/Paris' },
+    { value: 'Europe/Berlin', label: 'Europe/Berlin' },
+    { value: 'America/New_York', label: 'America/New York' },
+    { value: 'America/Los_Angeles', label: 'America/Los Angeles' },
+    { value: 'Asia/Tokyo', label: 'Asia/Tokyo' },
+  ];
+
+  const handleSavePreferences = () => {
+    // In a real app, this would save to backend
+    console.log('Preferences saved:', preferences);
+    // Show success message (you could use a toast notification)
+    alert(t('settings.saveSuccess'));
+  };
 
   return (
     <div className="p-8">
       <PageHeader
-        title="Settings"
-        subtitle="Manage your account and preferences"
+        title={t('settings.title')}
+        subtitle={t('settings.subtitle')}
       />
 
       <div className="max-w-4xl">
@@ -31,64 +107,63 @@ export const Settings = () => {
           <TabsList>
             <TabsTrigger value="profile">
               <User className="h-4 w-4 mr-2" />
-              Profile
+              {t('settings.profile')}
             </TabsTrigger>
             <TabsTrigger value="notifications">
               <Bell className="h-4 w-4 mr-2" />
-              Notifications
+              {t('settings.notifications')}
             </TabsTrigger>
             <TabsTrigger value="security">
               <Shield className="h-4 w-4 mr-2" />
-              Security
+              {t('settings.security')}
             </TabsTrigger>
             <TabsTrigger value="preferences">
               <Globe className="h-4 w-4 mr-2" />
-              Preferences
+              {t('settings.preferences')}
             </TabsTrigger>
           </TabsList>
 
           {/* Profile Tab */}
           <TabsContent value="profile">
             <Card variant="bordered">
-              <CardHeader title="Profile Information" subtitle="Update your personal details" />
+              <CardHeader
+                title={t('settings.profileInformation')}
+                subtitle={t('settings.profileInformationDesc')}
+              />
               <CardBody>
-                <form className="space-y-4">
+                <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                   <FormField
-                    label="Email"
+                    label={t('settings.email')}
                     type="email"
                     value={user?.email || ''}
                     disabled
-                    hint="Email cannot be changed"
+                    hint={t('settings.emailCannotChange')}
                   />
 
                   <FormField
-                    label="Full Name"
-                    placeholder="John Doe"
-                    hint="Your display name"
+                    label={t('settings.fullName')}
+                    placeholder={t('settings.fullNamePlaceholder')}
+                    hint={t('settings.fullNameHint')}
                   />
 
                   <SelectField
-                    label="Language"
-                    options={[
-                      { value: 'en', label: 'English' },
-                      { value: 'it', label: 'Italian' },
-                      { value: 'es', label: 'Spanish' },
-                    ]}
-                    value="en"
+                    label={t('settings.language')}
+                    hint={t('settings.languageDesc')}
+                    options={languageOptions}
+                    value={preferences.language}
+                    onChange={(value) => updatePreferences({ language: value })}
                   />
 
                   <SelectField
-                    label="Timezone"
-                    options={[
-                      { value: 'UTC', label: 'UTC' },
-                      { value: 'Europe/Rome', label: 'Europe/Rome' },
-                      { value: 'America/New_York', label: 'America/New York' },
-                    ]}
+                    label={t('settings.timezone')}
+                    options={timezoneOptions}
                     value="Europe/Rome"
                   />
 
                   <div className="pt-4">
-                    <Button variant="primary">Save Changes</Button>
+                    <Button variant="primary" onClick={handleSavePreferences}>
+                      {t('settings.saveChanges')}
+                    </Button>
                   </div>
                 </form>
               </CardBody>
@@ -99,16 +174,18 @@ export const Settings = () => {
           <TabsContent value="notifications">
             <Card variant="bordered">
               <CardHeader
-                title="Notification Preferences"
-                subtitle="Choose how you want to be notified"
+                title={t('settings.notificationPreferences')}
+                subtitle={t('settings.notificationPreferencesDesc')}
               />
               <CardBody>
                 <div className="space-y-6">
                   <div className="flex items-center justify-between py-3 border-b border-gray-200">
                     <div>
-                      <h4 className="font-medium text-gray-900">Email Notifications</h4>
+                      <h4 className="font-medium text-gray-900">
+                        {t('settings.emailNotifications')}
+                      </h4>
                       <p className="text-sm text-gray-500">
-                        Receive updates and alerts via email
+                        {t('settings.emailNotificationsDesc')}
                       </p>
                     </div>
                     <Toggle
@@ -119,9 +196,11 @@ export const Settings = () => {
 
                   <div className="flex items-center justify-between py-3 border-b border-gray-200">
                     <div>
-                      <h4 className="font-medium text-gray-900">Push Notifications</h4>
+                      <h4 className="font-medium text-gray-900">
+                        {t('settings.pushNotifications')}
+                      </h4>
                       <p className="text-sm text-gray-500">
-                        Get push notifications on your devices
+                        {t('settings.pushNotificationsDesc')}
                       </p>
                     </div>
                     <Toggle
@@ -132,32 +211,93 @@ export const Settings = () => {
 
                   <div className="flex items-center justify-between py-3 border-b border-gray-200">
                     <div>
-                      <h4 className="font-medium text-gray-900">Budget Alerts</h4>
+                      <h4 className="font-medium text-gray-900">
+                        {t('settings.budgetAlerts')}
+                      </h4>
                       <p className="text-sm text-gray-500">
-                        Alert me when approaching budget limits
+                        {t('settings.budgetAlertsDesc')}
                       </p>
                     </div>
                     <Toggle
-                      checked={budgetAlerts}
-                      onChange={(checked) => setBudgetAlerts(checked)}
+                      checked={preferences.notifications.budgetAlerts}
+                      onChange={(checked) =>
+                        updatePreferences({
+                          notifications: { ...preferences.notifications, budgetAlerts: checked },
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between py-3 border-b border-gray-200">
+                    <div>
+                      <h4 className="font-medium text-gray-900">
+                        {t('settings.anomalyDetection')}
+                      </h4>
+                      <p className="text-sm text-gray-500">
+                        {t('settings.anomalyDetectionDesc')}
+                      </p>
+                    </div>
+                    <Toggle
+                      checked={preferences.notifications.anomalyDetection}
+                      onChange={(checked) =>
+                        updatePreferences({
+                          notifications: {
+                            ...preferences.notifications,
+                            anomalyDetection: checked,
+                          },
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between py-3 border-b border-gray-200">
+                    <div>
+                      <h4 className="font-medium text-gray-900">
+                        {t('settings.goalMilestones')}
+                      </h4>
+                      <p className="text-sm text-gray-500">
+                        {t('settings.goalMilestonesDesc')}
+                      </p>
+                    </div>
+                    <Toggle
+                      checked={preferences.notifications.goalMilestones}
+                      onChange={(checked) =>
+                        updatePreferences({
+                          notifications: {
+                            ...preferences.notifications,
+                            goalMilestones: checked,
+                          },
+                        })
+                      }
                     />
                   </div>
 
                   <div className="flex items-center justify-between py-3">
                     <div>
-                      <h4 className="font-medium text-gray-900">Goal Reminders</h4>
+                      <h4 className="font-medium text-gray-900">
+                        {t('settings.recurringReminders')}
+                      </h4>
                       <p className="text-sm text-gray-500">
-                        Remind me about my financial goals progress
+                        {t('settings.recurringRemindersDesc')}
                       </p>
                     </div>
                     <Toggle
-                      checked={goalReminders}
-                      onChange={(checked) => setGoalReminders(checked)}
+                      checked={preferences.notifications.recurringReminders}
+                      onChange={(checked) =>
+                        updatePreferences({
+                          notifications: {
+                            ...preferences.notifications,
+                            recurringReminders: checked,
+                          },
+                        })
+                      }
                     />
                   </div>
 
                   <div className="pt-4">
-                    <Button variant="primary">Save Preferences</Button>
+                    <Button variant="primary" onClick={handleSavePreferences}>
+                      {t('settings.savePreferences')}
+                    </Button>
                   </div>
                 </div>
               </CardBody>
@@ -168,30 +308,33 @@ export const Settings = () => {
           <TabsContent value="security">
             <div className="space-y-6">
               <Card variant="bordered">
-                <CardHeader title="Change Password" subtitle="Update your password" />
+                <CardHeader
+                  title={t('settings.changePassword')}
+                  subtitle={t('settings.changePasswordDesc')}
+                />
                 <CardBody>
-                  <form className="space-y-4">
+                  <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                     <FormField
-                      label="Current Password"
+                      label={t('settings.currentPassword')}
                       type="password"
-                      placeholder="Enter current password"
+                      placeholder={t('settings.currentPassword')}
                     />
 
                     <FormField
-                      label="New Password"
+                      label={t('settings.newPassword')}
                       type="password"
-                      placeholder="Enter new password"
-                      hint="At least 8 characters"
+                      placeholder={t('settings.newPassword')}
+                      hint={t('settings.passwordHint')}
                     />
 
                     <FormField
-                      label="Confirm New Password"
+                      label={t('settings.confirmNewPassword')}
                       type="password"
-                      placeholder="Confirm new password"
+                      placeholder={t('settings.confirmNewPassword')}
                     />
 
                     <div className="pt-4">
-                      <Button variant="primary">Update Password</Button>
+                      <Button variant="primary">{t('settings.updatePassword')}</Button>
                     </div>
                   </form>
                 </CardBody>
@@ -199,26 +342,32 @@ export const Settings = () => {
 
               <Card variant="bordered">
                 <CardHeader
-                  title="Two-Factor Authentication"
-                  subtitle="Add an extra layer of security"
+                  title={t('settings.twoFactor')}
+                  subtitle={t('settings.twoFactorDesc')}
                 />
                 <CardBody>
                   <p className="text-sm text-gray-600 mb-4">
-                    Two-factor authentication is currently disabled. Enable it to add an extra
-                    layer of security to your account.
+                    {t('settings.twoFactorDisabled')}
                   </p>
-                  <Button variant="secondary">Enable 2FA</Button>
+                  <Button variant="secondary">{t('settings.enable2FA')}</Button>
                 </CardBody>
               </Card>
 
               <Card variant="bordered">
-                <CardHeader title="Active Sessions" subtitle="Manage your active sessions" />
+                <CardHeader
+                  title={t('settings.activeSessions')}
+                  subtitle={t('settings.activeSessionsDesc')}
+                />
                 <CardBody>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-3 rounded-lg border border-gray-200">
                       <div>
-                        <p className="font-medium text-gray-900">Current Device</p>
-                        <p className="text-sm text-gray-500">Chrome on Windows • Active now</p>
+                        <p className="font-medium text-gray-900">
+                          {t('settings.currentDevice')}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Chrome on Windows • {t('settings.activeNow')}
+                        </p>
                       </div>
                       <span className="text-xs text-green-600 font-medium">Active</span>
                     </div>
@@ -230,56 +379,138 @@ export const Settings = () => {
 
           {/* Preferences Tab */}
           <TabsContent value="preferences">
-            <Card variant="bordered">
-              <CardHeader title="Application Preferences" subtitle="Customize your experience" />
-              <CardBody>
-                <form className="space-y-4">
-                  <SelectField
-                    label="Default Currency"
-                    options={[
-                      { value: 'EUR', label: 'EUR (€)' },
-                      { value: 'USD', label: 'USD ($)' },
-                      { value: 'GBP', label: 'GBP (£)' },
-                    ]}
-                    value="EUR"
-                    hint="Currency used for new transactions and accounts"
-                  />
+            <div className="space-y-6">
+              {/* Language & Localization */}
+              <Card variant="bordered">
+                <CardHeader
+                  title={t('settings.language')}
+                  subtitle={t('settings.languageDesc')}
+                />
+                <CardBody>
+                  <div className="space-y-4">
+                    <SelectField
+                      label={t('settings.language')}
+                      hint={t('settings.languageDesc')}
+                      options={languageOptions}
+                      value={preferences.language}
+                      onChange={(value) => updatePreferences({ language: value })}
+                    />
 
-                  <SelectField
-                    label="Date Format"
-                    options={[
-                      { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
-                      { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
-                      { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' },
-                    ]}
-                    value="DD/MM/YYYY"
-                  />
+                    <SelectField
+                      label={t('settings.locale')}
+                      hint={t('settings.localeDesc')}
+                      options={localeOptions}
+                      value={preferences.locale}
+                      onChange={(value) =>
+                        updatePreferences({ locale: value as SupportedLocale })
+                      }
+                    />
 
-                  <SelectField
-                    label="First Day of Week"
-                    options={[
-                      { value: 'monday', label: 'Monday' },
-                      { value: 'sunday', label: 'Sunday' },
-                    ]}
-                    value="monday"
-                  />
-
-                  <div className="flex items-center justify-between py-3 border-t border-gray-200 mt-6">
-                    <div>
-                      <h4 className="font-medium text-gray-900">Dark Mode</h4>
-                      <p className="text-sm text-gray-500">
-                        Use dark theme for the interface
-                      </p>
-                    </div>
-                    <Toggle checked={false} onChange={() => {}} />
+                    <SelectField
+                      label={t('settings.currency')}
+                      hint={t('settings.currencyDesc')}
+                      options={currencyOptions}
+                      value={preferences.currency}
+                      onChange={(value) =>
+                        updatePreferences({ currency: value as SupportedCurrency })
+                      }
+                    />
                   </div>
+                </CardBody>
+              </Card>
 
-                  <div className="pt-4">
-                    <Button variant="primary">Save Preferences</Button>
-                  </div>
-                </form>
-              </CardBody>
-            </Card>
+              {/* Application Preferences */}
+              <Card variant="bordered">
+                <CardHeader
+                  title={t('settings.applicationPreferences')}
+                  subtitle={t('settings.applicationPreferencesDesc')}
+                />
+                <CardBody>
+                  <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+                    <SelectField
+                      label={t('settings.theme')}
+                      hint={t('settings.themeDesc')}
+                      options={themeOptions}
+                      value={preferences.theme}
+                      onChange={(value) =>
+                        updatePreferences({
+                          theme: value as 'light' | 'dark' | 'system',
+                        })
+                      }
+                    />
+
+                    <SelectField
+                      label={t('settings.dateFormat')}
+                      options={[
+                        { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
+                        { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
+                        { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' },
+                      ]}
+                      value="DD/MM/YYYY"
+                    />
+
+                    <SelectField
+                      label={t('settings.firstDayOfWeek')}
+                      options={weekDayOptions}
+                      value="monday"
+                    />
+                  </form>
+                </CardBody>
+              </Card>
+
+              {/* Analytics Preferences */}
+              <Card variant="bordered">
+                <CardHeader
+                  title={t('settings.analytics')}
+                  subtitle={t('settings.defaultDateRangeDesc')}
+                />
+                <CardBody>
+                  <SelectField
+                    label={t('settings.defaultDateRange')}
+                    hint={t('settings.defaultDateRangeDesc')}
+                    options={dateRangeOptions}
+                    value={preferences.analyticsDateRange}
+                    onChange={(value) =>
+                      updatePreferences({
+                        analyticsDateRange: value as
+                          | '7days'
+                          | '30days'
+                          | '90days'
+                          | '1year'
+                          | 'all',
+                      })
+                    }
+                  />
+                </CardBody>
+              </Card>
+
+              {/* AI Preferences */}
+              <Card variant="bordered">
+                <CardHeader
+                  title={t('settings.aiPreferences')}
+                  subtitle={t('settings.aiProactivityDesc')}
+                />
+                <CardBody>
+                  <SelectField
+                    label={t('settings.aiProactivity')}
+                    hint={t('settings.aiProactivityDesc')}
+                    options={aiProactivityOptions}
+                    value={preferences.aiProactivity}
+                    onChange={(value) =>
+                      updatePreferences({
+                        aiProactivity: value as 'minimal' | 'moderate' | 'proactive',
+                      })
+                    }
+                  />
+                </CardBody>
+              </Card>
+
+              <div className="pt-4">
+                <Button variant="primary" onClick={handleSavePreferences}>
+                  {t('settings.savePreferences')}
+                </Button>
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

@@ -8,6 +8,7 @@ import { DataTable, type Column } from '../../../core/components/composite/DataT
 import { Button } from '../../../core/components/atomic/Button';
 import { Card, CardHeader, CardBody } from '../../../core/components/atomic/Card';
 import { Badge } from '../../../core/components/atomic/Badge';
+import { CurrencyText } from '../../../core/components/atomic/CurrencyText';
 import { Modal, ModalFooter } from '../../../components/ui/Modal';
 import { EmptyState } from '../../../core/components/composite/EmptyState';
 import {
@@ -21,12 +22,10 @@ import { TransactionForm } from '../components/TransactionForm';
 import { TransactionFilterModal, type TransactionFilters } from '../components/TransactionFilterModal';
 import { TransactionExportModal } from '../components/TransactionExportModal';
 import { type Transaction, type TransactionCreate } from '../types';
-import { usePreferences } from '@/contexts/PreferencesContext';
-import { formatCurrency } from '@/utils/currency';
+import type { SupportedCurrency } from '@/utils/currency';
 
 export const TransactionsPage: React.FC = () => {
   const { t } = useTranslation();
-  const { preferences } = usePreferences();
 
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -195,14 +194,15 @@ export const TransactionsPage: React.FC = () => {
       sortable: true,
       align: 'right',
       render: (item) => (
-        <span
+        <CurrencyText
+          value={item.amount}
+          currency={item.currency as SupportedCurrency}
+          showSign
+          colorCoded={false}
           className={`text-sm font-semibold ${
             item.type === 'income' ? 'text-green-600' : 'text-red-600'
           }`}
-        >
-          {item.type === 'income' ? '+' : '-'}
-          {formatCurrency(item.amount, item.currency as any, preferences.locale)}
-        </span>
+        />
       ),
       width: '130px',
     },
@@ -297,9 +297,10 @@ export const TransactionsPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-neutral-600">{t('transactions.totalIncome')}</p>
-                    <p className="text-2xl font-bold text-green-600 mt-1">
-                      {formatCurrency(stats.totalIncome, preferences.currency, preferences.locale)}
-                    </p>
+                    <CurrencyText
+                      value={stats.totalIncome}
+                      className="text-2xl font-bold text-green-600 mt-1"
+                    />
                   </div>
                   <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                     <TrendingUp className="h-6 w-6 text-green-600" />
@@ -313,9 +314,10 @@ export const TransactionsPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-neutral-600">{t('transactions.totalExpenses')}</p>
-                    <p className="text-2xl font-bold text-red-600 mt-1">
-                      {formatCurrency(stats.totalExpenses, preferences.currency, preferences.locale)}
-                    </p>
+                    <CurrencyText
+                      value={stats.totalExpenses}
+                      className="text-2xl font-bold text-red-600 mt-1"
+                    />
                   </div>
                   <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                     <TrendingDown className="h-6 w-6 text-red-600" />
@@ -329,11 +331,11 @@ export const TransactionsPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-neutral-600">{t('transactions.balance')}</p>
-                    <p
-                      className={`text-2xl font-bold mt-1 ${stats.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}
-                    >
-                      {formatCurrency(stats.balance, preferences.currency, preferences.locale)}
-                    </p>
+                    <CurrencyText
+                      value={stats.balance}
+                      colorCoded
+                      className="text-2xl font-bold mt-1"
+                    />
                   </div>
                   <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                     <DollarSign className="h-6 w-6 text-blue-600" />
