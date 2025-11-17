@@ -65,16 +65,21 @@ def upgrade() -> None:
     )
     op.create_index('ix_tags_id', 'tags', ['id'])
 
+    # Create accounttype enum
+    op.execute("CREATE TYPE accounttype AS ENUM ('checking', 'savings', 'credit_card', 'investment', 'cash', 'loan', 'other')")
+
     # Create accounts table
     op.create_table(
         'accounts',
         sa.Column('id', postgresql.UUID(as_uuid=True), primary_key=True),
         sa.Column('financial_profile_id', postgresql.UUID(as_uuid=True), sa.ForeignKey('financial_profiles.id'), nullable=False, index=True),
         sa.Column('name', sa.String(100), nullable=False),
-        sa.Column('account_type', sa.String(50), nullable=True),
+        sa.Column('account_type', sa.Enum('checking', 'savings', 'credit_card', 'investment', 'cash', 'loan', 'other', name='accounttype'), nullable=False, server_default='checking'),
         sa.Column('currency', sa.String(3), nullable=False, server_default='EUR'),
-        sa.Column('balance', sa.Numeric(15, 2), nullable=False, server_default='0.00'),
         sa.Column('initial_balance', sa.Numeric(15, 2), nullable=False, server_default='0.00'),
+        sa.Column('institution_name', sa.String(255), nullable=True),
+        sa.Column('account_number', sa.String(255), nullable=True),
+        sa.Column('notes', sa.Text(), nullable=True),
         sa.Column('is_active', sa.Boolean(), nullable=False, server_default='true'),
         sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
         sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
@@ -290,5 +295,6 @@ def downgrade() -> None:
     op.execute('DROP TYPE IF EXISTS budgetperiod')
     op.execute('DROP TYPE IF EXISTS transactiontype')
     op.execute('DROP TYPE IF EXISTS categorytype')
+    op.execute('DROP TYPE IF EXISTS accounttype')
     op.execute('DROP TYPE IF EXISTS databasetype')
     op.execute('DROP TYPE IF EXISTS profiletype')
