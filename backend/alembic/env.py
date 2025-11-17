@@ -13,6 +13,20 @@ from app.db.database import Base
 
 # Import TUTTI i models (così Alembic li vede)
 from app.models.user import User
+from app.models.financial_profile import FinancialProfile
+from app.models.account import Account
+from app.models.transaction import Transaction
+from app.models.category import Category
+from app.models.tag import Tag
+from app.models.budget import Budget
+from app.models.financial_goal import FinancialGoal
+from app.models.asset import Asset
+from app.models.recurring_transaction import RecurringTransaction
+from app.models.import_job import ImportJob
+from app.models.audit_log import AuditLog
+from app.models.exchange_rate import ExchangeRate
+from app.models.ml_classification_log import MLClassificationLog
+from app.models.chat import ChatConversation, ChatMessage
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
