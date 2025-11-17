@@ -44,11 +44,11 @@ class AccountBase(BaseModel):
 class AccountCreate(AccountBase):
     """
     Schema for creating a new account.
-    Requires financial_profile_id and account details.
+    financial_profile_id is optional - if not provided, the user's default profile will be used.
     """
-    financial_profile_id: UUID = Field(
-        ...,
-        description="ID of the financial profile this account belongs to"
+    financial_profile_id: Optional[UUID] = Field(
+        None,
+        description="ID of the financial profile this account belongs to (optional, defaults to user's default profile)"
     )
     initial_balance: Decimal = Field(
         default=Decimal("0.00"),
