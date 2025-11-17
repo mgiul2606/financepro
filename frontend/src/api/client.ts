@@ -11,9 +11,19 @@ export const customInstance = <T>(
   options?: AxiosRequestConfig
 ): Promise<T> => {
   // If config is a string (URL), convert to proper config object
-  const requestConfig: AxiosRequestConfig = typeof config === 'string'
+  let requestConfig: AxiosRequestConfig = typeof config === 'string'
     ? { url: config, ...options }
     : { ...config, ...options };
+
+  // Orval generates fetch-style 'body' but Axios uses 'data'
+  // Convert body to data if present
+  if ('body' in requestConfig && requestConfig.body !== undefined) {
+    requestConfig = {
+      ...requestConfig,
+      data: requestConfig.body,
+    };
+    delete (requestConfig as any).body;
+  }
 
   const promise = api(requestConfig).then(({ data }: AxiosResponse<T>) => data);
 
