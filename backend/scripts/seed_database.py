@@ -30,11 +30,11 @@ from app.models.financial_profile import FinancialProfile, ProfileType
 from app.models.account import Account, AccountType
 from app.models.category import Category
 from app.models.tag import Tag
-from app.models.transaction import Transaction, TransactionType, TransactionStatus
+from app.models.transaction import Transaction, TransactionType, TransactionSource
 from app.models.budget import Budget
 from app.models.financial_goal import FinancialGoal
 from app.models.asset import Asset, AssetType
-from app.models.recurring_transaction import RecurringTransaction, RecurrenceFrequency
+from app.models.recurring_transaction import RecurringTransaction, AmountModel, Frequency
 from app.core.security import get_password_hash
 
 
@@ -336,7 +336,7 @@ def create_transactions(session, accounts, categories):
         {
             "account": accounts[0],
             "category": cat_alimentari,
-            "type": TransactionType.EXPENSE,
+            "type": TransactionType.PURCHASE,
             "amount": Decimal("85.50"),
             "date": today - timedelta(days=2),
             "description": "Spesa settimanale",
@@ -345,7 +345,7 @@ def create_transactions(session, accounts, categories):
         {
             "account": accounts[0],
             "category": cat_alimentari,
-            "type": TransactionType.EXPENSE,
+            "type": TransactionType.PURCHASE,
             "amount": Decimal("45.20"),
             "date": today - timedelta(days=5),
             "description": "Spesa frutta e verdura",
@@ -356,7 +356,7 @@ def create_transactions(session, accounts, categories):
         {
             "account": accounts[2],  # Carta di credito
             "category": cat_ristoranti,
-            "type": TransactionType.EXPENSE,
+            "type": TransactionType.PURCHASE,
             "amount": Decimal("65.00"),
             "date": today - timedelta(days=3),
             "description": "Cena con amici",
@@ -365,7 +365,7 @@ def create_transactions(session, accounts, categories):
         {
             "account": accounts[0],
             "category": cat_ristoranti,
-            "type": TransactionType.EXPENSE,
+            "type": TransactionType.PURCHASE,
             "amount": Decimal("8.50"),
             "date": today - timedelta(days=1),
             "description": "Caffè e brioche",
@@ -376,7 +376,7 @@ def create_transactions(session, accounts, categories):
         {
             "account": accounts[0],
             "category": cat_trasporti,
-            "type": TransactionType.EXPENSE,
+            "type": TransactionType.PURCHASE,
             "amount": Decimal("60.00"),
             "date": today - timedelta(days=7),
             "description": "Rifornimento benzina",
@@ -387,7 +387,7 @@ def create_transactions(session, accounts, categories):
         {
             "account": accounts[0],
             "category": cat_casa,
-            "type": TransactionType.EXPENSE,
+            "type": TransactionType.PURCHASE,
             "amount": Decimal("850.00"),
             "date": today.replace(day=5),
             "description": "Affitto mensile",
@@ -396,7 +396,7 @@ def create_transactions(session, accounts, categories):
         {
             "account": accounts[0],
             "category": cat_casa,
-            "type": TransactionType.EXPENSE,
+            "type": TransactionType.PURCHASE,
             "amount": Decimal("120.00"),
             "date": today - timedelta(days=10),
             "description": "Bolletta elettricità",
@@ -407,7 +407,7 @@ def create_transactions(session, accounts, categories):
         {
             "account": accounts[2],
             "category": cat_shopping,
-            "type": TransactionType.EXPENSE,
+            "type": TransactionType.PURCHASE,
             "amount": Decimal("89.99"),
             "date": today - timedelta(days=6),
             "description": "Scarpe sportive",
@@ -425,8 +425,9 @@ def create_transactions(session, accounts, categories):
             currency="EUR",
             transaction_date=trans_data["date"],
             description=trans_data["description"],
-            payee=trans_data["payee"],
-            status=TransactionStatus.COMPLETED,
+            merchant_name=trans_data["payee"],
+            is_reconciled=True,
+            created_by=TransactionSource.MANUAL,
             created_at=datetime.now(),
             updated_at=datetime.now()
         )
@@ -621,15 +622,16 @@ def create_recurring_transactions(session, accounts, categories):
             id=uuid.uuid4(),
             account_id=accounts[0].id,
             category_id=cat_stipendio.id if cat_stipendio else None,
-            transaction_type=TransactionType.INCOME,
-            amount=Decimal("2500.00"),
-            currency="EUR",
-            description="Stipendio mensile",
-            payee="Azienda XYZ Srl",
-            frequency=RecurrenceFrequency.MONTHLY,
+            name="Stipendio mensile",
+            description="Stipendio da Azienda XYZ Srl",
+            amount_model=AmountModel.FIXED,
+            base_amount=Decimal("2500.00"),
+            frequency=Frequency.MONTHLY,
             start_date=date(2024, 1, 1),
-            next_occurrence=date(today.year, today.month, 1),
+            next_occurrence_date=date(today.year, today.month, 1),
             is_active=True,
+            notification_enabled=True,
+            notification_days_before=3,
             created_at=datetime.now(),
             updated_at=datetime.now()
         ),
@@ -637,15 +639,16 @@ def create_recurring_transactions(session, accounts, categories):
             id=uuid.uuid4(),
             account_id=accounts[0].id,
             category_id=cat_casa.id if cat_casa else None,
-            transaction_type=TransactionType.EXPENSE,
-            amount=Decimal("850.00"),
-            currency="EUR",
-            description="Affitto mensile",
-            payee="Immobiliare Roma",
-            frequency=RecurrenceFrequency.MONTHLY,
+            name="Affitto mensile",
+            description="Pagamento affitto a Immobiliare Roma",
+            amount_model=AmountModel.FIXED,
+            base_amount=Decimal("850.00"),
+            frequency=Frequency.MONTHLY,
             start_date=date(2024, 1, 5),
-            next_occurrence=date(today.year, today.month, 5),
+            next_occurrence_date=date(today.year, today.month, 5),
             is_active=True,
+            notification_enabled=True,
+            notification_days_before=3,
             created_at=datetime.now(),
             updated_at=datetime.now()
         ),
