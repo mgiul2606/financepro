@@ -16,4 +16,7 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * Hex color code for UI display
+ */
 export type CategoryResponseColor = string | null;

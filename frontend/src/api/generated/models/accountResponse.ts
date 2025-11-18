@@ -15,6 +15,10 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
+import type { AccountType } from "./accountType";
+import type { AccountResponseInstitutionName } from "./accountResponseInstitutionName";
+import type { AccountResponseNotes } from "./accountResponseNotes";
+import type { AccountResponseAccountNumber } from "./accountResponseAccountNumber";
 
 /**
  * Complete account schema returned by API endpoints.
@@ -22,24 +26,34 @@ Includes all fields including computed current_balance.
  */
 export interface AccountResponse {
   /**
-   * ISO 4217 currency code (3 uppercase letters)
-   * @pattern ^[A-Z]{3}$
-   */
-  currency?: string;
-  /**
    * Account name
    * @minLength 1
    * @maxLength 100
    */
   name: string;
+  /** Type of account (checking, savings, credit_card, etc.) */
+  account_type?: AccountType;
+  /**
+   * ISO 4217 currency code (3 uppercase letters)
+   * @pattern ^[A-Z]{3}$
+   */
+  currency?: string;
+  /** Name of the financial institution */
+  institution_name?: AccountResponseInstitutionName;
+  /** Additional notes about the account */
+  notes?: AccountResponseNotes;
   /** Unique account identifier */
-  id: number;
-  /** Owner user ID */
-  user_id: number;
+  id: string;
+  /** ID of the financial profile this account belongs to */
+  financial_profile_id: string;
   /** Initial balance when account was created */
   initial_balance: string;
   /** Current balance (initial + transactions) */
   current_balance: string;
+  /** Account number (encrypted) */
+  account_number?: AccountResponseAccountNumber;
+  /** Whether the account is currently active */
+  is_active?: boolean;
   /** Account creation timestamp (UTC) */
   created_at: string;
   /** Last update timestamp (UTC) */

@@ -44,7 +44,7 @@ import { customInstance } from "../../client";
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 /**
- * Registra nuovo utente
+ * Registra nuovo utente e crea profilo finanziario di default
  * @summary Register
  */
 export type registerApiV1AuthRegisterPostResponse201 = {

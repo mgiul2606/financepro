@@ -30,7 +30,7 @@ export const healthCheckHealthGetResponse = zod.unknown();
 export const versionInfoVersionGetResponse = zod.unknown();
 
 /**
- * Registra nuovo utente
+ * Registra nuovo utente e crea profilo finanziario di default
  * @summary Register
  */
 export const registerApiV1AuthRegisterPostBodyPasswordMin = 8;
@@ -68,101 +68,609 @@ export const loginApiV1AuthLoginPostResponse = zod.object({
  */
 export const getMeApiV1AuthMeGetResponse = zod.object({
   email: zod.email(),
-  id: zod.number(),
+  id: zod.uuid(),
+  full_name: zod.union([zod.string(), zod.null()]).optional(),
   is_active: zod.boolean(),
+  is_verified: zod.boolean(),
   created_at: zod.iso.datetime({}),
+  updated_at: zod.iso.datetime({}),
 });
+
+/**
+ * Retrieve all financial profiles for the authenticated user
+ * @summary List financial profiles
+ */
+export const listProfilesApiV1ProfilesGetResponseProfilesItemNameMax = 100;
+
+export const listProfilesApiV1ProfilesGetResponseProfilesItemDefaultCurrencyDefault =
+  "EUR";
+export const listProfilesApiV1ProfilesGetResponseProfilesItemDefaultCurrencyRegExp =
+  new RegExp("^[A-Z]{3}$");
+
+export const listProfilesApiV1ProfilesGetResponse = zod
+  .object({
+    profiles: zod
+      .array(
+        zod
+          .object({
+            name: zod
+              .string()
+              .min(1)
+              .max(listProfilesApiV1ProfilesGetResponseProfilesItemNameMax)
+              .describe("Financial profile name"),
+            description: zod
+              .union([zod.string(), zod.null()])
+              .optional()
+              .describe("Optional description of the financial profile"),
+            profile_type: zod
+              .enum(["personal", "family", "business"])
+              .optional()
+              .describe("Types of financial profiles"),
+            default_currency: zod
+              .string()
+              .regex(
+                listProfilesApiV1ProfilesGetResponseProfilesItemDefaultCurrencyRegExp,
+              )
+              .default(
+                listProfilesApiV1ProfilesGetResponseProfilesItemDefaultCurrencyDefault,
+              )
+              .describe("ISO 4217 currency code (3 uppercase letters)"),
+            id: zod.uuid().describe("Unique financial profile identifier"),
+            user_id: zod.uuid().describe("Owner user ID"),
+            database_connection_string: zod
+              .union([zod.string(), zod.null()])
+              .optional()
+              .describe("Database connection string (encrypted)"),
+            database_type: zod
+              .union([
+                zod
+                  .enum(["postgresql", "mssql"])
+                  .describe("Supported database types for distributed storage"),
+                zod.null(),
+              ])
+              .optional()
+              .describe("Database type for distributed storage"),
+            is_active: zod
+              .boolean()
+              .describe("Whether the profile is currently active"),
+            created_at: zod.iso
+              .datetime({})
+              .describe("Profile creation timestamp (UTC)"),
+            updated_at: zod.iso
+              .datetime({})
+              .describe("Last update timestamp (UTC)"),
+            is_available: zod
+              .boolean()
+              .describe(
+                "Check if the profile's database is currently available.\nProfiles without custom database are always available.",
+              ),
+          })
+          .describe(
+            "Complete financial profile schema returned by API endpoints.\nIncludes all fields including computed is_available field.",
+          ),
+      )
+      .describe("List of financial profiles"),
+    total: zod.number().describe("Total number of profiles"),
+  })
+  .describe(
+    "Schema for list financial profiles response with pagination support.",
+  );
+
+/**
+ * Create a new financial profile for the authenticated user
+ * @summary Create new financial profile
+ */
+export const createProfileApiV1ProfilesPostBodyNameMax = 100;
+
+export const createProfileApiV1ProfilesPostBodyDefaultCurrencyDefault = "EUR";
+export const createProfileApiV1ProfilesPostBodyDefaultCurrencyRegExp =
+  new RegExp("^[A-Z]{3}$");
+
+export const createProfileApiV1ProfilesPostBody = zod
+  .object({
+    name: zod
+      .string()
+      .min(1)
+      .max(createProfileApiV1ProfilesPostBodyNameMax)
+      .describe("Financial profile name"),
+    description: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Optional description of the financial profile"),
+    profile_type: zod
+      .enum(["personal", "family", "business"])
+      .optional()
+      .describe("Types of financial profiles"),
+    default_currency: zod
+      .string()
+      .regex(createProfileApiV1ProfilesPostBodyDefaultCurrencyRegExp)
+      .default(createProfileApiV1ProfilesPostBodyDefaultCurrencyDefault)
+      .describe("ISO 4217 currency code (3 uppercase letters)"),
+    database_connection_string: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe(
+        "Connection string for distributed database (will be encrypted)",
+      ),
+    database_type: zod
+      .union([
+        zod
+          .enum(["postgresql", "mssql"])
+          .describe("Supported database types for distributed storage"),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Type of database for distributed storage (PostgreSQL, MSSQL)"),
+  })
+  .describe(
+    "Schema for creating a new financial profile.\nOptionally includes database connection settings for distributed storage.",
+  );
+
+/**
+ * Retrieve a specific financial profile by its ID
+ * @summary Get financial profile by ID
+ */
+export const getProfileApiV1ProfilesProfileIdGetParams = zod.object({
+  profile_id: zod.uuid(),
+});
+
+export const getProfileApiV1ProfilesProfileIdGetResponseNameMax = 100;
+
+export const getProfileApiV1ProfilesProfileIdGetResponseDefaultCurrencyDefault =
+  "EUR";
+export const getProfileApiV1ProfilesProfileIdGetResponseDefaultCurrencyRegExp =
+  new RegExp("^[A-Z]{3}$");
+
+export const getProfileApiV1ProfilesProfileIdGetResponse = zod
+  .object({
+    name: zod
+      .string()
+      .min(1)
+      .max(getProfileApiV1ProfilesProfileIdGetResponseNameMax)
+      .describe("Financial profile name"),
+    description: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Optional description of the financial profile"),
+    profile_type: zod
+      .enum(["personal", "family", "business"])
+      .optional()
+      .describe("Types of financial profiles"),
+    default_currency: zod
+      .string()
+      .regex(getProfileApiV1ProfilesProfileIdGetResponseDefaultCurrencyRegExp)
+      .default(
+        getProfileApiV1ProfilesProfileIdGetResponseDefaultCurrencyDefault,
+      )
+      .describe("ISO 4217 currency code (3 uppercase letters)"),
+    id: zod.uuid().describe("Unique financial profile identifier"),
+    user_id: zod.uuid().describe("Owner user ID"),
+    database_connection_string: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Database connection string (encrypted)"),
+    database_type: zod
+      .union([
+        zod
+          .enum(["postgresql", "mssql"])
+          .describe("Supported database types for distributed storage"),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Database type for distributed storage"),
+    is_active: zod
+      .boolean()
+      .describe("Whether the profile is currently active"),
+    created_at: zod.iso
+      .datetime({})
+      .describe("Profile creation timestamp (UTC)"),
+    updated_at: zod.iso.datetime({}).describe("Last update timestamp (UTC)"),
+    is_available: zod
+      .boolean()
+      .describe(
+        "Check if the profile's database is currently available.\nProfiles without custom database are always available.",
+      ),
+  })
+  .describe(
+    "Complete financial profile schema returned by API endpoints.\nIncludes all fields including computed is_available field.",
+  );
+
+/**
+ * Update an existing financial profile (partial update supported)
+ * @summary Update financial profile
+ */
+export const updateProfileApiV1ProfilesProfileIdPatchParams = zod.object({
+  profile_id: zod.uuid(),
+});
+
+export const updateProfileApiV1ProfilesProfileIdPatchBodyNameOneMax = 100;
+
+export const updateProfileApiV1ProfilesProfileIdPatchBodyDefaultCurrencyOneRegExp =
+  new RegExp("^[A-Z]{3}$");
+
+export const updateProfileApiV1ProfilesProfileIdPatchBody = zod
+  .object({
+    name: zod
+      .union([
+        zod
+          .string()
+          .min(1)
+          .max(updateProfileApiV1ProfilesProfileIdPatchBodyNameOneMax),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated profile name"),
+    description: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Updated description"),
+    profile_type: zod
+      .union([
+        zod
+          .enum(["personal", "family", "business"])
+          .describe("Types of financial profiles"),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated profile type"),
+    default_currency: zod
+      .union([
+        zod
+          .string()
+          .regex(
+            updateProfileApiV1ProfilesProfileIdPatchBodyDefaultCurrencyOneRegExp,
+          ),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated default currency"),
+    database_connection_string: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Updated database connection string"),
+    database_type: zod
+      .union([
+        zod
+          .enum(["postgresql", "mssql"])
+          .describe("Supported database types for distributed storage"),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated database type"),
+    is_active: zod
+      .union([zod.boolean(), zod.null()])
+      .optional()
+      .describe("Whether the profile is active"),
+  })
+  .describe(
+    "Schema for updating an existing financial profile.\nAll fields are optional (partial update).",
+  );
+
+export const updateProfileApiV1ProfilesProfileIdPatchResponseNameMax = 100;
+
+export const updateProfileApiV1ProfilesProfileIdPatchResponseDefaultCurrencyDefault =
+  "EUR";
+export const updateProfileApiV1ProfilesProfileIdPatchResponseDefaultCurrencyRegExp =
+  new RegExp("^[A-Z]{3}$");
+
+export const updateProfileApiV1ProfilesProfileIdPatchResponse = zod
+  .object({
+    name: zod
+      .string()
+      .min(1)
+      .max(updateProfileApiV1ProfilesProfileIdPatchResponseNameMax)
+      .describe("Financial profile name"),
+    description: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Optional description of the financial profile"),
+    profile_type: zod
+      .enum(["personal", "family", "business"])
+      .optional()
+      .describe("Types of financial profiles"),
+    default_currency: zod
+      .string()
+      .regex(
+        updateProfileApiV1ProfilesProfileIdPatchResponseDefaultCurrencyRegExp,
+      )
+      .default(
+        updateProfileApiV1ProfilesProfileIdPatchResponseDefaultCurrencyDefault,
+      )
+      .describe("ISO 4217 currency code (3 uppercase letters)"),
+    id: zod.uuid().describe("Unique financial profile identifier"),
+    user_id: zod.uuid().describe("Owner user ID"),
+    database_connection_string: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Database connection string (encrypted)"),
+    database_type: zod
+      .union([
+        zod
+          .enum(["postgresql", "mssql"])
+          .describe("Supported database types for distributed storage"),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Database type for distributed storage"),
+    is_active: zod
+      .boolean()
+      .describe("Whether the profile is currently active"),
+    created_at: zod.iso
+      .datetime({})
+      .describe("Profile creation timestamp (UTC)"),
+    updated_at: zod.iso.datetime({}).describe("Last update timestamp (UTC)"),
+    is_available: zod
+      .boolean()
+      .describe(
+        "Check if the profile's database is currently available.\nProfiles without custom database are always available.",
+      ),
+  })
+  .describe(
+    "Complete financial profile schema returned by API endpoints.\nIncludes all fields including computed is_available field.",
+  );
+
+/**
+ * Soft delete a financial profile by setting is_active to False
+ * @summary Delete financial profile
+ */
+export const deleteProfileApiV1ProfilesProfileIdDeleteParams = zod.object({
+  profile_id: zod.uuid(),
+});
+
+/**
+ * Get the main financial profile for the authenticated user
+ * @summary Get main financial profile
+ */
+export const getMainProfileApiV1ProfilesMainGetResponse = zod
+  .object({
+    user_id: zod.uuid().describe("User ID"),
+    main_profile_id: zod
+      .union([zod.uuid(), zod.null()])
+      .optional()
+      .describe("Main profile ID"),
+  })
+  .describe("Schema for main profile response.");
+
+/**
+ * Set the main financial profile for the authenticated user
+ * @summary Set main financial profile
+ */
+export const setMainProfileApiV1ProfilesMainPatchBody = zod
+  .object({
+    main_profile_id: zod.uuid().describe("Profile ID to set as main profile"),
+  })
+  .describe("Schema for setting user's main profile.");
+
+export const setMainProfileApiV1ProfilesMainPatchResponse = zod
+  .object({
+    user_id: zod.uuid().describe("User ID"),
+    main_profile_id: zod
+      .union([zod.uuid(), zod.null()])
+      .optional()
+      .describe("Main profile ID"),
+  })
+  .describe("Schema for main profile response.");
+
+/**
+ * Get which profiles are currently active for the authenticated user
+ * @summary Get active profile selection
+ */
+export const getProfileSelectionApiV1ProfilesSelectionGetResponse = zod
+  .object({
+    id: zod.uuid().describe("Selection record ID"),
+    user_id: zod.uuid().describe("User ID"),
+    active_profile_ids: zod
+      .array(zod.uuid())
+      .describe("List of active profile IDs"),
+    created_at: zod.iso
+      .datetime({})
+      .describe("Selection creation timestamp (UTC)"),
+    updated_at: zod.iso.datetime({}).describe("Last update timestamp (UTC)"),
+  })
+  .describe("Schema for profile selection response.");
+
+/**
+ * Update which profiles are currently active for multi-profile operations
+ * @summary Update active profile selection
+ */
+export const updateProfileSelectionApiV1ProfilesSelectionPostBodyActiveProfileIdsMin = 0;
+
+export const updateProfileSelectionApiV1ProfilesSelectionPostBody = zod
+  .object({
+    active_profile_ids: zod
+      .array(zod.uuid())
+      .min(
+        updateProfileSelectionApiV1ProfilesSelectionPostBodyActiveProfileIdsMin,
+      )
+      .describe(
+        "List of profile IDs currently selected for multi-profile operations",
+      ),
+  })
+  .describe("Schema for updating user's active profile selection.");
+
+export const updateProfileSelectionApiV1ProfilesSelectionPostResponse = zod
+  .object({
+    id: zod.uuid().describe("Selection record ID"),
+    user_id: zod.uuid().describe("User ID"),
+    active_profile_ids: zod
+      .array(zod.uuid())
+      .describe("List of active profile IDs"),
+    created_at: zod.iso
+      .datetime({})
+      .describe("Selection creation timestamp (UTC)"),
+    updated_at: zod.iso.datetime({}).describe("Last update timestamp (UTC)"),
+  })
+  .describe("Schema for profile selection response.");
 
 /**
  * Retrieve all accounts for the authenticated user
  * @summary List all accounts
  */
+export const listAccountsApiV1AccountsGetResponseAccountsItemNameMax = 100;
+
 export const listAccountsApiV1AccountsGetResponseAccountsItemCurrencyDefault =
   "EUR";
 export const listAccountsApiV1AccountsGetResponseAccountsItemCurrencyRegExp =
   new RegExp("^[A-Z]{3}$");
-export const listAccountsApiV1AccountsGetResponseAccountsItemNameMax = 100;
+export const listAccountsApiV1AccountsGetResponseAccountsItemInstitutionNameOneMax = 255;
+
+export const listAccountsApiV1AccountsGetResponseAccountsItemIsActiveDefault = true;
 
 export const listAccountsApiV1AccountsGetResponse = zod
   .object({
-    accounts: zod.array(
-      zod
-        .object({
-          currency: zod
-            .string()
-            .regex(
-              listAccountsApiV1AccountsGetResponseAccountsItemCurrencyRegExp,
-            )
-            .default(
-              listAccountsApiV1AccountsGetResponseAccountsItemCurrencyDefault,
-            )
-            .describe("ISO 4217 currency code (3 uppercase letters)"),
-          name: zod
-            .string()
-            .min(1)
-            .max(listAccountsApiV1AccountsGetResponseAccountsItemNameMax)
-            .describe("Account name"),
-          id: zod.number().describe("Unique account identifier"),
-          user_id: zod.number().describe("Owner user ID"),
-          initial_balance: zod
-            .string()
-            .describe("Initial balance when account was created"),
-          current_balance: zod
-            .string()
-            .describe("Current balance (initial + transactions)"),
-          created_at: zod.iso
-            .datetime({})
-            .describe("Account creation timestamp (UTC)"),
-          updated_at: zod.iso
-            .datetime({})
-            .describe("Last update timestamp (UTC)"),
-        })
-        .describe(
-          "Complete account schema returned by API endpoints.\nIncludes all fields including computed current_balance.",
-        ),
-    ),
+    accounts: zod
+      .array(
+        zod
+          .object({
+            name: zod
+              .string()
+              .min(1)
+              .max(listAccountsApiV1AccountsGetResponseAccountsItemNameMax)
+              .describe("Account name"),
+            account_type: zod
+              .enum([
+                "checking",
+                "savings",
+                "credit_card",
+                "investment",
+                "cash",
+                "loan",
+                "other",
+              ])
+              .optional()
+              .describe("Types of financial accounts"),
+            currency: zod
+              .string()
+              .regex(
+                listAccountsApiV1AccountsGetResponseAccountsItemCurrencyRegExp,
+              )
+              .default(
+                listAccountsApiV1AccountsGetResponseAccountsItemCurrencyDefault,
+              )
+              .describe("ISO 4217 currency code (3 uppercase letters)"),
+            institution_name: zod
+              .union([
+                zod
+                  .string()
+                  .max(
+                    listAccountsApiV1AccountsGetResponseAccountsItemInstitutionNameOneMax,
+                  ),
+                zod.null(),
+              ])
+              .optional()
+              .describe("Name of the financial institution"),
+            notes: zod
+              .union([zod.string(), zod.null()])
+              .optional()
+              .describe("Additional notes about the account"),
+            id: zod.uuid().describe("Unique account identifier"),
+            financial_profile_id: zod
+              .uuid()
+              .describe("ID of the financial profile this account belongs to"),
+            initial_balance: zod
+              .string()
+              .describe("Initial balance when account was created"),
+            current_balance: zod
+              .string()
+              .describe("Current balance (initial + transactions)"),
+            account_number: zod
+              .union([zod.string(), zod.null()])
+              .optional()
+              .describe("Account number (encrypted)"),
+            is_active: zod
+              .boolean()
+              .default(
+                listAccountsApiV1AccountsGetResponseAccountsItemIsActiveDefault,
+              )
+              .describe("Whether the account is currently active"),
+            created_at: zod.iso
+              .datetime({})
+              .describe("Account creation timestamp (UTC)"),
+            updated_at: zod.iso
+              .datetime({})
+              .describe("Last update timestamp (UTC)"),
+          })
+          .describe(
+            "Complete account schema returned by API endpoints.\nIncludes all fields including computed current_balance.",
+          ),
+      )
+      .describe("List of accounts"),
     total: zod.number().describe("Total number of accounts"),
   })
-  .describe("Schema for list accounts response (future: with pagination).");
+  .describe("Schema for list accounts response with pagination.");
 
 /**
  * Create a new financial account for the authenticated user
  * @summary Create new account
  */
+export const createAccountApiV1AccountsPostBodyNameMax = 100;
+
 export const createAccountApiV1AccountsPostBodyCurrencyDefault = "EUR";
 export const createAccountApiV1AccountsPostBodyCurrencyRegExp = new RegExp(
   "^[A-Z]{3}$",
 );
-export const createAccountApiV1AccountsPostBodyNameMax = 100;
-
-export const createAccountApiV1AccountsPostBodyInitialBalanceOneMin = 0;
+export const createAccountApiV1AccountsPostBodyInstitutionNameOneMax = 255;
 
 export const createAccountApiV1AccountsPostBodyInitialBalanceDefault = "0.00";
+export const createAccountApiV1AccountsPostBodyAccountNumberOneMax = 255;
 
 export const createAccountApiV1AccountsPostBody = zod
   .object({
-    currency: zod
-      .string()
-      .regex(createAccountApiV1AccountsPostBodyCurrencyRegExp)
-      .default(createAccountApiV1AccountsPostBodyCurrencyDefault)
-      .describe("ISO 4217 currency code (3 uppercase letters)"),
     name: zod
       .string()
       .min(1)
       .max(createAccountApiV1AccountsPostBodyNameMax)
       .describe("Account name"),
-    initial_balance: zod
+    account_type: zod
+      .enum([
+        "checking",
+        "savings",
+        "credit_card",
+        "investment",
+        "cash",
+        "loan",
+        "other",
+      ])
+      .optional()
+      .describe("Types of financial accounts"),
+    currency: zod
+      .string()
+      .regex(createAccountApiV1AccountsPostBodyCurrencyRegExp)
+      .default(createAccountApiV1AccountsPostBodyCurrencyDefault)
+      .describe("ISO 4217 currency code (3 uppercase letters)"),
+    institution_name: zod
       .union([
         zod
-          .number()
-          .min(createAccountApiV1AccountsPostBodyInitialBalanceOneMin),
-        zod.string(),
+          .string()
+          .max(createAccountApiV1AccountsPostBodyInstitutionNameOneMax),
+        zod.null(),
       ])
+      .optional()
+      .describe("Name of the financial institution"),
+    notes: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Additional notes about the account"),
+    financial_profile_id: zod
+      .union([zod.uuid(), zod.null()])
+      .optional()
+      .describe(
+        "ID of the financial profile this account belongs to (optional, defaults to user's default profile)",
+      ),
+    initial_balance: zod
+      .union([zod.number(), zod.string()])
       .default(createAccountApiV1AccountsPostBodyInitialBalanceDefault)
-      .describe("Initial account balance (must be >= 0)"),
+      .describe("Initial account balance"),
+    account_number: zod
+      .union([
+        zod.string().max(createAccountApiV1AccountsPostBodyAccountNumberOneMax),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Account number (will be encrypted in production)"),
   })
   .describe(
-    "Schema for creating a new account.\nRequires name and optionally currency and initial balance.",
+    "Schema for creating a new account.\nfinancial_profile_id is optional - if not provided, the user's default profile will be used.",
   );
 
 /**
@@ -170,34 +678,75 @@ export const createAccountApiV1AccountsPostBody = zod
  * @summary Get account by ID
  */
 export const getAccountApiV1AccountsAccountIdGetParams = zod.object({
-  account_id: zod.number(),
+  account_id: zod.uuid(),
 });
+
+export const getAccountApiV1AccountsAccountIdGetResponseNameMax = 100;
 
 export const getAccountApiV1AccountsAccountIdGetResponseCurrencyDefault = "EUR";
 export const getAccountApiV1AccountsAccountIdGetResponseCurrencyRegExp =
   new RegExp("^[A-Z]{3}$");
-export const getAccountApiV1AccountsAccountIdGetResponseNameMax = 100;
+export const getAccountApiV1AccountsAccountIdGetResponseInstitutionNameOneMax = 255;
+
+export const getAccountApiV1AccountsAccountIdGetResponseIsActiveDefault = true;
 
 export const getAccountApiV1AccountsAccountIdGetResponse = zod
   .object({
-    currency: zod
-      .string()
-      .regex(getAccountApiV1AccountsAccountIdGetResponseCurrencyRegExp)
-      .default(getAccountApiV1AccountsAccountIdGetResponseCurrencyDefault)
-      .describe("ISO 4217 currency code (3 uppercase letters)"),
     name: zod
       .string()
       .min(1)
       .max(getAccountApiV1AccountsAccountIdGetResponseNameMax)
       .describe("Account name"),
-    id: zod.number().describe("Unique account identifier"),
-    user_id: zod.number().describe("Owner user ID"),
+    account_type: zod
+      .enum([
+        "checking",
+        "savings",
+        "credit_card",
+        "investment",
+        "cash",
+        "loan",
+        "other",
+      ])
+      .optional()
+      .describe("Types of financial accounts"),
+    currency: zod
+      .string()
+      .regex(getAccountApiV1AccountsAccountIdGetResponseCurrencyRegExp)
+      .default(getAccountApiV1AccountsAccountIdGetResponseCurrencyDefault)
+      .describe("ISO 4217 currency code (3 uppercase letters)"),
+    institution_name: zod
+      .union([
+        zod
+          .string()
+          .max(
+            getAccountApiV1AccountsAccountIdGetResponseInstitutionNameOneMax,
+          ),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Name of the financial institution"),
+    notes: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Additional notes about the account"),
+    id: zod.uuid().describe("Unique account identifier"),
+    financial_profile_id: zod
+      .uuid()
+      .describe("ID of the financial profile this account belongs to"),
     initial_balance: zod
       .string()
       .describe("Initial balance when account was created"),
     current_balance: zod
       .string()
       .describe("Current balance (initial + transactions)"),
+    account_number: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Account number (encrypted)"),
+    is_active: zod
+      .boolean()
+      .default(getAccountApiV1AccountsAccountIdGetResponseIsActiveDefault)
+      .describe("Whether the account is currently active"),
     created_at: zod.iso
       .datetime({})
       .describe("Account creation timestamp (UTC)"),
@@ -212,26 +761,19 @@ export const getAccountApiV1AccountsAccountIdGetResponse = zod
  * @summary Update account
  */
 export const updateAccountApiV1AccountsAccountIdPutParams = zod.object({
-  account_id: zod.number(),
+  account_id: zod.uuid(),
 });
+
+export const updateAccountApiV1AccountsAccountIdPutBodyNameOneMax = 100;
 
 export const updateAccountApiV1AccountsAccountIdPutBodyCurrencyOneRegExp =
   new RegExp("^[A-Z]{3}$");
-export const updateAccountApiV1AccountsAccountIdPutBodyNameOneMax = 100;
+export const updateAccountApiV1AccountsAccountIdPutBodyInstitutionNameOneMax = 255;
 
-export const updateAccountApiV1AccountsAccountIdPutBodyInitialBalanceOneMin = 0;
+export const updateAccountApiV1AccountsAccountIdPutBodyAccountNumberOneMax = 255;
 
 export const updateAccountApiV1AccountsAccountIdPutBody = zod
   .object({
-    currency: zod
-      .union([
-        zod
-          .string()
-          .regex(updateAccountApiV1AccountsAccountIdPutBodyCurrencyOneRegExp),
-        zod.null(),
-      ])
-      .optional()
-      .describe("Updated currency code"),
     name: zod
       .union([
         zod
@@ -242,47 +784,130 @@ export const updateAccountApiV1AccountsAccountIdPutBody = zod
       ])
       .optional()
       .describe("Updated account name"),
-    initial_balance: zod
+    account_type: zod
       .union([
         zod
-          .number()
-          .min(updateAccountApiV1AccountsAccountIdPutBodyInitialBalanceOneMin),
-        zod.string(),
+          .enum([
+            "checking",
+            "savings",
+            "credit_card",
+            "investment",
+            "cash",
+            "loan",
+            "other",
+          ])
+          .describe("Types of financial accounts"),
         zod.null(),
       ])
       .optional()
-      .describe("Updated initial balance"),
+      .describe("Updated account type"),
+    currency: zod
+      .union([
+        zod
+          .string()
+          .regex(updateAccountApiV1AccountsAccountIdPutBodyCurrencyOneRegExp),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated currency code"),
+    institution_name: zod
+      .union([
+        zod
+          .string()
+          .max(updateAccountApiV1AccountsAccountIdPutBodyInstitutionNameOneMax),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated institution name"),
+    account_number: zod
+      .union([
+        zod
+          .string()
+          .max(updateAccountApiV1AccountsAccountIdPutBodyAccountNumberOneMax),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated account number"),
+    notes: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Updated notes"),
+    is_active: zod
+      .union([zod.boolean(), zod.null()])
+      .optional()
+      .describe("Whether the account is active"),
   })
   .describe(
     "Schema for updating an existing account.\nAll fields are optional (partial update).",
   );
 
+export const updateAccountApiV1AccountsAccountIdPutResponseNameMax = 100;
+
 export const updateAccountApiV1AccountsAccountIdPutResponseCurrencyDefault =
   "EUR";
 export const updateAccountApiV1AccountsAccountIdPutResponseCurrencyRegExp =
   new RegExp("^[A-Z]{3}$");
-export const updateAccountApiV1AccountsAccountIdPutResponseNameMax = 100;
+export const updateAccountApiV1AccountsAccountIdPutResponseInstitutionNameOneMax = 255;
+
+export const updateAccountApiV1AccountsAccountIdPutResponseIsActiveDefault = true;
 
 export const updateAccountApiV1AccountsAccountIdPutResponse = zod
   .object({
-    currency: zod
-      .string()
-      .regex(updateAccountApiV1AccountsAccountIdPutResponseCurrencyRegExp)
-      .default(updateAccountApiV1AccountsAccountIdPutResponseCurrencyDefault)
-      .describe("ISO 4217 currency code (3 uppercase letters)"),
     name: zod
       .string()
       .min(1)
       .max(updateAccountApiV1AccountsAccountIdPutResponseNameMax)
       .describe("Account name"),
-    id: zod.number().describe("Unique account identifier"),
-    user_id: zod.number().describe("Owner user ID"),
+    account_type: zod
+      .enum([
+        "checking",
+        "savings",
+        "credit_card",
+        "investment",
+        "cash",
+        "loan",
+        "other",
+      ])
+      .optional()
+      .describe("Types of financial accounts"),
+    currency: zod
+      .string()
+      .regex(updateAccountApiV1AccountsAccountIdPutResponseCurrencyRegExp)
+      .default(updateAccountApiV1AccountsAccountIdPutResponseCurrencyDefault)
+      .describe("ISO 4217 currency code (3 uppercase letters)"),
+    institution_name: zod
+      .union([
+        zod
+          .string()
+          .max(
+            updateAccountApiV1AccountsAccountIdPutResponseInstitutionNameOneMax,
+          ),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Name of the financial institution"),
+    notes: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Additional notes about the account"),
+    id: zod.uuid().describe("Unique account identifier"),
+    financial_profile_id: zod
+      .uuid()
+      .describe("ID of the financial profile this account belongs to"),
     initial_balance: zod
       .string()
       .describe("Initial balance when account was created"),
     current_balance: zod
       .string()
       .describe("Current balance (initial + transactions)"),
+    account_number: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Account number (encrypted)"),
+    is_active: zod
+      .boolean()
+      .default(updateAccountApiV1AccountsAccountIdPutResponseIsActiveDefault)
+      .describe("Whether the account is currently active"),
     created_at: zod.iso
       .datetime({})
       .describe("Account creation timestamp (UTC)"),
@@ -297,7 +922,7 @@ export const updateAccountApiV1AccountsAccountIdPutResponse = zod
  * @summary Delete account
  */
 export const deleteAccountApiV1AccountsAccountIdDeleteParams = zod.object({
-  account_id: zod.number(),
+  account_id: zod.uuid(),
 });
 
 /**
@@ -306,12 +931,12 @@ export const deleteAccountApiV1AccountsAccountIdDeleteParams = zod.object({
  */
 export const getAccountBalanceApiV1AccountsAccountIdBalanceGetParams =
   zod.object({
-    account_id: zod.number(),
+    account_id: zod.uuid(),
   });
 
 export const getAccountBalanceApiV1AccountsAccountIdBalanceGetResponse = zod
   .object({
-    account_id: zod.number().describe("Account ID"),
+    account_id: zod.uuid().describe("Account ID"),
     balance: zod.string().describe("Current account balance"),
     currency: zod.string().describe("Account currency"),
     last_updated: zod.iso.datetime({}).describe("Last transaction timestamp"),
@@ -321,15 +946,2521 @@ export const getAccountBalanceApiV1AccountsAccountIdBalanceGetResponse = zod
   );
 
 /**
- * Lista tutte le categorie disponibili (pubblico, no auth)
- * @summary List Categories
+ * Retrieve all categories for a financial profile
+ * @summary List categories
  */
-export const listCategoriesApiV1CategoriesGetResponseItem = zod.object({
-  id: zod.number(),
-  name: zod.string(),
-  icon: zod.union([zod.string(), zod.null()]),
-  color: zod.union([zod.string(), zod.null()]),
+export const listCategoriesApiV1CategoriesGetQueryLevelOneMax = 3;
+
+export const listCategoriesApiV1CategoriesGetQueryIsActiveDefault = true;
+
+export const listCategoriesApiV1CategoriesGetQueryParams = zod.object({
+  profile_id: zod.uuid().describe("Financial profile ID"),
+  parent_id: zod
+    .union([zod.uuid(), zod.null()])
+    .optional()
+    .describe("Filter by parent category ID (null for root categories)"),
+  level: zod
+    .union([
+      zod.number().min(1).max(listCategoriesApiV1CategoriesGetQueryLevelOneMax),
+      zod.null(),
+    ])
+    .optional()
+    .describe("Filter by hierarchy level (1, 2, or 3)"),
+  is_active: zod
+    .boolean()
+    .default(listCategoriesApiV1CategoriesGetQueryIsActiveDefault)
+    .describe("Filter by active status"),
 });
-export const listCategoriesApiV1CategoriesGetResponse = zod.array(
-  listCategoriesApiV1CategoriesGetResponseItem,
+
+export const listCategoriesApiV1CategoriesGetResponseItemsItemNameMax = 100;
+
+export const listCategoriesApiV1CategoriesGetResponseItemsItemIconOneMax = 50;
+
+export const listCategoriesApiV1CategoriesGetResponseItemsItemColorOneRegExp =
+  new RegExp("^#[0-9A-Fa-f]{6}$");
+export const listCategoriesApiV1CategoriesGetResponseItemsItemLevelMax = 3;
+
+export const listCategoriesApiV1CategoriesGetResponseItemsItemIsSystemDefault = false;
+export const listCategoriesApiV1CategoriesGetResponseItemsItemIsActiveDefault = true;
+
+export const listCategoriesApiV1CategoriesGetResponse = zod
+  .object({
+    items: zod
+      .array(
+        zod
+          .object({
+            name: zod
+              .string()
+              .min(1)
+              .max(listCategoriesApiV1CategoriesGetResponseItemsItemNameMax)
+              .describe("Category name"),
+            description: zod
+              .union([zod.string(), zod.null()])
+              .optional()
+              .describe("Optional description of the category"),
+            icon: zod
+              .union([
+                zod
+                  .string()
+                  .max(
+                    listCategoriesApiV1CategoriesGetResponseItemsItemIconOneMax,
+                  ),
+                zod.null(),
+              ])
+              .optional()
+              .describe("Icon identifier (emoji or icon name)"),
+            color: zod
+              .union([
+                zod
+                  .string()
+                  .regex(
+                    listCategoriesApiV1CategoriesGetResponseItemsItemColorOneRegExp,
+                  ),
+                zod.null(),
+              ])
+              .optional()
+              .describe("Hex color code for UI display"),
+            parent_category_id: zod
+              .union([zod.uuid(), zod.null()])
+              .optional()
+              .describe("ID of parent category (null for root categories)"),
+            level: zod
+              .number()
+              .min(1)
+              .max(listCategoriesApiV1CategoriesGetResponseItemsItemLevelMax)
+              .describe("Hierarchy level (1, 2, or 3)"),
+            id: zod.uuid().describe("Unique category identifier"),
+            financial_profile_id: zod
+              .uuid()
+              .describe("ID of the financial profile this category belongs to"),
+            full_path: zod
+              .union([zod.string(), zod.null()])
+              .optional()
+              .describe(
+                "Full hierarchical path (e.g., 'Groceries > Fresh Food > Fruits')",
+              ),
+            is_system: zod
+              .boolean()
+              .default(
+                listCategoriesApiV1CategoriesGetResponseItemsItemIsSystemDefault,
+              )
+              .describe("System categories cannot be deleted by users"),
+            is_active: zod
+              .boolean()
+              .default(
+                listCategoriesApiV1CategoriesGetResponseItemsItemIsActiveDefault,
+              )
+              .describe("Whether the category is currently active"),
+            created_at: zod.iso
+              .datetime({})
+              .describe("Category creation timestamp (UTC)"),
+            updated_at: zod.iso
+              .datetime({})
+              .describe("Last update timestamp (UTC)"),
+            subcategories: zod
+              .union([zod.array(zod.unknown()), zod.null()])
+              .optional()
+              .describe("Child categories (for hierarchical display)"),
+          })
+          .describe(
+            "Complete category schema returned by API endpoints.\nIncludes all fields and optional subcategories for tree view.",
+          ),
+      )
+      .describe("List of categories"),
+    total: zod.number().describe("Total number of categories"),
+  })
+  .describe("Schema for list categories response with pagination support.");
+
+/**
+ * Retrieve transactions with optional filters (profile_id, account_id, category_id, date range)
+ * @summary List transactions
+ */
+export const listTransactionsApiV1TransactionsGetQuerySkipDefault = 0;
+export const listTransactionsApiV1TransactionsGetQuerySkipMin = 0;
+
+export const listTransactionsApiV1TransactionsGetQueryLimitDefault = 100;
+export const listTransactionsApiV1TransactionsGetQueryLimitMax = 1000;
+
+export const listTransactionsApiV1TransactionsGetQueryParams = zod.object({
+  profile_id: zod
+    .union([zod.uuid(), zod.null()])
+    .optional()
+    .describe("Filter by financial profile ID"),
+  account_id: zod
+    .union([zod.uuid(), zod.null()])
+    .optional()
+    .describe("Filter by account ID"),
+  category_id: zod
+    .union([zod.uuid(), zod.null()])
+    .optional()
+    .describe("Filter by category ID"),
+  date_from: zod
+    .union([zod.iso.date(), zod.null()])
+    .optional()
+    .describe("Filter transactions from this date (inclusive)"),
+  date_to: zod
+    .union([zod.iso.date(), zod.null()])
+    .optional()
+    .describe("Filter transactions to this date (inclusive)"),
+  skip: zod
+    .number()
+    .min(listTransactionsApiV1TransactionsGetQuerySkipMin)
+    .default(listTransactionsApiV1TransactionsGetQuerySkipDefault)
+    .describe("Number of records to skip"),
+  limit: zod
+    .number()
+    .min(1)
+    .max(listTransactionsApiV1TransactionsGetQueryLimitMax)
+    .default(listTransactionsApiV1TransactionsGetQueryLimitDefault)
+    .describe("Maximum number of records to return"),
+});
+
+export const listTransactionsApiV1TransactionsGetResponseItemsItemCurrencyRegExp =
+  new RegExp("^[A-Z]{3}$");
+
+export const listTransactionsApiV1TransactionsGetResponseItemsItemMerchantNameOneMax = 255;
+
+export const listTransactionsApiV1TransactionsGetResponseItemsItemIsReconciledDefault = false;
+
+export const listTransactionsApiV1TransactionsGetResponse = zod
+  .object({
+    items: zod
+      .array(
+        zod
+          .object({
+            account_id: zod
+              .uuid()
+              .describe("ID of the account this transaction belongs to"),
+            category_id: zod
+              .union([zod.uuid(), zod.null()])
+              .optional()
+              .describe("ID of the category this transaction is assigned to"),
+            transaction_type: zod
+              .enum([
+                "bank_transfer",
+                "withdrawal",
+                "payment",
+                "purchase",
+                "internal_transfer",
+                "income",
+                "asset_purchase",
+                "asset_sale",
+                "other",
+              ])
+              .describe("Types of financial transactions"),
+            amount: zod
+              .string()
+              .describe("Transaction amount (must be positive)"),
+            currency: zod
+              .string()
+              .regex(
+                listTransactionsApiV1TransactionsGetResponseItemsItemCurrencyRegExp,
+              )
+              .describe("ISO 4217 currency code (3 uppercase letters)"),
+            description: zod
+              .string()
+              .min(1)
+              .describe("Transaction description"),
+            merchant_name: zod
+              .union([
+                zod
+                  .string()
+                  .max(
+                    listTransactionsApiV1TransactionsGetResponseItemsItemMerchantNameOneMax,
+                  ),
+                zod.null(),
+              ])
+              .optional()
+              .describe("Name of the merchant/vendor"),
+            transaction_date: zod.iso
+              .date()
+              .describe("Date when the transaction occurred"),
+            notes: zod
+              .union([zod.string(), zod.null()])
+              .optional()
+              .describe("Additional notes about the transaction"),
+            id: zod.uuid().describe("Unique transaction identifier"),
+            recurring_transaction_id: zod
+              .union([zod.uuid(), zod.null()])
+              .optional()
+              .describe("ID of parent recurring transaction (if applicable)"),
+            exchange_rate_id: zod
+              .union([zod.uuid(), zod.null()])
+              .optional()
+              .describe("ID of exchange rate used for conversion"),
+            amount_in_profile_currency: zod
+              .union([zod.string(), zod.null()])
+              .optional()
+              .describe("Amount converted to profile's default currency"),
+            merchant_normalized: zod
+              .union([zod.string(), zod.null()])
+              .optional()
+              .describe(
+                "ML-normalized merchant name for better categorization",
+              ),
+            value_date: zod
+              .union([zod.iso.date(), zod.null()])
+              .optional()
+              .describe("Date when transaction was valued"),
+            is_reconciled: zod
+              .boolean()
+              .default(
+                listTransactionsApiV1TransactionsGetResponseItemsItemIsReconciledDefault,
+              )
+              .describe("Whether transaction has been reconciled"),
+            location: zod
+              .union([zod.string(), zod.null()])
+              .optional()
+              .describe("Transaction location"),
+            receipt_url: zod
+              .union([zod.string(), zod.null()])
+              .optional()
+              .describe("URL to receipt or document"),
+            created_by: zod
+              .enum([
+                "manual",
+                "import_csv",
+                "import_ocr",
+                "import_api",
+                "recurring",
+              ])
+              .describe("Source of transaction creation"),
+            created_at: zod.iso
+              .datetime({})
+              .describe("Transaction creation timestamp (UTC)"),
+            updated_at: zod.iso
+              .datetime({})
+              .describe("Last update timestamp (UTC)"),
+          })
+          .describe(
+            "Complete transaction schema returned by API endpoints.\nIncludes all fields including computed and metadata fields.",
+          ),
+      )
+      .describe("List of transactions"),
+    total: zod.number().describe("Total number of transactions"),
+  })
+  .describe("Schema for list transactions response with pagination support.");
+
+/**
+ * Create a new transaction for a specific account
+ * @summary Create transaction
+ */
+export const createTransactionApiV1TransactionsPostBodyAmountOneExclusiveMin = 0;
+
+export const createTransactionApiV1TransactionsPostBodyCurrencyRegExp =
+  new RegExp("^[A-Z]{3}$");
+
+export const createTransactionApiV1TransactionsPostBodyMerchantNameOneMax = 255;
+
+export const createTransactionApiV1TransactionsPostBodyLocationOneMax = 255;
+
+export const createTransactionApiV1TransactionsPostBodyReceiptUrlOneMax = 500;
+
+export const createTransactionApiV1TransactionsPostBody = zod
+  .object({
+    account_id: zod
+      .uuid()
+      .describe("ID of the account this transaction belongs to"),
+    category_id: zod
+      .union([zod.uuid(), zod.null()])
+      .optional()
+      .describe("ID of the category this transaction is assigned to"),
+    transaction_type: zod
+      .enum([
+        "bank_transfer",
+        "withdrawal",
+        "payment",
+        "purchase",
+        "internal_transfer",
+        "income",
+        "asset_purchase",
+        "asset_sale",
+        "other",
+      ])
+      .describe("Types of financial transactions"),
+    amount: zod
+      .union([
+        zod
+          .number()
+          .gt(createTransactionApiV1TransactionsPostBodyAmountOneExclusiveMin),
+        zod.string(),
+      ])
+      .describe("Transaction amount (must be positive)"),
+    currency: zod
+      .string()
+      .regex(createTransactionApiV1TransactionsPostBodyCurrencyRegExp)
+      .describe("ISO 4217 currency code (3 uppercase letters)"),
+    description: zod.string().min(1).describe("Transaction description"),
+    merchant_name: zod
+      .union([
+        zod
+          .string()
+          .max(createTransactionApiV1TransactionsPostBodyMerchantNameOneMax),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Name of the merchant/vendor"),
+    transaction_date: zod.iso
+      .date()
+      .describe("Date when the transaction occurred"),
+    notes: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Additional notes about the transaction"),
+    value_date: zod
+      .union([zod.iso.date(), zod.null()])
+      .optional()
+      .describe("Date when transaction was valued (for banking)"),
+    location: zod
+      .union([
+        zod
+          .string()
+          .max(createTransactionApiV1TransactionsPostBodyLocationOneMax),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Transaction location"),
+    receipt_url: zod
+      .union([
+        zod
+          .string()
+          .max(createTransactionApiV1TransactionsPostBodyReceiptUrlOneMax),
+        zod.null(),
+      ])
+      .optional()
+      .describe("URL to receipt or document"),
+    created_by: zod
+      .enum(["manual", "import_csv", "import_ocr", "import_api", "recurring"])
+      .optional()
+      .describe("Source of transaction creation"),
+  })
+  .describe(
+    "Schema for creating a new transaction.\nIncludes optional fields for advanced features.",
+  );
+
+/**
+ * Retrieve a specific transaction by its ID
+ * @summary Get transaction by ID
+ */
+export const getTransactionApiV1TransactionsTransactionIdGetParams = zod.object(
+  {
+    transaction_id: zod.uuid(),
+  },
 );
+
+export const getTransactionApiV1TransactionsTransactionIdGetResponseCurrencyRegExp =
+  new RegExp("^[A-Z]{3}$");
+
+export const getTransactionApiV1TransactionsTransactionIdGetResponseMerchantNameOneMax = 255;
+
+export const getTransactionApiV1TransactionsTransactionIdGetResponseIsReconciledDefault = false;
+
+export const getTransactionApiV1TransactionsTransactionIdGetResponse = zod
+  .object({
+    account_id: zod
+      .uuid()
+      .describe("ID of the account this transaction belongs to"),
+    category_id: zod
+      .union([zod.uuid(), zod.null()])
+      .optional()
+      .describe("ID of the category this transaction is assigned to"),
+    transaction_type: zod
+      .enum([
+        "bank_transfer",
+        "withdrawal",
+        "payment",
+        "purchase",
+        "internal_transfer",
+        "income",
+        "asset_purchase",
+        "asset_sale",
+        "other",
+      ])
+      .describe("Types of financial transactions"),
+    amount: zod.string().describe("Transaction amount (must be positive)"),
+    currency: zod
+      .string()
+      .regex(
+        getTransactionApiV1TransactionsTransactionIdGetResponseCurrencyRegExp,
+      )
+      .describe("ISO 4217 currency code (3 uppercase letters)"),
+    description: zod.string().min(1).describe("Transaction description"),
+    merchant_name: zod
+      .union([
+        zod
+          .string()
+          .max(
+            getTransactionApiV1TransactionsTransactionIdGetResponseMerchantNameOneMax,
+          ),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Name of the merchant/vendor"),
+    transaction_date: zod.iso
+      .date()
+      .describe("Date when the transaction occurred"),
+    notes: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Additional notes about the transaction"),
+    id: zod.uuid().describe("Unique transaction identifier"),
+    recurring_transaction_id: zod
+      .union([zod.uuid(), zod.null()])
+      .optional()
+      .describe("ID of parent recurring transaction (if applicable)"),
+    exchange_rate_id: zod
+      .union([zod.uuid(), zod.null()])
+      .optional()
+      .describe("ID of exchange rate used for conversion"),
+    amount_in_profile_currency: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Amount converted to profile's default currency"),
+    merchant_normalized: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("ML-normalized merchant name for better categorization"),
+    value_date: zod
+      .union([zod.iso.date(), zod.null()])
+      .optional()
+      .describe("Date when transaction was valued"),
+    is_reconciled: zod
+      .boolean()
+      .default(
+        getTransactionApiV1TransactionsTransactionIdGetResponseIsReconciledDefault,
+      )
+      .describe("Whether transaction has been reconciled"),
+    location: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Transaction location"),
+    receipt_url: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("URL to receipt or document"),
+    created_by: zod
+      .enum(["manual", "import_csv", "import_ocr", "import_api", "recurring"])
+      .describe("Source of transaction creation"),
+    created_at: zod.iso
+      .datetime({})
+      .describe("Transaction creation timestamp (UTC)"),
+    updated_at: zod.iso.datetime({}).describe("Last update timestamp (UTC)"),
+  })
+  .describe(
+    "Complete transaction schema returned by API endpoints.\nIncludes all fields including computed and metadata fields.",
+  );
+
+/**
+ * Update an existing transaction (partial update supported)
+ * @summary Update transaction
+ */
+export const updateTransactionApiV1TransactionsTransactionIdPatchParams =
+  zod.object({
+    transaction_id: zod.uuid(),
+  });
+
+export const updateTransactionApiV1TransactionsTransactionIdPatchBodyAmountOneExclusiveMin = 0;
+
+export const updateTransactionApiV1TransactionsTransactionIdPatchBodyCurrencyOneRegExp =
+  new RegExp("^[A-Z]{3}$");
+
+export const updateTransactionApiV1TransactionsTransactionIdPatchBodyMerchantNameOneMax = 255;
+
+export const updateTransactionApiV1TransactionsTransactionIdPatchBodyLocationOneMax = 255;
+
+export const updateTransactionApiV1TransactionsTransactionIdPatchBodyReceiptUrlOneMax = 500;
+
+export const updateTransactionApiV1TransactionsTransactionIdPatchBody = zod
+  .object({
+    category_id: zod
+      .union([zod.uuid(), zod.null()])
+      .optional()
+      .describe("Updated category ID"),
+    transaction_type: zod
+      .union([
+        zod
+          .enum([
+            "bank_transfer",
+            "withdrawal",
+            "payment",
+            "purchase",
+            "internal_transfer",
+            "income",
+            "asset_purchase",
+            "asset_sale",
+            "other",
+          ])
+          .describe("Types of financial transactions"),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated transaction type"),
+    amount: zod
+      .union([
+        zod
+          .number()
+          .gt(
+            updateTransactionApiV1TransactionsTransactionIdPatchBodyAmountOneExclusiveMin,
+          ),
+        zod.string(),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated amount"),
+    currency: zod
+      .union([
+        zod
+          .string()
+          .regex(
+            updateTransactionApiV1TransactionsTransactionIdPatchBodyCurrencyOneRegExp,
+          ),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated currency code"),
+    description: zod
+      .union([zod.string().min(1), zod.null()])
+      .optional()
+      .describe("Updated description"),
+    merchant_name: zod
+      .union([
+        zod
+          .string()
+          .max(
+            updateTransactionApiV1TransactionsTransactionIdPatchBodyMerchantNameOneMax,
+          ),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated merchant name"),
+    transaction_date: zod
+      .union([zod.iso.date(), zod.null()])
+      .optional()
+      .describe("Updated transaction date"),
+    value_date: zod
+      .union([zod.iso.date(), zod.null()])
+      .optional()
+      .describe("Updated value date"),
+    notes: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Updated notes"),
+    is_reconciled: zod
+      .union([zod.boolean(), zod.null()])
+      .optional()
+      .describe("Whether transaction has been reconciled"),
+    location: zod
+      .union([
+        zod
+          .string()
+          .max(
+            updateTransactionApiV1TransactionsTransactionIdPatchBodyLocationOneMax,
+          ),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated location"),
+    receipt_url: zod
+      .union([
+        zod
+          .string()
+          .max(
+            updateTransactionApiV1TransactionsTransactionIdPatchBodyReceiptUrlOneMax,
+          ),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated receipt URL"),
+  })
+  .describe(
+    "Schema for updating an existing transaction.\nAll fields are optional (partial update).",
+  );
+
+export const updateTransactionApiV1TransactionsTransactionIdPatchResponseCurrencyRegExp =
+  new RegExp("^[A-Z]{3}$");
+
+export const updateTransactionApiV1TransactionsTransactionIdPatchResponseMerchantNameOneMax = 255;
+
+export const updateTransactionApiV1TransactionsTransactionIdPatchResponseIsReconciledDefault = false;
+
+export const updateTransactionApiV1TransactionsTransactionIdPatchResponse = zod
+  .object({
+    account_id: zod
+      .uuid()
+      .describe("ID of the account this transaction belongs to"),
+    category_id: zod
+      .union([zod.uuid(), zod.null()])
+      .optional()
+      .describe("ID of the category this transaction is assigned to"),
+    transaction_type: zod
+      .enum([
+        "bank_transfer",
+        "withdrawal",
+        "payment",
+        "purchase",
+        "internal_transfer",
+        "income",
+        "asset_purchase",
+        "asset_sale",
+        "other",
+      ])
+      .describe("Types of financial transactions"),
+    amount: zod.string().describe("Transaction amount (must be positive)"),
+    currency: zod
+      .string()
+      .regex(
+        updateTransactionApiV1TransactionsTransactionIdPatchResponseCurrencyRegExp,
+      )
+      .describe("ISO 4217 currency code (3 uppercase letters)"),
+    description: zod.string().min(1).describe("Transaction description"),
+    merchant_name: zod
+      .union([
+        zod
+          .string()
+          .max(
+            updateTransactionApiV1TransactionsTransactionIdPatchResponseMerchantNameOneMax,
+          ),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Name of the merchant/vendor"),
+    transaction_date: zod.iso
+      .date()
+      .describe("Date when the transaction occurred"),
+    notes: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Additional notes about the transaction"),
+    id: zod.uuid().describe("Unique transaction identifier"),
+    recurring_transaction_id: zod
+      .union([zod.uuid(), zod.null()])
+      .optional()
+      .describe("ID of parent recurring transaction (if applicable)"),
+    exchange_rate_id: zod
+      .union([zod.uuid(), zod.null()])
+      .optional()
+      .describe("ID of exchange rate used for conversion"),
+    amount_in_profile_currency: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Amount converted to profile's default currency"),
+    merchant_normalized: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("ML-normalized merchant name for better categorization"),
+    value_date: zod
+      .union([zod.iso.date(), zod.null()])
+      .optional()
+      .describe("Date when transaction was valued"),
+    is_reconciled: zod
+      .boolean()
+      .default(
+        updateTransactionApiV1TransactionsTransactionIdPatchResponseIsReconciledDefault,
+      )
+      .describe("Whether transaction has been reconciled"),
+    location: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Transaction location"),
+    receipt_url: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("URL to receipt or document"),
+    created_by: zod
+      .enum(["manual", "import_csv", "import_ocr", "import_api", "recurring"])
+      .describe("Source of transaction creation"),
+    created_at: zod.iso
+      .datetime({})
+      .describe("Transaction creation timestamp (UTC)"),
+    updated_at: zod.iso.datetime({}).describe("Last update timestamp (UTC)"),
+  })
+  .describe(
+    "Complete transaction schema returned by API endpoints.\nIncludes all fields including computed and metadata fields.",
+  );
+
+/**
+ * Permanently delete a transaction
+ * @summary Delete transaction
+ */
+export const deleteTransactionApiV1TransactionsTransactionIdDeleteParams =
+  zod.object({
+    transaction_id: zod.uuid(),
+  });
+
+/**
+ * Create multiple transactions at once (useful for imports)
+ * @summary Bulk create transactions
+ */
+export const bulkCreateTransactionsApiV1TransactionsBulkPostBodyAmountOneExclusiveMin = 0;
+
+export const bulkCreateTransactionsApiV1TransactionsBulkPostBodyCurrencyRegExp =
+  new RegExp("^[A-Z]{3}$");
+
+export const bulkCreateTransactionsApiV1TransactionsBulkPostBodyMerchantNameOneMax = 255;
+
+export const bulkCreateTransactionsApiV1TransactionsBulkPostBodyLocationOneMax = 255;
+
+export const bulkCreateTransactionsApiV1TransactionsBulkPostBodyReceiptUrlOneMax = 500;
+
+export const bulkCreateTransactionsApiV1TransactionsBulkPostBodyItem = zod
+  .object({
+    account_id: zod
+      .uuid()
+      .describe("ID of the account this transaction belongs to"),
+    category_id: zod
+      .union([zod.uuid(), zod.null()])
+      .optional()
+      .describe("ID of the category this transaction is assigned to"),
+    transaction_type: zod
+      .enum([
+        "bank_transfer",
+        "withdrawal",
+        "payment",
+        "purchase",
+        "internal_transfer",
+        "income",
+        "asset_purchase",
+        "asset_sale",
+        "other",
+      ])
+      .describe("Types of financial transactions"),
+    amount: zod
+      .union([
+        zod
+          .number()
+          .gt(
+            bulkCreateTransactionsApiV1TransactionsBulkPostBodyAmountOneExclusiveMin,
+          ),
+        zod.string(),
+      ])
+      .describe("Transaction amount (must be positive)"),
+    currency: zod
+      .string()
+      .regex(bulkCreateTransactionsApiV1TransactionsBulkPostBodyCurrencyRegExp)
+      .describe("ISO 4217 currency code (3 uppercase letters)"),
+    description: zod.string().min(1).describe("Transaction description"),
+    merchant_name: zod
+      .union([
+        zod
+          .string()
+          .max(
+            bulkCreateTransactionsApiV1TransactionsBulkPostBodyMerchantNameOneMax,
+          ),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Name of the merchant/vendor"),
+    transaction_date: zod.iso
+      .date()
+      .describe("Date when the transaction occurred"),
+    notes: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Additional notes about the transaction"),
+    value_date: zod
+      .union([zod.iso.date(), zod.null()])
+      .optional()
+      .describe("Date when transaction was valued (for banking)"),
+    location: zod
+      .union([
+        zod
+          .string()
+          .max(
+            bulkCreateTransactionsApiV1TransactionsBulkPostBodyLocationOneMax,
+          ),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Transaction location"),
+    receipt_url: zod
+      .union([
+        zod
+          .string()
+          .max(
+            bulkCreateTransactionsApiV1TransactionsBulkPostBodyReceiptUrlOneMax,
+          ),
+        zod.null(),
+      ])
+      .optional()
+      .describe("URL to receipt or document"),
+    created_by: zod
+      .enum(["manual", "import_csv", "import_ocr", "import_api", "recurring"])
+      .optional()
+      .describe("Source of transaction creation"),
+  })
+  .describe(
+    "Schema for creating a new transaction.\nIncludes optional fields for advanced features.",
+  );
+export const bulkCreateTransactionsApiV1TransactionsBulkPostBody = zod.array(
+  bulkCreateTransactionsApiV1TransactionsBulkPostBodyItem,
+);
+
+/**
+ * Get spending statistics for transactions (total spent, total income, by category)
+ * @summary Get transaction statistics
+ */
+export const getTransactionStatsApiV1TransactionsStatsGetQueryParams =
+  zod.object({
+    profile_id: zod
+      .union([zod.uuid(), zod.null()])
+      .optional()
+      .describe("Filter by financial profile ID"),
+    account_id: zod
+      .union([zod.uuid(), zod.null()])
+      .optional()
+      .describe("Filter by account ID"),
+    date_from: zod
+      .union([zod.iso.date(), zod.null()])
+      .optional()
+      .describe("Statistics from this date (inclusive)"),
+    date_to: zod
+      .union([zod.iso.date(), zod.null()])
+      .optional()
+      .describe("Statistics to this date (inclusive)"),
+  });
+
+export const getTransactionStatsApiV1TransactionsStatsGetResponse =
+  zod.unknown();
+
+/**
+ * Retrieve all budgets for a financial profile
+ * @summary List budgets
+ */
+export const listBudgetsApiV1BudgetsGetQueryIncludeInactiveDefault = false;
+
+export const listBudgetsApiV1BudgetsGetQueryParams = zod.object({
+  profile_id: zod.uuid().describe("Financial profile ID"),
+  include_inactive: zod
+    .boolean()
+    .default(listBudgetsApiV1BudgetsGetQueryIncludeInactiveDefault)
+    .describe("Include inactive budgets"),
+});
+
+export const listBudgetsApiV1BudgetsGetResponseItemsItemNameMax = 255;
+
+export const listBudgetsApiV1BudgetsGetResponseItemsItemCurrencyRegExp =
+  new RegExp("^[A-Z]{3}$");
+export const listBudgetsApiV1BudgetsGetResponseItemsItemIsActiveDefault = true;
+
+export const listBudgetsApiV1BudgetsGetResponse = zod
+  .object({
+    items: zod
+      .array(
+        zod
+          .object({
+            name: zod
+              .string()
+              .min(1)
+              .max(listBudgetsApiV1BudgetsGetResponseItemsItemNameMax)
+              .describe("Budget name"),
+            period_type: zod
+              .enum(["monthly", "quarterly", "yearly", "custom"])
+              .describe("Budget period types"),
+            start_date: zod.iso
+              .date()
+              .describe("Start date of the budget period"),
+            end_date: zod.iso.date().describe("End date of the budget period"),
+            amount: zod
+              .string()
+              .describe("Total budget amount (must be positive)"),
+            currency: zod
+              .string()
+              .regex(listBudgetsApiV1BudgetsGetResponseItemsItemCurrencyRegExp)
+              .describe("ISO 4217 currency code (3 uppercase letters)"),
+            id: zod.uuid().describe("Unique budget identifier"),
+            financial_profile_id: zod
+              .uuid()
+              .describe("ID of the financial profile this budget belongs to"),
+            is_active: zod
+              .boolean()
+              .default(
+                listBudgetsApiV1BudgetsGetResponseItemsItemIsActiveDefault,
+              )
+              .describe("Whether the budget is currently active"),
+            alert_threshold_percentage: zod
+              .string()
+              .describe("Percentage of budget to trigger alerts"),
+            current_usage: zod
+              .union([zod.string(), zod.null()])
+              .optional()
+              .describe(
+                "Current spending against this budget (computed from transactions)",
+              ),
+            usage_percentage: zod
+              .union([zod.string(), zod.null()])
+              .optional()
+              .describe("Percentage of budget used (computed)"),
+            remaining_amount: zod
+              .union([zod.string(), zod.null()])
+              .optional()
+              .describe("Remaining budget amount (computed)"),
+            category_allocations: zod
+              .union([
+                zod.array(
+                  zod
+                    .object({
+                      category_id: zod.uuid().describe("Category identifier"),
+                      category_name: zod.string().describe("Category name"),
+                      allocated_amount: zod
+                        .string()
+                        .describe("Amount allocated to this category"),
+                    })
+                    .describe(
+                      "Schema for category allocation within a budget.\nShows how budget amount is distributed across categories.",
+                    ),
+                ),
+                zod.null(),
+              ])
+              .optional()
+              .describe("Category allocations for this budget"),
+            created_at: zod.iso
+              .datetime({})
+              .describe("Budget creation timestamp (UTC)"),
+            updated_at: zod.iso
+              .datetime({})
+              .describe("Last update timestamp (UTC)"),
+          })
+          .describe(
+            "Complete budget schema returned by API endpoints.\nIncludes all fields, current usage, and category allocations.",
+          ),
+      )
+      .describe("List of budgets"),
+    total: zod.number().describe("Total number of budgets"),
+  })
+  .describe("Schema for list budgets response with pagination support.");
+
+/**
+ * Create a new budget for a financial profile
+ * @summary Create budget
+ */
+export const createBudgetApiV1BudgetsPostBodyNameMax = 255;
+
+export const createBudgetApiV1BudgetsPostBodyAmountOneExclusiveMin = 0;
+
+export const createBudgetApiV1BudgetsPostBodyCurrencyRegExp = new RegExp(
+  "^[A-Z]{3}$",
+);
+
+export const createBudgetApiV1BudgetsPostBodyAlertThresholdPercentageOneMin = 0;
+export const createBudgetApiV1BudgetsPostBodyAlertThresholdPercentageOneMax = 100;
+
+export const createBudgetApiV1BudgetsPostBodyAlertThresholdPercentageDefault =
+  "80.00";
+
+export const createBudgetApiV1BudgetsPostBody = zod
+  .object({
+    name: zod
+      .string()
+      .min(1)
+      .max(createBudgetApiV1BudgetsPostBodyNameMax)
+      .describe("Budget name"),
+    period_type: zod
+      .enum(["monthly", "quarterly", "yearly", "custom"])
+      .describe("Budget period types"),
+    start_date: zod.iso.date().describe("Start date of the budget period"),
+    end_date: zod.iso.date().describe("End date of the budget period"),
+    amount: zod
+      .union([
+        zod.number().gt(createBudgetApiV1BudgetsPostBodyAmountOneExclusiveMin),
+        zod.string(),
+      ])
+      .describe("Total budget amount (must be positive)"),
+    currency: zod
+      .string()
+      .regex(createBudgetApiV1BudgetsPostBodyCurrencyRegExp)
+      .describe("ISO 4217 currency code (3 uppercase letters)"),
+    financial_profile_id: zod
+      .uuid()
+      .describe("ID of the financial profile this budget belongs to"),
+    category_ids: zod
+      .array(zod.uuid())
+      .min(1)
+      .describe("List of category IDs to assign to this budget"),
+    alert_threshold_percentage: zod
+      .union([
+        zod
+          .number()
+          .min(createBudgetApiV1BudgetsPostBodyAlertThresholdPercentageOneMin)
+          .max(createBudgetApiV1BudgetsPostBodyAlertThresholdPercentageOneMax),
+        zod.string(),
+      ])
+      .default(createBudgetApiV1BudgetsPostBodyAlertThresholdPercentageDefault)
+      .describe("Percentage of budget to trigger alerts (0-100)"),
+  })
+  .describe(
+    "Schema for creating a new budget.\nRequires financial_profile_id and category allocations.",
+  );
+
+/**
+ * Retrieve a specific budget by its ID with current usage statistics
+ * @summary Get budget with usage
+ */
+export const getBudgetApiV1BudgetsBudgetIdGetParams = zod.object({
+  budget_id: zod.uuid(),
+});
+
+export const getBudgetApiV1BudgetsBudgetIdGetResponseNameMax = 255;
+
+export const getBudgetApiV1BudgetsBudgetIdGetResponseCurrencyRegExp =
+  new RegExp("^[A-Z]{3}$");
+export const getBudgetApiV1BudgetsBudgetIdGetResponseIsActiveDefault = true;
+
+export const getBudgetApiV1BudgetsBudgetIdGetResponse = zod
+  .object({
+    name: zod
+      .string()
+      .min(1)
+      .max(getBudgetApiV1BudgetsBudgetIdGetResponseNameMax)
+      .describe("Budget name"),
+    period_type: zod
+      .enum(["monthly", "quarterly", "yearly", "custom"])
+      .describe("Budget period types"),
+    start_date: zod.iso.date().describe("Start date of the budget period"),
+    end_date: zod.iso.date().describe("End date of the budget period"),
+    amount: zod.string().describe("Total budget amount (must be positive)"),
+    currency: zod
+      .string()
+      .regex(getBudgetApiV1BudgetsBudgetIdGetResponseCurrencyRegExp)
+      .describe("ISO 4217 currency code (3 uppercase letters)"),
+    id: zod.uuid().describe("Unique budget identifier"),
+    financial_profile_id: zod
+      .uuid()
+      .describe("ID of the financial profile this budget belongs to"),
+    is_active: zod
+      .boolean()
+      .default(getBudgetApiV1BudgetsBudgetIdGetResponseIsActiveDefault)
+      .describe("Whether the budget is currently active"),
+    alert_threshold_percentage: zod
+      .string()
+      .describe("Percentage of budget to trigger alerts"),
+    current_usage: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe(
+        "Current spending against this budget (computed from transactions)",
+      ),
+    usage_percentage: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Percentage of budget used (computed)"),
+    remaining_amount: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Remaining budget amount (computed)"),
+    category_allocations: zod
+      .union([
+        zod.array(
+          zod
+            .object({
+              category_id: zod.uuid().describe("Category identifier"),
+              category_name: zod.string().describe("Category name"),
+              allocated_amount: zod
+                .string()
+                .describe("Amount allocated to this category"),
+            })
+            .describe(
+              "Schema for category allocation within a budget.\nShows how budget amount is distributed across categories.",
+            ),
+        ),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Category allocations for this budget"),
+    created_at: zod.iso
+      .datetime({})
+      .describe("Budget creation timestamp (UTC)"),
+    updated_at: zod.iso.datetime({}).describe("Last update timestamp (UTC)"),
+  })
+  .describe(
+    "Complete budget schema returned by API endpoints.\nIncludes all fields, current usage, and category allocations.",
+  );
+
+/**
+ * Update an existing budget (partial update supported)
+ * @summary Update budget
+ */
+export const updateBudgetApiV1BudgetsBudgetIdPatchParams = zod.object({
+  budget_id: zod.uuid(),
+});
+
+export const updateBudgetApiV1BudgetsBudgetIdPatchBodyNameOneMax = 255;
+
+export const updateBudgetApiV1BudgetsBudgetIdPatchBodyAmountOneExclusiveMin = 0;
+
+export const updateBudgetApiV1BudgetsBudgetIdPatchBodyCurrencyOneRegExp =
+  new RegExp("^[A-Z]{3}$");
+
+export const updateBudgetApiV1BudgetsBudgetIdPatchBodyAlertThresholdPercentageOneMin = 0;
+export const updateBudgetApiV1BudgetsBudgetIdPatchBodyAlertThresholdPercentageOneMax = 100;
+
+export const updateBudgetApiV1BudgetsBudgetIdPatchBody = zod
+  .object({
+    name: zod
+      .union([
+        zod
+          .string()
+          .min(1)
+          .max(updateBudgetApiV1BudgetsBudgetIdPatchBodyNameOneMax),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated budget name"),
+    period_type: zod
+      .union([
+        zod
+          .enum(["monthly", "quarterly", "yearly", "custom"])
+          .describe("Budget period types"),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated period type"),
+    start_date: zod
+      .union([zod.iso.date(), zod.null()])
+      .optional()
+      .describe("Updated start date"),
+    end_date: zod
+      .union([zod.iso.date(), zod.null()])
+      .optional()
+      .describe("Updated end date"),
+    amount: zod
+      .union([
+        zod
+          .number()
+          .gt(updateBudgetApiV1BudgetsBudgetIdPatchBodyAmountOneExclusiveMin),
+        zod.string(),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated budget amount"),
+    currency: zod
+      .union([
+        zod
+          .string()
+          .regex(updateBudgetApiV1BudgetsBudgetIdPatchBodyCurrencyOneRegExp),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated currency code"),
+    category_ids: zod
+      .union([zod.array(zod.uuid()).min(1), zod.null()])
+      .optional()
+      .describe("Updated list of category IDs"),
+    is_active: zod
+      .union([zod.boolean(), zod.null()])
+      .optional()
+      .describe("Whether the budget is active"),
+    alert_threshold_percentage: zod
+      .union([
+        zod
+          .number()
+          .min(
+            updateBudgetApiV1BudgetsBudgetIdPatchBodyAlertThresholdPercentageOneMin,
+          )
+          .max(
+            updateBudgetApiV1BudgetsBudgetIdPatchBodyAlertThresholdPercentageOneMax,
+          ),
+        zod.string(),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated alert threshold percentage"),
+  })
+  .describe(
+    "Schema for updating an existing budget.\nAll fields are optional (partial update).",
+  );
+
+export const updateBudgetApiV1BudgetsBudgetIdPatchResponseNameMax = 255;
+
+export const updateBudgetApiV1BudgetsBudgetIdPatchResponseCurrencyRegExp =
+  new RegExp("^[A-Z]{3}$");
+export const updateBudgetApiV1BudgetsBudgetIdPatchResponseIsActiveDefault = true;
+
+export const updateBudgetApiV1BudgetsBudgetIdPatchResponse = zod
+  .object({
+    name: zod
+      .string()
+      .min(1)
+      .max(updateBudgetApiV1BudgetsBudgetIdPatchResponseNameMax)
+      .describe("Budget name"),
+    period_type: zod
+      .enum(["monthly", "quarterly", "yearly", "custom"])
+      .describe("Budget period types"),
+    start_date: zod.iso.date().describe("Start date of the budget period"),
+    end_date: zod.iso.date().describe("End date of the budget period"),
+    amount: zod.string().describe("Total budget amount (must be positive)"),
+    currency: zod
+      .string()
+      .regex(updateBudgetApiV1BudgetsBudgetIdPatchResponseCurrencyRegExp)
+      .describe("ISO 4217 currency code (3 uppercase letters)"),
+    id: zod.uuid().describe("Unique budget identifier"),
+    financial_profile_id: zod
+      .uuid()
+      .describe("ID of the financial profile this budget belongs to"),
+    is_active: zod
+      .boolean()
+      .default(updateBudgetApiV1BudgetsBudgetIdPatchResponseIsActiveDefault)
+      .describe("Whether the budget is currently active"),
+    alert_threshold_percentage: zod
+      .string()
+      .describe("Percentage of budget to trigger alerts"),
+    current_usage: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe(
+        "Current spending against this budget (computed from transactions)",
+      ),
+    usage_percentage: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Percentage of budget used (computed)"),
+    remaining_amount: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Remaining budget amount (computed)"),
+    category_allocations: zod
+      .union([
+        zod.array(
+          zod
+            .object({
+              category_id: zod.uuid().describe("Category identifier"),
+              category_name: zod.string().describe("Category name"),
+              allocated_amount: zod
+                .string()
+                .describe("Amount allocated to this category"),
+            })
+            .describe(
+              "Schema for category allocation within a budget.\nShows how budget amount is distributed across categories.",
+            ),
+        ),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Category allocations for this budget"),
+    created_at: zod.iso
+      .datetime({})
+      .describe("Budget creation timestamp (UTC)"),
+    updated_at: zod.iso.datetime({}).describe("Last update timestamp (UTC)"),
+  })
+  .describe(
+    "Complete budget schema returned by API endpoints.\nIncludes all fields, current usage, and category allocations.",
+  );
+
+/**
+ * Delete a budget and all its category allocations
+ * @summary Delete budget
+ */
+export const deleteBudgetApiV1BudgetsBudgetIdDeleteParams = zod.object({
+  budget_id: zod.uuid(),
+});
+
+/**
+ * Get current usage statistics for a specific budget
+ * @summary Get budget usage stats
+ */
+export const getBudgetUsageStatsApiV1BudgetsBudgetIdUsageGetParams = zod.object(
+  {
+    budget_id: zod.uuid(),
+  },
+);
+
+export const getBudgetUsageStatsApiV1BudgetsBudgetIdUsageGetResponse =
+  zod.unknown();
+
+/**
+ * Retrieve all financial goals for a financial profile
+ * @summary List financial goals
+ */
+export const listGoalsApiV1GoalsGetQueryIncludeMilestonesDefault = false;
+
+export const listGoalsApiV1GoalsGetQueryParams = zod.object({
+  profile_id: zod.uuid().describe("Financial profile ID"),
+  status_filter: zod
+    .union([
+      zod
+        .enum(["active", "paused", "completed", "cancelled"])
+        .describe("Status of financial goals"),
+      zod.null(),
+    ])
+    .optional()
+    .describe("Filter by goal status"),
+  include_milestones: zod
+    .boolean()
+    .default(listGoalsApiV1GoalsGetQueryIncludeMilestonesDefault)
+    .describe("Include milestones in response"),
+});
+
+export const listGoalsApiV1GoalsGetResponseItemsItemNameMax = 255;
+
+export const listGoalsApiV1GoalsGetResponseItemsItemPriorityDefault = 5;
+export const listGoalsApiV1GoalsGetResponseItemsItemPriorityMax = 10;
+
+export const listGoalsApiV1GoalsGetResponseItemsItemGamificationPointsDefault = 0;
+export const listGoalsApiV1GoalsGetResponseItemsItemMilestonesOneItemIsCompletedDefault = false;
+
+export const listGoalsApiV1GoalsGetResponse = zod
+  .object({
+    items: zod
+      .array(
+        zod
+          .object({
+            name: zod
+              .string()
+              .min(1)
+              .max(listGoalsApiV1GoalsGetResponseItemsItemNameMax)
+              .describe("Goal name"),
+            description: zod
+              .union([zod.string(), zod.null()])
+              .optional()
+              .describe("Detailed description of the goal"),
+            goal_type: zod
+              .enum([
+                "house",
+                "car",
+                "vacation",
+                "retirement",
+                "emergency_fund",
+                "education",
+                "investment",
+                "custom",
+              ])
+              .describe("Types of financial goals"),
+            target_amount: zod
+              .string()
+              .describe("Target amount to achieve (must be positive)"),
+            target_date: zod.iso
+              .date()
+              .describe("Target date to achieve the goal"),
+            priority: zod
+              .number()
+              .min(1)
+              .max(listGoalsApiV1GoalsGetResponseItemsItemPriorityMax)
+              .default(listGoalsApiV1GoalsGetResponseItemsItemPriorityDefault)
+              .describe("Priority level (1-10, where 10 is highest priority)"),
+            id: zod.uuid().describe("Unique goal identifier"),
+            financial_profile_id: zod
+              .uuid()
+              .describe("ID of the financial profile this goal belongs to"),
+            current_amount: zod
+              .string()
+              .describe("Current amount saved towards this goal"),
+            monthly_contribution: zod
+              .union([zod.string(), zod.null()])
+              .optional()
+              .describe(
+                "Recommended monthly contribution to reach goal on time",
+              ),
+            status: zod
+              .enum(["active", "paused", "completed", "cancelled"])
+              .describe("Status of financial goals"),
+            achievement_probability: zod
+              .union([zod.string(), zod.null()])
+              .optional()
+              .describe("ML-predicted probability of achieving goal (0-100%)"),
+            gamification_points: zod
+              .number()
+              .default(
+                listGoalsApiV1GoalsGetResponseItemsItemGamificationPointsDefault,
+              )
+              .describe("Points earned for progress on this goal"),
+            milestones: zod
+              .union([
+                zod.array(
+                  zod
+                    .object({
+                      id: zod.uuid().describe("Unique milestone identifier"),
+                      goal_id: zod.uuid().describe("ID of the parent goal"),
+                      name: zod.string().describe("Milestone name"),
+                      target_amount: zod
+                        .string()
+                        .describe("Target amount for this milestone"),
+                      target_date: zod.iso
+                        .date()
+                        .describe("Target date for this milestone"),
+                      is_completed: zod
+                        .boolean()
+                        .default(
+                          listGoalsApiV1GoalsGetResponseItemsItemMilestonesOneItemIsCompletedDefault,
+                        )
+                        .describe("Whether the milestone has been completed"),
+                      completed_at: zod
+                        .union([zod.iso.datetime({}), zod.null()])
+                        .optional()
+                        .describe("When the milestone was completed"),
+                      created_at: zod.iso
+                        .datetime({})
+                        .describe("Milestone creation timestamp (UTC)"),
+                    })
+                    .describe(
+                      "Schema for goal milestone.\nRepresents a smaller achievable step towards the main goal.",
+                    ),
+                ),
+                zod.null(),
+              ])
+              .optional()
+              .describe("Milestones for this goal"),
+            created_at: zod.iso
+              .datetime({})
+              .describe("Goal creation timestamp (UTC)"),
+            updated_at: zod.iso
+              .datetime({})
+              .describe("Last update timestamp (UTC)"),
+            progress_percentage: zod
+              .string()
+              .describe(
+                "Calculate progress towards goal as percentage.\nReturns 0 if target_amount is 0.",
+              ),
+            remaining_amount: zod
+              .string()
+              .describe("Calculate remaining amount to reach goal."),
+          })
+          .describe(
+            "Complete financial goal schema returned by API endpoints.\nIncludes all fields, computed progress, and optional milestones.",
+          ),
+      )
+      .describe("List of financial goals"),
+    total: zod.number().describe("Total number of goals"),
+  })
+  .describe(
+    "Schema for list financial goals response with pagination support.",
+  );
+
+/**
+ * Create a new financial goal for a financial profile
+ * @summary Create financial goal
+ */
+export const createGoalApiV1GoalsPostBodyNameMax = 255;
+
+export const createGoalApiV1GoalsPostBodyTargetAmountOneExclusiveMin = 0;
+
+export const createGoalApiV1GoalsPostBodyPriorityDefault = 5;
+export const createGoalApiV1GoalsPostBodyPriorityMax = 10;
+
+export const createGoalApiV1GoalsPostBodyCurrentAmountOneMin = 0;
+
+export const createGoalApiV1GoalsPostBodyCurrentAmountDefault = "0.00";
+
+export const createGoalApiV1GoalsPostBody = zod
+  .object({
+    name: zod
+      .string()
+      .min(1)
+      .max(createGoalApiV1GoalsPostBodyNameMax)
+      .describe("Goal name"),
+    description: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Detailed description of the goal"),
+    goal_type: zod
+      .enum([
+        "house",
+        "car",
+        "vacation",
+        "retirement",
+        "emergency_fund",
+        "education",
+        "investment",
+        "custom",
+      ])
+      .describe("Types of financial goals"),
+    target_amount: zod
+      .union([
+        zod
+          .number()
+          .gt(createGoalApiV1GoalsPostBodyTargetAmountOneExclusiveMin),
+        zod.string(),
+      ])
+      .describe("Target amount to achieve (must be positive)"),
+    target_date: zod.iso.date().describe("Target date to achieve the goal"),
+    priority: zod
+      .number()
+      .min(1)
+      .max(createGoalApiV1GoalsPostBodyPriorityMax)
+      .default(createGoalApiV1GoalsPostBodyPriorityDefault)
+      .describe("Priority level (1-10, where 10 is highest priority)"),
+    financial_profile_id: zod
+      .uuid()
+      .describe("ID of the financial profile this goal belongs to"),
+    current_amount: zod
+      .union([
+        zod.number().min(createGoalApiV1GoalsPostBodyCurrentAmountOneMin),
+        zod.string(),
+      ])
+      .default(createGoalApiV1GoalsPostBodyCurrentAmountDefault)
+      .describe("Initial amount already saved towards this goal"),
+  })
+  .describe(
+    "Schema for creating a new financial goal.\nRequires financial_profile_id to associate with a profile.",
+  );
+
+/**
+ * Retrieve a specific financial goal by its ID with all milestones
+ * @summary Get financial goal with milestones
+ */
+export const getGoalApiV1GoalsGoalIdGetParams = zod.object({
+  goal_id: zod.uuid(),
+});
+
+export const getGoalApiV1GoalsGoalIdGetResponseNameMax = 255;
+
+export const getGoalApiV1GoalsGoalIdGetResponsePriorityDefault = 5;
+export const getGoalApiV1GoalsGoalIdGetResponsePriorityMax = 10;
+
+export const getGoalApiV1GoalsGoalIdGetResponseGamificationPointsDefault = 0;
+export const getGoalApiV1GoalsGoalIdGetResponseMilestonesOneItemIsCompletedDefault = false;
+
+export const getGoalApiV1GoalsGoalIdGetResponse = zod
+  .object({
+    name: zod
+      .string()
+      .min(1)
+      .max(getGoalApiV1GoalsGoalIdGetResponseNameMax)
+      .describe("Goal name"),
+    description: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Detailed description of the goal"),
+    goal_type: zod
+      .enum([
+        "house",
+        "car",
+        "vacation",
+        "retirement",
+        "emergency_fund",
+        "education",
+        "investment",
+        "custom",
+      ])
+      .describe("Types of financial goals"),
+    target_amount: zod
+      .string()
+      .describe("Target amount to achieve (must be positive)"),
+    target_date: zod.iso.date().describe("Target date to achieve the goal"),
+    priority: zod
+      .number()
+      .min(1)
+      .max(getGoalApiV1GoalsGoalIdGetResponsePriorityMax)
+      .default(getGoalApiV1GoalsGoalIdGetResponsePriorityDefault)
+      .describe("Priority level (1-10, where 10 is highest priority)"),
+    id: zod.uuid().describe("Unique goal identifier"),
+    financial_profile_id: zod
+      .uuid()
+      .describe("ID of the financial profile this goal belongs to"),
+    current_amount: zod
+      .string()
+      .describe("Current amount saved towards this goal"),
+    monthly_contribution: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Recommended monthly contribution to reach goal on time"),
+    status: zod
+      .enum(["active", "paused", "completed", "cancelled"])
+      .describe("Status of financial goals"),
+    achievement_probability: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("ML-predicted probability of achieving goal (0-100%)"),
+    gamification_points: zod
+      .number()
+      .default(getGoalApiV1GoalsGoalIdGetResponseGamificationPointsDefault)
+      .describe("Points earned for progress on this goal"),
+    milestones: zod
+      .union([
+        zod.array(
+          zod
+            .object({
+              id: zod.uuid().describe("Unique milestone identifier"),
+              goal_id: zod.uuid().describe("ID of the parent goal"),
+              name: zod.string().describe("Milestone name"),
+              target_amount: zod
+                .string()
+                .describe("Target amount for this milestone"),
+              target_date: zod.iso
+                .date()
+                .describe("Target date for this milestone"),
+              is_completed: zod
+                .boolean()
+                .default(
+                  getGoalApiV1GoalsGoalIdGetResponseMilestonesOneItemIsCompletedDefault,
+                )
+                .describe("Whether the milestone has been completed"),
+              completed_at: zod
+                .union([zod.iso.datetime({}), zod.null()])
+                .optional()
+                .describe("When the milestone was completed"),
+              created_at: zod.iso
+                .datetime({})
+                .describe("Milestone creation timestamp (UTC)"),
+            })
+            .describe(
+              "Schema for goal milestone.\nRepresents a smaller achievable step towards the main goal.",
+            ),
+        ),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Milestones for this goal"),
+    created_at: zod.iso.datetime({}).describe("Goal creation timestamp (UTC)"),
+    updated_at: zod.iso.datetime({}).describe("Last update timestamp (UTC)"),
+    progress_percentage: zod
+      .string()
+      .describe(
+        "Calculate progress towards goal as percentage.\nReturns 0 if target_amount is 0.",
+      ),
+    remaining_amount: zod
+      .string()
+      .describe("Calculate remaining amount to reach goal."),
+  })
+  .describe(
+    "Complete financial goal schema returned by API endpoints.\nIncludes all fields, computed progress, and optional milestones.",
+  );
+
+/**
+ * Update an existing financial goal (partial update supported)
+ * @summary Update financial goal
+ */
+export const updateGoalApiV1GoalsGoalIdPatchParams = zod.object({
+  goal_id: zod.uuid(),
+});
+
+export const updateGoalApiV1GoalsGoalIdPatchBodyNameOneMax = 255;
+
+export const updateGoalApiV1GoalsGoalIdPatchBodyTargetAmountOneExclusiveMin = 0;
+
+export const updateGoalApiV1GoalsGoalIdPatchBodyCurrentAmountOneMin = 0;
+
+export const updateGoalApiV1GoalsGoalIdPatchBodyPriorityOneMax = 10;
+
+export const updateGoalApiV1GoalsGoalIdPatchBody = zod
+  .object({
+    name: zod
+      .union([
+        zod.string().min(1).max(updateGoalApiV1GoalsGoalIdPatchBodyNameOneMax),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated goal name"),
+    description: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Updated description"),
+    goal_type: zod
+      .union([
+        zod
+          .enum([
+            "house",
+            "car",
+            "vacation",
+            "retirement",
+            "emergency_fund",
+            "education",
+            "investment",
+            "custom",
+          ])
+          .describe("Types of financial goals"),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated goal type"),
+    target_amount: zod
+      .union([
+        zod
+          .number()
+          .gt(updateGoalApiV1GoalsGoalIdPatchBodyTargetAmountOneExclusiveMin),
+        zod.string(),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated target amount"),
+    current_amount: zod
+      .union([
+        zod
+          .number()
+          .min(updateGoalApiV1GoalsGoalIdPatchBodyCurrentAmountOneMin),
+        zod.string(),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated current saved amount (for manual updates)"),
+    target_date: zod
+      .union([zod.iso.date(), zod.null()])
+      .optional()
+      .describe("Updated target date"),
+    priority: zod
+      .union([
+        zod
+          .number()
+          .min(1)
+          .max(updateGoalApiV1GoalsGoalIdPatchBodyPriorityOneMax),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated priority level"),
+    status: zod
+      .union([
+        zod
+          .enum(["active", "paused", "completed", "cancelled"])
+          .describe("Status of financial goals"),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated goal status"),
+  })
+  .describe(
+    "Schema for updating an existing financial goal.\nAll fields are optional (partial update).",
+  );
+
+export const updateGoalApiV1GoalsGoalIdPatchResponseNameMax = 255;
+
+export const updateGoalApiV1GoalsGoalIdPatchResponsePriorityDefault = 5;
+export const updateGoalApiV1GoalsGoalIdPatchResponsePriorityMax = 10;
+
+export const updateGoalApiV1GoalsGoalIdPatchResponseGamificationPointsDefault = 0;
+export const updateGoalApiV1GoalsGoalIdPatchResponseMilestonesOneItemIsCompletedDefault = false;
+
+export const updateGoalApiV1GoalsGoalIdPatchResponse = zod
+  .object({
+    name: zod
+      .string()
+      .min(1)
+      .max(updateGoalApiV1GoalsGoalIdPatchResponseNameMax)
+      .describe("Goal name"),
+    description: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Detailed description of the goal"),
+    goal_type: zod
+      .enum([
+        "house",
+        "car",
+        "vacation",
+        "retirement",
+        "emergency_fund",
+        "education",
+        "investment",
+        "custom",
+      ])
+      .describe("Types of financial goals"),
+    target_amount: zod
+      .string()
+      .describe("Target amount to achieve (must be positive)"),
+    target_date: zod.iso.date().describe("Target date to achieve the goal"),
+    priority: zod
+      .number()
+      .min(1)
+      .max(updateGoalApiV1GoalsGoalIdPatchResponsePriorityMax)
+      .default(updateGoalApiV1GoalsGoalIdPatchResponsePriorityDefault)
+      .describe("Priority level (1-10, where 10 is highest priority)"),
+    id: zod.uuid().describe("Unique goal identifier"),
+    financial_profile_id: zod
+      .uuid()
+      .describe("ID of the financial profile this goal belongs to"),
+    current_amount: zod
+      .string()
+      .describe("Current amount saved towards this goal"),
+    monthly_contribution: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Recommended monthly contribution to reach goal on time"),
+    status: zod
+      .enum(["active", "paused", "completed", "cancelled"])
+      .describe("Status of financial goals"),
+    achievement_probability: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("ML-predicted probability of achieving goal (0-100%)"),
+    gamification_points: zod
+      .number()
+      .default(updateGoalApiV1GoalsGoalIdPatchResponseGamificationPointsDefault)
+      .describe("Points earned for progress on this goal"),
+    milestones: zod
+      .union([
+        zod.array(
+          zod
+            .object({
+              id: zod.uuid().describe("Unique milestone identifier"),
+              goal_id: zod.uuid().describe("ID of the parent goal"),
+              name: zod.string().describe("Milestone name"),
+              target_amount: zod
+                .string()
+                .describe("Target amount for this milestone"),
+              target_date: zod.iso
+                .date()
+                .describe("Target date for this milestone"),
+              is_completed: zod
+                .boolean()
+                .default(
+                  updateGoalApiV1GoalsGoalIdPatchResponseMilestonesOneItemIsCompletedDefault,
+                )
+                .describe("Whether the milestone has been completed"),
+              completed_at: zod
+                .union([zod.iso.datetime({}), zod.null()])
+                .optional()
+                .describe("When the milestone was completed"),
+              created_at: zod.iso
+                .datetime({})
+                .describe("Milestone creation timestamp (UTC)"),
+            })
+            .describe(
+              "Schema for goal milestone.\nRepresents a smaller achievable step towards the main goal.",
+            ),
+        ),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Milestones for this goal"),
+    created_at: zod.iso.datetime({}).describe("Goal creation timestamp (UTC)"),
+    updated_at: zod.iso.datetime({}).describe("Last update timestamp (UTC)"),
+    progress_percentage: zod
+      .string()
+      .describe(
+        "Calculate progress towards goal as percentage.\nReturns 0 if target_amount is 0.",
+      ),
+    remaining_amount: zod
+      .string()
+      .describe("Calculate remaining amount to reach goal."),
+  })
+  .describe(
+    "Complete financial goal schema returned by API endpoints.\nIncludes all fields, computed progress, and optional milestones.",
+  );
+
+/**
+ * Delete a financial goal and all its milestones
+ * @summary Delete financial goal
+ */
+export const deleteGoalApiV1GoalsGoalIdDeleteParams = zod.object({
+  goal_id: zod.uuid(),
+});
+
+/**
+ * Create a new milestone for a financial goal
+ * @summary Add milestone to goal
+ */
+export const addMilestoneApiV1GoalsGoalIdMilestonesPostParams = zod.object({
+  goal_id: zod.uuid(),
+});
+
+export const addMilestoneApiV1GoalsGoalIdMilestonesPostBodyNameMax = 255;
+
+export const addMilestoneApiV1GoalsGoalIdMilestonesPostBodyTargetAmountOneExclusiveMin = 0;
+
+export const addMilestoneApiV1GoalsGoalIdMilestonesPostBody = zod
+  .object({
+    name: zod
+      .string()
+      .min(1)
+      .max(addMilestoneApiV1GoalsGoalIdMilestonesPostBodyNameMax)
+      .describe("Milestone name"),
+    target_amount: zod
+      .union([
+        zod
+          .number()
+          .gt(
+            addMilestoneApiV1GoalsGoalIdMilestonesPostBodyTargetAmountOneExclusiveMin,
+          ),
+        zod.string(),
+      ])
+      .describe("Target amount for this milestone"),
+    target_date: zod.iso.date().describe("Target date for this milestone"),
+  })
+  .describe("Schema for creating a new milestone for a goal.");
+
+/**
+ * Update a goal milestone (partial update supported)
+ * @summary Update milestone
+ */
+export const updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchParams =
+  zod.object({
+    goal_id: zod.uuid(),
+    milestone_id: zod.uuid(),
+  });
+
+export const updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchBodyNameOneMax = 255;
+
+export const updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchBodyTargetAmountOneExclusiveMin = 0;
+
+export const updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchBody = zod
+  .object({
+    name: zod
+      .union([
+        zod
+          .string()
+          .min(1)
+          .max(
+            updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchBodyNameOneMax,
+          ),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated milestone name"),
+    target_amount: zod
+      .union([
+        zod
+          .number()
+          .gt(
+            updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchBodyTargetAmountOneExclusiveMin,
+          ),
+        zod.string(),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated target amount"),
+    target_date: zod
+      .union([zod.iso.date(), zod.null()])
+      .optional()
+      .describe("Updated target date"),
+    is_completed: zod
+      .union([zod.boolean(), zod.null()])
+      .optional()
+      .describe("Mark milestone as completed or uncompleted"),
+  })
+  .describe(
+    "Schema for updating a milestone.\nAll fields are optional (partial update).",
+  );
+
+export const updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchResponseIsCompletedDefault = false;
+
+export const updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchResponse =
+  zod
+    .object({
+      id: zod.uuid().describe("Unique milestone identifier"),
+      goal_id: zod.uuid().describe("ID of the parent goal"),
+      name: zod.string().describe("Milestone name"),
+      target_amount: zod.string().describe("Target amount for this milestone"),
+      target_date: zod.iso.date().describe("Target date for this milestone"),
+      is_completed: zod
+        .boolean()
+        .default(
+          updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchResponseIsCompletedDefault,
+        )
+        .describe("Whether the milestone has been completed"),
+      completed_at: zod
+        .union([zod.iso.datetime({}), zod.null()])
+        .optional()
+        .describe("When the milestone was completed"),
+      created_at: zod.iso
+        .datetime({})
+        .describe("Milestone creation timestamp (UTC)"),
+    })
+    .describe(
+      "Schema for goal milestone.\nRepresents a smaller achievable step towards the main goal.",
+    );
+
+/**
+ * Mark a financial goal as completed
+ * @summary Mark goal as completed
+ */
+export const completeGoalApiV1GoalsGoalIdCompletePostParams = zod.object({
+  goal_id: zod.uuid(),
+});
+
+export const completeGoalApiV1GoalsGoalIdCompletePostResponseNameMax = 255;
+
+export const completeGoalApiV1GoalsGoalIdCompletePostResponsePriorityDefault = 5;
+export const completeGoalApiV1GoalsGoalIdCompletePostResponsePriorityMax = 10;
+
+export const completeGoalApiV1GoalsGoalIdCompletePostResponseGamificationPointsDefault = 0;
+export const completeGoalApiV1GoalsGoalIdCompletePostResponseMilestonesOneItemIsCompletedDefault = false;
+
+export const completeGoalApiV1GoalsGoalIdCompletePostResponse = zod
+  .object({
+    name: zod
+      .string()
+      .min(1)
+      .max(completeGoalApiV1GoalsGoalIdCompletePostResponseNameMax)
+      .describe("Goal name"),
+    description: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Detailed description of the goal"),
+    goal_type: zod
+      .enum([
+        "house",
+        "car",
+        "vacation",
+        "retirement",
+        "emergency_fund",
+        "education",
+        "investment",
+        "custom",
+      ])
+      .describe("Types of financial goals"),
+    target_amount: zod
+      .string()
+      .describe("Target amount to achieve (must be positive)"),
+    target_date: zod.iso.date().describe("Target date to achieve the goal"),
+    priority: zod
+      .number()
+      .min(1)
+      .max(completeGoalApiV1GoalsGoalIdCompletePostResponsePriorityMax)
+      .default(completeGoalApiV1GoalsGoalIdCompletePostResponsePriorityDefault)
+      .describe("Priority level (1-10, where 10 is highest priority)"),
+    id: zod.uuid().describe("Unique goal identifier"),
+    financial_profile_id: zod
+      .uuid()
+      .describe("ID of the financial profile this goal belongs to"),
+    current_amount: zod
+      .string()
+      .describe("Current amount saved towards this goal"),
+    monthly_contribution: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Recommended monthly contribution to reach goal on time"),
+    status: zod
+      .enum(["active", "paused", "completed", "cancelled"])
+      .describe("Status of financial goals"),
+    achievement_probability: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("ML-predicted probability of achieving goal (0-100%)"),
+    gamification_points: zod
+      .number()
+      .default(
+        completeGoalApiV1GoalsGoalIdCompletePostResponseGamificationPointsDefault,
+      )
+      .describe("Points earned for progress on this goal"),
+    milestones: zod
+      .union([
+        zod.array(
+          zod
+            .object({
+              id: zod.uuid().describe("Unique milestone identifier"),
+              goal_id: zod.uuid().describe("ID of the parent goal"),
+              name: zod.string().describe("Milestone name"),
+              target_amount: zod
+                .string()
+                .describe("Target amount for this milestone"),
+              target_date: zod.iso
+                .date()
+                .describe("Target date for this milestone"),
+              is_completed: zod
+                .boolean()
+                .default(
+                  completeGoalApiV1GoalsGoalIdCompletePostResponseMilestonesOneItemIsCompletedDefault,
+                )
+                .describe("Whether the milestone has been completed"),
+              completed_at: zod
+                .union([zod.iso.datetime({}), zod.null()])
+                .optional()
+                .describe("When the milestone was completed"),
+              created_at: zod.iso
+                .datetime({})
+                .describe("Milestone creation timestamp (UTC)"),
+            })
+            .describe(
+              "Schema for goal milestone.\nRepresents a smaller achievable step towards the main goal.",
+            ),
+        ),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Milestones for this goal"),
+    created_at: zod.iso.datetime({}).describe("Goal creation timestamp (UTC)"),
+    updated_at: zod.iso.datetime({}).describe("Last update timestamp (UTC)"),
+    progress_percentage: zod
+      .string()
+      .describe(
+        "Calculate progress towards goal as percentage.\nReturns 0 if target_amount is 0.",
+      ),
+    remaining_amount: zod
+      .string()
+      .describe("Calculate remaining amount to reach goal."),
+  })
+  .describe(
+    "Complete financial goal schema returned by API endpoints.\nIncludes all fields, computed progress, and optional milestones.",
+  );
+
+/**
+ * Use ML to classify a transaction into a category
+ * @summary Classify a transaction
+ */
+export const classifyTransactionApiV1AiAiClassifyTransactionPostBodyAutoApplyDefault = false;
+
+export const classifyTransactionApiV1AiAiClassifyTransactionPostBody = zod
+  .object({
+    transaction_id: zod.uuid(),
+    auto_apply: zod
+      .boolean()
+      .default(
+        classifyTransactionApiV1AiAiClassifyTransactionPostBodyAutoApplyDefault,
+      )
+      .describe("Automatically apply classification if confidence is high"),
+  })
+  .describe("Request to classify a transaction");
+
+export const classifyTransactionApiV1AiAiClassifyTransactionPostResponse = zod
+  .object({
+    transaction_id: zod.uuid(),
+    predicted_category_id: zod.union([zod.uuid(), zod.null()]),
+    predicted_category_name: zod.union([zod.string(), zod.null()]),
+    confidence_score: zod.number(),
+    explanation: zod.string(),
+    was_applied: zod.boolean(),
+  })
+  .describe("Response from classification");
+
+/**
+ * Train or retrain the user's personalized classification model
+ * @summary Train user classification model
+ */
+export const trainClassificationModelApiV1AiAiClassifyTrainPostBody = zod
+  .object({
+    financial_profile_id: zod.uuid(),
+  })
+  .describe("Request to train user model");
+
+export const trainClassificationModelApiV1AiAiClassifyTrainPostResponse = zod
+  .object({
+    success: zod.boolean(),
+    message: zod.string(),
+    metrics: zod
+      .union([zod.record(zod.string(), zod.number()), zod.null()])
+      .optional(),
+    training_samples: zod.union([zod.number(), zod.null()]).optional(),
+    model_version: zod.union([zod.string(), zod.null()]).optional(),
+  })
+  .describe("Response from model training");
+
+/**
+ * Get performance metrics for the classification model
+ * @summary Get classification metrics
+ */
+export const getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetParams =
+  zod.object({
+    financial_profile_id: zod.uuid(),
+  });
+
+export const getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetResponse =
+  zod
+    .object({
+      total_classifications: zod.number(),
+      acceptance_rate: zod.number(),
+      average_confidence: zod.number(),
+      model_version: zod.string(),
+    })
+    .describe("Classification performance metrics");
+
+/**
+ * Get AI-suggested tags for a transaction
+ * @summary Suggest tags for transaction
+ */
+export const suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetParams =
+  zod.object({
+    transaction_id: zod.uuid(),
+  });
+
+export const suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponseItem =
+  zod
+    .object({
+      tag_id: zod.uuid(),
+      tag_name: zod.string(),
+      tag_type: zod.string(),
+      confidence: zod.number(),
+    })
+    .describe("A suggested tag for a transaction");
+export const suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponse =
+  zod.array(
+    suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponseItem,
+  );
+
+/**
+ * Generate cash flow forecast with multiple scenarios
+ * @summary Forecast cash flow
+ */
+export const forecastCashflowApiV1AiAiForecastCashflowPostBodyHorizonDaysDefault = 90;
+export const forecastCashflowApiV1AiAiForecastCashflowPostBodyHorizonDaysMin = 7;
+export const forecastCashflowApiV1AiAiForecastCashflowPostBodyHorizonDaysMax = 365;
+
+export const forecastCashflowApiV1AiAiForecastCashflowPostBodyIncludeRecurringDefault = true;
+export const forecastCashflowApiV1AiAiForecastCashflowPostBodyIncludePatternsDefault = true;
+
+export const forecastCashflowApiV1AiAiForecastCashflowPostBody = zod
+  .object({
+    financial_profile_id: zod.uuid(),
+    account_id: zod.union([zod.uuid(), zod.null()]).optional(),
+    horizon_days: zod
+      .number()
+      .min(forecastCashflowApiV1AiAiForecastCashflowPostBodyHorizonDaysMin)
+      .max(forecastCashflowApiV1AiAiForecastCashflowPostBodyHorizonDaysMax)
+      .default(
+        forecastCashflowApiV1AiAiForecastCashflowPostBodyHorizonDaysDefault,
+      )
+      .describe("Number of days to forecast (7-365)"),
+    include_recurring: zod
+      .boolean()
+      .default(
+        forecastCashflowApiV1AiAiForecastCashflowPostBodyIncludeRecurringDefault,
+      )
+      .describe("Include recurring transactions in forecast"),
+    include_patterns: zod
+      .boolean()
+      .default(
+        forecastCashflowApiV1AiAiForecastCashflowPostBodyIncludePatternsDefault,
+      )
+      .describe("Include historical pattern analysis"),
+  })
+  .describe("Request for cash flow forecast");
+
+export const forecastCashflowApiV1AiAiForecastCashflowPostResponse = zod
+  .object({
+    start_date: zod.iso.date(),
+    end_date: zod.iso.date(),
+    current_balance: zod.number(),
+    optimistic_scenario: zod.array(
+      zod
+        .object({
+          date: zod.iso.date(),
+          value: zod.number(),
+          confidence_lower: zod.number(),
+          confidence_upper: zod.number(),
+          scenario: zod
+            .enum(["optimistic", "likely", "pessimistic"])
+            .describe("Forecast scenario types"),
+        })
+        .describe("A single forecast point"),
+    ),
+    likely_scenario: zod.array(
+      zod
+        .object({
+          date: zod.iso.date(),
+          value: zod.number(),
+          confidence_lower: zod.number(),
+          confidence_upper: zod.number(),
+          scenario: zod
+            .enum(["optimistic", "likely", "pessimistic"])
+            .describe("Forecast scenario types"),
+        })
+        .describe("A single forecast point"),
+    ),
+    pessimistic_scenario: zod.array(
+      zod
+        .object({
+          date: zod.iso.date(),
+          value: zod.number(),
+          confidence_lower: zod.number(),
+          confidence_upper: zod.number(),
+          scenario: zod
+            .enum(["optimistic", "likely", "pessimistic"])
+            .describe("Forecast scenario types"),
+        })
+        .describe("A single forecast point"),
+    ),
+    insights: zod.array(zod.string()),
+    warnings: zod.array(zod.string()),
+    reliability_score: zod.number(),
+  })
+  .describe("Forecast response");
+
+/**
+ * Send a message to the AI assistant and get a response
+ * @summary Send chat message
+ */
+export const sendChatMessageApiV1AiAiChatMessagePostBodyMessageMax = 2000;
+
+export const sendChatMessageApiV1AiAiChatMessagePostBody = zod
+  .object({
+    message: zod
+      .string()
+      .min(1)
+      .max(sendChatMessageApiV1AiAiChatMessagePostBodyMessageMax),
+    financial_profile_id: zod.union([zod.uuid(), zod.null()]).optional(),
+    conversation_id: zod.union([zod.uuid(), zod.null()]).optional(),
+  })
+  .describe("Request to send a chat message");
+
+export const sendChatMessageApiV1AiAiChatMessagePostResponse = zod
+  .object({
+    conversation_id: zod.uuid(),
+    message_id: zod.uuid(),
+    content: zod.string(),
+    metadata: zod.object({}).optional(),
+    intent: zod
+      .enum([
+        "balance_query",
+        "spending_analysis",
+        "budget_status",
+        "transaction_search",
+        "category_breakdown",
+        "goal_status",
+        "forecast_request",
+        "recommendation_request",
+        "comparison",
+        "general_question",
+      ])
+      .describe("Query intent types"),
+  })
+  .describe("Response from chat assistant");
+
+/**
+ * Get list of user's chat conversations
+ * @summary List conversations
+ */
+export const listConversationsApiV1AiAiChatConversationsGetResponseItem = zod
+  .object({
+    id: zod.uuid(),
+    title: zod.union([zod.string(), zod.null()]),
+    created_at: zod.iso.datetime({}),
+    updated_at: zod.iso.datetime({}),
+    message_count: zod.number(),
+    financial_profile_id: zod.union([zod.uuid(), zod.null()]),
+  })
+  .describe("A conversation in the list");
+export const listConversationsApiV1AiAiChatConversationsGetResponse = zod.array(
+  listConversationsApiV1AiAiChatConversationsGetResponseItem,
+);
+
+/**
+ * Get detailed conversation with all messages
+ * @summary Get conversation details
+ */
+export const getConversationApiV1AiAiChatConversationsConversationIdGetParams =
+  zod.object({
+    conversation_id: zod.uuid(),
+  });
+
+export const getConversationApiV1AiAiChatConversationsConversationIdGetResponse =
+  zod
+    .object({
+      id: zod.uuid(),
+      title: zod.union([zod.string(), zod.null()]),
+      created_at: zod.iso.datetime({}),
+      updated_at: zod.iso.datetime({}),
+      financial_profile_id: zod.union([zod.uuid(), zod.null()]),
+      messages: zod.array(zod.object({})),
+    })
+    .describe("Detailed conversation with messages");
+
+/**
+ * Delete a chat conversation
+ * @summary Delete conversation
+ */
+export const deleteConversationApiV1AiAiChatConversationsConversationIdDeleteParams =
+  zod.object({
+    conversation_id: zod.uuid(),
+  });
+
+/**
+ * Get AI-powered financial optimization insights
+ * @summary Get optimization insights
+ */
+export const getOptimizationInsightsApiV1AiAiOptimizeInsightsPostBodyLookbackDaysDefault = 90;
+export const getOptimizationInsightsApiV1AiAiOptimizeInsightsPostBodyLookbackDaysMin = 30;
+export const getOptimizationInsightsApiV1AiAiOptimizeInsightsPostBodyLookbackDaysMax = 365;
+
+export const getOptimizationInsightsApiV1AiAiOptimizeInsightsPostBody = zod
+  .object({
+    financial_profile_id: zod.uuid(),
+    lookback_days: zod
+      .number()
+      .min(
+        getOptimizationInsightsApiV1AiAiOptimizeInsightsPostBodyLookbackDaysMin,
+      )
+      .max(
+        getOptimizationInsightsApiV1AiAiOptimizeInsightsPostBodyLookbackDaysMax,
+      )
+      .default(
+        getOptimizationInsightsApiV1AiAiOptimizeInsightsPostBodyLookbackDaysDefault,
+      )
+      .describe("Days of history to analyze (30-365)"),
+  })
+  .describe("Request for optimization insights");
+
+export const getOptimizationInsightsApiV1AiAiOptimizeInsightsPostResponse = zod
+  .object({
+    insights: zod.array(
+      zod
+        .object({
+          category: zod
+            .enum(["waste", "subscription", "cashflow", "savings"])
+            .describe("Optimization insight categories"),
+          priority: zod
+            .enum(["high", "medium", "low"])
+            .describe("Optimization priority levels"),
+          title: zod.string(),
+          description: zod.string(),
+          potential_savings: zod.number(),
+          actionable: zod.boolean(),
+          action_steps: zod.array(zod.string()),
+          impact_score: zod.number(),
+        })
+        .describe("An optimization insight"),
+    ),
+    total_potential_savings: zod.number(),
+    insights_by_priority: zod.record(zod.string(), zod.number()),
+  })
+  .describe("Optimization insights response");
+
+/**
+ * Get detected spending patterns
+ * @summary Get spending patterns
+ */
+export const getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetParams =
+  zod.object({
+    financial_profile_id: zod.uuid(),
+  });
+
+export const getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetQueryLookbackDaysDefault = 90;
+
+export const getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetQueryParams =
+  zod.object({
+    lookback_days: zod
+      .number()
+      .default(
+        getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetQueryLookbackDaysDefault,
+      ),
+  });
+
+export const getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetResponse =
+  zod
+    .object({
+      patterns: zod.array(
+        zod
+          .object({
+            merchant: zod.string(),
+            category: zod.string(),
+            frequency: zod.string(),
+            average_amount: zod.number(),
+            total_amount: zod.number(),
+            transaction_count: zod.number(),
+            last_occurrence: zod.iso.date(),
+          })
+          .describe("A detected spending pattern"),
+      ),
+      total_patterns: zod.number(),
+    })
+    .describe("Spending patterns response");
+
+/**
+ * Get summary of potential savings
+ * @summary Get savings summary
+ */
+export const getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetParams =
+  zod.object({
+    financial_profile_id: zod.uuid(),
+  });
+
+export const getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetResponse =
+  zod
+    .object({
+      total_monthly_savings: zod.number(),
+      annual_savings: zod.number(),
+      by_category: zod.record(zod.string(), zod.number()),
+      insights_count: zod.number(),
+      high_priority_count: zod.number(),
+      top_insights: zod.array(zod.object({})),
+    })
+    .describe("Summary of potential savings");
+
+/**
+ * Get status of all AI services
+ * @summary Get AI services status
+ */
+export const getAiStatusApiV1AiAiStatusGetResponse = zod
+  .object({
+    classification_available: zod.boolean(),
+    forecasting_available: zod.boolean(),
+    chat_available: zod.boolean(),
+    optimization_available: zod.boolean(),
+    model_version: zod.string(),
+    last_updated: zod.union([zod.iso.datetime({}), zod.null()]).optional(),
+  })
+  .describe("Status of AI services");
