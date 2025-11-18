@@ -1,108 +1,213 @@
-// React Query hooks for profiles
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { profilesApi } from '../api/profilesApi';
+/**
+ * React Query hooks for Financial Profile operations
+ * Wraps the generated orval hooks for better usability
+ */
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  useListProfilesApiV1ProfilesGet,
+  useGetProfileApiV1ProfilesProfileIdGet,
+  useCreateProfileApiV1ProfilesPost,
+  useUpdateProfileApiV1ProfilesProfileIdPatch,
+  useDeleteProfileApiV1ProfilesProfileIdDelete,
+  useGetMainProfileApiV1ProfilesMainGet,
+  useSetMainProfileApiV1ProfilesMainPatch,
+  useGetProfileSelectionApiV1ProfilesSelectionGet,
+  useUpdateProfileSelectionApiV1ProfilesSelectionPost,
+  getListProfilesApiV1ProfilesGetQueryKey,
+  getGetMainProfileApiV1ProfilesMainGetQueryKey,
+  getGetProfileSelectionApiV1ProfilesSelectionGetQueryKey,
+} from '@/api/generated/financial-profiles/financial-profiles';
 import type {
   FinancialProfileCreate,
   FinancialProfileUpdate,
   ProfileSelectionUpdate,
   MainProfileUpdate,
+  ProfileFilters,
 } from '../types';
 
-export const PROFILES_QUERY_KEY = 'profiles';
-export const MAIN_PROFILE_QUERY_KEY = 'mainProfile';
-export const PROFILE_SELECTION_QUERY_KEY = 'profileSelection';
+/**
+ * Hook to list all financial profiles
+ */
+export const useProfiles = (filters?: ProfileFilters) => {
+  const query = useListProfilesApiV1ProfilesGet(filters);
 
-// List all profiles
-export const useProfiles = () => {
-  return useQuery({
-    queryKey: [PROFILES_QUERY_KEY],
-    queryFn: profilesApi.list,
-  });
+  return {
+    profiles: query.data?.data?.profiles || [],
+    total: query.data?.data?.total || 0,
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
+  };
 };
 
-// Get single profile
+/**
+ * Hook to get a single financial profile by ID
+ */
 export const useProfile = (profileId: string, enabled = true) => {
-  return useQuery({
-    queryKey: [PROFILES_QUERY_KEY, profileId],
-    queryFn: () => profilesApi.get(profileId),
-    enabled: enabled && !!profileId,
+  const query = useGetProfileApiV1ProfilesProfileIdGet(profileId, {
+    query: {
+      enabled: enabled && !!profileId,
+    },
   });
+
+  return {
+    profile: query.data?.data,
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
+  };
 };
 
-// Create profile
+/**
+ * Hook to create a new financial profile
+ */
 export const useCreateProfile = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (data: FinancialProfileCreate) => profilesApi.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [PROFILES_QUERY_KEY] });
+  const mutation = useCreateProfileApiV1ProfilesPost({
+    mutation: {
+      onSuccess: () => {
+        // Invalidate profiles list to refetch
+        queryClient.invalidateQueries({
+          queryKey: getListProfilesApiV1ProfilesGetQueryKey(),
+        });
+      },
     },
   });
+
+  return {
+    createProfile: (data: FinancialProfileCreate) => mutation.mutateAsync({ data }),
+    isCreating: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
+  };
 };
 
-// Update profile
+/**
+ * Hook to update an existing financial profile
+ */
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({ profileId, data }: { profileId: string; data: FinancialProfileUpdate }) =>
-      profilesApi.update(profileId, data),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: [PROFILES_QUERY_KEY] });
-      queryClient.invalidateQueries({ queryKey: [PROFILES_QUERY_KEY, variables.profileId] });
+  const mutation = useUpdateProfileApiV1ProfilesProfileIdPatch({
+    mutation: {
+      onSuccess: () => {
+        // Invalidate profiles list to refetch
+        queryClient.invalidateQueries({
+          queryKey: getListProfilesApiV1ProfilesGetQueryKey(),
+        });
+      },
     },
   });
+
+  return {
+    updateProfile: (profileId: string, data: FinancialProfileUpdate) =>
+      mutation.mutateAsync({ profileId, data }),
+    isUpdating: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
+  };
 };
 
-// Delete profile
+/**
+ * Hook to delete a financial profile
+ */
 export const useDeleteProfile = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (profileId: string) => profilesApi.delete(profileId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [PROFILES_QUERY_KEY] });
+  const mutation = useDeleteProfileApiV1ProfilesProfileIdDelete({
+    mutation: {
+      onSuccess: () => {
+        // Invalidate profiles list to refetch
+        queryClient.invalidateQueries({
+          queryKey: getListProfilesApiV1ProfilesGetQueryKey(),
+        });
+      },
     },
   });
+
+  return {
+    deleteProfile: (profileId: string) => mutation.mutateAsync({ profileId }),
+    isDeleting: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
+  };
 };
 
-// Get main profile
+/**
+ * Hook to get the main financial profile
+ */
 export const useMainProfile = () => {
-  return useQuery({
-    queryKey: [MAIN_PROFILE_QUERY_KEY],
-    queryFn: profilesApi.getMainProfile,
-  });
+  const query = useGetMainProfileApiV1ProfilesMainGet();
+
+  return {
+    mainProfile: query.data?.data,
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
+  };
 };
 
-// Set main profile
+/**
+ * Hook to set the main financial profile
+ */
 export const useSetMainProfile = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (data: MainProfileUpdate) => profilesApi.setMainProfile(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [MAIN_PROFILE_QUERY_KEY] });
+  const mutation = useSetMainProfileApiV1ProfilesMainPatch({
+    mutation: {
+      onSuccess: () => {
+        // Invalidate main profile to refetch
+        queryClient.invalidateQueries({
+          queryKey: getGetMainProfileApiV1ProfilesMainGetQueryKey(),
+        });
+      },
     },
   });
+
+  return {
+    setMainProfile: (data: MainProfileUpdate) => mutation.mutateAsync({ data }),
+    isSetting: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
+  };
 };
 
-// Get profile selection
+/**
+ * Hook to get the profile selection
+ */
 export const useProfileSelection = () => {
-  return useQuery({
-    queryKey: [PROFILE_SELECTION_QUERY_KEY],
-    queryFn: profilesApi.getSelection,
-  });
+  const query = useGetProfileSelectionApiV1ProfilesSelectionGet();
+
+  return {
+    selection: query.data?.data,
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
+  };
 };
 
-// Update profile selection
+/**
+ * Hook to update the profile selection
+ */
 export const useUpdateProfileSelection = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (data: ProfileSelectionUpdate) => profilesApi.updateSelection(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [PROFILE_SELECTION_QUERY_KEY] });
+  const mutation = useUpdateProfileSelectionApiV1ProfilesSelectionPost({
+    mutation: {
+      onSuccess: () => {
+        // Invalidate profile selection to refetch
+        queryClient.invalidateQueries({
+          queryKey: getGetProfileSelectionApiV1ProfilesSelectionGetQueryKey(),
+        });
+      },
     },
   });
+
+  return {
+    updateSelection: (data: ProfileSelectionUpdate) => mutation.mutateAsync({ data }),
+    isUpdating: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
+  };
 };

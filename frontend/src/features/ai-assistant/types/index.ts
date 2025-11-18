@@ -1,8 +1,35 @@
-// AI Assistant Types
+/**
+ * AI Assistant Types
+ * Mix of backend-generated types and frontend-only UI types
+ */
+
+// Re-export backend-generated types for AI services
+export type {
+  ClassificationRequest,
+  ClassificationResult,
+  ClassificationMetricsResponse,
+  ChatMessageRequest,
+  ChatMessageResponse,
+  ConversationResponse,
+  ConversationListResponse,
+  OptimizationInsightsRequest,
+  OptimizationInsightsResponse,
+  SpendingPattern,
+  SavingsSummaryResponse,
+  AIServiceStatus,
+  TagSuggestions,
+} from '@/api/generated/models';
+
+// Frontend-only UI types (not in backend API)
 
 export type MessageRole = 'user' | 'assistant' | 'system';
 export type MessageType = 'text' | 'chart' | 'table' | 'action' | 'insight';
-export type ActionType = 'create_budget' | 'create_goal' | 'categorize_transaction' | 'generate_report' | 'optimize_spending';
+export type ActionType =
+  | 'create_budget'
+  | 'create_goal'
+  | 'categorize_transaction'
+  | 'generate_report'
+  | 'optimize_spending';
 
 export interface ChatMessage {
   id: string;
@@ -35,15 +62,6 @@ export interface AIInsight {
   relatedData?: any[];
 }
 
-export interface Conversation {
-  id: string;
-  title: string;
-  messages: ChatMessage[];
-  createdAt: string;
-  updatedAt: string;
-  archived: boolean;
-}
-
 export interface QuickQuery {
   id: string;
   label: string;
@@ -73,63 +91,4 @@ export interface AssistantResponse {
   suggestions?: string[];
   actions?: AssistantAction[];
   data?: any;
-}
-
-// ========== Expense Classification Types ==========
-
-export interface ExpenseClassification {
-  id: string;
-  transactionId: string;
-  category: string;
-  subcategory?: string;
-  tags: string[];
-  confidence: number; // 0-1
-  explanation: string;
-  suggestedBy: 'ai' | 'manual' | 'rule';
-  confirmedByUser: boolean;
-  createdAt: string;
-}
-
-export interface TransactionToClassify {
-  id: string;
-  amount: number;
-  description: string;
-  merchant?: string;
-  date: string;
-  accountId: number;
-  currentCategory?: string;
-  notes?: string;
-}
-
-export interface ClassificationRequest {
-  transactions: TransactionToClassify[];
-  autoConfirm?: boolean;
-  includeExplanation?: boolean;
-}
-
-export interface ClassificationResult {
-  transactionId: string;
-  originalDescription: string;
-  classification: ExpenseClassification;
-  alternativeCategories?: Array<{
-    category: string;
-    subcategory?: string;
-    confidence: number;
-  }>;
-}
-
-export interface ClassificationBatch {
-  id: string;
-  results: ClassificationResult[];
-  totalProcessed: number;
-  averageConfidence: number;
-  createdAt: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-}
-
-export interface CategorySuggestion {
-  category: string;
-  subcategory?: string;
-  confidence: number;
-  reason: string;
 }

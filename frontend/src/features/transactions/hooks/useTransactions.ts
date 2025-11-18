@@ -1,61 +1,151 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { mockTransactionsApi } from '../api/mockTransactionsApi';
-import { type TransactionCreate, type TransactionUpdate, type TransactionFilters } from '../types';
+/**
+ * React Query hooks for Transaction operations
+ * Wraps the generated orval hooks for better usability
+ */
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  useListTransactionsApiV1TransactionsGet,
+  useGetTransactionApiV1TransactionsTransactionIdGet,
+  useCreateTransactionApiV1TransactionsPost,
+  useUpdateTransactionApiV1TransactionsTransactionIdPatch,
+  useDeleteTransactionApiV1TransactionsTransactionIdDelete,
+  useGetTransactionStatsApiV1TransactionsStatsGet,
+  getListTransactionsApiV1TransactionsGetQueryKey,
+} from '@/api/generated/transactions/transactions';
+import type {
+  TransactionCreate,
+  TransactionUpdate,
+  TransactionFilters,
+} from '../types';
 
-const QUERY_KEY = 'transactions';
-
+/**
+ * Hook to list all transactions with optional filters
+ */
 export const useTransactions = (filters?: TransactionFilters) => {
-  return useQuery({
-    queryKey: [QUERY_KEY, filters],
-    queryFn: () => mockTransactionsApi.getAll(filters),
-  });
+  const query = useListTransactionsApiV1TransactionsGet(filters);
+
+  return {
+    transactions: query.data?.data?.items || [],
+    total: query.data?.data?.total || 0,
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
+  };
 };
 
-export const useTransaction = (id: string) => {
-  return useQuery({
-    queryKey: [QUERY_KEY, id],
-    queryFn: () => mockTransactionsApi.getById(id),
-    enabled: !!id,
-  });
+/**
+ * Hook to get a single transaction by ID
+ */
+export const useTransaction = (transactionId: string) => {
+  const query = useGetTransactionApiV1TransactionsTransactionIdGet(
+    transactionId,
+    {
+      query: {
+        enabled: !!transactionId,
+      },
+    }
+  );
+
+  return {
+    transaction: query.data?.data,
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
+  };
 };
 
+/**
+ * Hook to get transaction statistics
+ */
+export const useTransactionStats = (params?: {
+  profile_id?: string;
+  account_id?: string;
+  date_from?: string;
+  date_to?: string;
+}) => {
+  const query = useGetTransactionStatsApiV1TransactionsStatsGet(params);
+
+  return {
+    stats: query.data?.data,
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
+  };
+};
+
+/**
+ * Hook to create a new transaction
+ */
 export const useCreateTransaction = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (data: TransactionCreate) => mockTransactionsApi.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+  const mutation = useCreateTransactionApiV1TransactionsPost({
+    mutation: {
+      onSuccess: () => {
+        // Invalidate transactions list to refetch
+        queryClient.invalidateQueries({
+          queryKey: getListTransactionsApiV1TransactionsGetQueryKey(),
+        });
+      },
     },
   });
+
+  return {
+    createTransaction: (data: TransactionCreate) => mutation.mutateAsync({ data }),
+    isCreating: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
+  };
 };
 
+/**
+ * Hook to update an existing transaction
+ */
 export const useUpdateTransaction = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: TransactionUpdate }) =>
-      mockTransactionsApi.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+  const mutation = useUpdateTransactionApiV1TransactionsTransactionIdPatch({
+    mutation: {
+      onSuccess: () => {
+        // Invalidate transactions list to refetch
+        queryClient.invalidateQueries({
+          queryKey: getListTransactionsApiV1TransactionsGetQueryKey(),
+        });
+      },
     },
   });
+
+  return {
+    updateTransaction: (transactionId: string, data: TransactionUpdate) =>
+      mutation.mutateAsync({ transactionId, data }),
+    isUpdating: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
+  };
 };
 
+/**
+ * Hook to delete a transaction
+ */
 export const useDeleteTransaction = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (id: string) => mockTransactionsApi.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+  const mutation = useDeleteTransactionApiV1TransactionsTransactionIdDelete({
+    mutation: {
+      onSuccess: () => {
+        // Invalidate transactions list to refetch
+        queryClient.invalidateQueries({
+          queryKey: getListTransactionsApiV1TransactionsGetQueryKey(),
+        });
+      },
     },
   });
-};
 
-export const useTransactionStats = (accountId?: number) => {
-  return useQuery({
-    queryKey: [QUERY_KEY, 'stats', accountId],
-    queryFn: () => mockTransactionsApi.getStats(accountId),
-  });
+  return {
+    deleteTransaction: (transactionId: string) =>
+      mutation.mutateAsync({ transactionId }),
+    isDeleting: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
+  };
 };

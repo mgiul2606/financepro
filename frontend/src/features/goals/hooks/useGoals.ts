@@ -1,67 +1,149 @@
-// features/goals/hooks/useGoals.ts
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { mockGoalsApi } from '../api/mockGoalsApi';
-import type { GoalCreate, GoalUpdate } from '../types';
-
-const QUERY_KEY = 'goals';
+/**
+ * React Query hooks for Financial Goal operations
+ * Wraps the generated orval hooks for better usability
+ */
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  useListGoalsApiV1GoalsGet,
+  useGetGoalApiV1GoalsGoalIdGet,
+  useCreateGoalApiV1GoalsPost,
+  useUpdateGoalApiV1GoalsGoalIdPatch,
+  useDeleteGoalApiV1GoalsGoalIdDelete,
+  useCompleteGoalApiV1GoalsGoalIdCompletePost,
+  getListGoalsApiV1GoalsGetQueryKey,
+} from '@/api/generated/financial-goals/financial-goals';
+import type { GoalCreate, GoalUpdate, GoalFilters } from '../types';
 
 /**
- * Hook to list all goals
+ * Hook to list all financial goals with optional filters
  */
-export const useGoals = () => {
-  return useQuery({
-    queryKey: [QUERY_KEY],
-    queryFn: () => mockGoalsApi.getAll(),
-  });
+export const useGoals = (filters?: GoalFilters) => {
+  const query = useListGoalsApiV1GoalsGet(filters);
+
+  return {
+    goals: query.data?.data?.items || [],
+    total: query.data?.data?.total || 0,
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
+  };
 };
 
 /**
- * Hook to get a single goal by ID
+ * Hook to get a single financial goal by ID
  */
-export const useGoal = (id: string) => {
-  return useQuery({
-    queryKey: [QUERY_KEY, id],
-    queryFn: () => mockGoalsApi.getById(id),
-    enabled: !!id,
+export const useGoal = (goalId: string) => {
+  const query = useGetGoalApiV1GoalsGoalIdGet(goalId, {
+    query: {
+      enabled: !!goalId,
+    },
   });
+
+  return {
+    goal: query.data?.data,
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
+  };
 };
 
 /**
- * Hook to create a new goal
+ * Hook to create a new financial goal
  */
 export const useCreateGoal = () => {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (data: GoalCreate) => mockGoalsApi.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+
+  const mutation = useCreateGoalApiV1GoalsPost({
+    mutation: {
+      onSuccess: () => {
+        // Invalidate goals list to refetch
+        queryClient.invalidateQueries({
+          queryKey: getListGoalsApiV1GoalsGetQueryKey(),
+        });
+      },
     },
   });
+
+  return {
+    createGoal: (data: GoalCreate) => mutation.mutateAsync({ data }),
+    isCreating: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
+  };
 };
 
 /**
- * Hook to update an existing goal
+ * Hook to update an existing financial goal
  */
 export const useUpdateGoal = () => {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: GoalUpdate }) =>
-      mockGoalsApi.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+
+  const mutation = useUpdateGoalApiV1GoalsGoalIdPatch({
+    mutation: {
+      onSuccess: () => {
+        // Invalidate goals list to refetch
+        queryClient.invalidateQueries({
+          queryKey: getListGoalsApiV1GoalsGetQueryKey(),
+        });
+      },
     },
   });
+
+  return {
+    updateGoal: (goalId: string, data: GoalUpdate) =>
+      mutation.mutateAsync({ goalId, data }),
+    isUpdating: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
+  };
 };
 
 /**
- * Hook to delete a goal
+ * Hook to delete a financial goal
  */
 export const useDeleteGoal = () => {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => mockGoalsApi.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+
+  const mutation = useDeleteGoalApiV1GoalsGoalIdDelete({
+    mutation: {
+      onSuccess: () => {
+        // Invalidate goals list to refetch
+        queryClient.invalidateQueries({
+          queryKey: getListGoalsApiV1GoalsGetQueryKey(),
+        });
+      },
     },
   });
+
+  return {
+    deleteGoal: (goalId: string) => mutation.mutateAsync({ goalId }),
+    isDeleting: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
+  };
+};
+
+/**
+ * Hook to mark a goal as completed
+ */
+export const useCompleteGoal = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useCompleteGoalApiV1GoalsGoalIdCompletePost({
+    mutation: {
+      onSuccess: () => {
+        // Invalidate goals list to refetch
+        queryClient.invalidateQueries({
+          queryKey: getListGoalsApiV1GoalsGetQueryKey(),
+        });
+      },
+    },
+  });
+
+  return {
+    completeGoal: (goalId: string) => mutation.mutateAsync({ goalId }),
+    isCompleting: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
+  };
 };
