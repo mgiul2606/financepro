@@ -32,7 +32,31 @@ Prima di eseguire le migrazioni, verifica che il database sia accessibile:
 psql "postgresql://user:password@host:port/database_name"
 ```
 
-### 3. Esegui le Migrazioni
+### 3. Pulisci il Database (Se Necessario)
+
+⚠️ **Se hai già eseguito migrazioni precedenti che hanno fallito**, devi prima pulire il database per rimuovere tipi ENUM e tabelle parziali.
+
+**Opzione A: Script Python automatico (raccomandato)**
+```bash
+cd backend
+python scripts/cleanup_database.py
+```
+
+Lo script ti chiederà conferma prima di eliminare i dati. Digita `SI` per confermare.
+
+**Opzione B: Manualmente via psql**
+```bash
+psql "tua_connessione_string" -f backend/scripts/cleanup_database.sql
+```
+
+**Opzione C: Tramite GUI di Supabase (più semplice per Windows)**
+1. Vai su [Supabase Dashboard](https://supabase.com/dashboard)
+2. Apri il progetto
+3. Vai alla sezione **SQL Editor**
+4. Copia il contenuto di `backend/scripts/cleanup_database.sql`
+5. Esegui lo script (clicca "Run")
+
+### 4. Esegui le Migrazioni
 
 ```bash
 cd backend
@@ -43,6 +67,7 @@ Questo comando:
 - Applicherà la migration iniziale `001_initial_schema.py`
 - Creerà tutte le tabelle necessarie
 - Configurerà gli indici e le foreign keys
+- Gestirà automaticamente i tipi ENUM esistenti (non darà errore se già presenti)
 
 ## Struttura Database
 
@@ -112,11 +137,17 @@ La migration crea anche i seguenti tipi ENUM:
 Se hai bisogno di resettare completamente il database:
 
 ```bash
-# Opzione 1: Downgrade tutte le migrazioni
+# Opzione 1: Usa lo script di cleanup (raccomandato)
+cd backend
+python scripts/cleanup_database.py
+python -m alembic upgrade head
+
+# Opzione 2: Downgrade tutte le migrazioni
 cd backend
 python -m alembic downgrade base
+python -m alembic upgrade head
 
-# Opzione 2: Drop e ricreare il database (se hai i permessi)
+# Opzione 3: Drop e ricreare il database (solo se hai i permessi amministrativi)
 # ATTENZIONE: Questo elimina TUTTI i dati!
 dropdb financepro_dev
 createdb financepro_dev
@@ -140,27 +171,29 @@ python -m alembic upgrade head
 
 **Soluzione**: Questo problema è stato risolto con la nuova migration unificata `001_initial_schema.py`.
 
-### Errore: "type already exists"
+### Errore: "type already exists" (tipo profiletype/accounttype/etc già esistente)
 
-**Causa**: I tipi ENUM esistono già nel database da una migrazione precedente.
+**Causa**: I tipi ENUM esistono già nel database da una migrazione precedente fallita.
 
-**Soluzione**:
+**Soluzione Rapida**: Usa lo script di cleanup automatico:
+
 ```bash
-# Connettiti al database e elimina i tipi esistenti
-psql "your_connection_string"
-DROP TYPE IF EXISTS profiletype CASCADE;
-DROP TYPE IF EXISTS databasetype CASCADE;
-DROP TYPE IF EXISTS accounttype CASCADE;
-DROP TYPE IF EXISTS transactiontype CASCADE;
-DROP TYPE IF EXISTS transactionstatus CASCADE;
-DROP TYPE IF EXISTS assettype CASCADE;
-DROP TYPE IF EXISTS recurrencefrequency CASCADE;
-DROP TYPE IF EXISTS importstatus CASCADE;
-DROP TYPE IF EXISTS importfileformat CASCADE;
+cd backend
+python scripts/cleanup_database.py
+```
 
-# Poi riesegui la migration
+Poi riesegui la migration:
+```bash
 python -m alembic upgrade head
 ```
+
+**Soluzione Alternativa**: Esegui lo script SQL manualmente tramite la GUI di Supabase:
+1. Copia il contenuto di `backend/scripts/cleanup_database.sql`
+2. Vai su Supabase Dashboard → SQL Editor
+3. Incolla ed esegui lo script
+4. Riesegui `python -m alembic upgrade head`
+
+**Nota**: La nuova migration `001_initial_schema.py` gestisce automaticamente i tipi ENUM esistenti, quindi questo errore dovrebbe verificarsi raramente.
 
 ## Note Importanti
 
