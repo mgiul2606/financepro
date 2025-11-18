@@ -69,6 +69,29 @@ Questo comando:
 - Configurerà gli indici e le foreign keys
 - Gestirà automaticamente i tipi ENUM esistenti (non darà errore se già presenti)
 
+### 5. Popola con Dati di Esempio (Opzionale)
+
+Per testare l'applicazione, puoi popolare il database con dati di esempio realistici:
+
+```bash
+cd backend
+python scripts/seed_database.py --clean
+```
+
+Questo crea:
+- 2 utenti di esempio (`mario.rossi@example.com` / `password123`)
+- 3 profili finanziari (personale e famiglia)
+- 28 categorie italiane predefinite
+- 10 tag
+- 4 conti bancari
+- 9+ transazioni realistiche
+- 3 budget mensili
+- 3 obiettivi finanziari
+- 2 asset (auto e laptop)
+- 2 transazioni ricorrenti (stipendio e affitto)
+
+📝 **Vedi `backend/scripts/README.md` per dettagli completi sui dati creati**
+
 ## Struttura Database
 
 La migration iniziale crea le seguenti tabelle:
