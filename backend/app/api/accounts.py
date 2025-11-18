@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Annotated, List
+from uuid import UUID
 
 from app.db.database import get_db
 from app.models.user import User
@@ -139,7 +140,7 @@ async def create_account(
     }
 )
 async def get_account(
-    account_id: int,
+    account_id: UUID,
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> AccountResponse:
@@ -186,7 +187,7 @@ async def get_account(
     description="Update an existing account (partial update supported)",
 )
 async def update_account(
-    account_id: int,
+    account_id: UUID,
     account_in: AccountUpdate,
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
@@ -238,7 +239,7 @@ async def update_account(
     description="Delete an account and all its transactions (CASCADE)",
 )
 async def delete_account(
-    account_id: int,
+    account_id: UUID,
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> None:
@@ -285,7 +286,7 @@ async def delete_account(
     description="Get current balance for a specific account with metadata",
 )
 async def get_account_balance(
-    account_id: int,
+    account_id: UUID,
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> AccountBalance:
