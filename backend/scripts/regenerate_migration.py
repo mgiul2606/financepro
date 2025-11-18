@@ -14,7 +14,11 @@ import subprocess
 
 # Aggiungi il percorso del backend al path
 backend_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(backend_dir))
 os.chdir(backend_dir)
+
+from sqlalchemy import create_engine, text
+from app.config import settings
 
 print("=" * 80)
 print("🔄 RIGENERAZIONE MIGRATION - FinancePro")
@@ -31,6 +35,20 @@ if confirmation != "SI":
     print("\n❌ Operazione annullata.")
     sys.exit(0)
 
+print("\n🔄 Pulizia tabella alembic_version nel database...")
+
+try:
+    # Connetti al database e pulisci alembic_version
+    engine = create_engine(settings.DATABASE_URL)
+    with engine.connect() as conn:
+        # Elimina tutti i record dalla tabella alembic_version
+        conn.execute(text("DELETE FROM alembic_version"))
+        conn.commit()
+        print("✅ Tabella alembic_version pulita")
+except Exception as e:
+    print(f"⚠️  Avviso: Impossibile pulire alembic_version: {e}")
+    print("   (Questo è normale se la tabella non esiste ancora)")
+
 print("\n🗑️  Eliminazione vecchia migration...")
 
 # Trova e elimina la vecchia migration
@@ -46,7 +64,7 @@ print("\n📝 Generazione nuova migration...")
 
 # Genera nuova migration con alembic autogenerate
 result = subprocess.run(
-    ["alembic", "revision", "--autogenerate", "-m", "Initial database schema"],
+    [sys.executable, "-m", "alembic", "revision", "--autogenerate", "-m", "Initial database schema"],
     capture_output=True,
     text=True
 )
