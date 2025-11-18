@@ -18,16 +18,70 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Create ENUM types
-    op.execute("CREATE TYPE profiletype AS ENUM ('personal', 'family', 'business')")
-    op.execute("CREATE TYPE databasetype AS ENUM ('postgresql', 'mssql')")
-    op.execute("CREATE TYPE accounttype AS ENUM ('checking', 'savings', 'credit_card', 'investment', 'cash', 'loan', 'other')")
-    op.execute("CREATE TYPE transactiontype AS ENUM ('income', 'expense', 'transfer')")
-    op.execute("CREATE TYPE transactionstatus AS ENUM ('pending', 'completed', 'cancelled')")
-    op.execute("CREATE TYPE assettype AS ENUM ('real_estate', 'vehicle', 'investment', 'other')")
-    op.execute("CREATE TYPE recurrencefrequency AS ENUM ('daily', 'weekly', 'biweekly', 'monthly', 'quarterly', 'yearly')")
-    op.execute("CREATE TYPE importstatus AS ENUM ('pending', 'processing', 'completed', 'failed')")
-    op.execute("CREATE TYPE importfileformat AS ENUM ('csv', 'excel', 'qif', 'ofx')")
+    # Create ENUM types (with IF NOT EXISTS check)
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE profiletype AS ENUM ('personal', 'family', 'business');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE databasetype AS ENUM ('postgresql', 'mssql');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE accounttype AS ENUM ('checking', 'savings', 'credit_card', 'investment', 'cash', 'loan', 'other');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE transactiontype AS ENUM ('income', 'expense', 'transfer');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE transactionstatus AS ENUM ('pending', 'completed', 'cancelled');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE assettype AS ENUM ('real_estate', 'vehicle', 'investment', 'other');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE recurrencefrequency AS ENUM ('daily', 'weekly', 'biweekly', 'monthly', 'quarterly', 'yearly');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE importstatus AS ENUM ('pending', 'processing', 'completed', 'failed');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE importfileformat AS ENUM ('csv', 'excel', 'qif', 'ofx');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
 
     # Create users table
     op.create_table(
