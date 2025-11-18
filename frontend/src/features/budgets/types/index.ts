@@ -1,37 +1,15 @@
-export type BudgetPeriod = 'monthly' | 'quarterly' | 'yearly' | 'custom';
-export type BudgetStatus = 'active' | 'exceeded' | 'completed';
+/**
+ * Budget Types - Re-export from generated API types
+ * This ensures consistency with the backend API
+ */
 
-export interface Budget {
-  id: string;
-  name: string;
-  category: string;
-  amount: number;
-  spent: number;
-  period: BudgetPeriod;
-  startDate: string;
-  endDate: string;
-  status: BudgetStatus;
-  alertThreshold?: number; // percentage (e.g., 80 for 80%)
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface BudgetCreate {
-  name: string;
-  category: string;
-  amount: number;
-  period: BudgetPeriod;
-  startDate: string;
-  endDate: string;
-  alertThreshold?: number;
-}
-
-export interface BudgetUpdate {
-  name?: string;
-  category?: string;
-  amount?: number;
-  period?: BudgetPeriod;
-  startDate?: string;
-  endDate?: string;
-  alertThreshold?: number;
-}
+// Re-export types from generated API
+export type {
+  BudgetResponse as Budget,
+  BudgetCreate,
+  BudgetUpdate,
+  BudgetListResponse,
+  PeriodType as BudgetPeriod,
+  BudgetCategoryAllocation,
+  ListBudgetsApiV1BudgetsGetParams as BudgetFilters,
+} from '@/api/generated/models';

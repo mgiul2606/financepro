@@ -1,28 +1,49 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { mockBudgetsApi } from '../api/mockBudgetsApi';
-import type { BudgetCreate, BudgetUpdate } from '../types';
-
-const QUERY_KEY = 'budgets';
+/**
+ * React Query hooks for Budget operations
+ * Wraps the generated orval hooks for better usability
+ */
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  useListBudgetsApiV1BudgetsGet,
+  useGetBudgetApiV1BudgetsBudgetIdGet,
+  useCreateBudgetApiV1BudgetsPost,
+  useUpdateBudgetApiV1BudgetsBudgetIdPatch,
+  useDeleteBudgetApiV1BudgetsBudgetIdDelete,
+  getListBudgetsApiV1BudgetsGetQueryKey,
+} from '@/api/generated/budgets/budgets';
+import type { BudgetCreate, BudgetUpdate, BudgetFilters } from '../types';
 
 /**
- * Hook to list all budgets
+ * Hook to list all budgets with optional filters
  */
-export const useBudgets = () => {
-  return useQuery({
-    queryKey: [QUERY_KEY],
-    queryFn: () => mockBudgetsApi.getAll(),
-  });
+export const useBudgets = (filters?: BudgetFilters) => {
+  const query = useListBudgetsApiV1BudgetsGet(filters);
+
+  return {
+    budgets: query.data?.data?.items || [],
+    total: query.data?.data?.total || 0,
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
+  };
 };
 
 /**
  * Hook to get a single budget by ID
  */
-export const useBudget = (id: string) => {
-  return useQuery({
-    queryKey: [QUERY_KEY, id],
-    queryFn: () => mockBudgetsApi.getById(id),
-    enabled: !!id,
+export const useBudget = (budgetId: string) => {
+  const query = useGetBudgetApiV1BudgetsBudgetIdGet(budgetId, {
+    query: {
+      enabled: !!budgetId,
+    },
   });
+
+  return {
+    budget: query.data?.data,
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
+  };
 };
 
 /**
@@ -30,12 +51,24 @@ export const useBudget = (id: string) => {
  */
 export const useCreateBudget = () => {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (data: BudgetCreate) => mockBudgetsApi.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+
+  const mutation = useCreateBudgetApiV1BudgetsPost({
+    mutation: {
+      onSuccess: () => {
+        // Invalidate budgets list to refetch
+        queryClient.invalidateQueries({
+          queryKey: getListBudgetsApiV1BudgetsGetQueryKey(),
+        });
+      },
     },
   });
+
+  return {
+    createBudget: (data: BudgetCreate) => mutation.mutateAsync({ data }),
+    isCreating: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
+  };
 };
 
 /**
@@ -43,13 +76,25 @@ export const useCreateBudget = () => {
  */
 export const useUpdateBudget = () => {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: BudgetUpdate }) =>
-      mockBudgetsApi.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+
+  const mutation = useUpdateBudgetApiV1BudgetsBudgetIdPatch({
+    mutation: {
+      onSuccess: () => {
+        // Invalidate budgets list to refetch
+        queryClient.invalidateQueries({
+          queryKey: getListBudgetsApiV1BudgetsGetQueryKey(),
+        });
+      },
     },
   });
+
+  return {
+    updateBudget: (budgetId: string, data: BudgetUpdate) =>
+      mutation.mutateAsync({ budgetId, data }),
+    isUpdating: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
+  };
 };
 
 /**
@@ -57,10 +102,22 @@ export const useUpdateBudget = () => {
  */
 export const useDeleteBudget = () => {
   const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => mockBudgetsApi.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
+
+  const mutation = useDeleteBudgetApiV1BudgetsBudgetIdDelete({
+    mutation: {
+      onSuccess: () => {
+        // Invalidate budgets list to refetch
+        queryClient.invalidateQueries({
+          queryKey: getListBudgetsApiV1BudgetsGetQueryKey(),
+        });
+      },
     },
   });
+
+  return {
+    deleteBudget: (budgetId: string) => mutation.mutateAsync({ budgetId }),
+    isDeleting: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
+  };
 };

@@ -1,40 +1,16 @@
-// features/goals/types/index.ts
-export type GoalStatus = 'in_progress' | 'achieved' | 'abandoned';
-export type GoalPriority = 'low' | 'medium' | 'high';
+/**
+ * Financial Goal Types - Re-export from generated API types
+ * This ensures consistency with the backend API
+ */
 
-export interface Goal {
-  id: string;
-  name: string;
-  description?: string;
-  targetAmount: number;
-  currentAmount: number;
-  currency: string;
-  targetDate: string;
-  status: GoalStatus;
-  priority: GoalPriority;
-  category?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface GoalCreate {
-  name: string;
-  description?: string;
-  targetAmount: number;
-  currency?: string;
-  targetDate: string;
-  priority?: GoalPriority;
-  category?: string;
-}
-
-export interface GoalUpdate {
-  name?: string;
-  description?: string;
-  targetAmount?: number;
-  currentAmount?: number;
-  currency?: string;
-  targetDate?: string;
-  status?: GoalStatus;
-  priority?: GoalPriority;
-  category?: string;
-}
+// Re-export types from generated API
+export type {
+  FinancialGoalResponse as Goal,
+  FinancialGoalCreate as GoalCreate,
+  FinancialGoalUpdate as GoalUpdate,
+  FinancialGoalListResponse,
+  GoalType,
+  GoalStatus,
+  GoalMilestoneResponse,
+  ListGoalsApiV1GoalsGetParams as GoalFilters,
+} from '@/api/generated/models';
