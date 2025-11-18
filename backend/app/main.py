@@ -216,13 +216,14 @@ try:
     import app.api.transactions as transactions
     import app.api.budgets as budgets
     import app.api.goals as goals
+    import app.api.ai as ai
     logger.info("API modules imported successfully")
 except Exception as e:
     logger.error(f"Failed to import API modules: {e}")
     logger.exception("Detailed error:")
     logger.warning("Application will start without API routers")
     auth = accounts = categories = None
-    financial_profiles = transactions = budgets = goals = None
+    financial_profiles = transactions = budgets = goals = ai = None
 
 # Get API prefix
 API_PREFIX = get_api_prefix()
@@ -283,5 +284,13 @@ if goals:
         tags=["Financial Goals"]
     )
     logger.info(f"Goals router registered at {API_PREFIX}/goals")
+
+if ai:
+    app.include_router(
+        ai.router,
+        prefix=f"{API_PREFIX}/ai",
+        tags=["AI Services"]
+    )
+    logger.info(f"AI Services router registered at {API_PREFIX}/ai")
 
 logger.info(f"Application startup complete. API documentation: {settings.api.docs_url}")
