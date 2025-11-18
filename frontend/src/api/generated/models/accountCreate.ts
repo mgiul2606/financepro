@@ -15,24 +15,39 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
+import type { AccountType } from "./accountType";
+import type { AccountCreateInstitutionName } from "./accountCreateInstitutionName";
+import type { AccountCreateNotes } from "./accountCreateNotes";
+import type { AccountCreateFinancialProfileId } from "./accountCreateFinancialProfileId";
 import type { AccountCreateInitialBalance } from "./accountCreateInitialBalance";
+import type { AccountCreateAccountNumber } from "./accountCreateAccountNumber";
 
 /**
  * Schema for creating a new account.
-Requires name and optionally currency and initial balance.
+financial_profile_id is optional - if not provided, the user's default profile will be used.
  */
 export interface AccountCreate {
-  /**
-   * ISO 4217 currency code (3 uppercase letters)
-   * @pattern ^[A-Z]{3}$
-   */
-  currency?: string;
   /**
    * Account name
    * @minLength 1
    * @maxLength 100
    */
   name: string;
-  /** Initial account balance (must be >= 0) */
+  /** Type of account (checking, savings, credit_card, etc.) */
+  account_type?: AccountType;
+  /**
+   * ISO 4217 currency code (3 uppercase letters)
+   * @pattern ^[A-Z]{3}$
+   */
+  currency?: string;
+  /** Name of the financial institution */
+  institution_name?: AccountCreateInstitutionName;
+  /** Additional notes about the account */
+  notes?: AccountCreateNotes;
+  /** ID of the financial profile this account belongs to (optional, defaults to user's default profile) */
+  financial_profile_id?: AccountCreateFinancialProfileId;
+  /** Initial account balance */
   initial_balance?: AccountCreateInitialBalance;
+  /** Account number (will be encrypted in production) */
+  account_number?: AccountCreateAccountNumber;
 }

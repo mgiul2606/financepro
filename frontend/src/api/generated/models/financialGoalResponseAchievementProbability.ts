@@ -17,6 +17,6 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 /**
- * Updated initial balance
+ * ML-predicted probability of achieving goal (0-100%)
  */
-export type AccountUpdateInitialBalance = number | string | null;
+export type FinancialGoalResponseAchievementProbability = string | null;

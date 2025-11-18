@@ -15,12 +15,52 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
+import type { CategoryResponseDescription } from "./categoryResponseDescription";
 import type { CategoryResponseIcon } from "./categoryResponseIcon";
 import type { CategoryResponseColor } from "./categoryResponseColor";
+import type { CategoryResponseParentCategoryId } from "./categoryResponseParentCategoryId";
+import type { CategoryResponseFullPath } from "./categoryResponseFullPath";
+import type { CategoryResponseSubcategories } from "./categoryResponseSubcategories";
 
+/**
+ * Complete category schema returned by API endpoints.
+Includes all fields and optional subcategories for tree view.
+ */
 export interface CategoryResponse {
-  id: number;
+  /**
+   * Category name
+   * @minLength 1
+   * @maxLength 100
+   */
   name: string;
-  icon: CategoryResponseIcon;
-  color: CategoryResponseColor;
+  /** Optional description of the category */
+  description?: CategoryResponseDescription;
+  /** Icon identifier (emoji or icon name) */
+  icon?: CategoryResponseIcon;
+  /** Hex color code for UI display */
+  color?: CategoryResponseColor;
+  /** ID of parent category (null for root categories) */
+  parent_category_id?: CategoryResponseParentCategoryId;
+  /**
+   * Hierarchy level (1, 2, or 3)
+   * @minimum 1
+   * @maximum 3
+   */
+  level: number;
+  /** Unique category identifier */
+  id: string;
+  /** ID of the financial profile this category belongs to */
+  financial_profile_id: string;
+  /** Full hierarchical path (e.g., 'Groceries > Fresh Food > Fruits') */
+  full_path?: CategoryResponseFullPath;
+  /** System categories cannot be deleted by users */
+  is_system?: boolean;
+  /** Whether the category is currently active */
+  is_active?: boolean;
+  /** Category creation timestamp (UTC) */
+  created_at: string;
+  /** Last update timestamp (UTC) */
+  updated_at: string;
+  /** Child categories (for hierarchical display) */
+  subcategories?: CategoryResponseSubcategories;
 }

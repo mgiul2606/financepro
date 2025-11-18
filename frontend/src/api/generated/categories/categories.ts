@@ -28,37 +28,67 @@ import type {
   UseQueryResult,
 } from "@tanstack/react-query";
 
-import type { CategoryResponse } from ".././models";
+import type {
+  CategoryListResponse,
+  HTTPValidationError,
+  ListCategoriesApiV1CategoriesGetParams,
+} from ".././models";
 
 import { customInstance } from "../../client";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 /**
- * Lista tutte le categorie disponibili (pubblico, no auth)
- * @summary List Categories
+ * Retrieve all categories for a financial profile
+ * @summary List categories
  */
 export type listCategoriesApiV1CategoriesGetResponse200 = {
-  data: CategoryResponse[];
+  data: CategoryListResponse;
   status: 200;
+};
+
+export type listCategoriesApiV1CategoriesGetResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
 };
 
 export type listCategoriesApiV1CategoriesGetResponseSuccess =
   listCategoriesApiV1CategoriesGetResponse200 & {
     headers: Headers;
   };
-export type listCategoriesApiV1CategoriesGetResponse =
-  listCategoriesApiV1CategoriesGetResponseSuccess;
+export type listCategoriesApiV1CategoriesGetResponseError =
+  listCategoriesApiV1CategoriesGetResponse422 & {
+    headers: Headers;
+  };
 
-export const getListCategoriesApiV1CategoriesGetUrl = () => {
-  return `/api/v1/categories`;
+export type listCategoriesApiV1CategoriesGetResponse =
+  | listCategoriesApiV1CategoriesGetResponseSuccess
+  | listCategoriesApiV1CategoriesGetResponseError;
+
+export const getListCategoriesApiV1CategoriesGetUrl = (
+  params: ListCategoriesApiV1CategoriesGetParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/v1/categories/?${stringifiedParams}`
+    : `/api/v1/categories/`;
 };
 
 export const listCategoriesApiV1CategoriesGet = async (
+  params: ListCategoriesApiV1CategoriesGetParams,
   options?: RequestInit,
 ): Promise<listCategoriesApiV1CategoriesGetResponse> => {
   return customInstance<listCategoriesApiV1CategoriesGetResponse>(
-    getListCategoriesApiV1CategoriesGetUrl(),
+    getListCategoriesApiV1CategoriesGetUrl(params),
     {
       ...options,
       method: "GET",
@@ -66,32 +96,38 @@ export const listCategoriesApiV1CategoriesGet = async (
   );
 };
 
-export const getListCategoriesApiV1CategoriesGetQueryKey = () => {
-  return [`/api/v1/categories`] as const;
+export const getListCategoriesApiV1CategoriesGetQueryKey = (
+  params?: ListCategoriesApiV1CategoriesGetParams,
+) => {
+  return [`/api/v1/categories/`, ...(params ? [params] : [])] as const;
 };
 
 export const getListCategoriesApiV1CategoriesGetQueryOptions = <
   TData = Awaited<ReturnType<typeof listCategoriesApiV1CategoriesGet>>,
-  TError = unknown,
->(options?: {
-  query?: Partial<
-    UseQueryOptions<
-      Awaited<ReturnType<typeof listCategoriesApiV1CategoriesGet>>,
-      TError,
-      TData
-    >
-  >;
-  request?: SecondParameter<typeof customInstance>;
-}) => {
+  TError = HTTPValidationError,
+>(
+  params: ListCategoriesApiV1CategoriesGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listCategoriesApiV1CategoriesGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey =
-    queryOptions?.queryKey ?? getListCategoriesApiV1CategoriesGetQueryKey();
+    queryOptions?.queryKey ??
+    getListCategoriesApiV1CategoriesGetQueryKey(params);
 
   const queryFn: QueryFunction<
     Awaited<ReturnType<typeof listCategoriesApiV1CategoriesGet>>
   > = ({ signal }) =>
-    listCategoriesApiV1CategoriesGet({ signal, ...requestOptions });
+    listCategoriesApiV1CategoriesGet(params, { signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof listCategoriesApiV1CategoriesGet>>,
@@ -103,12 +139,13 @@ export const getListCategoriesApiV1CategoriesGetQueryOptions = <
 export type ListCategoriesApiV1CategoriesGetQueryResult = NonNullable<
   Awaited<ReturnType<typeof listCategoriesApiV1CategoriesGet>>
 >;
-export type ListCategoriesApiV1CategoriesGetQueryError = unknown;
+export type ListCategoriesApiV1CategoriesGetQueryError = HTTPValidationError;
 
 export function useListCategoriesApiV1CategoriesGet<
   TData = Awaited<ReturnType<typeof listCategoriesApiV1CategoriesGet>>,
-  TError = unknown,
+  TError = HTTPValidationError,
 >(
+  params: ListCategoriesApiV1CategoriesGetParams,
   options: {
     query: Partial<
       UseQueryOptions<
@@ -133,8 +170,9 @@ export function useListCategoriesApiV1CategoriesGet<
 };
 export function useListCategoriesApiV1CategoriesGet<
   TData = Awaited<ReturnType<typeof listCategoriesApiV1CategoriesGet>>,
-  TError = unknown,
+  TError = HTTPValidationError,
 >(
+  params: ListCategoriesApiV1CategoriesGetParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -159,8 +197,9 @@ export function useListCategoriesApiV1CategoriesGet<
 };
 export function useListCategoriesApiV1CategoriesGet<
   TData = Awaited<ReturnType<typeof listCategoriesApiV1CategoriesGet>>,
-  TError = unknown,
+  TError = HTTPValidationError,
 >(
+  params: ListCategoriesApiV1CategoriesGetParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -176,13 +215,14 @@ export function useListCategoriesApiV1CategoriesGet<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 /**
- * @summary List Categories
+ * @summary List categories
  */
 
 export function useListCategoriesApiV1CategoriesGet<
   TData = Awaited<ReturnType<typeof listCategoriesApiV1CategoriesGet>>,
-  TError = unknown,
+  TError = HTTPValidationError,
 >(
+  params: ListCategoriesApiV1CategoriesGetParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -197,7 +237,10 @@ export function useListCategoriesApiV1CategoriesGet<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getListCategoriesApiV1CategoriesGetQueryOptions(options);
+  const queryOptions = getListCategoriesApiV1CategoriesGetQueryOptions(
+    params,
+    options,
+  );
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,

@@ -15,19 +15,31 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { AccountUpdateCurrency } from "./accountUpdateCurrency";
 import type { AccountUpdateName } from "./accountUpdateName";
-import type { AccountUpdateInitialBalance } from "./accountUpdateInitialBalance";
+import type { AccountUpdateAccountType } from "./accountUpdateAccountType";
+import type { AccountUpdateCurrency } from "./accountUpdateCurrency";
+import type { AccountUpdateInstitutionName } from "./accountUpdateInstitutionName";
+import type { AccountUpdateAccountNumber } from "./accountUpdateAccountNumber";
+import type { AccountUpdateNotes } from "./accountUpdateNotes";
+import type { AccountUpdateIsActive } from "./accountUpdateIsActive";
 
 /**
  * Schema for updating an existing account.
 All fields are optional (partial update).
  */
 export interface AccountUpdate {
-  /** Updated currency code */
-  currency?: AccountUpdateCurrency;
   /** Updated account name */
   name?: AccountUpdateName;
-  /** Updated initial balance */
-  initial_balance?: AccountUpdateInitialBalance;
+  /** Updated account type */
+  account_type?: AccountUpdateAccountType;
+  /** Updated currency code */
+  currency?: AccountUpdateCurrency;
+  /** Updated institution name */
+  institution_name?: AccountUpdateInstitutionName;
+  /** Updated account number */
+  account_number?: AccountUpdateAccountNumber;
+  /** Updated notes */
+  notes?: AccountUpdateNotes;
+  /** Whether the account is active */
+  is_active?: AccountUpdateIsActive;
 }

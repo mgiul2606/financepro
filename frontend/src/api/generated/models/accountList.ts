@@ -18,9 +18,10 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 import type { AccountResponse } from "./accountResponse";
 
 /**
- * Schema for list accounts response (future: with pagination).
+ * Schema for list accounts response with pagination.
  */
 export interface AccountList {
+  /** List of accounts */
   accounts: AccountResponse[];
   /** Total number of accounts */
   total: number;

@@ -378,13 +378,13 @@ export type getAccountApiV1AccountsAccountIdGetResponse =
   | getAccountApiV1AccountsAccountIdGetResponseError;
 
 export const getGetAccountApiV1AccountsAccountIdGetUrl = (
-  accountId: number,
+  accountId: string,
 ) => {
   return `/api/v1/accounts/${accountId}`;
 };
 
 export const getAccountApiV1AccountsAccountIdGet = async (
-  accountId: number,
+  accountId: string,
   options?: RequestInit,
 ): Promise<getAccountApiV1AccountsAccountIdGetResponse> => {
   return customInstance<getAccountApiV1AccountsAccountIdGetResponse>(
@@ -397,7 +397,7 @@ export const getAccountApiV1AccountsAccountIdGet = async (
 };
 
 export const getGetAccountApiV1AccountsAccountIdGetQueryKey = (
-  accountId?: number,
+  accountId?: string,
 ) => {
   return [`/api/v1/accounts/${accountId}`] as const;
 };
@@ -406,7 +406,7 @@ export const getGetAccountApiV1AccountsAccountIdGetQueryOptions = <
   TData = Awaited<ReturnType<typeof getAccountApiV1AccountsAccountIdGet>>,
   TError = void | HTTPValidationError,
 >(
-  accountId: number,
+  accountId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -454,7 +454,7 @@ export function useGetAccountApiV1AccountsAccountIdGet<
   TData = Awaited<ReturnType<typeof getAccountApiV1AccountsAccountIdGet>>,
   TError = void | HTTPValidationError,
 >(
-  accountId: number,
+  accountId: string,
   options: {
     query: Partial<
       UseQueryOptions<
@@ -481,7 +481,7 @@ export function useGetAccountApiV1AccountsAccountIdGet<
   TData = Awaited<ReturnType<typeof getAccountApiV1AccountsAccountIdGet>>,
   TError = void | HTTPValidationError,
 >(
-  accountId: number,
+  accountId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -508,7 +508,7 @@ export function useGetAccountApiV1AccountsAccountIdGet<
   TData = Awaited<ReturnType<typeof getAccountApiV1AccountsAccountIdGet>>,
   TError = void | HTTPValidationError,
 >(
-  accountId: number,
+  accountId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -531,7 +531,7 @@ export function useGetAccountApiV1AccountsAccountIdGet<
   TData = Awaited<ReturnType<typeof getAccountApiV1AccountsAccountIdGet>>,
   TError = void | HTTPValidationError,
 >(
-  accountId: number,
+  accountId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -589,13 +589,13 @@ export type updateAccountApiV1AccountsAccountIdPutResponse =
   | updateAccountApiV1AccountsAccountIdPutResponseError;
 
 export const getUpdateAccountApiV1AccountsAccountIdPutUrl = (
-  accountId: number,
+  accountId: string,
 ) => {
   return `/api/v1/accounts/${accountId}`;
 };
 
 export const updateAccountApiV1AccountsAccountIdPut = async (
-  accountId: number,
+  accountId: string,
   accountUpdate: AccountUpdate,
   options?: RequestInit,
 ): Promise<updateAccountApiV1AccountsAccountIdPutResponse> => {
@@ -617,14 +617,14 @@ export const getUpdateAccountApiV1AccountsAccountIdPutMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateAccountApiV1AccountsAccountIdPut>>,
     TError,
-    { accountId: number; data: AccountUpdate },
+    { accountId: string; data: AccountUpdate },
     TContext
   >;
   request?: SecondParameter<typeof customInstance>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof updateAccountApiV1AccountsAccountIdPut>>,
   TError,
-  { accountId: number; data: AccountUpdate },
+  { accountId: string; data: AccountUpdate },
   TContext
 > => {
   const mutationKey = ["updateAccountApiV1AccountsAccountIdPut"];
@@ -638,7 +638,7 @@ export const getUpdateAccountApiV1AccountsAccountIdPutMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof updateAccountApiV1AccountsAccountIdPut>>,
-    { accountId: number; data: AccountUpdate }
+    { accountId: string; data: AccountUpdate }
   > = (props) => {
     const { accountId, data } = props ?? {};
 
@@ -670,7 +670,7 @@ export const useUpdateAccountApiV1AccountsAccountIdPut = <
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof updateAccountApiV1AccountsAccountIdPut>>,
       TError,
-      { accountId: number; data: AccountUpdate },
+      { accountId: string; data: AccountUpdate },
       TContext
     >;
     request?: SecondParameter<typeof customInstance>;
@@ -679,7 +679,7 @@ export const useUpdateAccountApiV1AccountsAccountIdPut = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof updateAccountApiV1AccountsAccountIdPut>>,
   TError,
-  { accountId: number; data: AccountUpdate },
+  { accountId: string; data: AccountUpdate },
   TContext
 > => {
   const mutationOptions =
@@ -715,13 +715,13 @@ export type deleteAccountApiV1AccountsAccountIdDeleteResponse =
   | deleteAccountApiV1AccountsAccountIdDeleteResponseError;
 
 export const getDeleteAccountApiV1AccountsAccountIdDeleteUrl = (
-  accountId: number,
+  accountId: string,
 ) => {
   return `/api/v1/accounts/${accountId}`;
 };
 
 export const deleteAccountApiV1AccountsAccountIdDelete = async (
-  accountId: number,
+  accountId: string,
   options?: RequestInit,
 ): Promise<deleteAccountApiV1AccountsAccountIdDeleteResponse> => {
   return customInstance<deleteAccountApiV1AccountsAccountIdDeleteResponse>(
@@ -740,14 +740,14 @@ export const getDeleteAccountApiV1AccountsAccountIdDeleteMutationOptions = <
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof deleteAccountApiV1AccountsAccountIdDelete>>,
     TError,
-    { accountId: number },
+    { accountId: string },
     TContext
   >;
   request?: SecondParameter<typeof customInstance>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof deleteAccountApiV1AccountsAccountIdDelete>>,
   TError,
-  { accountId: number },
+  { accountId: string },
   TContext
 > => {
   const mutationKey = ["deleteAccountApiV1AccountsAccountIdDelete"];
@@ -761,7 +761,7 @@ export const getDeleteAccountApiV1AccountsAccountIdDeleteMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof deleteAccountApiV1AccountsAccountIdDelete>>,
-    { accountId: number }
+    { accountId: string }
   > = (props) => {
     const { accountId } = props ?? {};
 
@@ -790,7 +790,7 @@ export const useDeleteAccountApiV1AccountsAccountIdDelete = <
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof deleteAccountApiV1AccountsAccountIdDelete>>,
       TError,
-      { accountId: number },
+      { accountId: string },
       TContext
     >;
     request?: SecondParameter<typeof customInstance>;
@@ -799,7 +799,7 @@ export const useDeleteAccountApiV1AccountsAccountIdDelete = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof deleteAccountApiV1AccountsAccountIdDelete>>,
   TError,
-  { accountId: number },
+  { accountId: string },
   TContext
 > => {
   const mutationOptions =
@@ -835,13 +835,13 @@ export type getAccountBalanceApiV1AccountsAccountIdBalanceGetResponse =
   | getAccountBalanceApiV1AccountsAccountIdBalanceGetResponseError;
 
 export const getGetAccountBalanceApiV1AccountsAccountIdBalanceGetUrl = (
-  accountId: number,
+  accountId: string,
 ) => {
   return `/api/v1/accounts/${accountId}/balance`;
 };
 
 export const getAccountBalanceApiV1AccountsAccountIdBalanceGet = async (
-  accountId: number,
+  accountId: string,
   options?: RequestInit,
 ): Promise<getAccountBalanceApiV1AccountsAccountIdBalanceGetResponse> => {
   return customInstance<getAccountBalanceApiV1AccountsAccountIdBalanceGetResponse>(
@@ -854,7 +854,7 @@ export const getAccountBalanceApiV1AccountsAccountIdBalanceGet = async (
 };
 
 export const getGetAccountBalanceApiV1AccountsAccountIdBalanceGetQueryKey = (
-  accountId?: number,
+  accountId?: string,
 ) => {
   return [`/api/v1/accounts/${accountId}/balance`] as const;
 };
@@ -866,7 +866,7 @@ export const getGetAccountBalanceApiV1AccountsAccountIdBalanceGetQueryOptions =
     >,
     TError = HTTPValidationError,
   >(
-    accountId: number,
+    accountId: string,
     options?: {
       query?: Partial<
         UseQueryOptions<
@@ -925,7 +925,7 @@ export function useGetAccountBalanceApiV1AccountsAccountIdBalanceGet<
   >,
   TError = HTTPValidationError,
 >(
-  accountId: number,
+  accountId: string,
   options: {
     query: Partial<
       UseQueryOptions<
@@ -960,7 +960,7 @@ export function useGetAccountBalanceApiV1AccountsAccountIdBalanceGet<
   >,
   TError = HTTPValidationError,
 >(
-  accountId: number,
+  accountId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -995,7 +995,7 @@ export function useGetAccountBalanceApiV1AccountsAccountIdBalanceGet<
   >,
   TError = HTTPValidationError,
 >(
-  accountId: number,
+  accountId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -1022,7 +1022,7 @@ export function useGetAccountBalanceApiV1AccountsAccountIdBalanceGet<
   >,
   TError = HTTPValidationError,
 >(
-  accountId: number,
+  accountId: string,
   options?: {
     query?: Partial<
       UseQueryOptions<
