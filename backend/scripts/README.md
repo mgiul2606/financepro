@@ -4,7 +4,50 @@ Questa cartella contiene script utili per la gestione del database.
 
 ## Script Disponibili
 
-### 1. `cleanup_database.py` / `cleanup_database.sql`
+### 1. `regenerate_migration.py` ⚡ NUOVO
+
+Rigenera la migration iniziale basandosi sui modelli Python attuali.
+
+**Uso:**
+
+```bash
+cd backend
+python scripts/regenerate_migration.py
+```
+
+**Cosa fa:**
+1. Elimina tutte le migration esistenti in `alembic/versions/`
+2. Genera una nuova migration usando `alembic revision --autogenerate`
+3. La nuova migration sarà perfettamente allineata ai modelli Python attuali
+
+**Quando usarlo:**
+- ✅ Quando i modelli Python sono stati modificati e la migration è obsoleta
+- ✅ Per risolvere disallineamenti tra schema database e modelli Python
+- ✅ Dopo aver ristrutturato i modelli (come nel nostro caso!)
+
+**Workflow consigliato:**
+```bash
+# 1. Pulisci il database
+python scripts/cleanup_database.py
+
+# 2. Rigenera la migration
+python scripts/regenerate_migration.py
+
+# 3. Applica la nuova migration
+python -m alembic upgrade head
+
+# 4. Popola con dati di esempio
+python scripts/seed_database.py --clean
+```
+
+**ATTENZIONE:**
+- ⚠️  Richiede conferma prima di eliminare le migration esistenti
+- ⚠️  Verifica sempre la migration generata prima di applicarla
+- ⚠️  Assicurati di avere un database pulito (o fai backup!)
+
+---
+
+### 2. `cleanup_database.py` / `cleanup_database.sql`
 
 Pulisce completamente il database eliminando tutte le tabelle e tipi ENUM.
 
