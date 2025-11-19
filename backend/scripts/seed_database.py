@@ -31,7 +31,7 @@ from app.models.account import Account, AccountType
 from app.models.category import Category
 from app.models.tag import Tag, TagType
 from app.models.transaction import Transaction, TransactionType, TransactionSource
-from app.models.budget import Budget
+from app.models.budget import Budget, BudgetCategory, PeriodType
 from app.models.financial_goal import FinancialGoal
 from app.models.asset import Asset, AssetType
 from app.models.recurring_transaction import RecurringTransaction, AmountModel, Frequency
@@ -448,6 +448,7 @@ def create_budgets(session, profiles, categories):
     print("\n📊 Creazione budget...")
 
     budgets = []
+    budget_categories = []
 
     # Budget per il profilo personale
     profile_id = profiles[0].id
@@ -467,46 +468,57 @@ def create_budgets(session, profiles, categories):
             "category": cat_alimentari,
             "name": "Budget Alimentari Mensile",
             "amount": Decimal("400.00"),
-            "alert_threshold": Decimal("0.80")  # 80%
+            "alert_threshold_percentage": Decimal("80.00")  # 80%
         },
         {
             "profile_id": profile_id,
             "category": cat_ristoranti,
             "name": "Budget Ristoranti Mensile",
             "amount": Decimal("200.00"),
-            "alert_threshold": Decimal("0.90")
+            "alert_threshold_percentage": Decimal("90.00")  # 90%
         },
         {
             "profile_id": profile_id,
             "category": cat_trasporti,
             "name": "Budget Trasporti Mensile",
             "amount": Decimal("250.00"),
-            "alert_threshold": Decimal("0.85")
+            "alert_threshold_percentage": Decimal("85.00")  # 85%
         },
     ]
 
     for budget_data in budgets_data:
+        # Crea il Budget
         budget = Budget(
             id=uuid.uuid4(),
             financial_profile_id=budget_data["profile_id"],
-            category_id=budget_data["category"].id if budget_data["category"] else None,
             name=budget_data["name"],
+            period_type=PeriodType.MONTHLY,
+            start_date=first_day,
+            end_date=last_day,
             amount=budget_data["amount"],
             currency="EUR",
-            period_start=first_day,
-            period_end=last_day,
-            is_recurring=True,
-            alert_threshold=budget_data["alert_threshold"],
+            alert_threshold_percentage=budget_data["alert_threshold_percentage"],
             is_active=True,
             created_at=datetime.now(),
             updated_at=datetime.now()
         )
         budgets.append(budget)
 
+        # Crea il collegamento Budget-Category
+        if budget_data["category"]:
+            budget_category = BudgetCategory(
+                id=uuid.uuid4(),
+                budget_id=budget.id,
+                category_id=budget_data["category"].id,
+                allocated_amount=budget_data["amount"]  # L'intero budget è allocato a questa categoria
+            )
+            budget_categories.append(budget_category)
+
     session.add_all(budgets)
+    session.add_all(budget_categories)
     session.commit()
 
-    print(f"✅ Creati {len(budgets)} budget")
+    print(f"✅ Creati {len(budgets)} budget con {len(budget_categories)} allocazioni di categoria")
     return budgets
 
 
