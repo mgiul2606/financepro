@@ -87,7 +87,7 @@ class FinancialProfile(Base):
     )
 
     # Relationships
-    user = relationship("User", back_populates="financial_profiles")
+    user = relationship("User", back_populates="financial_profiles", foreign_keys=[user_id])
     accounts = relationship("Account", back_populates="financial_profile", cascade="all, delete-orphan")
     categories = relationship("Category", back_populates="financial_profile", cascade="all, delete-orphan")
     tags = relationship("Tag", back_populates="financial_profile", cascade="all, delete-orphan")

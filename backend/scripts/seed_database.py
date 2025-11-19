@@ -670,7 +670,7 @@ def seed_database(clean_first=False):
 
     # Connessione al database
     print(f"\n📡 Connessione al database...")
-    engine = create_engine(settings.DATABASE_URL)
+    engine = create_engine(settings.database.url)
     Session = sessionmaker(bind=engine)
     session = Session()
 
