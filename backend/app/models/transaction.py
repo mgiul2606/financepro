@@ -1,5 +1,5 @@
 # app/models/transaction.py
-from sqlalchemy import Column, String, Numeric, ForeignKey, DateTime, Boolean, Enum as SQLEnum, Text, Date
+from sqlalchemy import Column, String, Numeric, ForeignKey, DateTime, Boolean, Text, Date
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone, date as date_type
@@ -7,6 +7,7 @@ from decimal import Decimal
 import enum
 import uuid
 from app.db.database import Base
+from app.db.types import StringEnum
 
 
 class TransactionType(str, enum.Enum):
@@ -91,7 +92,7 @@ class Transaction(Base):
     )
 
     # Transaction details
-    transaction_type = Column(SQLEnum(TransactionType), nullable=False, index=True)
+    transaction_type = Column(StringEnum(TransactionType), nullable=False, index=True)
 
     # Amount and currency
     amount = Column(Numeric(precision=15, scale=2), nullable=False)
@@ -122,7 +123,7 @@ class Transaction(Base):
     receipt_url = Column(String(500), nullable=True)
 
     # Metadata
-    created_by = Column(SQLEnum(TransactionSource), default=TransactionSource.MANUAL, nullable=False)
+    created_by = Column(StringEnum(TransactionSource), default=TransactionSource.MANUAL, nullable=False)
 
     # Timestamps
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)

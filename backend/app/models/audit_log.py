@@ -1,11 +1,12 @@
 # app/models/audit_log.py
-from sqlalchemy import Column, String, ForeignKey, DateTime, Enum as SQLEnum, Text
+from sqlalchemy import Column, String, ForeignKey, DateTime, Text
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 import enum
 import uuid
 from app.db.database import Base
+from app.db.types import StringEnum
 
 
 class EventType(str, enum.Enum):
@@ -71,7 +72,7 @@ class AuditLog(Base):
     )
 
     # Event information
-    event_type = Column(SQLEnum(EventType), nullable=False, index=True)
+    event_type = Column(StringEnum(EventType), nullable=False, index=True)
     entity_type = Column(String(100), nullable=True, index=True)
     entity_id = Column(UUID(as_uuid=True), nullable=True, index=True)
     action = Column(String(50), nullable=False, index=True)
@@ -86,7 +87,7 @@ class AuditLog(Base):
 
     # Timestamp and severity
     timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
-    severity = Column(SQLEnum(SeverityLevel), default=SeverityLevel.INFO, nullable=False, index=True)
+    severity = Column(StringEnum(SeverityLevel), default=SeverityLevel.INFO, nullable=False, index=True)
 
     # Relationships
     user = relationship("User", back_populates="audit_logs")

@@ -1,5 +1,5 @@
 # app/models/account.py
-from sqlalchemy import Column, String, Numeric, ForeignKey, DateTime, Boolean, Enum as SQLEnum, Text
+from sqlalchemy import Column, String, Numeric, ForeignKey, DateTime, Boolean, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
@@ -7,6 +7,7 @@ from decimal import Decimal
 import enum
 import uuid
 from app.db.database import Base
+from app.db.types import StringEnum
 
 
 class AccountType(str, enum.Enum):
@@ -61,7 +62,7 @@ class Account(Base):
 
     # Account information
     name = Column(String(100), nullable=False)
-    account_type = Column(SQLEnum(AccountType), default=AccountType.CHECKING, nullable=False)
+    account_type = Column(StringEnum(AccountType), default=AccountType.CHECKING, nullable=False)
 
     # Currency
     currency = Column(String(3), default="EUR", nullable=False)

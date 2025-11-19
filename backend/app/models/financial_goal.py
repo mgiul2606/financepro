@@ -1,5 +1,5 @@
 # app/models/financial_goal.py
-from sqlalchemy import Column, String, Numeric, ForeignKey, DateTime, Boolean, Enum as SQLEnum, Text, Date, Integer
+from sqlalchemy import Column, String, Numeric, ForeignKey, DateTime, Boolean, Text, Date, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
@@ -7,6 +7,7 @@ from decimal import Decimal
 import enum
 import uuid
 from app.db.database import Base
+from app.db.types import StringEnum
 
 
 class GoalType(str, enum.Enum):
@@ -72,7 +73,7 @@ class FinancialGoal(Base):
     # Goal information
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
-    goal_type = Column(SQLEnum(GoalType), nullable=False)
+    goal_type = Column(StringEnum(GoalType), nullable=False)
 
     # Amounts
     target_amount = Column(Numeric(precision=15, scale=2), nullable=False)
@@ -88,7 +89,7 @@ class FinancialGoal(Base):
     priority = Column(Integer, default=5, nullable=False)  # 1-10 scale
 
     # Status
-    status = Column(SQLEnum(GoalStatus), default=GoalStatus.ACTIVE, nullable=False)
+    status = Column(StringEnum(GoalStatus), default=GoalStatus.ACTIVE, nullable=False)
 
     # ML predictions
     achievement_probability = Column(Numeric(precision=5, scale=2), nullable=True)  # 0-100%

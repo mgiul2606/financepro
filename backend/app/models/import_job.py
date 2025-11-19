@@ -1,11 +1,12 @@
 # app/models/import_job.py
-from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, Enum as SQLEnum
+from sqlalchemy import Column, String, Integer, ForeignKey, DateTime
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 import enum
 import uuid
 from app.db.database import Base
+from app.db.types import StringEnum
 
 
 class ImportType(str, enum.Enum):
@@ -71,12 +72,12 @@ class ImportJob(Base):
     )
 
     # Import information
-    import_type = Column(SQLEnum(ImportType), nullable=False, index=True)
+    import_type = Column(StringEnum(ImportType), nullable=False, index=True)
     file_name = Column(String(255), nullable=True)
     file_url = Column(String(500), nullable=True)
 
     # Status
-    status = Column(SQLEnum(ImportStatus), default=ImportStatus.PENDING, nullable=False, index=True)
+    status = Column(StringEnum(ImportStatus), default=ImportStatus.PENDING, nullable=False, index=True)
 
     # Progress tracking
     total_records = Column(Integer, default=0, nullable=False)

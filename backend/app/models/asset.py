@@ -1,5 +1,5 @@
 # app/models/asset.py
-from sqlalchemy import Column, String, Numeric, ForeignKey, DateTime, Boolean, Enum as SQLEnum, Text, Date
+from sqlalchemy import Column, String, Numeric, ForeignKey, DateTime, Boolean, Text, Date
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
@@ -7,6 +7,7 @@ from decimal import Decimal
 import enum
 import uuid
 from app.db.database import Base
+from app.db.types import StringEnum
 
 
 class AssetType(str, enum.Enum):
@@ -70,7 +71,7 @@ class Asset(Base):
 
     # Asset information
     name = Column(String(255), nullable=False)
-    asset_type = Column(SQLEnum(AssetType), nullable=False, index=True)
+    asset_type = Column(StringEnum(AssetType), nullable=False, index=True)
 
     # Purchase information
     purchase_date = Column(Date, nullable=True)
@@ -82,7 +83,7 @@ class Asset(Base):
     current_value_max = Column(Numeric(precision=15, scale=2), nullable=True)  # For range valuations
 
     # Valuation method
-    valuation_method = Column(SQLEnum(ValuationMethod), default=ValuationMethod.MANUAL, nullable=False)
+    valuation_method = Column(StringEnum(ValuationMethod), default=ValuationMethod.MANUAL, nullable=False)
 
     # Currency
     currency = Column(String(3), nullable=False)

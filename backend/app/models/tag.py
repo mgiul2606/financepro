@@ -1,11 +1,12 @@
 # app/models/tag.py
-from sqlalchemy import Column, String, Enum as SQLEnum, ForeignKey, DateTime, Table
+from sqlalchemy import Column, String, ForeignKey, DateTime, Table
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 import enum
 import uuid
 from app.db.database import Base
+from app.db.types import StringEnum
 
 
 class TagType(str, enum.Enum):
@@ -63,7 +64,7 @@ class Tag(Base):
 
     # Tag information
     name = Column(String(50), nullable=False)  # e.g., "lavoro", "deducibile"
-    tag_type = Column(SQLEnum(TagType), nullable=False, index=True)
+    tag_type = Column(StringEnum(TagType), nullable=False, index=True)
     color = Column(String(7), nullable=True)  # hex color code
 
     # Timestamp
