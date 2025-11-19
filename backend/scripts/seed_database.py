@@ -188,6 +188,9 @@ def create_categories(session, profiles):
                 description=cat_data["description"],
                 color=cat_data["color"],
                 icon=cat_data["icon"],
+                level=1,  # Tutte categorie di primo livello
+                full_path=cat_data["name"],  # Per categorie di livello 1, full_path = name
+                is_system=False,  # Categorie utente (non di sistema)
                 is_active=True,
                 created_at=datetime.now(),
                 updated_at=datetime.now()
