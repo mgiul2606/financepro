@@ -32,7 +32,7 @@ from app.models.category import Category
 from app.models.tag import Tag, TagType
 from app.models.transaction import Transaction, TransactionType, TransactionSource
 from app.models.budget import Budget, BudgetCategory, PeriodType
-from app.models.financial_goal import FinancialGoal
+from app.models.financial_goal import FinancialGoal, GoalType
 from app.models.asset import Asset, AssetType
 from app.models.recurring_transaction import RecurringTransaction, AmountModel, Frequency
 from app.services.auth_service import get_password_hash
@@ -532,12 +532,12 @@ def create_goals(session, profiles):
             financial_profile_id=profiles[0].id,
             name="Fondo Emergenza",
             description="Risparmiare 6 mesi di spese",
+            goal_type=GoalType.EMERGENCY_FUND,
             target_amount=Decimal("10000.00"),
             current_amount=Decimal("3500.00"),
-            currency="EUR",
             target_date=date.today() + timedelta(days=365),
-            is_achieved=False,
-            is_active=True,
+            monthly_contribution=Decimal("500.00"),
+            priority=9,
             created_at=datetime.now(),
             updated_at=datetime.now()
         ),
@@ -546,12 +546,12 @@ def create_goals(session, profiles):
             financial_profile_id=profiles[0].id,
             name="Vacanza Estate 2025",
             description="Viaggio in Grecia",
+            goal_type=GoalType.VACATION,
             target_amount=Decimal("3000.00"),
             current_amount=Decimal("800.00"),
-            currency="EUR",
             target_date=date(2025, 7, 1),
-            is_achieved=False,
-            is_active=True,
+            monthly_contribution=Decimal("275.00"),
+            priority=5,
             created_at=datetime.now(),
             updated_at=datetime.now()
         ),
@@ -560,12 +560,12 @@ def create_goals(session, profiles):
             financial_profile_id=profiles[0].id,
             name="Nuovo Laptop",
             description="MacBook Pro per lavoro",
+            goal_type=GoalType.CUSTOM,
             target_amount=Decimal("2500.00"),
             current_amount=Decimal("1200.00"),
-            currency="EUR",
             target_date=date.today() + timedelta(days=90),
-            is_achieved=False,
-            is_active=True,
+            monthly_contribution=Decimal("433.00"),
+            priority=7,
             created_at=datetime.now(),
             updated_at=datetime.now()
         ),
@@ -588,12 +588,12 @@ def create_assets(session, profiles):
             financial_profile_id=profiles[0].id,
             name="Automobile Fiat 500",
             asset_type=AssetType.VEHICLE,
-            description="Fiat 500 2020, 50.000 km",
-            purchase_value=Decimal("15000.00"),
+            purchase_date=date(2020, 6, 15),
+            purchase_price=Decimal("15000.00"),
             current_value=Decimal("12000.00"),
             currency="EUR",
-            purchase_date=date(2020, 6, 15),
-            is_active=True,
+            is_liquid=False,
+            notes="Fiat 500 2020, 50.000 km",
             created_at=datetime.now(),
             updated_at=datetime.now()
         ),
@@ -602,12 +602,12 @@ def create_assets(session, profiles):
             financial_profile_id=profiles[0].id,
             name="MacBook Pro 2022",
             asset_type=AssetType.OTHER,
-            description="MacBook Pro 14'' M1 Pro",
-            purchase_value=Decimal("2800.00"),
+            purchase_date=date(2022, 3, 10),
+            purchase_price=Decimal("2800.00"),
             current_value=Decimal("2000.00"),
             currency="EUR",
-            purchase_date=date(2022, 3, 10),
-            is_active=True,
+            is_liquid=True,
+            notes="MacBook Pro 14'' M1 Pro",
             created_at=datetime.now(),
             updated_at=datetime.now()
         ),
