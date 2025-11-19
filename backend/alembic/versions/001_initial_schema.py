@@ -2,7 +2,7 @@
 
 Revision ID: 001_initial_schema
 Revises:
-Create Date: 2025-11-18
+Create Date: 2025-11-19
 
 """
 from typing import Sequence, Union
@@ -18,7 +18,11 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Create ENUM types (with IF NOT EXISTS check)
+    # =====================================================
+    # CREATE ALL ENUM TYPES
+    # =====================================================
+
+    # User & Profile ENUMs
     op.execute("""
         DO $$ BEGIN
             CREATE TYPE profiletype AS ENUM ('personal', 'family', 'business');
@@ -33,6 +37,8 @@ def upgrade() -> None:
             WHEN duplicate_object THEN null;
         END $$;
     """)
+
+    # Account ENUMs
     op.execute("""
         DO $$ BEGIN
             CREATE TYPE accounttype AS ENUM ('checking', 'savings', 'credit_card', 'investment', 'cash', 'loan', 'other');
@@ -40,20 +46,24 @@ def upgrade() -> None:
             WHEN duplicate_object THEN null;
         END $$;
     """)
+
+    # Transaction ENUMs - CORRECTED to match Python models!
     op.execute("""
         DO $$ BEGIN
-            CREATE TYPE transactiontype AS ENUM ('income', 'expense', 'transfer');
+            CREATE TYPE transactiontype AS ENUM ('bank_transfer', 'withdrawal', 'payment', 'purchase', 'internal_transfer', 'income', 'asset_purchase', 'asset_sale', 'other');
         EXCEPTION
             WHEN duplicate_object THEN null;
         END $$;
     """)
     op.execute("""
         DO $$ BEGIN
-            CREATE TYPE transactionstatus AS ENUM ('pending', 'completed', 'cancelled');
+            CREATE TYPE transactionsource AS ENUM ('manual', 'import_csv', 'import_ocr', 'import_api', 'recurring');
         EXCEPTION
             WHEN duplicate_object THEN null;
         END $$;
     """)
+
+    # Asset ENUMs
     op.execute("""
         DO $$ BEGIN
             CREATE TYPE assettype AS ENUM ('real_estate', 'vehicle', 'investment', 'other');
@@ -63,7 +73,62 @@ def upgrade() -> None:
     """)
     op.execute("""
         DO $$ BEGIN
-            CREATE TYPE recurrencefrequency AS ENUM ('daily', 'weekly', 'biweekly', 'monthly', 'quarterly', 'yearly');
+            CREATE TYPE valuationmethod AS ENUM ('manual', 'market_price', 'formula', 'api');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+
+    # Recurring Transaction ENUMs - CORRECTED!
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE amountmodel AS ENUM ('fixed', 'variable_within_range', 'progressive', 'seasonal');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE frequency AS ENUM ('daily', 'weekly', 'biweekly', 'monthly', 'quarterly', 'yearly', 'custom');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE occurrencestatus AS ENUM ('pending', 'executed', 'skipped', 'overridden');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+
+    # Budget & Goal ENUMs
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE periodtype AS ENUM ('weekly', 'monthly', 'quarterly', 'yearly', 'custom');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE goaltype AS ENUM ('savings', 'debt_reduction', 'investment', 'emergency_fund', 'purchase', 'retirement', 'education', 'other');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE goalstatus AS ENUM ('active', 'completed', 'paused', 'cancelled');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+
+    # Import ENUMs
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE importtype AS ENUM ('csv', 'excel', 'qif', 'ofx', 'api', 'manual');
         EXCEPTION
             WHEN duplicate_object THEN null;
         END $$;
@@ -75,13 +140,44 @@ def upgrade() -> None:
             WHEN duplicate_object THEN null;
         END $$;
     """)
+
+    # Audit Log ENUMs
     op.execute("""
         DO $$ BEGIN
-            CREATE TYPE importfileformat AS ENUM ('csv', 'excel', 'qif', 'ofx');
+            CREATE TYPE eventtype AS ENUM ('create', 'update', 'delete', 'login', 'logout', 'export', 'import', 'other');
         EXCEPTION
             WHEN duplicate_object THEN null;
         END $$;
     """)
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE severitylevel AS ENUM ('debug', 'info', 'warning', 'error', 'critical');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+
+    # Chat ENUMs
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE messagerole AS ENUM ('user', 'assistant', 'system');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+
+    # Tag ENUMs
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE tagtype AS ENUM ('custom', 'system', 'ml_generated');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+
+    # =====================================================
+    # CREATE TABLES
+    # =====================================================
 
     # Create users table
     op.create_table(
@@ -167,6 +263,7 @@ def upgrade() -> None:
         sa.Column('financial_profile_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('name', sa.String(length=50), nullable=False),
         sa.Column('color', sa.String(length=7), nullable=True),
+        sa.Column('tag_type', postgresql.ENUM('custom', 'system', 'ml_generated', name='tagtype', create_type=False), nullable=False, server_default='custom'),
         sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
         sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
         sa.PrimaryKeyConstraint('id'),
@@ -196,37 +293,111 @@ def upgrade() -> None:
     op.create_index('ix_accounts_id', 'accounts', ['id'])
     op.create_index('ix_accounts_financial_profile_id', 'accounts', ['financial_profile_id'])
 
-    # Create transactions table
+    # Create exchange_rates table (needed before transactions)
+    op.create_table(
+        'exchange_rates',
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('from_currency', sa.String(length=3), nullable=False),
+        sa.Column('to_currency', sa.String(length=3), nullable=False),
+        sa.Column('rate', sa.Numeric(precision=15, scale=6), nullable=False),
+        sa.Column('rate_date', sa.Date(), nullable=False),
+        sa.Column('source', sa.String(length=50), nullable=True),
+        sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
+        sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
+        sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index('ix_exchange_rates_id', 'exchange_rates', ['id'])
+    op.create_index('ix_exchange_rates_currencies_date', 'exchange_rates', ['from_currency', 'to_currency', 'rate_date'], unique=True)
+
+    # Create recurring_transactions table (needed before transactions)
+    op.create_table(
+        'recurring_transactions',
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('account_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('category_id', postgresql.UUID(as_uuid=True), nullable=True),
+        sa.Column('name', sa.String(length=255), nullable=False),
+        sa.Column('description', sa.Text(), nullable=True),
+        sa.Column('amount_model', postgresql.ENUM('fixed', 'variable_within_range', 'progressive', 'seasonal', name='amountmodel', create_type=False), nullable=False, server_default='fixed'),
+        sa.Column('base_amount', sa.Numeric(precision=15, scale=2), nullable=False),
+        sa.Column('min_amount', sa.Numeric(precision=15, scale=2), nullable=True),
+        sa.Column('max_amount', sa.Numeric(precision=15, scale=2), nullable=True),
+        sa.Column('frequency', postgresql.ENUM('daily', 'weekly', 'biweekly', 'monthly', 'quarterly', 'yearly', 'custom', name='frequency', create_type=False), nullable=False, server_default='monthly'),
+        sa.Column('custom_interval_days', sa.Integer(), nullable=True),
+        sa.Column('start_date', sa.Date(), nullable=False),
+        sa.Column('end_date', sa.Date(), nullable=True),
+        sa.Column('next_occurrence_date', sa.Date(), nullable=False),
+        sa.Column('calculation_formula', sa.Text(), nullable=True),
+        sa.Column('is_active', sa.Boolean(), nullable=False, server_default='true'),
+        sa.Column('notification_enabled', sa.Boolean(), nullable=False, server_default='true'),
+        sa.Column('notification_days_before', sa.Integer(), nullable=False, server_default='3'),
+        sa.Column('anomaly_threshold_percentage', sa.Numeric(precision=5, scale=2), nullable=False, server_default='20.00'),
+        sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
+        sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
+        sa.PrimaryKeyConstraint('id'),
+        sa.ForeignKeyConstraint(['account_id'], ['accounts.id'], ondelete='CASCADE'),
+        sa.ForeignKeyConstraint(['category_id'], ['categories.id'], ondelete='SET NULL')
+    )
+    op.create_index('ix_recurring_transactions_id', 'recurring_transactions', ['id'])
+    op.create_index('ix_recurring_transactions_account_id', 'recurring_transactions', ['account_id'])
+    op.create_index('ix_recurring_transactions_next_occurrence_date', 'recurring_transactions', ['next_occurrence_date'])
+
+    # Create transactions table - CORRECTED!
     op.create_table(
         'transactions',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('account_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('category_id', postgresql.UUID(as_uuid=True), nullable=True),
-        sa.Column('transaction_type', postgresql.ENUM('income', 'expense', 'transfer', name='transactiontype', create_type=False), nullable=False),
-        sa.Column('amount', sa.Numeric(precision=15, scale=2), nullable=False),
-        sa.Column('currency', sa.String(length=3), nullable=False, server_default='EUR'),
-        sa.Column('transaction_date', sa.Date(), nullable=False),
-        sa.Column('description', sa.Text(), nullable=True),
-        sa.Column('notes', sa.Text(), nullable=True),
-        sa.Column('payee', sa.String(length=255), nullable=True),
-        sa.Column('status', postgresql.ENUM('pending', 'completed', 'cancelled', name='transactionstatus', create_type=False), nullable=False, server_default='completed'),
-        sa.Column('transfer_account_id', postgresql.UUID(as_uuid=True), nullable=True),
-        sa.Column('is_recurring', sa.Boolean(), nullable=False, server_default='false'),
         sa.Column('recurring_transaction_id', postgresql.UUID(as_uuid=True), nullable=True),
-        sa.Column('receipt_path', sa.String(length=500), nullable=True),
-        sa.Column('ml_suggested_category_id', postgresql.UUID(as_uuid=True), nullable=True),
-        sa.Column('ml_confidence_score', sa.Numeric(precision=5, scale=4), nullable=True),
+        sa.Column('transaction_type', postgresql.ENUM('bank_transfer', 'withdrawal', 'payment', 'purchase', 'internal_transfer', 'income', 'asset_purchase', 'asset_sale', 'other', name='transactiontype', create_type=False), nullable=False),
+        sa.Column('amount', sa.Numeric(precision=15, scale=2), nullable=False),
+        sa.Column('currency', sa.String(length=3), nullable=False),
+        sa.Column('exchange_rate_id', postgresql.UUID(as_uuid=True), nullable=True),
+        sa.Column('amount_in_profile_currency', sa.Numeric(precision=15, scale=2), nullable=True),
+        sa.Column('description', sa.Text(), nullable=False),
+        sa.Column('merchant_name', sa.String(length=255), nullable=True),
+        sa.Column('merchant_normalized', sa.String(length=255), nullable=True),
+        sa.Column('transaction_date', sa.Date(), nullable=False),
+        sa.Column('value_date', sa.Date(), nullable=True),
+        sa.Column('notes', sa.Text(), nullable=True),
+        sa.Column('is_reconciled', sa.Boolean(), nullable=False, server_default='false'),
+        sa.Column('location', sa.String(length=255), nullable=True),
+        sa.Column('receipt_url', sa.String(length=500), nullable=True),
+        sa.Column('created_by', postgresql.ENUM('manual', 'import_csv', 'import_ocr', 'import_api', 'recurring', name='transactionsource', create_type=False), nullable=False, server_default='manual'),
         sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
         sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
         sa.PrimaryKeyConstraint('id'),
         sa.ForeignKeyConstraint(['account_id'], ['accounts.id'], ondelete='CASCADE'),
         sa.ForeignKeyConstraint(['category_id'], ['categories.id'], ondelete='SET NULL'),
-        sa.ForeignKeyConstraint(['transfer_account_id'], ['accounts.id'], ondelete='SET NULL'),
-        sa.ForeignKeyConstraint(['ml_suggested_category_id'], ['categories.id'], ondelete='SET NULL')
+        sa.ForeignKeyConstraint(['recurring_transaction_id'], ['recurring_transactions.id'], ondelete='SET NULL'),
+        sa.ForeignKeyConstraint(['exchange_rate_id'], ['exchange_rates.id'], ondelete='SET NULL')
     )
     op.create_index('ix_transactions_id', 'transactions', ['id'])
     op.create_index('ix_transactions_account_id', 'transactions', ['account_id'])
     op.create_index('ix_transactions_transaction_date', 'transactions', ['transaction_date'])
+    op.create_index('ix_transactions_transaction_type', 'transactions', ['transaction_type'])
+    op.create_index('ix_transactions_merchant_normalized', 'transactions', ['merchant_normalized'])
+
+    # Create recurring_transaction_occurrences table
+    op.create_table(
+        'recurring_transaction_occurrences',
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('recurring_transaction_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('transaction_id', postgresql.UUID(as_uuid=True), nullable=True),
+        sa.Column('scheduled_date', sa.Date(), nullable=False),
+        sa.Column('expected_amount', sa.Numeric(precision=15, scale=2), nullable=False),
+        sa.Column('actual_amount', sa.Numeric(precision=15, scale=2), nullable=True),
+        sa.Column('status', postgresql.ENUM('pending', 'executed', 'skipped', 'overridden', name='occurrencestatus', create_type=False), nullable=False, server_default='pending'),
+        sa.Column('is_anomaly', sa.Boolean(), nullable=False, server_default='false'),
+        sa.Column('notes', sa.Text(), nullable=True),
+        sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
+        sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
+        sa.PrimaryKeyConstraint('id'),
+        sa.ForeignKeyConstraint(['recurring_transaction_id'], ['recurring_transactions.id'], ondelete='CASCADE'),
+        sa.ForeignKeyConstraint(['transaction_id'], ['transactions.id'], ondelete='SET NULL')
+    )
+    op.create_index('ix_recurring_transaction_occurrences_id', 'recurring_transaction_occurrences', ['id'])
+    op.create_index('ix_recurring_transaction_occurrences_recurring_transaction_id', 'recurring_transaction_occurrences', ['recurring_transaction_id'])
+    op.create_index('ix_recurring_transaction_occurrences_scheduled_date', 'recurring_transaction_occurrences', ['scheduled_date'])
 
     # Create transaction_tags association table
     op.create_table(
@@ -247,6 +418,7 @@ def upgrade() -> None:
         sa.Column('name', sa.String(length=100), nullable=False),
         sa.Column('amount', sa.Numeric(precision=15, scale=2), nullable=False),
         sa.Column('currency', sa.String(length=3), nullable=False, server_default='EUR'),
+        sa.Column('period_type', postgresql.ENUM('weekly', 'monthly', 'quarterly', 'yearly', 'custom', name='periodtype', create_type=False), nullable=False, server_default='monthly'),
         sa.Column('period_start', sa.Date(), nullable=False),
         sa.Column('period_end', sa.Date(), nullable=False),
         sa.Column('is_recurring', sa.Boolean(), nullable=False, server_default='false'),
@@ -268,10 +440,12 @@ def upgrade() -> None:
         sa.Column('financial_profile_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('name', sa.String(length=100), nullable=False),
         sa.Column('description', sa.Text(), nullable=True),
+        sa.Column('goal_type', postgresql.ENUM('savings', 'debt_reduction', 'investment', 'emergency_fund', 'purchase', 'retirement', 'education', 'other', name='goaltype', create_type=False), nullable=False, server_default='savings'),
         sa.Column('target_amount', sa.Numeric(precision=15, scale=2), nullable=False),
         sa.Column('current_amount', sa.Numeric(precision=15, scale=2), nullable=False, server_default='0.00'),
         sa.Column('currency', sa.String(length=3), nullable=False, server_default='EUR'),
         sa.Column('target_date', sa.Date(), nullable=True),
+        sa.Column('status', postgresql.ENUM('active', 'completed', 'paused', 'cancelled', name='goalstatus', create_type=False), nullable=False, server_default='active'),
         sa.Column('is_achieved', sa.Boolean(), nullable=False, server_default='false'),
         sa.Column('is_active', sa.Boolean(), nullable=False, server_default='true'),
         sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
@@ -294,6 +468,7 @@ def upgrade() -> None:
         sa.Column('current_value', sa.Numeric(precision=15, scale=2), nullable=False),
         sa.Column('currency', sa.String(length=3), nullable=False, server_default='EUR'),
         sa.Column('purchase_date', sa.Date(), nullable=True),
+        sa.Column('valuation_method', postgresql.ENUM('manual', 'market_price', 'formula', 'api', name='valuationmethod', create_type=False), nullable=False, server_default='manual'),
         sa.Column('is_active', sa.Boolean(), nullable=False, server_default='true'),
         sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
         sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
@@ -303,35 +478,6 @@ def upgrade() -> None:
     op.create_index('ix_assets_id', 'assets', ['id'])
     op.create_index('ix_assets_financial_profile_id', 'assets', ['financial_profile_id'])
 
-    # Create recurring_transactions table
-    op.create_table(
-        'recurring_transactions',
-        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('account_id', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('category_id', postgresql.UUID(as_uuid=True), nullable=True),
-        sa.Column('transaction_type', postgresql.ENUM('income', 'expense', 'transfer', name='transactiontype', create_type=False), nullable=False),
-        sa.Column('amount', sa.Numeric(precision=15, scale=2), nullable=False),
-        sa.Column('currency', sa.String(length=3), nullable=False, server_default='EUR'),
-        sa.Column('description', sa.Text(), nullable=True),
-        sa.Column('payee', sa.String(length=255), nullable=True),
-        sa.Column('frequency', postgresql.ENUM('daily', 'weekly', 'biweekly', 'monthly', 'quarterly', 'yearly', name='recurrencefrequency', create_type=False), nullable=False),
-        sa.Column('start_date', sa.Date(), nullable=False),
-        sa.Column('end_date', sa.Date(), nullable=True),
-        sa.Column('next_occurrence', sa.Date(), nullable=False),
-        sa.Column('last_generated', sa.Date(), nullable=True),
-        sa.Column('is_active', sa.Boolean(), nullable=False, server_default='true'),
-        sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
-        sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
-        sa.PrimaryKeyConstraint('id'),
-        sa.ForeignKeyConstraint(['account_id'], ['accounts.id'], ondelete='CASCADE'),
-        sa.ForeignKeyConstraint(['category_id'], ['categories.id'], ondelete='SET NULL')
-    )
-    op.create_index('ix_recurring_transactions_id', 'recurring_transactions', ['id'])
-    op.create_index('ix_recurring_transactions_account_id', 'recurring_transactions', ['account_id'])
-
-    # Add foreign key to transactions for recurring_transaction_id
-    op.create_foreign_key('fk_transactions_recurring', 'transactions', 'recurring_transactions', ['recurring_transaction_id'], ['id'], ondelete='SET NULL')
-
     # Create import_jobs table
     op.create_table(
         'import_jobs',
@@ -340,7 +486,7 @@ def upgrade() -> None:
         sa.Column('account_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('file_name', sa.String(length=255), nullable=False),
         sa.Column('file_path', sa.String(length=500), nullable=False),
-        sa.Column('file_format', postgresql.ENUM('csv', 'excel', 'qif', 'ofx', name='importfileformat', create_type=False), nullable=False),
+        sa.Column('import_type', postgresql.ENUM('csv', 'excel', 'qif', 'ofx', 'api', 'manual', name='importtype', create_type=False), nullable=False),
         sa.Column('status', postgresql.ENUM('pending', 'processing', 'completed', 'failed', name='importstatus', create_type=False), nullable=False, server_default='pending'),
         sa.Column('total_rows', sa.Integer(), nullable=True),
         sa.Column('processed_rows', sa.Integer(), nullable=True),
@@ -364,6 +510,8 @@ def upgrade() -> None:
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('user_id', postgresql.UUID(as_uuid=True), nullable=True),
         sa.Column('financial_profile_id', postgresql.UUID(as_uuid=True), nullable=True),
+        sa.Column('event_type', postgresql.ENUM('create', 'update', 'delete', 'login', 'logout', 'export', 'import', 'other', name='eventtype', create_type=False), nullable=False),
+        sa.Column('severity', postgresql.ENUM('debug', 'info', 'warning', 'error', 'critical', name='severitylevel', create_type=False), nullable=False, server_default='info'),
         sa.Column('action', sa.String(length=100), nullable=False),
         sa.Column('entity_type', sa.String(length=50), nullable=True),
         sa.Column('entity_id', postgresql.UUID(as_uuid=True), nullable=True),
@@ -379,22 +527,6 @@ def upgrade() -> None:
     op.create_index('ix_audit_logs_id', 'audit_logs', ['id'])
     op.create_index('ix_audit_logs_user_id', 'audit_logs', ['user_id'])
     op.create_index('ix_audit_logs_created_at', 'audit_logs', ['created_at'])
-
-    # Create exchange_rates table
-    op.create_table(
-        'exchange_rates',
-        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('from_currency', sa.String(length=3), nullable=False),
-        sa.Column('to_currency', sa.String(length=3), nullable=False),
-        sa.Column('rate', sa.Numeric(precision=15, scale=6), nullable=False),
-        sa.Column('rate_date', sa.Date(), nullable=False),
-        sa.Column('source', sa.String(length=50), nullable=True),
-        sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
-        sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
-        sa.PrimaryKeyConstraint('id')
-    )
-    op.create_index('ix_exchange_rates_id', 'exchange_rates', ['id'])
-    op.create_index('ix_exchange_rates_currencies_date', 'exchange_rates', ['from_currency', 'to_currency', 'rate_date'], unique=True)
 
     # Create ml_classification_logs table
     op.create_table(
@@ -437,7 +569,7 @@ def upgrade() -> None:
         'chat_messages',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('conversation_id', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('role', sa.String(length=20), nullable=False),
+        sa.Column('role', postgresql.ENUM('user', 'assistant', 'system', name='messagerole', create_type=False), nullable=False),
         sa.Column('content', sa.Text(), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
         sa.PrimaryKeyConstraint('id'),
@@ -461,10 +593,6 @@ def downgrade() -> None:
     op.drop_index('ix_ml_classification_logs_id', 'ml_classification_logs')
     op.drop_table('ml_classification_logs')
 
-    op.drop_index('ix_exchange_rates_currencies_date', 'exchange_rates')
-    op.drop_index('ix_exchange_rates_id', 'exchange_rates')
-    op.drop_table('exchange_rates')
-
     op.drop_index('ix_audit_logs_created_at', 'audit_logs')
     op.drop_index('ix_audit_logs_user_id', 'audit_logs')
     op.drop_index('ix_audit_logs_id', 'audit_logs')
@@ -473,10 +601,6 @@ def downgrade() -> None:
     op.drop_index('ix_import_jobs_financial_profile_id', 'import_jobs')
     op.drop_index('ix_import_jobs_id', 'import_jobs')
     op.drop_table('import_jobs')
-
-    op.drop_index('ix_recurring_transactions_account_id', 'recurring_transactions')
-    op.drop_index('ix_recurring_transactions_id', 'recurring_transactions')
-    op.drop_table('recurring_transactions')
 
     op.drop_index('ix_assets_financial_profile_id', 'assets')
     op.drop_index('ix_assets_id', 'assets')
@@ -492,10 +616,26 @@ def downgrade() -> None:
 
     op.drop_table('transaction_tags')
 
+    op.drop_index('ix_recurring_transaction_occurrences_scheduled_date', 'recurring_transaction_occurrences')
+    op.drop_index('ix_recurring_transaction_occurrences_recurring_transaction_id', 'recurring_transaction_occurrences')
+    op.drop_index('ix_recurring_transaction_occurrences_id', 'recurring_transaction_occurrences')
+    op.drop_table('recurring_transaction_occurrences')
+
+    op.drop_index('ix_transactions_merchant_normalized', 'transactions')
+    op.drop_index('ix_transactions_transaction_type', 'transactions')
     op.drop_index('ix_transactions_transaction_date', 'transactions')
     op.drop_index('ix_transactions_account_id', 'transactions')
     op.drop_index('ix_transactions_id', 'transactions')
     op.drop_table('transactions')
+
+    op.drop_index('ix_recurring_transactions_next_occurrence_date', 'recurring_transactions')
+    op.drop_index('ix_recurring_transactions_account_id', 'recurring_transactions')
+    op.drop_index('ix_recurring_transactions_id', 'recurring_transactions')
+    op.drop_table('recurring_transactions')
+
+    op.drop_index('ix_exchange_rates_currencies_date', 'exchange_rates')
+    op.drop_index('ix_exchange_rates_id', 'exchange_rates')
+    op.drop_table('exchange_rates')
 
     op.drop_index('ix_accounts_financial_profile_id', 'accounts')
     op.drop_index('ix_accounts_id', 'accounts')
@@ -526,12 +666,22 @@ def downgrade() -> None:
     op.drop_table('users')
 
     # Drop ENUM types
-    op.execute("DROP TYPE importfileformat")
-    op.execute("DROP TYPE importstatus")
-    op.execute("DROP TYPE recurrencefrequency")
-    op.execute("DROP TYPE assettype")
-    op.execute("DROP TYPE transactionstatus")
-    op.execute("DROP TYPE transactiontype")
-    op.execute("DROP TYPE accounttype")
-    op.execute("DROP TYPE databasetype")
-    op.execute("DROP TYPE profiletype")
+    op.execute('DROP TYPE IF EXISTS tagtype')
+    op.execute('DROP TYPE IF EXISTS messagerole')
+    op.execute('DROP TYPE IF EXISTS severitylevel')
+    op.execute('DROP TYPE IF EXISTS eventtype')
+    op.execute('DROP TYPE IF EXISTS importstatus')
+    op.execute('DROP TYPE IF EXISTS importtype')
+    op.execute('DROP TYPE IF EXISTS goalstatus')
+    op.execute('DROP TYPE IF EXISTS goaltype')
+    op.execute('DROP TYPE IF EXISTS periodtype')
+    op.execute('DROP TYPE IF EXISTS occurrencestatus')
+    op.execute('DROP TYPE IF EXISTS frequency')
+    op.execute('DROP TYPE IF EXISTS amountmodel')
+    op.execute('DROP TYPE IF EXISTS valuationmethod')
+    op.execute('DROP TYPE IF EXISTS assettype')
+    op.execute('DROP TYPE IF EXISTS transactionsource')
+    op.execute('DROP TYPE IF EXISTS transactiontype')
+    op.execute('DROP TYPE IF EXISTS accounttype')
+    op.execute('DROP TYPE IF EXISTS databasetype')
+    op.execute('DROP TYPE IF EXISTS profiletype')
