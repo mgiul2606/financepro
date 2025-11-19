@@ -1,5 +1,5 @@
 # app/models/recurring_transaction.py
-from sqlalchemy import Column, String, Numeric, ForeignKey, DateTime, Boolean, Enum as SQLEnum, Text, Date, Integer
+from sqlalchemy import Column, String, Numeric, ForeignKey, DateTime, Boolean, Text, Date, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone, date as date_type
@@ -7,6 +7,7 @@ from decimal import Decimal
 import enum
 import uuid
 from app.db.database import Base
+from app.db.types import StringEnum
 
 
 class AmountModel(str, enum.Enum):
@@ -98,13 +99,13 @@ class RecurringTransaction(Base):
     description = Column(Text, nullable=True)
 
     # Amount model
-    amount_model = Column(SQLEnum(AmountModel), default=AmountModel.FIXED, nullable=False)
+    amount_model = Column(StringEnum(AmountModel), default=AmountModel.FIXED, nullable=False)
     base_amount = Column(Numeric(precision=15, scale=2), nullable=False)
     min_amount = Column(Numeric(precision=15, scale=2), nullable=True)  # For VARIABLE_WITHIN_RANGE
     max_amount = Column(Numeric(precision=15, scale=2), nullable=True)  # For VARIABLE_WITHIN_RANGE
 
     # Frequency
-    frequency = Column(SQLEnum(Frequency), default=Frequency.MONTHLY, nullable=False)
+    frequency = Column(StringEnum(Frequency), default=Frequency.MONTHLY, nullable=False)
     custom_interval_days = Column(Integer, nullable=True)  # For CUSTOM frequency
 
     # Schedule
@@ -199,7 +200,7 @@ class RecurringTransactionOccurrence(Base):
     actual_amount = Column(Numeric(precision=15, scale=2), nullable=True)
 
     # Status
-    status = Column(SQLEnum(OccurrenceStatus), default=OccurrenceStatus.PENDING, nullable=False)
+    status = Column(StringEnum(OccurrenceStatus), default=OccurrenceStatus.PENDING, nullable=False)
     is_anomaly = Column(Boolean, default=False, nullable=False)
 
     # Notes

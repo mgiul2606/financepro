@@ -1,11 +1,12 @@
 # app/models/chat.py
-from sqlalchemy import Column, String, ForeignKey, DateTime, Enum as SQLEnum, Text
+from sqlalchemy import Column, String, ForeignKey, DateTime, Text
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 import enum
 import uuid
 from app.db.database import Base
+from app.db.types import StringEnum
 
 
 class MessageRole(str, enum.Enum):
@@ -116,7 +117,7 @@ class ChatMessage(Base):
     )
 
     # Message information
-    role = Column(SQLEnum(MessageRole), nullable=False, index=True)
+    role = Column(StringEnum(MessageRole), nullable=False, index=True)
     content = Column(Text, nullable=False)
 
     # Additional data (charts, query results, etc.)

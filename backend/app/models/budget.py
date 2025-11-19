@@ -1,5 +1,5 @@
 # app/models/budget.py
-from sqlalchemy import Column, String, Numeric, ForeignKey, DateTime, Boolean, Enum as SQLEnum, Date
+from sqlalchemy import Column, String, Numeric, ForeignKey, DateTime, Boolean, Date
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
@@ -7,6 +7,7 @@ from decimal import Decimal
 import enum
 import uuid
 from app.db.database import Base
+from app.db.types import StringEnum
 
 
 class PeriodType(str, enum.Enum):
@@ -58,7 +59,7 @@ class Budget(Base):
     name = Column(String(255), nullable=False)
 
     # Period
-    period_type = Column(SQLEnum(PeriodType), nullable=False)
+    period_type = Column(StringEnum(PeriodType), nullable=False)
     start_date = Column(Date, nullable=False, index=True)
     end_date = Column(Date, nullable=False)
 
