@@ -29,13 +29,13 @@ from app.models.user import User
 from app.models.financial_profile import FinancialProfile, ProfileType
 from app.models.account import Account, AccountType
 from app.models.category import Category
-from app.models.tag import Tag
+from app.models.tag import Tag, TagType
 from app.models.transaction import Transaction, TransactionType, TransactionSource
 from app.models.budget import Budget
 from app.models.financial_goal import FinancialGoal
 from app.models.asset import Asset, AssetType
 from app.models.recurring_transaction import RecurringTransaction, AmountModel, Frequency
-from app.core.security import get_password_hash
+from app.services.auth_service import get_password_hash
 
 
 def clean_database(session):
@@ -206,11 +206,11 @@ def create_tags(session, profiles):
     print("\n🏷️  Creazione tag...")
 
     tags_data = [
-        {"name": "Urgente", "color": "#FF0000"},
-        {"name": "Ricorrente", "color": "#0000FF"},
-        {"name": "Deducibile", "color": "#00FF00"},
-        {"name": "Lavoro", "color": "#FFA500"},
-        {"name": "Personale", "color": "#800080"},
+        {"name": "Urgente", "color": "#FF0000", "tag_type": TagType.EMOTIONAL},
+        {"name": "Ricorrente", "color": "#0000FF", "tag_type": TagType.TEMPORAL},
+        {"name": "Deducibile", "color": "#00FF00", "tag_type": TagType.FUNCTIONAL},
+        {"name": "Lavoro", "color": "#FFA500", "tag_type": TagType.CONTEXTUAL},
+        {"name": "Personale", "color": "#800080", "tag_type": TagType.CONTEXTUAL},
     ]
 
     tags = []
@@ -221,9 +221,9 @@ def create_tags(session, profiles):
                 id=uuid.uuid4(),
                 financial_profile_id=profile.id,
                 name=tag_data["name"],
+                tag_type=tag_data["tag_type"],
                 color=tag_data["color"],
-                created_at=datetime.now(),
-                updated_at=datetime.now()
+                created_at=datetime.now()
             )
             tags.append(tag)
 

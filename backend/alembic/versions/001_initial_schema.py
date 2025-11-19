@@ -169,7 +169,7 @@ def upgrade() -> None:
     # Tag ENUMs
     op.execute("""
         DO $$ BEGIN
-            CREATE TYPE tagtype AS ENUM ('custom', 'system', 'ml_generated');
+            CREATE TYPE tagtype AS ENUM ('contextual', 'functional', 'temporal', 'emotional');
         EXCEPTION
             WHEN duplicate_object THEN null;
         END $$;
@@ -263,9 +263,8 @@ def upgrade() -> None:
         sa.Column('financial_profile_id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('name', sa.String(length=50), nullable=False),
         sa.Column('color', sa.String(length=7), nullable=True),
-        sa.Column('tag_type', postgresql.ENUM('custom', 'system', 'ml_generated', name='tagtype', create_type=False), nullable=False, server_default='custom'),
+        sa.Column('tag_type', postgresql.ENUM('contextual', 'functional', 'temporal', 'emotional', name='tagtype', create_type=False), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
-        sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
         sa.PrimaryKeyConstraint('id'),
         sa.ForeignKeyConstraint(['financial_profile_id'], ['financial_profiles.id'], ondelete='CASCADE')
     )
