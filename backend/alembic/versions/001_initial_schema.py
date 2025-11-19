@@ -416,24 +416,37 @@ def upgrade() -> None:
         'budgets',
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.Column('financial_profile_id', postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column('category_id', postgresql.UUID(as_uuid=True), nullable=True),
-        sa.Column('name', sa.String(length=100), nullable=False),
+        sa.Column('name', sa.String(length=255), nullable=False),
+        sa.Column('period_type', postgresql.ENUM('monthly', 'quarterly', 'yearly', 'custom', name='periodtype', create_type=False), nullable=False),
+        sa.Column('start_date', sa.Date(), nullable=False),
+        sa.Column('end_date', sa.Date(), nullable=False),
         sa.Column('amount', sa.Numeric(precision=15, scale=2), nullable=False),
-        sa.Column('currency', sa.String(length=3), nullable=False, server_default='EUR'),
-        sa.Column('period_type', postgresql.ENUM('weekly', 'monthly', 'quarterly', 'yearly', 'custom', name='periodtype', create_type=False), nullable=False, server_default='monthly'),
-        sa.Column('period_start', sa.Date(), nullable=False),
-        sa.Column('period_end', sa.Date(), nullable=False),
-        sa.Column('is_recurring', sa.Boolean(), nullable=False, server_default='false'),
-        sa.Column('alert_threshold', sa.Numeric(precision=5, scale=2), nullable=True),
+        sa.Column('currency', sa.String(length=3), nullable=False),
         sa.Column('is_active', sa.Boolean(), nullable=False, server_default='true'),
+        sa.Column('alert_threshold_percentage', sa.Numeric(precision=5, scale=2), nullable=False, server_default='80.00'),
         sa.Column('created_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
         sa.Column('updated_at', sa.DateTime(), nullable=False, server_default=sa.text('NOW()')),
         sa.PrimaryKeyConstraint('id'),
-        sa.ForeignKeyConstraint(['financial_profile_id'], ['financial_profiles.id'], ondelete='CASCADE'),
-        sa.ForeignKeyConstraint(['category_id'], ['categories.id'], ondelete='SET NULL')
+        sa.ForeignKeyConstraint(['financial_profile_id'], ['financial_profiles.id'], ondelete='CASCADE')
     )
     op.create_index('ix_budgets_id', 'budgets', ['id'])
     op.create_index('ix_budgets_financial_profile_id', 'budgets', ['financial_profile_id'])
+    op.create_index('ix_budgets_start_date', 'budgets', ['start_date'])
+
+    # Create budget_categories table (many-to-many Budget <-> Category)
+    op.create_table(
+        'budget_categories',
+        sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('budget_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('category_id', postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column('allocated_amount', sa.Numeric(precision=15, scale=2), nullable=False),
+        sa.PrimaryKeyConstraint('id'),
+        sa.ForeignKeyConstraint(['budget_id'], ['budgets.id'], ondelete='CASCADE'),
+        sa.ForeignKeyConstraint(['category_id'], ['categories.id'], ondelete='CASCADE')
+    )
+    op.create_index('ix_budget_categories_id', 'budget_categories', ['id'])
+    op.create_index('ix_budget_categories_budget_id', 'budget_categories', ['budget_id'])
+    op.create_index('ix_budget_categories_category_id', 'budget_categories', ['category_id'])
 
     # Create financial_goals table
     op.create_table(
