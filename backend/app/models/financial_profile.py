@@ -1,11 +1,12 @@
 # app/models/financial_profile.py
-from sqlalchemy import Column, String, Enum as SQLEnum, Boolean, DateTime, Text, ForeignKey
+from sqlalchemy import Column, String, Boolean, DateTime, Text, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 import enum
 import uuid
 from app.db.database import Base
+from app.db.types import StringEnum
 
 
 class ProfileType(str, enum.Enum):
@@ -64,7 +65,7 @@ class FinancialProfile(Base):
     # Profile information
     name = Column(String(100), nullable=False)
     description = Column(Text, nullable=True)
-    profile_type = Column(SQLEnum(ProfileType), default=ProfileType.PERSONAL, nullable=False)
+    profile_type = Column(StringEnum(ProfileType), default=ProfileType.PERSONAL, nullable=False)
 
     # Currency settings
     default_currency = Column(String(3), default="EUR", nullable=False)
@@ -72,7 +73,7 @@ class FinancialProfile(Base):
     # Distributed database configuration
     # NOTE: This field should be encrypted in production using app.core.encryption
     database_connection_string = Column(Text, nullable=True)
-    database_type = Column(SQLEnum(DatabaseType), default=DatabaseType.POSTGRESQL, nullable=True)
+    database_type = Column(StringEnum(DatabaseType), default=DatabaseType.POSTGRESQL, nullable=True)
 
     # Status
     is_active = Column(Boolean, default=True, nullable=False)
