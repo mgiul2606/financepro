@@ -66,14 +66,14 @@ def upgrade() -> None:
     # Asset ENUMs
     op.execute("""
         DO $$ BEGIN
-            CREATE TYPE assettype AS ENUM ('real_estate', 'vehicle', 'investment', 'other');
+            CREATE TYPE assettype AS ENUM ('real_estate', 'vehicle', 'precious_metal', 'investment', 'artwork', 'jewelry', 'other');
         EXCEPTION
             WHEN duplicate_object THEN null;
         END $$;
     """)
     op.execute("""
         DO $$ BEGIN
-            CREATE TYPE valuationmethod AS ENUM ('manual', 'market_price', 'formula', 'api');
+            CREATE TYPE valuationmethod AS ENUM ('market_quote', 'range', 'comparative', 'manual');
         EXCEPTION
             WHEN duplicate_object THEN null;
         END $$;
@@ -105,14 +105,14 @@ def upgrade() -> None:
     # Budget & Goal ENUMs
     op.execute("""
         DO $$ BEGIN
-            CREATE TYPE periodtype AS ENUM ('weekly', 'monthly', 'quarterly', 'yearly', 'custom');
+            CREATE TYPE periodtype AS ENUM ('monthly', 'quarterly', 'yearly', 'custom');
         EXCEPTION
             WHEN duplicate_object THEN null;
         END $$;
     """)
     op.execute("""
         DO $$ BEGIN
-            CREATE TYPE goaltype AS ENUM ('savings', 'debt_reduction', 'investment', 'emergency_fund', 'purchase', 'retirement', 'education', 'other');
+            CREATE TYPE goaltype AS ENUM ('house', 'car', 'vacation', 'retirement', 'emergency_fund', 'education', 'investment', 'custom');
         EXCEPTION
             WHEN duplicate_object THEN null;
         END $$;
@@ -128,7 +128,7 @@ def upgrade() -> None:
     # Import ENUMs
     op.execute("""
         DO $$ BEGIN
-            CREATE TYPE importtype AS ENUM ('csv', 'excel', 'qif', 'ofx', 'api', 'manual');
+            CREATE TYPE importtype AS ENUM ('csv', 'ocr', 'bank_api');
         EXCEPTION
             WHEN duplicate_object THEN null;
         END $$;
@@ -144,14 +144,14 @@ def upgrade() -> None:
     # Audit Log ENUMs
     op.execute("""
         DO $$ BEGIN
-            CREATE TYPE eventtype AS ENUM ('create', 'update', 'delete', 'login', 'logout', 'export', 'import', 'other');
+            CREATE TYPE eventtype AS ENUM ('access', 'security', 'financial_op', 'ai_interaction', 'system');
         EXCEPTION
             WHEN duplicate_object THEN null;
         END $$;
     """)
     op.execute("""
         DO $$ BEGIN
-            CREATE TYPE severitylevel AS ENUM ('debug', 'info', 'warning', 'error', 'critical');
+            CREATE TYPE severitylevel AS ENUM ('info', 'warning', 'error', 'critical');
         EXCEPTION
             WHEN duplicate_object THEN null;
         END $$;
