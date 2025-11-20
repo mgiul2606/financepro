@@ -33,7 +33,7 @@ export const CreateProfileModal: React.FC<CreateProfileModalProps> = ({
       : {
           name: '',
           description: '',
-          profile_type: ProfileType.PERSONAL,
+          profile_type: ProfileType.personal,
           default_currency: 'EUR',
         },
   });
@@ -119,9 +119,9 @@ export const CreateProfileModal: React.FC<CreateProfileModalProps> = ({
               {...register('profile_type')}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value={ProfileType.PERSONAL}>{t('profiles.types.personal', 'Personal')}</option>
-              <option value={ProfileType.FAMILY}>{t('profiles.types.family', 'Family')}</option>
-              <option value={ProfileType.BUSINESS}>{t('profiles.types.business', 'Business')}</option>
+              <option value={ProfileType.personal}>{t('profiles.types.personal', 'Personal')}</option>
+              <option value={ProfileType.family}>{t('profiles.types.family', 'Family')}</option>
+              <option value={ProfileType.business}>{t('profiles.types.business', 'Business')}</option>
             </select>
           </div>
 

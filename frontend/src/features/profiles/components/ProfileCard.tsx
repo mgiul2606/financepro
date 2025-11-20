@@ -24,11 +24,11 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
 
   const getProfileIcon = () => {
     switch (profile.profile_type) {
-      case ProfileType.BUSINESS:
+      case ProfileType.business:
         return <Building2 className="w-5 h-5" />;
-      case ProfileType.FAMILY:
+      case ProfileType.family:
         return <Users className="w-5 h-5" />;
-      case ProfileType.PERSONAL:
+      case ProfileType.personal:
       default:
         return <User className="w-5 h-5" />;
     }
@@ -36,11 +36,11 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
 
   const getProfileTypeLabel = () => {
     switch (profile.profile_type) {
-      case ProfileType.BUSINESS:
+      case ProfileType.business:
         return t('profiles.types.business', 'Business');
-      case ProfileType.FAMILY:
+      case ProfileType.family:
         return t('profiles.types.family', 'Family');
-      case ProfileType.PERSONAL:
+      case ProfileType.personal:
       default:
         return t('profiles.types.personal', 'Personal');
     }
