@@ -11,18 +11,32 @@ import {
   useDeleteBudgetApiV1BudgetsBudgetIdDelete,
   getListBudgetsApiV1BudgetsGetQueryKey,
 } from '@/api/generated/budgets/budgets';
+import { useProfileContext } from '@/contexts/ProfileContext';
 import type { BudgetCreate, BudgetUpdate, BudgetFilters } from '../types';
 
 /**
  * Hook to list all budgets with optional filters
+ * Automatically uses the main profile ID from context if not provided
  */
 export const useBudgets = (filters?: BudgetFilters) => {
-  const query = useListBudgetsApiV1BudgetsGet(filters);
+  const { mainProfileId, isLoading: profileLoading } = useProfileContext();
+
+  // Merge filters with profile_id from context
+  const mergedFilters = mainProfileId
+    ? { ...filters, profile_id: filters?.profile_id || mainProfileId }
+    : filters;
+
+  const query = useListBudgetsApiV1BudgetsGet(mergedFilters, {
+    query: {
+      // Only enable the query when we have a profile_id
+      enabled: !!mergedFilters?.profile_id && !profileLoading,
+    },
+  });
 
   return {
     budgets: query.data?.data?.items || [],
     total: query.data?.data?.total || 0,
-    isLoading: query.isLoading,
+    isLoading: query.isLoading || profileLoading,
     error: query.error,
     refetch: query.refetch,
   };
