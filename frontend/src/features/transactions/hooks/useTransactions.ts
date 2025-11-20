@@ -2,7 +2,7 @@
  * React Query hooks for Transaction operations
  * Wraps the generated orval hooks for better usability
  */
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQueries } from '@tanstack/react-query';
 import {
   useListTransactionsApiV1TransactionsGet,
   useGetTransactionApiV1TransactionsTransactionIdGet,
@@ -11,6 +11,9 @@ import {
   useDeleteTransactionApiV1TransactionsTransactionIdDelete,
   useGetTransactionStatsApiV1TransactionsStatsGet,
   getListTransactionsApiV1TransactionsGetQueryKey,
+  listTransactionsApiV1TransactionsGet,
+  getTransactionStatsApiV1TransactionsStatsGet,
+  getGetTransactionStatsApiV1TransactionsStatsGetQueryKey,
 } from '@/api/generated/transactions/transactions';
 import { useProfileContext } from '@/contexts/ProfileContext';
 import type {
@@ -21,24 +24,36 @@ import type {
 
 /**
  * Hook to list all transactions with optional filters
- * Automatically uses the main profile ID from context if not provided
+ * Fetches transactions from all active profiles and aggregates the results
  */
 export const useTransactions = (filters?: TransactionFilters) => {
-  const { mainProfileId, isLoading: profileLoading } = useProfileContext();
+  const { activeProfileIds, isLoading: profileLoading } = useProfileContext();
 
-  // Merge filters with profile_id from context
-  const mergedFilters = mainProfileId
-    ? { ...filters, profile_id: filters?.profile_id || mainProfileId }
-    : filters;
+  // Create queries for each active profile
+  const queries = useQueries({
+    queries: activeProfileIds.map((profileId) => ({
+      queryKey: getListTransactionsApiV1TransactionsGetQueryKey({ ...filters, profile_id: profileId }),
+      queryFn: () => listTransactionsApiV1TransactionsGet({ ...filters, profile_id: profileId }),
+      enabled: !profileLoading && activeProfileIds.length > 0,
+    })),
+  });
 
-  const query = useListTransactionsApiV1TransactionsGet(mergedFilters);
+  // Aggregate results from all profiles
+  const allTransactions = queries.flatMap((query) => query.data?.data?.items || []);
+  const totalCount = queries.reduce((sum, query) => sum + (query.data?.data?.total || 0), 0);
+  const isLoading = profileLoading || queries.some((query) => query.isLoading);
+  const error = queries.find((query) => query.error)?.error || null;
+
+  const refetch = () => {
+    queries.forEach((query) => query.refetch());
+  };
 
   return {
-    transactions: query.data?.data?.items || [],
-    total: query.data?.data?.total || 0,
-    isLoading: query.isLoading || profileLoading,
-    error: query.error,
-    refetch: query.refetch,
+    transactions: allTransactions,
+    total: totalCount,
+    isLoading,
+    error,
+    refetch,
   };
 };
 
@@ -65,7 +80,7 @@ export const useTransaction = (transactionId: string) => {
 
 /**
  * Hook to get transaction statistics
- * Automatically uses the main profile ID from context if not provided
+ * Fetches stats from all active profiles and aggregates the results
  */
 export const useTransactionStats = (params?: {
   profile_id?: string;
@@ -73,20 +88,47 @@ export const useTransactionStats = (params?: {
   date_from?: string;
   date_to?: string;
 }) => {
-  const { mainProfileId, isLoading: profileLoading } = useProfileContext();
+  const { activeProfileIds, isLoading: profileLoading } = useProfileContext();
 
-  // Merge params with profile_id from context
-  const mergedParams = mainProfileId
-    ? { ...params, profile_id: params?.profile_id || mainProfileId }
-    : params;
+  // Create queries for each active profile
+  const queries = useQueries({
+    queries: activeProfileIds.map((profileId) => ({
+      queryKey: getGetTransactionStatsApiV1TransactionsStatsGetQueryKey({ ...params, profile_id: profileId }),
+      queryFn: () => getTransactionStatsApiV1TransactionsStatsGet({ ...params, profile_id: profileId }),
+      enabled: !profileLoading && activeProfileIds.length > 0,
+    })),
+  });
 
-  const query = useGetTransactionStatsApiV1TransactionsStatsGet(mergedParams);
+  // Aggregate stats from all profiles
+  const aggregatedStats = queries.reduce(
+    (acc, query) => {
+      const data = query.data?.data;
+      if (data) {
+        return {
+          total_income: (acc.total_income || 0) + (data.total_income || 0),
+          total_expenses: (acc.total_expenses || 0) + (data.total_expenses || 0),
+          net_balance: (acc.net_balance || 0) + (data.net_balance || 0),
+          transaction_count: (acc.transaction_count || 0) + (data.transaction_count || 0),
+        };
+      }
+      return acc;
+    },
+    { total_income: 0, total_expenses: 0, net_balance: 0, transaction_count: 0 }
+  );
+
+  const isLoading = profileLoading || queries.some((query) => query.isLoading);
+  const error = queries.find((query) => query.error)?.error || null;
+  const hasData = queries.some((query) => query.data?.data);
+
+  const refetch = () => {
+    queries.forEach((query) => query.refetch());
+  };
 
   return {
-    stats: query.data?.data,
-    isLoading: query.isLoading || profileLoading,
-    error: query.error,
-    refetch: query.refetch,
+    stats: hasData ? aggregatedStats : undefined,
+    isLoading,
+    error,
+    refetch,
   };
 };
 

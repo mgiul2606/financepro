@@ -2,7 +2,7 @@
  * React Query hooks for Financial Goal operations
  * Wraps the generated orval hooks for better usability
  */
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQueries } from '@tanstack/react-query';
 import {
   useListGoalsApiV1GoalsGet,
   useGetGoalApiV1GoalsGoalIdGet,
@@ -11,35 +11,43 @@ import {
   useDeleteGoalApiV1GoalsGoalIdDelete,
   useCompleteGoalApiV1GoalsGoalIdCompletePost,
   getListGoalsApiV1GoalsGetQueryKey,
+  listGoalsApiV1GoalsGet,
 } from '@/api/generated/financial-goals/financial-goals';
 import { useProfileContext } from '@/contexts/ProfileContext';
 import type { GoalCreate, GoalUpdate, GoalFilters } from '../types';
 
 /**
  * Hook to list all financial goals with optional filters
- * Automatically uses the main profile ID from context if not provided
+ * Fetches goals from all active profiles and aggregates the results
  */
 export const useGoals = (filters?: GoalFilters) => {
-  const { mainProfileId, isLoading: profileLoading } = useProfileContext();
+  const { activeProfileIds, isLoading: profileLoading } = useProfileContext();
 
-  // Merge filters with profile_id from context
-  const mergedFilters = mainProfileId
-    ? { ...filters, profile_id: filters?.profile_id || mainProfileId }
-    : filters;
-
-  const query = useListGoalsApiV1GoalsGet(mergedFilters, {
-    query: {
-      // Only enable the query when we have a profile_id
-      enabled: !!mergedFilters?.profile_id && !profileLoading,
-    },
+  // Create queries for each active profile
+  const queries = useQueries({
+    queries: activeProfileIds.map((profileId) => ({
+      queryKey: getListGoalsApiV1GoalsGetQueryKey({ ...filters, profile_id: profileId }),
+      queryFn: () => listGoalsApiV1GoalsGet({ ...filters, profile_id: profileId }),
+      enabled: !profileLoading && activeProfileIds.length > 0,
+    })),
   });
 
+  // Aggregate results from all profiles
+  const allGoals = queries.flatMap((query) => query.data?.data?.items || []);
+  const totalCount = queries.reduce((sum, query) => sum + (query.data?.data?.total || 0), 0);
+  const isLoading = profileLoading || queries.some((query) => query.isLoading);
+  const error = queries.find((query) => query.error)?.error || null;
+
+  const refetch = () => {
+    queries.forEach((query) => query.refetch());
+  };
+
   return {
-    goals: query.data?.data?.items || [],
-    total: query.data?.data?.total || 0,
-    isLoading: query.isLoading || profileLoading,
-    error: query.error,
-    refetch: query.refetch,
+    goals: allGoals,
+    total: totalCount,
+    isLoading,
+    error,
+    refetch,
   };
 };
 
