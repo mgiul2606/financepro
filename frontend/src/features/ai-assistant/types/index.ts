@@ -92,3 +92,41 @@ export interface AssistantResponse {
   actions?: AssistantAction[];
   data?: any;
 }
+
+// Transaction classification types
+
+export interface TransactionToClassify {
+  id: string;
+  amount: number;
+  description: string;
+  merchant?: string;
+  date: string;
+  accountId: number;
+}
+
+export interface Classification {
+  category: string;
+  subcategory?: string;
+  confidence: number;
+  tags?: string[];
+  explanation?: string;
+  confirmedByUser?: boolean;
+}
+
+export interface AlternativeCategory {
+  category: string;
+  subcategory?: string;
+  confidence: number;
+}
+
+export interface ClassificationResult {
+  transactionId: string;
+  originalDescription: string;
+  classification: Classification;
+  alternativeCategories?: AlternativeCategory[];
+}
+
+export interface ClassificationBatch {
+  results: ClassificationResult[];
+  averageConfidence: number;
+}

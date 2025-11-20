@@ -26,6 +26,9 @@ import type {
   ChatMessage,
   QuickQuery,
   AssistantCapability,
+  TransactionToClassify,
+  ClassificationBatch,
+  ClassificationResult,
 } from '../types';
 
 // Query keys
@@ -434,5 +437,136 @@ export const useCapabilities = (): {
     data: capabilities,
     isLoading: false,
     error: null,
+  };
+};
+
+// ========== Batch Classification Hooks ==========
+
+/**
+ * Hook to classify multiple transactions at once
+ * Uses mock classification for now - can be connected to backend API later
+ */
+export const useClassifyTransactions = () => {
+  const queryClient = useQueryClient();
+
+  const mockClassify = async (
+    transactions: TransactionToClassify[]
+  ): Promise<ClassificationBatch> => {
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+    // Mock classification logic
+    const categoryMapping: Record<string, { category: string; subcategory?: string }> = {
+      esselunga: { category: 'Alimentari', subcategory: 'Supermercato' },
+      netflix: { category: 'Intrattenimento', subcategory: 'Streaming' },
+      amazon: { category: 'Shopping', subcategory: 'E-commerce' },
+      ristorante: { category: 'Alimentari', subcategory: 'Ristoranti' },
+      enel: { category: 'Utenze', subcategory: 'Elettricità' },
+    };
+
+    const results: ClassificationResult[] = transactions.map((tx) => {
+      const descLower = tx.description.toLowerCase();
+      let category = 'Altro';
+      let subcategory: string | undefined;
+
+      for (const [keyword, cat] of Object.entries(categoryMapping)) {
+        if (descLower.includes(keyword)) {
+          category = cat.category;
+          subcategory = cat.subcategory;
+          break;
+        }
+      }
+
+      const confidence = 0.7 + Math.random() * 0.25; // 70-95% confidence
+
+      return {
+        transactionId: tx.id,
+        originalDescription: tx.description,
+        classification: {
+          category,
+          subcategory,
+          confidence,
+          tags: [category.toLowerCase()],
+          explanation: `Classificato come ${category} basandosi sulla descrizione "${tx.description}"`,
+          confirmedByUser: false,
+        },
+        alternativeCategories: [
+          {
+            category: 'Altro',
+            confidence: 0.1 + Math.random() * 0.2,
+          },
+        ],
+      };
+    });
+
+    const averageConfidence =
+      results.reduce((sum, r) => sum + r.classification.confidence, 0) / results.length;
+
+    return {
+      results,
+      averageConfidence,
+    };
+  };
+
+  return {
+    mutateAsync: mockClassify,
+    isPending: false,
+  };
+};
+
+/**
+ * Hook to confirm a classification
+ * Updates the classification as confirmed by user
+ */
+export const useConfirmClassification = () => {
+  const queryClient = useQueryClient();
+
+  const confirmClassification = async (data: {
+    transactionId: string;
+    categoryId: string;
+  }) => {
+    // In a real implementation, this would call the backend API
+    // For now, we just return success
+    console.log('Classification confirmed:', data);
+
+    // Invalidate related queries
+    queryClient.invalidateQueries({ queryKey: aiAssistantKeys.all });
+
+    return { success: true };
+  };
+
+  return {
+    mutate: (data: { transactionId: string; categoryId: string }) => {
+      confirmClassification(data);
+    },
+    mutateAsync: confirmClassification,
+    isPending: false,
+  };
+};
+
+/**
+ * Hook to reject a classification
+ * Marks the classification as rejected by user
+ */
+export const useRejectClassification = () => {
+  const queryClient = useQueryClient();
+
+  const rejectClassification = async (transactionId: string) => {
+    // In a real implementation, this would call the backend API
+    // For now, we just return success
+    console.log('Classification rejected:', transactionId);
+
+    // Invalidate related queries
+    queryClient.invalidateQueries({ queryKey: aiAssistantKeys.all });
+
+    return { success: true };
+  };
+
+  return {
+    mutate: (transactionId: string) => {
+      rejectClassification(transactionId);
+    },
+    mutateAsync: rejectClassification,
+    isPending: false,
   };
 };
