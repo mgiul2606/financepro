@@ -17,3 +17,6 @@ export type {
   MainProfileUpdate,
   ListProfilesApiV1ProfilesGetParams as ProfileFilters,
 } from '@/api/generated/models';
+
+// Re-export const values for enum-like usage
+export { ProfileType, DatabaseType } from '@/api/generated/models';
