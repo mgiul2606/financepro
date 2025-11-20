@@ -3,9 +3,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import {
   useProfiles,
   useMainProfile,
-  useProfileSelection,
   useSetMainProfile,
-  useUpdateProfileSelection,
 } from '../features/profiles/hooks/useProfiles';
 import type { FinancialProfile } from '../features/profiles/types';
 
@@ -23,8 +21,8 @@ interface ProfileContextValue {
 
   // Actions
   setMainProfile: (profileId: string) => Promise<void>;
-  setActiveProfiles: (profileIds: string[]) => Promise<void>;
-  toggleProfileSelection: (profileId: string) => Promise<void>;
+  setActiveProfiles: (profileIds: string[]) => void;
+  toggleProfileSelection: (profileId: string) => void;
   refreshProfiles: () => void;
 
   // Computed
@@ -35,41 +33,32 @@ interface ProfileContextValue {
 const ProfileContext = createContext<ProfileContextValue | undefined>(undefined);
 
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [activeProfileIds, setActiveProfileIds] = useState<string[]>([]);
+  const [activeProfileIds, setActiveProfileIdsState] = useState<string[]>([]);
   const [mainProfileId, setMainProfileId] = useState<string | null>(null);
 
   // Fetch data
   const { data: profilesData, isLoading: profilesLoading, refetch: refetchProfiles } = useProfiles();
   const { data: mainProfileData, isLoading: mainProfileLoading } = useMainProfile();
-  const { data: selectionData, isLoading: selectionLoading } = useProfileSelection();
 
   // Mutations
   const setMainProfileMutation = useSetMainProfile();
-  const updateSelectionMutation = useUpdateProfileSelection();
 
   const profiles = profilesData?.profiles || [];
-  const isLoading = profilesLoading || mainProfileLoading || selectionLoading;
+  const isLoading = profilesLoading || mainProfileLoading;
   const isError = false; // TODO: Add error handling
 
-  // Update local state when data changes
+  // Update local state when main profile data changes
   useEffect(() => {
     if (mainProfileData?.main_profile_id) {
       setMainProfileId(mainProfileData.main_profile_id);
     }
   }, [mainProfileData]);
 
-  useEffect(() => {
-    if (selectionData?.active_profile_ids) {
-      setActiveProfileIds(selectionData.active_profile_ids);
-    }
-  }, [selectionData]);
-
-  // Initialize: if no profiles selected, select the main one or first one
+  // Initialize: when main profile is loaded and no profiles selected, select the main one
   useEffect(() => {
     if (profiles.length > 0 && activeProfileIds.length === 0 && mainProfileId) {
-      // Select main profile by default
-      setActiveProfileIds([mainProfileId]);
-      updateSelectionMutation.mutate({ active_profile_ids: [mainProfileId] });
+      // Select main profile by default (local state only)
+      setActiveProfileIdsState([mainProfileId]);
     }
   }, [profiles.length, activeProfileIds.length, mainProfileId]);
 
@@ -89,22 +78,21 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   );
 
   const setActiveProfiles = useCallback(
-    async (profileIds: string[]) => {
-      setActiveProfileIds(profileIds);
-      await updateSelectionMutation.mutateAsync({ active_profile_ids: profileIds });
+    (profileIds: string[]) => {
+      setActiveProfileIdsState(profileIds);
     },
-    [updateSelectionMutation]
+    []
   );
 
   const toggleProfileSelection = useCallback(
-    async (profileId: string) => {
-      const newSelection = activeProfileIds.includes(profileId)
-        ? activeProfileIds.filter((id) => id !== profileId)
-        : [...activeProfileIds, profileId];
-
-      await setActiveProfiles(newSelection);
+    (profileId: string) => {
+      setActiveProfileIdsState((prev) =>
+        prev.includes(profileId)
+          ? prev.filter((id) => id !== profileId)
+          : [...prev, profileId]
+      );
     },
-    [activeProfileIds, setActiveProfiles]
+    []
   );
 
   const refreshProfiles = useCallback(() => {

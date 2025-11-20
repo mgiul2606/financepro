@@ -2,7 +2,7 @@
  * React Query hooks for Budget operations
  * Wraps the generated orval hooks for better usability
  */
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQueries } from '@tanstack/react-query';
 import {
   useListBudgetsApiV1BudgetsGet,
   useGetBudgetApiV1BudgetsBudgetIdGet,
@@ -10,35 +10,43 @@ import {
   useUpdateBudgetApiV1BudgetsBudgetIdPatch,
   useDeleteBudgetApiV1BudgetsBudgetIdDelete,
   getListBudgetsApiV1BudgetsGetQueryKey,
+  listBudgetsApiV1BudgetsGet,
 } from '@/api/generated/budgets/budgets';
 import { useProfileContext } from '@/contexts/ProfileContext';
 import type { BudgetCreate, BudgetUpdate, BudgetFilters } from '../types';
 
 /**
  * Hook to list all budgets with optional filters
- * Automatically uses the main profile ID from context if not provided
+ * Fetches budgets from all active profiles and aggregates the results
  */
 export const useBudgets = (filters?: BudgetFilters) => {
-  const { mainProfileId, isLoading: profileLoading } = useProfileContext();
+  const { activeProfileIds, isLoading: profileLoading } = useProfileContext();
 
-  // Merge filters with profile_id from context
-  const mergedFilters = mainProfileId
-    ? { ...filters, profile_id: filters?.profile_id || mainProfileId }
-    : filters;
-
-  const query = useListBudgetsApiV1BudgetsGet(mergedFilters, {
-    query: {
-      // Only enable the query when we have a profile_id
-      enabled: !!mergedFilters?.profile_id && !profileLoading,
-    },
+  // Create queries for each active profile
+  const queries = useQueries({
+    queries: activeProfileIds.map((profileId) => ({
+      queryKey: getListBudgetsApiV1BudgetsGetQueryKey({ ...filters, profile_id: profileId }),
+      queryFn: () => listBudgetsApiV1BudgetsGet({ ...filters, profile_id: profileId }),
+      enabled: !profileLoading && activeProfileIds.length > 0,
+    })),
   });
 
+  // Aggregate results from all profiles
+  const allBudgets = queries.flatMap((query) => query.data?.data?.items || []);
+  const totalCount = queries.reduce((sum, query) => sum + (query.data?.data?.total || 0), 0);
+  const isLoading = profileLoading || queries.some((query) => query.isLoading);
+  const error = queries.find((query) => query.error)?.error || null;
+
+  const refetch = () => {
+    queries.forEach((query) => query.refetch());
+  };
+
   return {
-    budgets: query.data?.data?.items || [],
-    total: query.data?.data?.total || 0,
-    isLoading: query.isLoading || profileLoading,
-    error: query.error,
-    refetch: query.refetch,
+    budgets: allBudgets,
+    total: totalCount,
+    isLoading,
+    error,
+    refetch,
   };
 };
 

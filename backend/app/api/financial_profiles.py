@@ -7,14 +7,11 @@ from uuid import UUID
 from app.db.database import get_db
 from app.models.user import User
 from app.models.financial_profile import FinancialProfile
-from app.models.user_profile_selection import UserProfileSelection
 from app.schemas.financial_profile import (
     FinancialProfileCreate,
     FinancialProfileUpdate,
     FinancialProfileResponse,
     FinancialProfileListResponse,
-    ProfileSelectionUpdate,
-    ProfileSelectionResponse,
     MainProfileUpdate,
     MainProfileResponse,
 )
@@ -196,119 +193,6 @@ async def set_main_profile(
         user_id=current_user.id,
         main_profile_id=current_user.main_profile_id
     )
-
-
-@router.get(
-    "/selection",
-    response_model=ProfileSelectionResponse,
-    summary="Get active profile selection",
-    description="Get which profiles are currently active for the authenticated user",
-    responses={
-        200: {"description": "Profile selection retrieved successfully"},
-        404: {"description": "No profile selection found"}
-    },
-    tags=["Financial Profiles"]
-)
-async def get_profile_selection(
-    db: Annotated[Session, Depends(get_db)],
-    current_user: Annotated[User, Depends(get_current_user)],
-) -> ProfileSelectionResponse:
-    """
-    Get active profile selection.
-
-    Returns:
-        Current profile selection
-
-    Raises:
-        HTTPException 404: If no selection exists
-    """
-    selection = db.query(UserProfileSelection).filter(
-        UserProfileSelection.user_id == current_user.id
-    ).first()
-
-    if not selection:
-        # Create default empty selection
-        selection = UserProfileSelection(
-            user_id=current_user.id,
-            active_profile_ids=[]
-        )
-        db.add(selection)
-        db.commit()
-        db.refresh(selection)
-
-    return selection
-
-
-@router.post(
-    "/selection",
-    response_model=ProfileSelectionResponse,
-    summary="Update active profile selection",
-    description="Update which profiles are currently active for multi-profile operations",
-    responses={
-        200: {"description": "Profile selection updated successfully"},
-        404: {"description": "One or more profiles not found"},
-        403: {"description": "Not authorized to select these profiles"}
-    },
-    tags=["Financial Profiles"]
-)
-async def update_profile_selection(
-    selection_data: ProfileSelectionUpdate,
-    db: Annotated[Session, Depends(get_db)],
-    current_user: Annotated[User, Depends(get_current_user)],
-) -> ProfileSelectionResponse:
-    """
-    Update active profile selection.
-
-    Allows users to select multiple profiles for simultaneous viewing and analysis.
-
-    Args:
-        selection_data: Contains list of profile IDs to mark as active
-
-    Returns:
-        Updated profile selection
-
-    Raises:
-        HTTPException 404: If any profile doesn't exist
-        HTTPException 403: If any profile doesn't belong to current user
-    """
-    # Verify all profiles exist and belong to user
-    if selection_data.active_profile_ids:
-        profiles = db.query(FinancialProfile).filter(
-            FinancialProfile.id.in_(selection_data.active_profile_ids)
-        ).all()
-
-        if len(profiles) != len(selection_data.active_profile_ids):
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="One or more profiles not found"
-            )
-
-        for profile in profiles:
-            if profile.user_id != current_user.id:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Not authorized to select these profiles"
-                )
-
-    # Get or create selection record
-    selection = db.query(UserProfileSelection).filter(
-        UserProfileSelection.user_id == current_user.id
-    ).first()
-
-    if selection:
-        # Update existing selection
-        selection.active_profile_ids = selection_data.active_profile_ids
-    else:
-        # Create new selection
-        selection = UserProfileSelection(
-            user_id=current_user.id,
-            active_profile_ids=selection_data.active_profile_ids
-        )
-        db.add(selection)
-
-    db.commit()
-    db.refresh(selection)
-    return selection
 
 
 # ========== Parametric routes MUST come after static routes ==========
