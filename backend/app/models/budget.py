@@ -1,56 +1,53 @@
 # app/models/budget.py
-from sqlalchemy import Column, String, Numeric, ForeignKey, DateTime, Boolean, Date
-from sqlalchemy.dialects.postgresql import UUID
+"""Budget model with scope pattern - USER-level for FinancePro v2.1"""
+from sqlalchemy import Column, String, Numeric, ForeignKey, DateTime, Boolean, Date, Integer
+from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 from decimal import Decimal
-import enum
 import uuid
 from app.db.database import Base
 from app.db.types import StringEnum
-
-
-class PeriodType(str, enum.Enum):
-    """Budget period types"""
-    MONTHLY = "monthly"
-    QUARTERLY = "quarterly"
-    YEARLY = "yearly"
-    CUSTOM = "custom"
+from app.models.enums import PeriodType, ScopeType
 
 
 class Budget(Base):
     """
-    Budget model for financial planning.
+    Spending budgets with flexible scope (user/profile/multi-profile aggregation).
 
-    Budgets can be defined for specific time periods and assigned to categories.
+    USER-level entity with SCOPE pattern.
+
+    Based on FinancePro Database Technical Documentation v2.1
+
+    Scope Types:
+    - user: Aggregates from all profiles
+    - profile: Single profile only
+    - multi_profile: Selected profiles
 
     Attributes:
         id: UUID primary key
-        financial_profile_id: Foreign key to FinancialProfile
+        user_id: Budget owner (USER-LEVEL)
         name: Budget name
-        period_type: Type of period (monthly, quarterly, yearly, custom)
-        start_date: Start date of budget period
-        end_date: End date of budget period
-        amount: Total budget amount
-        currency: ISO 4217 currency code
-        is_active: Whether the budget is active
-        alert_threshold_percentage: Percentage of budget to trigger alerts
-        created_at: Creation timestamp
-        updated_at: Last update timestamp
-
-    Relationships:
-        financial_profile: Parent financial profile
-        budget_categories: Categories and their allocated amounts
+        scope_type: Scope (user/profile/multi_profile)
+        scope_profile_ids: Array of profile IDs
+        period_type: Period type
+        start_date: Period start
+        end_date: Period end (NULL for rolling)
+        total_amount: Total budget amount
+        currency: Budget currency
+        rollover_enabled: Transfer unspent to next period
+        alert_threshold_percent: Alert threshold %
+        is_active: Budget status
     """
     __tablename__ = "budgets"
 
-    # Primary key - UUID for security
+    # Primary key
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
 
-    # Foreign key
-    financial_profile_id = Column(
+    # Foreign key - USER level
+    user_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("financial_profiles.id"),
+        ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
@@ -58,24 +55,27 @@ class Budget(Base):
     # Budget information
     name = Column(String(255), nullable=False)
 
+    # Scope pattern
+    scope_type = Column(StringEnum(ScopeType), default=ScopeType.USER, nullable=False)
+    scope_profile_ids = Column(ARRAY(UUID(as_uuid=True)), nullable=True)
+
     # Period
-    period_type = Column(StringEnum(PeriodType), nullable=False)
+    period_type = Column(StringEnum(PeriodType), default=PeriodType.MONTHLY, nullable=False)
     start_date = Column(Date, nullable=False, index=True)
-    end_date = Column(Date, nullable=False)
+    end_date = Column(Date, nullable=True)  # NULL for rolling budgets
 
     # Amount
-    amount = Column(Numeric(precision=15, scale=2), nullable=False)
+    total_amount = Column(Numeric(15, 2), nullable=False)
     currency = Column(String(3), nullable=False)
+
+    # Features
+    rollover_enabled = Column(Boolean, default=False, nullable=False)
+
+    # Alerts
+    alert_threshold_percent = Column(Integer, default=80, nullable=False)
 
     # Status
     is_active = Column(Boolean, default=True, nullable=False)
-
-    # Alerts
-    alert_threshold_percentage = Column(
-        Numeric(precision=5, scale=2),
-        default=Decimal("80.00"),
-        nullable=False
-    )  # Alert when 80% of budget is used
 
     # Timestamps
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
@@ -87,35 +87,66 @@ class Budget(Base):
     )
 
     # Relationships
-    financial_profile = relationship("FinancialProfile", back_populates="budgets")
+    user = relationship("User", back_populates="budgets")
     budget_categories = relationship("BudgetCategory", back_populates="budget", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
-        return f"<Budget(id={self.id}, name='{self.name}', amount={self.amount} {self.currency})>"
+        return f"<Budget(id={self.id}, name='{self.name}', scope={self.scope_type.value})>"
 
 
 class BudgetCategory(Base):
     """
-    Budget-Category association with allocated amount.
-
-    This allows splitting a budget across multiple categories.
+    Budget allocation per category with spending tracking.
 
     Attributes:
         id: UUID primary key
-        budget_id: Foreign key to Budget
-        category_id: Foreign key to Category
-        allocated_amount: Amount allocated to this category
+        budget_id: Parent budget
+        category_id: Allocated category
+        allocated_amount: Allocated amount
+        spent_amount: Spent amount (calculated/denormalized)
     """
     __tablename__ = "budget_categories"
 
+    # Primary key
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-    budget_id = Column(UUID(as_uuid=True), ForeignKey("budgets.id"), nullable=False, index=True)
-    category_id = Column(UUID(as_uuid=True), ForeignKey("categories.id"), nullable=False, index=True)
-    allocated_amount = Column(Numeric(precision=15, scale=2), nullable=False)
+
+    # Foreign keys
+    budget_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("budgets.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+    category_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("categories.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+
+    # Amounts
+    allocated_amount = Column(Numeric(15, 2), nullable=False)
+    spent_amount = Column(Numeric(15, 2), default=Decimal("0.00"), nullable=False)
+
+    # Timestamps
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
 
     # Relationships
     budget = relationship("Budget", back_populates="budget_categories")
     category = relationship("Category", back_populates="budget_categories")
 
+    @property
+    def percentage_used(self) -> float:
+        """Calculate percentage of budget used."""
+        if self.allocated_amount == 0:
+            return 0.0
+        return float((self.spent_amount / self.allocated_amount) * 100)
+
     def __repr__(self) -> str:
-        return f"<BudgetCategory(budget_id={self.budget_id}, category_id={self.category_id}, amount={self.allocated_amount})>"
+        return f"<BudgetCategory(budget_id={self.budget_id}, category_id={self.category_id}, spent={self.percentage_used:.1f}%)>"
