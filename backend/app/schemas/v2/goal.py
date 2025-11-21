@@ -57,7 +57,11 @@ class GoalCreate(GoalBase):
     """Schema for creating a goal"""
     scope_type: ScopeType = ScopeType.USER
     scope_profile_ids: Optional[List[UUID]] = None
-    milestones: Optional[List[MilestoneSchema]] = None
+    linked_account_id: Optional[UUID] = None
+    description: Optional[str] = None
+    start_date: Optional[date] = None
+    auto_allocate: bool = False
+    milestones: Optional[List[dict]] = None  # [{name, percentage}]
     initial_amount: Decimal = Field(Decimal("0.00"), ge=0, decimal_places=2)
 
     model_config = ConfigDict(from_attributes=True)
@@ -91,29 +95,24 @@ class GoalResponse(BaseModel):
     goal_type: GoalType
     scope_type: ScopeType
     scope_profile_ids: Optional[List[UUID]] = None
+    linked_account_id: Optional[UUID] = None
+    description: Optional[str] = None
     target_amount: Decimal
     current_amount: Decimal
     currency: str
+    start_date: date
     target_date: date
+    monthly_contribution: Decimal
+    auto_allocate: bool
     priority: int
     status: GoalStatus
-    icon: Optional[str] = None
-    color: Optional[str] = None
-    image_url: Optional[str] = None
-    milestones: Optional[List[MilestoneSchema]] = None
-    gamification_level: int
-    gamification_points: int
-    gamification_badges: Optional[List[str]] = None
-    achievement_probability: Optional[float] = None
-    monthly_contribution: Optional[Decimal] = None
-    notes: Optional[str] = None
+    achievement_probability: Optional[Decimal] = None
+    gamification_points: int = 0
+    # Calculated fields
+    progress_percentage: Decimal = Decimal("0.00")
+    is_on_track: bool = True
     created_at: datetime
     updated_at: datetime
-    # Calculated fields
-    progress_percentage: float
-    remaining_amount: Decimal
-    # Recent contributions
-    recent_contributions: List[GoalContributionResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
 

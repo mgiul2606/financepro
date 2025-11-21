@@ -225,6 +225,14 @@ except Exception as e:
     auth = accounts = categories = None
     financial_profiles = transactions = budgets = goals = ai = None
 
+# Import v2 routers
+try:
+    from app.api.v2 import v2_router
+    logger.info("v2 API modules imported successfully")
+except Exception as e:
+    logger.error(f"Failed to import v2 API modules: {e}")
+    v2_router = None
+
 # Get API prefix
 API_PREFIX = get_api_prefix()
 
@@ -292,5 +300,13 @@ if ai:
         tags=["AI Services"]
     )
     logger.info(f"AI Services router registered at {API_PREFIX}/ai")
+
+# Register v2 routers
+if v2_router:
+    app.include_router(
+        v2_router,
+        prefix=f"{API_PREFIX}"
+    )
+    logger.info(f"v2 API routers registered at {API_PREFIX}/v2")
 
 logger.info(f"Application startup complete. API documentation: {settings.api.docs_url}")
