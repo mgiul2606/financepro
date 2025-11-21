@@ -31,6 +31,7 @@ from app.models.enums import (
     TagType,
     NotificationType,
     NotificationStatus,
+    DatabaseType,
 )
 
 # Core user models
@@ -105,6 +106,7 @@ __all__ = [
     "TagType",
     "NotificationType",
     "NotificationStatus",
+    "DatabaseType",
     # Core models
     "User",
     "UserPreferences",

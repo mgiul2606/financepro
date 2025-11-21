@@ -168,7 +168,7 @@ class TransactionService:
             is_reconciled=is_reconciled,
             **{k: v for k, v in kwargs.items() if k in [
                 'related_transaction_id', 'receipt_url', 'import_job_id',
-                'external_id', 'metadata', 'recurring_transaction_id'
+                'external_id', 'transaction_metadata', 'recurring_transaction_id'
             ]}
         )
 

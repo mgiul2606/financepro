@@ -102,7 +102,7 @@ class Transaction(Base):
     external_id = Column(String(255), nullable=True)
 
     # Extensible metadata
-    metadata = Column(JSONB, nullable=True)
+    transaction_metadata = Column(JSONB, nullable=True)
 
     # Timestamps
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
