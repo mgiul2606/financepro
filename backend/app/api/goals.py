@@ -1,561 +1,434 @@
 # app/api/goals.py
+"""
+Financial Goals Router for FinancePro API v1.
+
+Uses GoalService with:
+- User-level goals with scope support (USER, PROFILE, MULTI_PROFILE)
+- Contributions tracking
+- Milestone management
+- Achievement probability
+"""
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import and_
-from typing import Annotated, Optional
+from typing import Annotated, Optional, List
 from uuid import UUID
-from datetime import datetime, timezone
+from decimal import Decimal
+from datetime import date
 
 from app.db.database import get_db
 from app.models.user import User
-from app.models.financial_goal import FinancialGoal, GoalMilestone, GoalStatus
-from app.models.financial_profile import FinancialProfile
-from app.schemas.goal import (
-    FinancialGoalCreate,
-    FinancialGoalUpdate,
-    FinancialGoalResponse,
-    FinancialGoalListResponse,
-    GoalMilestoneCreate,
-    GoalMilestoneUpdate,
-    GoalMilestoneResponse,
-)
+from app.models.enums import ScopeType, GoalType, GoalStatus
+from app.services.v2 import GoalService
+from app.core.rls import get_rls_context
 from app.api.dependencies import get_current_user
+from app.schemas.v2.goal import (
+    GoalCreate,
+    GoalUpdate,
+    GoalResponse,
+    GoalContributionCreate,
+    GoalContributionResponse
+)
+from pydantic import BaseModel
 
 router = APIRouter()
 
 
-async def verify_profile_ownership(
-    profile_id: UUID,
-    db: Session,
-    current_user: User
-) -> FinancialProfile:
-    """
-    Helper function to verify that the current user owns the financial profile.
+# Response models
+class GoalListResponse(BaseModel):
+    items: List[GoalResponse]
+    total: int
 
-    Args:
-        profile_id: ID of the profile to verify
-        db: Database session
-        current_user: Current authenticated user
 
-    Returns:
-        FinancialProfile object if authorized
+class GoalProgressResponse(BaseModel):
+    goal_id: str
+    progress_percentage: float
+    current_amount: float
+    target_amount: float
+    remaining_amount: float
+    monthly_contribution_needed: float
+    months_remaining: int
+    days_remaining: int
+    total_contributions: int
+    average_contribution: float
+    is_on_track: bool
+    expected_progress: float
+    achievement_probability: float
+    gamification_points: int
 
-    Raises:
-        HTTPException 404: If profile doesn't exist
-        HTTPException 403: If user doesn't own the profile
-    """
-    profile = db.query(FinancialProfile).filter(
-        FinancialProfile.id == profile_id
-    ).first()
 
-    if not profile:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Financial profile with id {profile_id} not found"
-        )
+class MilestoneResponse(BaseModel):
+    id: str
+    goal_id: str
+    name: str
+    target_amount: float
+    target_percentage: int
+    is_achieved: bool
+    achieved_date: Optional[date] = None
 
-    if profile.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this financial profile"
-        )
 
-    return profile
+def get_goal_service(
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)]
+) -> GoalService:
+    """Get goal service with RLS context."""
+    rls = get_rls_context(db, current_user.id)
+    return GoalService(db, rls)
 
 
 @router.get(
     "/",
-    response_model=FinancialGoalListResponse,
-    summary="List financial goals",
-    description="Retrieve all financial goals for a financial profile",
-    responses={
-        200: {"description": "Goals retrieved successfully"},
-    },
-    tags=["Financial Goals"]
+    response_model=GoalListResponse,
+    summary="List goals",
+    description="List all goals for the current user"
 )
 async def list_goals(
-    db: Annotated[Session, Depends(get_db)],
+    service: Annotated[GoalService, Depends(get_goal_service)],
     current_user: Annotated[User, Depends(get_current_user)],
-    profile_id: UUID = Query(..., description="Financial profile ID"),
-    status_filter: Optional[GoalStatus] = Query(None, description="Filter by goal status"),
-    include_milestones: bool = Query(False, description="Include milestones in response"),
-) -> FinancialGoalListResponse:
-    """
-    List all financial goals for a financial profile.
-
-    Args:
-        profile_id: Financial profile ID to filter goals
-        status_filter: Optional filter by goal status
-        include_milestones: Whether to include milestones in response
-
-    Returns:
-        FinancialGoalListResponse with goals and total count
-    """
-    # Verify profile ownership
-    await verify_profile_ownership(profile_id, db, current_user)
-
-    # Build query
-    query = db.query(FinancialGoal).filter(
-        FinancialGoal.financial_profile_id == profile_id
+    status_filter: Optional[GoalStatus] = Query(None, description="Filter by status"),
+    goal_type: Optional[GoalType] = Query(None, description="Filter by type"),
+    include_completed: bool = Query(False, description="Include completed goals"),
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0)
+) -> GoalListResponse:
+    """List all goals for the current user."""
+    goals = service.list_goals(
+        user_id=current_user.id,
+        status_filter=status_filter,
+        goal_type=goal_type,
+        include_completed=include_completed,
+        limit=limit,
+        offset=offset
     )
 
-    if status_filter:
-        query = query.filter(FinancialGoal.status == status_filter)
-
-    goals = query.order_by(
-        FinancialGoal.priority.desc(),
-        FinancialGoal.target_date.asc()
-    ).all()
-
-    # Build response
-    goal_responses = []
+    items = []
     for goal in goals:
-        goal_dict = {
-            "id": goal.id,
-            "financial_profile_id": goal.financial_profile_id,
-            "name": goal.name,
-            "description": goal.description,
-            "goal_type": goal.goal_type,
-            "target_amount": goal.target_amount,
-            "current_amount": goal.current_amount,
-            "target_date": goal.target_date,
-            "priority": goal.priority,
-            "status": goal.status,
-            "monthly_contribution": goal.monthly_contribution,
-            "achievement_probability": goal.achievement_probability,
-            "gamification_points": goal.gamification_points,
-            "created_at": goal.created_at,
-            "updated_at": goal.updated_at,
-            "milestones": goal.milestones if include_milestones else None,
-        }
-        goal_responses.append(FinancialGoalResponse(**goal_dict))
+        progress = service.calculate_progress(goal)
 
-    return FinancialGoalListResponse(items=goal_responses, total=len(goal_responses))
+        items.append(GoalResponse(
+            id=goal.id,
+            user_id=goal.user_id,
+            name=goal.name,
+            scope_type=goal.scope_type,
+            scope_profile_ids=goal.scope_profile_ids,
+            linked_account_id=goal.linked_account_id,
+            goal_type=goal.goal_type,
+            description=goal.description,
+            target_amount=goal.target_amount,
+            current_amount=goal.current_amount,
+            currency=goal.currency,
+            start_date=goal.start_date,
+            target_date=goal.target_date,
+            monthly_contribution=goal.monthly_contribution,
+            auto_allocate=goal.auto_allocate,
+            priority=goal.priority,
+            status=goal.status,
+            achievement_probability=goal.achievement_probability,
+            gamification_points=goal.gamification_points,
+            progress_percentage=Decimal(str(progress['progress_percentage'])),
+            is_on_track=progress['is_on_track'],
+            created_at=goal.created_at,
+            updated_at=goal.updated_at
+        ))
+
+    return GoalListResponse(items=items, total=len(items))
 
 
 @router.post(
     "/",
-    response_model=FinancialGoalResponse,
+    response_model=GoalResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Create financial goal",
-    description="Create a new financial goal for a financial profile",
-    responses={
-        201: {"description": "Goal created successfully"},
-        403: {"description": "Not authorized to create goal for this profile"},
-        404: {"description": "Financial profile not found"}
-    },
-    tags=["Financial Goals"]
+    summary="Create goal",
+    description="Create a new financial goal"
 )
 async def create_goal(
-    goal_in: FinancialGoalCreate,
-    db: Annotated[Session, Depends(get_db)],
-    current_user: Annotated[User, Depends(get_current_user)],
-) -> FinancialGoalResponse:
-    """
-    Create a new financial goal.
+    goal_in: GoalCreate,
+    service: Annotated[GoalService, Depends(get_goal_service)],
+    current_user: Annotated[User, Depends(get_current_user)]
+) -> GoalResponse:
+    """Create a new goal."""
+    try:
+        goal = service.create_goal(
+            user_id=current_user.id,
+            name=goal_in.name,
+            goal_type=goal_in.goal_type,
+            target_amount=goal_in.target_amount,
+            target_date=goal_in.target_date,
+            currency=goal_in.currency,
+            scope_type=goal_in.scope_type,
+            scope_profile_ids=goal_in.scope_profile_ids,
+            linked_account_id=goal_in.linked_account_id,
+            description=goal_in.description,
+            start_date=goal_in.start_date,
+            priority=goal_in.priority,
+            auto_allocate=goal_in.auto_allocate,
+            milestones=goal_in.milestones
+        )
 
-    Verifies that the user owns the financial profile before creating the goal.
+        progress = service.calculate_progress(goal)
 
-    Args:
-        goal_in: Goal creation data
+        return GoalResponse(
+            id=goal.id,
+            user_id=goal.user_id,
+            name=goal.name,
+            scope_type=goal.scope_type,
+            scope_profile_ids=goal.scope_profile_ids,
+            linked_account_id=goal.linked_account_id,
+            goal_type=goal.goal_type,
+            description=goal.description,
+            target_amount=goal.target_amount,
+            current_amount=goal.current_amount,
+            currency=goal.currency,
+            start_date=goal.start_date,
+            target_date=goal.target_date,
+            monthly_contribution=goal.monthly_contribution,
+            auto_allocate=goal.auto_allocate,
+            priority=goal.priority,
+            status=goal.status,
+            achievement_probability=goal.achievement_probability,
+            gamification_points=goal.gamification_points,
+            progress_percentage=Decimal(str(progress['progress_percentage'])),
+            is_on_track=progress['is_on_track'],
+            created_at=goal.created_at,
+            updated_at=goal.updated_at
+        )
 
-    Returns:
-        Created goal with generated ID
-
-    Raises:
-        HTTPException 404: If financial profile doesn't exist
-        HTTPException 403: If user doesn't own the financial profile
-    """
-    # Verify profile ownership
-    await verify_profile_ownership(goal_in.financial_profile_id, db, current_user)
-
-    # Create goal
-    goal = FinancialGoal(**goal_in.model_dump())
-    db.add(goal)
-    db.commit()
-    db.refresh(goal)
-
-    return goal
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.get(
     "/{goal_id}",
-    response_model=FinancialGoalResponse,
-    summary="Get financial goal with milestones",
-    description="Retrieve a specific financial goal by its ID with all milestones",
-    responses={
-        200: {"description": "Goal retrieved successfully"},
-        404: {"description": "Goal not found"},
-        403: {"description": "Not authorized to access this goal"}
-    },
-    tags=["Financial Goals"]
+    response_model=GoalResponse,
+    summary="Get goal",
+    description="Get a specific goal by ID"
 )
 async def get_goal(
     goal_id: UUID,
-    db: Annotated[Session, Depends(get_db)],
-    current_user: Annotated[User, Depends(get_current_user)],
-) -> FinancialGoalResponse:
-    """
-    Get financial goal by ID with milestones.
+    service: Annotated[GoalService, Depends(get_goal_service)]
+) -> GoalResponse:
+    """Get goal by ID."""
+    try:
+        goal = service.get_goal(goal_id)
+        progress = service.calculate_progress(goal)
 
-    Args:
-        goal_id: The goal ID to retrieve
-
-    Returns:
-        Goal details with milestones
-
-    Raises:
-        HTTPException 404: If goal doesn't exist
-        HTTPException 403: If user doesn't own the goal
-    """
-    goal = db.query(FinancialGoal).filter(FinancialGoal.id == goal_id).first()
-
-    if not goal:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Financial goal with id {goal_id} not found"
+        return GoalResponse(
+            id=goal.id,
+            user_id=goal.user_id,
+            name=goal.name,
+            scope_type=goal.scope_type,
+            scope_profile_ids=goal.scope_profile_ids,
+            linked_account_id=goal.linked_account_id,
+            goal_type=goal.goal_type,
+            description=goal.description,
+            target_amount=goal.target_amount,
+            current_amount=goal.current_amount,
+            currency=goal.currency,
+            start_date=goal.start_date,
+            target_date=goal.target_date,
+            monthly_contribution=goal.monthly_contribution,
+            auto_allocate=goal.auto_allocate,
+            priority=goal.priority,
+            status=goal.status,
+            achievement_probability=goal.achievement_probability,
+            gamification_points=goal.gamification_points,
+            progress_percentage=Decimal(str(progress['progress_percentage'])),
+            is_on_track=progress['is_on_track'],
+            created_at=goal.created_at,
+            updated_at=goal.updated_at
         )
 
-    # Verify ownership through profile
-    profile = db.query(FinancialProfile).filter(
-        FinancialProfile.id == goal.financial_profile_id
-    ).first()
-
-    if not profile or profile.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this goal"
-        )
-
-    return goal
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
 @router.patch(
     "/{goal_id}",
-    response_model=FinancialGoalResponse,
-    summary="Update financial goal",
-    description="Update an existing financial goal (partial update supported)",
-    responses={
-        200: {"description": "Goal updated successfully"},
-        404: {"description": "Goal not found"},
-        403: {"description": "Not authorized to update this goal"}
-    },
-    tags=["Financial Goals"]
+    response_model=GoalResponse,
+    summary="Update goal",
+    description="Update an existing goal"
 )
 async def update_goal(
     goal_id: UUID,
-    goal_in: FinancialGoalUpdate,
-    db: Annotated[Session, Depends(get_db)],
-    current_user: Annotated[User, Depends(get_current_user)],
-) -> FinancialGoalResponse:
-    """
-    Update financial goal.
+    goal_in: GoalUpdate,
+    service: Annotated[GoalService, Depends(get_goal_service)]
+) -> GoalResponse:
+    """Update goal."""
+    try:
+        updates = goal_in.model_dump(exclude_unset=True)
+        goal = service.update_goal(goal_id, **updates)
+        progress = service.calculate_progress(goal)
 
-    Args:
-        goal_id: The goal ID to update
-        goal_in: Fields to update (partial update supported)
-
-    Returns:
-        Updated goal
-
-    Raises:
-        HTTPException 404: If goal doesn't exist
-        HTTPException 403: If user doesn't own the goal
-    """
-    goal = db.query(FinancialGoal).filter(FinancialGoal.id == goal_id).first()
-
-    if not goal:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Financial goal with id {goal_id} not found"
+        return GoalResponse(
+            id=goal.id,
+            user_id=goal.user_id,
+            name=goal.name,
+            scope_type=goal.scope_type,
+            scope_profile_ids=goal.scope_profile_ids,
+            linked_account_id=goal.linked_account_id,
+            goal_type=goal.goal_type,
+            description=goal.description,
+            target_amount=goal.target_amount,
+            current_amount=goal.current_amount,
+            currency=goal.currency,
+            start_date=goal.start_date,
+            target_date=goal.target_date,
+            monthly_contribution=goal.monthly_contribution,
+            auto_allocate=goal.auto_allocate,
+            priority=goal.priority,
+            status=goal.status,
+            achievement_probability=goal.achievement_probability,
+            gamification_points=goal.gamification_points,
+            progress_percentage=Decimal(str(progress['progress_percentage'])),
+            is_on_track=progress['is_on_track'],
+            created_at=goal.created_at,
+            updated_at=goal.updated_at
         )
 
-    # Verify ownership
-    profile = db.query(FinancialProfile).filter(
-        FinancialProfile.id == goal.financial_profile_id
-    ).first()
-
-    if not profile or profile.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to update this goal"
-        )
-
-    # Update only provided fields
-    update_data = goal_in.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        setattr(goal, field, value)
-
-    db.commit()
-    db.refresh(goal)
-    return goal
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
 @router.delete(
     "/{goal_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Delete financial goal",
-    description="Delete a financial goal and all its milestones",
-    responses={
-        204: {"description": "Goal deleted successfully"},
-        404: {"description": "Goal not found"},
-        403: {"description": "Not authorized to delete this goal"}
-    },
-    tags=["Financial Goals"]
+    summary="Delete goal",
+    description="Delete a goal"
 )
 async def delete_goal(
     goal_id: UUID,
-    db: Annotated[Session, Depends(get_db)],
-    current_user: Annotated[User, Depends(get_current_user)],
+    service: Annotated[GoalService, Depends(get_goal_service)]
 ) -> None:
-    """
-    Delete financial goal.
+    """Delete goal."""
+    try:
+        service.delete_goal(goal_id)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
-    This will also delete all milestones associated with the goal (CASCADE).
 
-    Args:
-        goal_id: The goal ID to delete
+@router.get(
+    "/{goal_id}/progress",
+    response_model=GoalProgressResponse,
+    summary="Get goal progress",
+    description="Get detailed progress statistics for a goal"
+)
+async def get_goal_progress(
+    goal_id: UUID,
+    service: Annotated[GoalService, Depends(get_goal_service)]
+) -> GoalProgressResponse:
+    """Get detailed goal progress."""
+    try:
+        goal = service.get_goal(goal_id)
+        progress = service.calculate_progress(goal)
 
-    Returns:
-        No content (204)
+        return GoalProgressResponse(**progress)
 
-    Raises:
-        HTTPException 404: If goal doesn't exist
-        HTTPException 403: If user doesn't own the goal
-    """
-    goal = db.query(FinancialGoal).filter(FinancialGoal.id == goal_id).first()
-
-    if not goal:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Financial goal with id {goal_id} not found"
-        )
-
-    # Verify ownership
-    profile = db.query(FinancialProfile).filter(
-        FinancialProfile.id == goal.financial_profile_id
-    ).first()
-
-    if not profile or profile.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to delete this goal"
-        )
-
-    db.delete(goal)
-    db.commit()
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
 @router.post(
-    "/{goal_id}/milestones",
-    response_model=GoalMilestoneResponse,
+    "/{goal_id}/contributions",
+    response_model=GoalContributionResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Add milestone to goal",
-    description="Create a new milestone for a financial goal",
-    responses={
-        201: {"description": "Milestone created successfully"},
-        404: {"description": "Goal not found"},
-        403: {"description": "Not authorized to add milestone to this goal"}
-    },
-    tags=["Financial Goals"]
+    summary="Add contribution",
+    description="Add a contribution to a goal"
 )
-async def add_milestone(
+async def add_contribution(
     goal_id: UUID,
-    milestone_in: GoalMilestoneCreate,
-    db: Annotated[Session, Depends(get_db)],
-    current_user: Annotated[User, Depends(get_current_user)],
-) -> GoalMilestoneResponse:
-    """
-    Add a milestone to a financial goal.
-
-    Args:
-        goal_id: The goal ID to add milestone to
-        milestone_in: Milestone creation data
-
-    Returns:
-        Created milestone
-
-    Raises:
-        HTTPException 404: If goal doesn't exist
-        HTTPException 403: If user doesn't own the goal
-    """
-    goal = db.query(FinancialGoal).filter(FinancialGoal.id == goal_id).first()
-
-    if not goal:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Financial goal with id {goal_id} not found"
+    contribution_in: GoalContributionCreate,
+    service: Annotated[GoalService, Depends(get_goal_service)]
+) -> GoalContributionResponse:
+    """Add contribution to goal."""
+    try:
+        contribution = service.add_contribution(
+            goal_id=goal_id,
+            amount=contribution_in.amount,
+            contribution_date=contribution_in.contribution_date,
+            transaction_id=contribution_in.transaction_id,
+            notes=contribution_in.notes
         )
 
-    # Verify ownership
-    profile = db.query(FinancialProfile).filter(
-        FinancialProfile.id == goal.financial_profile_id
-    ).first()
-
-    if not profile or profile.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to add milestone to this goal"
+        return GoalContributionResponse(
+            id=contribution.id,
+            goal_id=contribution.goal_id,
+            transaction_id=contribution.transaction_id,
+            amount=contribution.amount,
+            contribution_date=contribution.contribution_date,
+            notes=contribution.notes,
+            created_at=contribution.created_at
         )
 
-    # Create milestone
-    milestone = GoalMilestone(
-        **milestone_in.model_dump(),
-        goal_id=goal_id
-    )
-    db.add(milestone)
-    db.commit()
-    db.refresh(milestone)
-
-    return milestone
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@router.patch(
-    "/{goal_id}/milestones/{milestone_id}",
-    response_model=GoalMilestoneResponse,
-    summary="Update milestone",
-    description="Update a goal milestone (partial update supported)",
-    responses={
-        200: {"description": "Milestone updated successfully"},
-        404: {"description": "Milestone or goal not found"},
-        403: {"description": "Not authorized to update this milestone"}
-    },
-    tags=["Financial Goals"]
+@router.get(
+    "/{goal_id}/contributions",
+    response_model=List[GoalContributionResponse],
+    summary="List contributions",
+    description="List all contributions for a goal"
 )
-async def update_milestone(
+async def list_contributions(
     goal_id: UUID,
-    milestone_id: UUID,
-    milestone_in: GoalMilestoneUpdate,
-    db: Annotated[Session, Depends(get_db)],
-    current_user: Annotated[User, Depends(get_current_user)],
-) -> GoalMilestoneResponse:
-    """
-    Update a goal milestone.
-
-    Args:
-        goal_id: The goal ID
-        milestone_id: The milestone ID to update
-        milestone_in: Fields to update (partial update supported)
-
-    Returns:
-        Updated milestone
-
-    Raises:
-        HTTPException 404: If milestone or goal doesn't exist
-        HTTPException 403: If user doesn't own the goal
-    """
-    # Verify goal exists and user owns it
-    goal = db.query(FinancialGoal).filter(FinancialGoal.id == goal_id).first()
-
-    if not goal:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Financial goal with id {goal_id} not found"
+    service: Annotated[GoalService, Depends(get_goal_service)],
+    start_date: Optional[date] = Query(None),
+    end_date: Optional[date] = Query(None),
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0)
+) -> List[GoalContributionResponse]:
+    """List contributions for a goal."""
+    try:
+        contributions = service.get_contributions(
+            goal_id=goal_id,
+            start_date=start_date,
+            end_date=end_date,
+            limit=limit,
+            offset=offset
         )
 
-    # Verify ownership
-    profile = db.query(FinancialProfile).filter(
-        FinancialProfile.id == goal.financial_profile_id
-    ).first()
+        return [
+            GoalContributionResponse(
+                id=c.id,
+                goal_id=c.goal_id,
+                transaction_id=c.transaction_id,
+                amount=c.amount,
+                contribution_date=c.contribution_date,
+                notes=c.notes,
+                created_at=c.created_at
+            )
+            for c in contributions
+        ]
 
-    if not profile or profile.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to update this milestone"
-        )
-
-    # Get milestone
-    milestone = db.query(GoalMilestone).filter(
-        and_(
-            GoalMilestone.id == milestone_id,
-            GoalMilestone.goal_id == goal_id
-        )
-    ).first()
-
-    if not milestone:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Milestone with id {milestone_id} not found for this goal"
-        )
-
-    # Update only provided fields
-    update_data = milestone_in.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        if field == "is_completed" and value and not milestone.is_completed:
-            # Mark milestone as completed
-            setattr(milestone, field, value)
-            milestone.completed_at = datetime.now(timezone.utc)
-        elif field == "is_completed" and not value and milestone.is_completed:
-            # Unmark milestone as completed
-            setattr(milestone, field, value)
-            milestone.completed_at = None
-        else:
-            setattr(milestone, field, value)
-
-    db.commit()
-    db.refresh(milestone)
-    return milestone
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
-@router.post(
-    "/{goal_id}/complete",
-    response_model=FinancialGoalResponse,
-    summary="Mark goal as completed",
-    description="Mark a financial goal as completed",
-    responses={
-        200: {"description": "Goal marked as completed"},
-        404: {"description": "Goal not found"},
-        403: {"description": "Not authorized to complete this goal"}
-    },
-    tags=["Financial Goals"]
+@router.get(
+    "/{goal_id}/milestones",
+    response_model=List[MilestoneResponse],
+    summary="List milestones",
+    description="List all milestones for a goal"
 )
-async def complete_goal(
+async def list_milestones(
     goal_id: UUID,
-    db: Annotated[Session, Depends(get_db)],
-    current_user: Annotated[User, Depends(get_current_user)],
-) -> FinancialGoalResponse:
-    """
-    Mark a financial goal as completed.
+    service: Annotated[GoalService, Depends(get_goal_service)]
+) -> List[MilestoneResponse]:
+    """List milestones for a goal."""
+    try:
+        milestones = service.get_milestones(goal_id)
 
-    This updates the goal status to COMPLETED and awards gamification points.
+        return [
+            MilestoneResponse(
+                id=str(m.id),
+                goal_id=str(m.goal_id),
+                name=m.name,
+                target_amount=float(m.target_amount),
+                target_percentage=m.target_percentage,
+                is_achieved=m.is_achieved,
+                achieved_date=m.achieved_date
+            )
+            for m in milestones
+        ]
 
-    Args:
-        goal_id: The goal ID to mark as completed
-
-    Returns:
-        Updated goal
-
-    Raises:
-        HTTPException 404: If goal doesn't exist
-        HTTPException 403: If user doesn't own the goal
-    """
-    goal = db.query(FinancialGoal).filter(FinancialGoal.id == goal_id).first()
-
-    if not goal:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Financial goal with id {goal_id} not found"
-        )
-
-    # Verify ownership
-    profile = db.query(FinancialProfile).filter(
-        FinancialProfile.id == goal.financial_profile_id
-    ).first()
-
-    if not profile or profile.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to complete this goal"
-        )
-
-    # Mark as completed
-    goal.status = GoalStatus.COMPLETED
-
-    # Award gamification points based on goal achievement
-    # Simple formula: base 100 points + priority * 10
-    if goal.gamification_points == 0:  # Only award once
-        goal.gamification_points = 100 + (goal.priority * 10)
-
-    db.commit()
-    db.refresh(goal)
-    return goal
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))

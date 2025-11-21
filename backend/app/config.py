@@ -64,6 +64,13 @@ class APIInfo(BaseSettings):
             ),
         },
         {
+            "name": "Financial Profiles",
+            "description": (
+                "Financial profile management. Create and manage personal, family, "
+                "or business profiles with optional high-security encryption."
+            ),
+        },
+        {
             "name": "Accounts",
             "description": (
                 "Financial accounts management. Create and manage multiple accounts "
@@ -87,15 +94,36 @@ class APIInfo(BaseSettings):
         {
             "name": "Budgets",
             "description": (
-                "Budget planning and monitoring. Create budgets for categories, "
-                "track spending, and receive alerts when approaching limits."
+                "Budget planning and monitoring. Create budgets with scope support "
+                "(user, profile, multi-profile), track spending, and receive alerts."
             ),
         },
         {
-            "name": "Analytics",
+            "name": "Financial Goals",
             "description": (
-                "Financial analytics and insights. Get spending trends, forecasts, "
-                "and AI-powered recommendations for better financial decisions."
+                "Financial goal management. Set savings goals with milestones, "
+                "track contributions, and monitor achievement probability."
+            ),
+        },
+        {
+            "name": "Imports",
+            "description": (
+                "Data import functionality. Import transactions from CSV files "
+                "with automatic field mapping and duplicate detection."
+            ),
+        },
+        {
+            "name": "Analysis",
+            "description": (
+                "Financial analysis and reporting. Analyze expenses and income by category, "
+                "get spending trends, compare budgets vs actual, and multi-profile aggregations."
+            ),
+        },
+        {
+            "name": "AI Services",
+            "description": (
+                "AI-powered features. Transaction classification, financial forecasting, "
+                "chat assistant, and spending optimization recommendations."
             ),
         },
     ]
