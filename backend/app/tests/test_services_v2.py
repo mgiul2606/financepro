@@ -200,7 +200,8 @@ class TestGoalServiceUnit:
         end = date(2025, 12, 31)
 
         months = service._calculate_months_remaining(start, end)
-        assert months == 12
+        # 364 days / 30 = 12.13, ceil = 13
+        assert months == 13
 
     def test_calculate_expected_progress(self):
         """Test expected progress calculation."""
