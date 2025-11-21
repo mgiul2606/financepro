@@ -117,7 +117,7 @@ class APIInfo(BaseSettings):
 class DatabaseSettings(BaseSettings):
     """Database configuration"""
     url: str = Field(
-        default="postgresql://postgres.pklyboftzpuoqqoorgly:bpB9zmxLW95Hex5v@aws-1-eu-west-1.pooler.supabase.com:6543/postgres",
+        default="postgresql://postgres.pklyboftzpuoqqoorgly:kbcpxuCnaHcGjXgU@aws-1-eu-west-1.pooler.supabase.com:6543/postgres",
         description="PostgreSQL database URL"
     )
     echo: bool = Field(

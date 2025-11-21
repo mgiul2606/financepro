@@ -33,7 +33,7 @@ from app.models.chat import ChatConversation, ChatMessage
 config = context.config
 
 # Set sqlalchemy.url from settings
-config.set_main_option('sqlalchemy.url', settings.DATABASE_URL)
+config.set_main_option('sqlalchemy.url', settings.database.url)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
