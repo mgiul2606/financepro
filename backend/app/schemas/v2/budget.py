@@ -19,10 +19,11 @@ class BudgetCategoryCreate(BaseModel):
 class BudgetCategoryResponse(BaseModel):
     """Schema for budget category response"""
     id: UUID
+    budget_id: UUID
     category_id: UUID
     allocated_amount: Decimal
-    spent_amount: Decimal
-    percentage_used: float
+    spent_amount: Decimal = Decimal("0.00")
+    percentage_used: float = 0.0
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -44,7 +45,7 @@ class BudgetCreate(BudgetBase):
     """Schema for creating a budget"""
     scope_type: ScopeType = ScopeType.USER
     scope_profile_ids: Optional[List[UUID]] = None
-    categories: Optional[List[BudgetCategoryCreate]] = None
+    category_allocations: Optional[List[dict]] = None  # [{category_id, allocated_amount}]
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -62,7 +63,7 @@ class BudgetUpdate(BaseModel):
     is_active: Optional[bool] = None
     scope_type: Optional[ScopeType] = None
     scope_profile_ids: Optional[List[UUID]] = None
-    categories: Optional[List[BudgetCategoryCreate]] = None
+    category_allocations: Optional[List[dict]] = None  # [{category_id, allocated_amount}]
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -86,7 +87,8 @@ class BudgetResponse(BaseModel):
     updated_at: datetime
     # Calculated fields
     total_spent: Decimal = Decimal("0.00")
-    percentage_used: float = 0.0
+    remaining: Decimal = Decimal("0.00")
+    usage_percentage: Decimal = Decimal("0.00")
     # Categories
     categories: List[BudgetCategoryResponse] = []
 
