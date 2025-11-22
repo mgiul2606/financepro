@@ -20,6 +20,9 @@ import { OptimizationPage } from './features/optimization/pages/OptimizationPage
 import { AIAssistantPage } from './features/ai-assistant/pages/AIAssistantPage';
 import { Settings } from './pages/Settings';
 import { ProfilesPage } from './features/profiles';
+import { ImportsPage } from './features/imports';
+import { AssetsPage } from './features/assets';
+import { RecurringPage } from './features/recurring';
 
 // Create React Query client
 const queryClient = new QueryClient({
@@ -57,6 +60,9 @@ function App() {
                             <Route path="/analytics" element={<AnalyticPage />} />
                             <Route path="/optimization" element={<OptimizationPage />} />
                             <Route path="/ai-assistant" element={<AIAssistantPage />} />
+                            <Route path="/imports" element={<ImportsPage />} />
+                            <Route path="/assets" element={<AssetsPage />} />
+                            <Route path="/recurring" element={<RecurringPage />} />
                             <Route path="/settings" element={<Settings />} />
                             <Route path="/settings/profiles" element={<ProfilesPage />} />
                             <Route path="/" element={<Navigate to="/dashboard" replace />} />

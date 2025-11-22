@@ -15,14 +15,24 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
+import type { PeriodType } from "./periodType";
 
 export type ListBudgetsApiV1BudgetsGetParams = {
-  /**
-   * Financial profile ID
-   */
-  profile_id: string;
   /**
    * Include inactive budgets
    */
   include_inactive?: boolean;
+  /**
+   * Filter by period type
+   */
+  period_type?: PeriodType | null;
+  /**
+   * @minimum 1
+   * @maximum 500
+   */
+  limit?: number;
+  /**
+   * @minimum 0
+   */
+  offset?: number;
 };

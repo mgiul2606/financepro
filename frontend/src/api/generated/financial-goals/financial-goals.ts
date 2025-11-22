@@ -32,15 +32,17 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
-  FinancialGoalCreate,
-  FinancialGoalListResponse,
-  FinancialGoalResponse,
-  FinancialGoalUpdate,
-  GoalMilestoneCreate,
-  GoalMilestoneResponse,
-  GoalMilestoneUpdate,
+  GoalContributionCreate,
+  GoalContributionResponse,
+  GoalCreate,
+  GoalListResponse,
+  GoalProgressResponse,
+  GoalResponse,
+  GoalUpdate,
   HTTPValidationError,
+  ListContributionsApiV1GoalsGoalIdContributionsGetParams,
   ListGoalsApiV1GoalsGetParams,
+  MilestoneResponse,
 } from ".././models";
 
 import { customInstance } from "../../client";
@@ -48,11 +50,11 @@ import { customInstance } from "../../client";
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 /**
- * Retrieve all financial goals for a financial profile
- * @summary List financial goals
+ * List all goals for the current user
+ * @summary List goals
  */
 export type listGoalsApiV1GoalsGetResponse200 = {
-  data: FinancialGoalListResponse;
+  data: GoalListResponse;
   status: 200;
 };
 
@@ -75,7 +77,7 @@ export type listGoalsApiV1GoalsGetResponse =
   | listGoalsApiV1GoalsGetResponseError;
 
 export const getListGoalsApiV1GoalsGetUrl = (
-  params: ListGoalsApiV1GoalsGetParams,
+  params?: ListGoalsApiV1GoalsGetParams,
 ) => {
   const normalizedParams = new URLSearchParams();
 
@@ -93,7 +95,7 @@ export const getListGoalsApiV1GoalsGetUrl = (
 };
 
 export const listGoalsApiV1GoalsGet = async (
-  params: ListGoalsApiV1GoalsGetParams,
+  params?: ListGoalsApiV1GoalsGetParams,
   options?: RequestInit,
 ): Promise<listGoalsApiV1GoalsGetResponse> => {
   return customInstance<listGoalsApiV1GoalsGetResponse>(
@@ -115,7 +117,7 @@ export const getListGoalsApiV1GoalsGetQueryOptions = <
   TData = Awaited<ReturnType<typeof listGoalsApiV1GoalsGet>>,
   TError = HTTPValidationError,
 >(
-  params: ListGoalsApiV1GoalsGetParams,
+  params?: ListGoalsApiV1GoalsGetParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -153,7 +155,7 @@ export function useListGoalsApiV1GoalsGet<
   TData = Awaited<ReturnType<typeof listGoalsApiV1GoalsGet>>,
   TError = HTTPValidationError,
 >(
-  params: ListGoalsApiV1GoalsGetParams,
+  params: undefined | ListGoalsApiV1GoalsGetParams,
   options: {
     query: Partial<
       UseQueryOptions<
@@ -180,7 +182,7 @@ export function useListGoalsApiV1GoalsGet<
   TData = Awaited<ReturnType<typeof listGoalsApiV1GoalsGet>>,
   TError = HTTPValidationError,
 >(
-  params: ListGoalsApiV1GoalsGetParams,
+  params?: ListGoalsApiV1GoalsGetParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -207,7 +209,7 @@ export function useListGoalsApiV1GoalsGet<
   TData = Awaited<ReturnType<typeof listGoalsApiV1GoalsGet>>,
   TError = HTTPValidationError,
 >(
-  params: ListGoalsApiV1GoalsGetParams,
+  params?: ListGoalsApiV1GoalsGetParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -223,14 +225,14 @@ export function useListGoalsApiV1GoalsGet<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 /**
- * @summary List financial goals
+ * @summary List goals
  */
 
 export function useListGoalsApiV1GoalsGet<
   TData = Awaited<ReturnType<typeof listGoalsApiV1GoalsGet>>,
   TError = HTTPValidationError,
 >(
-  params: ListGoalsApiV1GoalsGetParams,
+  params?: ListGoalsApiV1GoalsGetParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -258,22 +260,12 @@ export function useListGoalsApiV1GoalsGet<
 }
 
 /**
- * Create a new financial goal for a financial profile
- * @summary Create financial goal
+ * Create a new financial goal
+ * @summary Create goal
  */
 export type createGoalApiV1GoalsPostResponse201 = {
-  data: FinancialGoalResponse;
+  data: GoalResponse;
   status: 201;
-};
-
-export type createGoalApiV1GoalsPostResponse403 = {
-  data: void;
-  status: 403;
-};
-
-export type createGoalApiV1GoalsPostResponse404 = {
-  data: void;
-  status: 404;
 };
 
 export type createGoalApiV1GoalsPostResponse422 = {
@@ -285,13 +277,10 @@ export type createGoalApiV1GoalsPostResponseSuccess =
   createGoalApiV1GoalsPostResponse201 & {
     headers: Headers;
   };
-export type createGoalApiV1GoalsPostResponseError = (
-  | createGoalApiV1GoalsPostResponse403
-  | createGoalApiV1GoalsPostResponse404
-  | createGoalApiV1GoalsPostResponse422
-) & {
-  headers: Headers;
-};
+export type createGoalApiV1GoalsPostResponseError =
+  createGoalApiV1GoalsPostResponse422 & {
+    headers: Headers;
+  };
 
 export type createGoalApiV1GoalsPostResponse =
   | createGoalApiV1GoalsPostResponseSuccess
@@ -302,7 +291,7 @@ export const getCreateGoalApiV1GoalsPostUrl = () => {
 };
 
 export const createGoalApiV1GoalsPost = async (
-  financialGoalCreate: FinancialGoalCreate,
+  goalCreate: GoalCreate,
   options?: RequestInit,
 ): Promise<createGoalApiV1GoalsPostResponse> => {
   return customInstance<createGoalApiV1GoalsPostResponse>(
@@ -311,26 +300,26 @@ export const createGoalApiV1GoalsPost = async (
       ...options,
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(financialGoalCreate),
+      body: JSON.stringify(goalCreate),
     },
   );
 };
 
 export const getCreateGoalApiV1GoalsPostMutationOptions = <
-  TError = void | HTTPValidationError,
+  TError = HTTPValidationError,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createGoalApiV1GoalsPost>>,
     TError,
-    { data: FinancialGoalCreate },
+    { data: GoalCreate },
     TContext
   >;
   request?: SecondParameter<typeof customInstance>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof createGoalApiV1GoalsPost>>,
   TError,
-  { data: FinancialGoalCreate },
+  { data: GoalCreate },
   TContext
 > => {
   const mutationKey = ["createGoalApiV1GoalsPost"];
@@ -344,7 +333,7 @@ export const getCreateGoalApiV1GoalsPostMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof createGoalApiV1GoalsPost>>,
-    { data: FinancialGoalCreate }
+    { data: GoalCreate }
   > = (props) => {
     const { data } = props ?? {};
 
@@ -357,21 +346,21 @@ export const getCreateGoalApiV1GoalsPostMutationOptions = <
 export type CreateGoalApiV1GoalsPostMutationResult = NonNullable<
   Awaited<ReturnType<typeof createGoalApiV1GoalsPost>>
 >;
-export type CreateGoalApiV1GoalsPostMutationBody = FinancialGoalCreate;
-export type CreateGoalApiV1GoalsPostMutationError = void | HTTPValidationError;
+export type CreateGoalApiV1GoalsPostMutationBody = GoalCreate;
+export type CreateGoalApiV1GoalsPostMutationError = HTTPValidationError;
 
 /**
- * @summary Create financial goal
+ * @summary Create goal
  */
 export const useCreateGoalApiV1GoalsPost = <
-  TError = void | HTTPValidationError,
+  TError = HTTPValidationError,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof createGoalApiV1GoalsPost>>,
       TError,
-      { data: FinancialGoalCreate },
+      { data: GoalCreate },
       TContext
     >;
     request?: SecondParameter<typeof customInstance>;
@@ -380,7 +369,7 @@ export const useCreateGoalApiV1GoalsPost = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof createGoalApiV1GoalsPost>>,
   TError,
-  { data: FinancialGoalCreate },
+  { data: GoalCreate },
   TContext
 > => {
   const mutationOptions = getCreateGoalApiV1GoalsPostMutationOptions(options);
@@ -388,22 +377,12 @@ export const useCreateGoalApiV1GoalsPost = <
   return useMutation(mutationOptions, queryClient);
 };
 /**
- * Retrieve a specific financial goal by its ID with all milestones
- * @summary Get financial goal with milestones
+ * Get a specific goal by ID
+ * @summary Get goal
  */
 export type getGoalApiV1GoalsGoalIdGetResponse200 = {
-  data: FinancialGoalResponse;
+  data: GoalResponse;
   status: 200;
-};
-
-export type getGoalApiV1GoalsGoalIdGetResponse403 = {
-  data: void;
-  status: 403;
-};
-
-export type getGoalApiV1GoalsGoalIdGetResponse404 = {
-  data: void;
-  status: 404;
 };
 
 export type getGoalApiV1GoalsGoalIdGetResponse422 = {
@@ -415,13 +394,10 @@ export type getGoalApiV1GoalsGoalIdGetResponseSuccess =
   getGoalApiV1GoalsGoalIdGetResponse200 & {
     headers: Headers;
   };
-export type getGoalApiV1GoalsGoalIdGetResponseError = (
-  | getGoalApiV1GoalsGoalIdGetResponse403
-  | getGoalApiV1GoalsGoalIdGetResponse404
-  | getGoalApiV1GoalsGoalIdGetResponse422
-) & {
-  headers: Headers;
-};
+export type getGoalApiV1GoalsGoalIdGetResponseError =
+  getGoalApiV1GoalsGoalIdGetResponse422 & {
+    headers: Headers;
+  };
 
 export type getGoalApiV1GoalsGoalIdGetResponse =
   | getGoalApiV1GoalsGoalIdGetResponseSuccess
@@ -450,7 +426,7 @@ export const getGetGoalApiV1GoalsGoalIdGetQueryKey = (goalId?: string) => {
 
 export const getGetGoalApiV1GoalsGoalIdGetQueryOptions = <
   TData = Awaited<ReturnType<typeof getGoalApiV1GoalsGoalIdGet>>,
-  TError = void | HTTPValidationError,
+  TError = HTTPValidationError,
 >(
   goalId: string,
   options?: {
@@ -489,11 +465,11 @@ export const getGetGoalApiV1GoalsGoalIdGetQueryOptions = <
 export type GetGoalApiV1GoalsGoalIdGetQueryResult = NonNullable<
   Awaited<ReturnType<typeof getGoalApiV1GoalsGoalIdGet>>
 >;
-export type GetGoalApiV1GoalsGoalIdGetQueryError = void | HTTPValidationError;
+export type GetGoalApiV1GoalsGoalIdGetQueryError = HTTPValidationError;
 
 export function useGetGoalApiV1GoalsGoalIdGet<
   TData = Awaited<ReturnType<typeof getGoalApiV1GoalsGoalIdGet>>,
-  TError = void | HTTPValidationError,
+  TError = HTTPValidationError,
 >(
   goalId: string,
   options: {
@@ -520,7 +496,7 @@ export function useGetGoalApiV1GoalsGoalIdGet<
 };
 export function useGetGoalApiV1GoalsGoalIdGet<
   TData = Awaited<ReturnType<typeof getGoalApiV1GoalsGoalIdGet>>,
-  TError = void | HTTPValidationError,
+  TError = HTTPValidationError,
 >(
   goalId: string,
   options?: {
@@ -547,7 +523,7 @@ export function useGetGoalApiV1GoalsGoalIdGet<
 };
 export function useGetGoalApiV1GoalsGoalIdGet<
   TData = Awaited<ReturnType<typeof getGoalApiV1GoalsGoalIdGet>>,
-  TError = void | HTTPValidationError,
+  TError = HTTPValidationError,
 >(
   goalId: string,
   options?: {
@@ -565,12 +541,12 @@ export function useGetGoalApiV1GoalsGoalIdGet<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 /**
- * @summary Get financial goal with milestones
+ * @summary Get goal
  */
 
 export function useGetGoalApiV1GoalsGoalIdGet<
   TData = Awaited<ReturnType<typeof getGoalApiV1GoalsGoalIdGet>>,
-  TError = void | HTTPValidationError,
+  TError = HTTPValidationError,
 >(
   goalId: string,
   options?: {
@@ -603,22 +579,12 @@ export function useGetGoalApiV1GoalsGoalIdGet<
 }
 
 /**
- * Update an existing financial goal (partial update supported)
- * @summary Update financial goal
+ * Update an existing goal
+ * @summary Update goal
  */
 export type updateGoalApiV1GoalsGoalIdPatchResponse200 = {
-  data: FinancialGoalResponse;
+  data: GoalResponse;
   status: 200;
-};
-
-export type updateGoalApiV1GoalsGoalIdPatchResponse403 = {
-  data: void;
-  status: 403;
-};
-
-export type updateGoalApiV1GoalsGoalIdPatchResponse404 = {
-  data: void;
-  status: 404;
 };
 
 export type updateGoalApiV1GoalsGoalIdPatchResponse422 = {
@@ -630,13 +596,10 @@ export type updateGoalApiV1GoalsGoalIdPatchResponseSuccess =
   updateGoalApiV1GoalsGoalIdPatchResponse200 & {
     headers: Headers;
   };
-export type updateGoalApiV1GoalsGoalIdPatchResponseError = (
-  | updateGoalApiV1GoalsGoalIdPatchResponse403
-  | updateGoalApiV1GoalsGoalIdPatchResponse404
-  | updateGoalApiV1GoalsGoalIdPatchResponse422
-) & {
-  headers: Headers;
-};
+export type updateGoalApiV1GoalsGoalIdPatchResponseError =
+  updateGoalApiV1GoalsGoalIdPatchResponse422 & {
+    headers: Headers;
+  };
 
 export type updateGoalApiV1GoalsGoalIdPatchResponse =
   | updateGoalApiV1GoalsGoalIdPatchResponseSuccess
@@ -648,7 +611,7 @@ export const getUpdateGoalApiV1GoalsGoalIdPatchUrl = (goalId: string) => {
 
 export const updateGoalApiV1GoalsGoalIdPatch = async (
   goalId: string,
-  financialGoalUpdate: FinancialGoalUpdate,
+  goalUpdate: GoalUpdate,
   options?: RequestInit,
 ): Promise<updateGoalApiV1GoalsGoalIdPatchResponse> => {
   return customInstance<updateGoalApiV1GoalsGoalIdPatchResponse>(
@@ -657,26 +620,26 @@ export const updateGoalApiV1GoalsGoalIdPatch = async (
       ...options,
       method: "PATCH",
       headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(financialGoalUpdate),
+      body: JSON.stringify(goalUpdate),
     },
   );
 };
 
 export const getUpdateGoalApiV1GoalsGoalIdPatchMutationOptions = <
-  TError = void | HTTPValidationError,
+  TError = HTTPValidationError,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateGoalApiV1GoalsGoalIdPatch>>,
     TError,
-    { goalId: string; data: FinancialGoalUpdate },
+    { goalId: string; data: GoalUpdate },
     TContext
   >;
   request?: SecondParameter<typeof customInstance>;
 }): UseMutationOptions<
   Awaited<ReturnType<typeof updateGoalApiV1GoalsGoalIdPatch>>,
   TError,
-  { goalId: string; data: FinancialGoalUpdate },
+  { goalId: string; data: GoalUpdate },
   TContext
 > => {
   const mutationKey = ["updateGoalApiV1GoalsGoalIdPatch"];
@@ -690,7 +653,7 @@ export const getUpdateGoalApiV1GoalsGoalIdPatchMutationOptions = <
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof updateGoalApiV1GoalsGoalIdPatch>>,
-    { goalId: string; data: FinancialGoalUpdate }
+    { goalId: string; data: GoalUpdate }
   > = (props) => {
     const { goalId, data } = props ?? {};
 
@@ -703,22 +666,21 @@ export const getUpdateGoalApiV1GoalsGoalIdPatchMutationOptions = <
 export type UpdateGoalApiV1GoalsGoalIdPatchMutationResult = NonNullable<
   Awaited<ReturnType<typeof updateGoalApiV1GoalsGoalIdPatch>>
 >;
-export type UpdateGoalApiV1GoalsGoalIdPatchMutationBody = FinancialGoalUpdate;
-export type UpdateGoalApiV1GoalsGoalIdPatchMutationError =
-  void | HTTPValidationError;
+export type UpdateGoalApiV1GoalsGoalIdPatchMutationBody = GoalUpdate;
+export type UpdateGoalApiV1GoalsGoalIdPatchMutationError = HTTPValidationError;
 
 /**
- * @summary Update financial goal
+ * @summary Update goal
  */
 export const useUpdateGoalApiV1GoalsGoalIdPatch = <
-  TError = void | HTTPValidationError,
+  TError = HTTPValidationError,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<ReturnType<typeof updateGoalApiV1GoalsGoalIdPatch>>,
       TError,
-      { goalId: string; data: FinancialGoalUpdate },
+      { goalId: string; data: GoalUpdate },
       TContext
     >;
     request?: SecondParameter<typeof customInstance>;
@@ -727,7 +689,7 @@ export const useUpdateGoalApiV1GoalsGoalIdPatch = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof updateGoalApiV1GoalsGoalIdPatch>>,
   TError,
-  { goalId: string; data: FinancialGoalUpdate },
+  { goalId: string; data: GoalUpdate },
   TContext
 > => {
   const mutationOptions =
@@ -736,22 +698,12 @@ export const useUpdateGoalApiV1GoalsGoalIdPatch = <
   return useMutation(mutationOptions, queryClient);
 };
 /**
- * Delete a financial goal and all its milestones
- * @summary Delete financial goal
+ * Delete a goal
+ * @summary Delete goal
  */
 export type deleteGoalApiV1GoalsGoalIdDeleteResponse204 = {
   data: void;
   status: 204;
-};
-
-export type deleteGoalApiV1GoalsGoalIdDeleteResponse403 = {
-  data: void;
-  status: 403;
-};
-
-export type deleteGoalApiV1GoalsGoalIdDeleteResponse404 = {
-  data: void;
-  status: 404;
 };
 
 export type deleteGoalApiV1GoalsGoalIdDeleteResponse422 = {
@@ -763,13 +715,10 @@ export type deleteGoalApiV1GoalsGoalIdDeleteResponseSuccess =
   deleteGoalApiV1GoalsGoalIdDeleteResponse204 & {
     headers: Headers;
   };
-export type deleteGoalApiV1GoalsGoalIdDeleteResponseError = (
-  | deleteGoalApiV1GoalsGoalIdDeleteResponse403
-  | deleteGoalApiV1GoalsGoalIdDeleteResponse404
-  | deleteGoalApiV1GoalsGoalIdDeleteResponse422
-) & {
-  headers: Headers;
-};
+export type deleteGoalApiV1GoalsGoalIdDeleteResponseError =
+  deleteGoalApiV1GoalsGoalIdDeleteResponse422 & {
+    headers: Headers;
+  };
 
 export type deleteGoalApiV1GoalsGoalIdDeleteResponse =
   | deleteGoalApiV1GoalsGoalIdDeleteResponseSuccess
@@ -793,7 +742,7 @@ export const deleteGoalApiV1GoalsGoalIdDelete = async (
 };
 
 export const getDeleteGoalApiV1GoalsGoalIdDeleteMutationOptions = <
-  TError = void | HTTPValidationError,
+  TError = HTTPValidationError,
   TContext = unknown,
 >(options?: {
   mutation?: UseMutationOptions<
@@ -834,14 +783,13 @@ export type DeleteGoalApiV1GoalsGoalIdDeleteMutationResult = NonNullable<
   Awaited<ReturnType<typeof deleteGoalApiV1GoalsGoalIdDelete>>
 >;
 
-export type DeleteGoalApiV1GoalsGoalIdDeleteMutationError =
-  void | HTTPValidationError;
+export type DeleteGoalApiV1GoalsGoalIdDeleteMutationError = HTTPValidationError;
 
 /**
- * @summary Delete financial goal
+ * @summary Delete goal
  */
 export const useDeleteGoalApiV1GoalsGoalIdDelete = <
-  TError = void | HTTPValidationError,
+  TError = HTTPValidationError,
   TContext = unknown,
 >(
   options?: {
@@ -866,244 +814,297 @@ export const useDeleteGoalApiV1GoalsGoalIdDelete = <
   return useMutation(mutationOptions, queryClient);
 };
 /**
- * Create a new milestone for a financial goal
- * @summary Add milestone to goal
+ * Get detailed progress statistics for a goal
+ * @summary Get goal progress
  */
-export type addMilestoneApiV1GoalsGoalIdMilestonesPostResponse201 = {
-  data: GoalMilestoneResponse;
-  status: 201;
+export type getGoalProgressApiV1GoalsGoalIdProgressGetResponse200 = {
+  data: GoalProgressResponse;
+  status: 200;
 };
 
-export type addMilestoneApiV1GoalsGoalIdMilestonesPostResponse403 = {
-  data: void;
-  status: 403;
-};
-
-export type addMilestoneApiV1GoalsGoalIdMilestonesPostResponse404 = {
-  data: void;
-  status: 404;
-};
-
-export type addMilestoneApiV1GoalsGoalIdMilestonesPostResponse422 = {
+export type getGoalProgressApiV1GoalsGoalIdProgressGetResponse422 = {
   data: HTTPValidationError;
   status: 422;
 };
 
-export type addMilestoneApiV1GoalsGoalIdMilestonesPostResponseSuccess =
-  addMilestoneApiV1GoalsGoalIdMilestonesPostResponse201 & {
+export type getGoalProgressApiV1GoalsGoalIdProgressGetResponseSuccess =
+  getGoalProgressApiV1GoalsGoalIdProgressGetResponse200 & {
     headers: Headers;
   };
-export type addMilestoneApiV1GoalsGoalIdMilestonesPostResponseError = (
-  | addMilestoneApiV1GoalsGoalIdMilestonesPostResponse403
-  | addMilestoneApiV1GoalsGoalIdMilestonesPostResponse404
-  | addMilestoneApiV1GoalsGoalIdMilestonesPostResponse422
-) & {
-  headers: Headers;
-};
+export type getGoalProgressApiV1GoalsGoalIdProgressGetResponseError =
+  getGoalProgressApiV1GoalsGoalIdProgressGetResponse422 & {
+    headers: Headers;
+  };
 
-export type addMilestoneApiV1GoalsGoalIdMilestonesPostResponse =
-  | addMilestoneApiV1GoalsGoalIdMilestonesPostResponseSuccess
-  | addMilestoneApiV1GoalsGoalIdMilestonesPostResponseError;
+export type getGoalProgressApiV1GoalsGoalIdProgressGetResponse =
+  | getGoalProgressApiV1GoalsGoalIdProgressGetResponseSuccess
+  | getGoalProgressApiV1GoalsGoalIdProgressGetResponseError;
 
-export const getAddMilestoneApiV1GoalsGoalIdMilestonesPostUrl = (
+export const getGetGoalProgressApiV1GoalsGoalIdProgressGetUrl = (
   goalId: string,
 ) => {
-  return `/api/v1/goals/${goalId}/milestones`;
+  return `/api/v1/goals/${goalId}/progress`;
 };
 
-export const addMilestoneApiV1GoalsGoalIdMilestonesPost = async (
+export const getGoalProgressApiV1GoalsGoalIdProgressGet = async (
   goalId: string,
-  goalMilestoneCreate: GoalMilestoneCreate,
   options?: RequestInit,
-): Promise<addMilestoneApiV1GoalsGoalIdMilestonesPostResponse> => {
-  return customInstance<addMilestoneApiV1GoalsGoalIdMilestonesPostResponse>(
-    getAddMilestoneApiV1GoalsGoalIdMilestonesPostUrl(goalId),
+): Promise<getGoalProgressApiV1GoalsGoalIdProgressGetResponse> => {
+  return customInstance<getGoalProgressApiV1GoalsGoalIdProgressGetResponse>(
+    getGetGoalProgressApiV1GoalsGoalIdProgressGetUrl(goalId),
     {
       ...options,
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(goalMilestoneCreate),
+      method: "GET",
     },
   );
 };
 
-export const getAddMilestoneApiV1GoalsGoalIdMilestonesPostMutationOptions = <
-  TError = void | HTTPValidationError,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof addMilestoneApiV1GoalsGoalIdMilestonesPost>>,
-    TError,
-    { goalId: string; data: GoalMilestoneCreate },
-    TContext
-  >;
-  request?: SecondParameter<typeof customInstance>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof addMilestoneApiV1GoalsGoalIdMilestonesPost>>,
-  TError,
-  { goalId: string; data: GoalMilestoneCreate },
-  TContext
-> => {
-  const mutationKey = ["addMilestoneApiV1GoalsGoalIdMilestonesPost"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof addMilestoneApiV1GoalsGoalIdMilestonesPost>>,
-    { goalId: string; data: GoalMilestoneCreate }
-  > = (props) => {
-    const { goalId, data } = props ?? {};
-
-    return addMilestoneApiV1GoalsGoalIdMilestonesPost(
-      goalId,
-      data,
-      requestOptions,
-    );
-  };
-
-  return { mutationFn, ...mutationOptions };
+export const getGetGoalProgressApiV1GoalsGoalIdProgressGetQueryKey = (
+  goalId?: string,
+) => {
+  return [`/api/v1/goals/${goalId}/progress`] as const;
 };
 
-export type AddMilestoneApiV1GoalsGoalIdMilestonesPostMutationResult =
-  NonNullable<
-    Awaited<ReturnType<typeof addMilestoneApiV1GoalsGoalIdMilestonesPost>>
-  >;
-export type AddMilestoneApiV1GoalsGoalIdMilestonesPostMutationBody =
-  GoalMilestoneCreate;
-export type AddMilestoneApiV1GoalsGoalIdMilestonesPostMutationError =
-  void | HTTPValidationError;
-
-/**
- * @summary Add milestone to goal
- */
-export const useAddMilestoneApiV1GoalsGoalIdMilestonesPost = <
-  TError = void | HTTPValidationError,
-  TContext = unknown,
+export const getGetGoalProgressApiV1GoalsGoalIdProgressGetQueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof getGoalProgressApiV1GoalsGoalIdProgressGet>
+  >,
+  TError = HTTPValidationError,
 >(
+  goalId: string,
   options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof addMilestoneApiV1GoalsGoalIdMilestonesPost>>,
-      TError,
-      { goalId: string; data: GoalMilestoneCreate },
-      TContext
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getGoalProgressApiV1GoalsGoalIdProgressGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetGoalProgressApiV1GoalsGoalIdProgressGetQueryKey(goalId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getGoalProgressApiV1GoalsGoalIdProgressGet>>
+  > = ({ signal }) =>
+    getGoalProgressApiV1GoalsGoalIdProgressGet(goalId, {
+      signal,
+      ...requestOptions,
+    });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!goalId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getGoalProgressApiV1GoalsGoalIdProgressGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetGoalProgressApiV1GoalsGoalIdProgressGetQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getGoalProgressApiV1GoalsGoalIdProgressGet>>
+>;
+export type GetGoalProgressApiV1GoalsGoalIdProgressGetQueryError =
+  HTTPValidationError;
+
+export function useGetGoalProgressApiV1GoalsGoalIdProgressGet<
+  TData = Awaited<
+    ReturnType<typeof getGoalProgressApiV1GoalsGoalIdProgressGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  goalId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getGoalProgressApiV1GoalsGoalIdProgressGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof getGoalProgressApiV1GoalsGoalIdProgressGet>
+          >,
+          TError,
+          Awaited<ReturnType<typeof getGoalProgressApiV1GoalsGoalIdProgressGet>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetGoalProgressApiV1GoalsGoalIdProgressGet<
+  TData = Awaited<
+    ReturnType<typeof getGoalProgressApiV1GoalsGoalIdProgressGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  goalId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getGoalProgressApiV1GoalsGoalIdProgressGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof getGoalProgressApiV1GoalsGoalIdProgressGet>
+          >,
+          TError,
+          Awaited<ReturnType<typeof getGoalProgressApiV1GoalsGoalIdProgressGet>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetGoalProgressApiV1GoalsGoalIdProgressGet<
+  TData = Awaited<
+    ReturnType<typeof getGoalProgressApiV1GoalsGoalIdProgressGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  goalId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getGoalProgressApiV1GoalsGoalIdProgressGet>>,
+        TError,
+        TData
+      >
     >;
     request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
-): UseMutationResult<
-  Awaited<ReturnType<typeof addMilestoneApiV1GoalsGoalIdMilestonesPost>>,
-  TError,
-  { goalId: string; data: GoalMilestoneCreate },
-  TContext
-> => {
-  const mutationOptions =
-    getAddMilestoneApiV1GoalsGoalIdMilestonesPostMutationOptions(options);
-
-  return useMutation(mutationOptions, queryClient);
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
 };
 /**
- * Update a goal milestone (partial update supported)
- * @summary Update milestone
+ * @summary Get goal progress
  */
-export type updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchResponse200 =
-  {
-    data: GoalMilestoneResponse;
-    status: 200;
-  };
 
-export type updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchResponse403 =
-  {
-    data: void;
-    status: 403;
-  };
-
-export type updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchResponse404 =
-  {
-    data: void;
-    status: 404;
-  };
-
-export type updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchResponse422 =
-  {
-    data: HTTPValidationError;
-    status: 422;
-  };
-
-export type updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchResponseSuccess =
-  updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchResponse200 & {
-    headers: Headers;
-  };
-export type updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchResponseError =
-  (
-    | updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchResponse403
-    | updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchResponse404
-    | updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchResponse422
-  ) & {
-    headers: Headers;
-  };
-
-export type updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchResponse =
-  | updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchResponseSuccess
-  | updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchResponseError;
-
-export const getUpdateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchUrl = (
+export function useGetGoalProgressApiV1GoalsGoalIdProgressGet<
+  TData = Awaited<
+    ReturnType<typeof getGoalProgressApiV1GoalsGoalIdProgressGet>
+  >,
+  TError = HTTPValidationError,
+>(
   goalId: string,
-  milestoneId: string,
-) => {
-  return `/api/v1/goals/${goalId}/milestones/${milestoneId}`;
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getGoalProgressApiV1GoalsGoalIdProgressGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getGetGoalProgressApiV1GoalsGoalIdProgressGetQueryOptions(goalId, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Add a contribution to a goal
+ * @summary Add contribution
+ */
+export type addContributionApiV1GoalsGoalIdContributionsPostResponse201 = {
+  data: GoalContributionResponse;
+  status: 201;
 };
 
-export const updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatch = async (
+export type addContributionApiV1GoalsGoalIdContributionsPostResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type addContributionApiV1GoalsGoalIdContributionsPostResponseSuccess =
+  addContributionApiV1GoalsGoalIdContributionsPostResponse201 & {
+    headers: Headers;
+  };
+export type addContributionApiV1GoalsGoalIdContributionsPostResponseError =
+  addContributionApiV1GoalsGoalIdContributionsPostResponse422 & {
+    headers: Headers;
+  };
+
+export type addContributionApiV1GoalsGoalIdContributionsPostResponse =
+  | addContributionApiV1GoalsGoalIdContributionsPostResponseSuccess
+  | addContributionApiV1GoalsGoalIdContributionsPostResponseError;
+
+export const getAddContributionApiV1GoalsGoalIdContributionsPostUrl = (
   goalId: string,
-  milestoneId: string,
-  goalMilestoneUpdate: GoalMilestoneUpdate,
+) => {
+  return `/api/v1/goals/${goalId}/contributions`;
+};
+
+export const addContributionApiV1GoalsGoalIdContributionsPost = async (
+  goalId: string,
+  goalContributionCreate: GoalContributionCreate,
   options?: RequestInit,
-): Promise<updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchResponse> => {
-  return customInstance<updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchResponse>(
-    getUpdateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchUrl(
-      goalId,
-      milestoneId,
-    ),
+): Promise<addContributionApiV1GoalsGoalIdContributionsPostResponse> => {
+  return customInstance<addContributionApiV1GoalsGoalIdContributionsPostResponse>(
+    getAddContributionApiV1GoalsGoalIdContributionsPostUrl(goalId),
     {
       ...options,
-      method: "PATCH",
+      method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(goalMilestoneUpdate),
+      body: JSON.stringify(goalContributionCreate),
     },
   );
 };
 
-export const getUpdateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchMutationOptions =
-  <TError = void | HTTPValidationError, TContext = unknown>(options?: {
+export const getAddContributionApiV1GoalsGoalIdContributionsPostMutationOptions =
+  <TError = HTTPValidationError, TContext = unknown>(options?: {
     mutation?: UseMutationOptions<
       Awaited<
-        ReturnType<
-          typeof updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatch
-        >
+        ReturnType<typeof addContributionApiV1GoalsGoalIdContributionsPost>
       >,
       TError,
-      { goalId: string; milestoneId: string; data: GoalMilestoneUpdate },
+      { goalId: string; data: GoalContributionCreate },
       TContext
     >;
     request?: SecondParameter<typeof customInstance>;
   }): UseMutationOptions<
     Awaited<
-      ReturnType<
-        typeof updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatch
-      >
+      ReturnType<typeof addContributionApiV1GoalsGoalIdContributionsPost>
     >,
     TError,
-    { goalId: string; milestoneId: string; data: GoalMilestoneUpdate },
+    { goalId: string; data: GoalContributionCreate },
     TContext
   > => {
-    const mutationKey = [
-      "updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatch",
-    ];
+    const mutationKey = ["addContributionApiV1GoalsGoalIdContributionsPost"];
     const { mutation: mutationOptions, request: requestOptions } = options
       ? options.mutation &&
         "mutationKey" in options.mutation &&
@@ -1114,17 +1115,14 @@ export const getUpdateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchMutatio
 
     const mutationFn: MutationFunction<
       Awaited<
-        ReturnType<
-          typeof updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatch
-        >
+        ReturnType<typeof addContributionApiV1GoalsGoalIdContributionsPost>
       >,
-      { goalId: string; milestoneId: string; data: GoalMilestoneUpdate }
+      { goalId: string; data: GoalContributionCreate }
     > = (props) => {
-      const { goalId, milestoneId, data } = props ?? {};
+      const { goalId, data } = props ?? {};
 
-      return updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatch(
+      return addContributionApiV1GoalsGoalIdContributionsPost(
         goalId,
-        milestoneId,
         data,
         requestOptions,
       );
@@ -1133,185 +1131,544 @@ export const getUpdateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchMutatio
     return { mutationFn, ...mutationOptions };
   };
 
-export type UpdateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchMutationResult =
+export type AddContributionApiV1GoalsGoalIdContributionsPostMutationResult =
   NonNullable<
-    Awaited<
-      ReturnType<
-        typeof updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatch
-      >
-    >
+    Awaited<ReturnType<typeof addContributionApiV1GoalsGoalIdContributionsPost>>
   >;
-export type UpdateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchMutationBody =
-  GoalMilestoneUpdate;
-export type UpdateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchMutationError =
-  void | HTTPValidationError;
+export type AddContributionApiV1GoalsGoalIdContributionsPostMutationBody =
+  GoalContributionCreate;
+export type AddContributionApiV1GoalsGoalIdContributionsPostMutationError =
+  HTTPValidationError;
 
 /**
- * @summary Update milestone
+ * @summary Add contribution
  */
-export const useUpdateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatch = <
-  TError = void | HTTPValidationError,
+export const useAddContributionApiV1GoalsGoalIdContributionsPost = <
+  TError = HTTPValidationError,
   TContext = unknown,
 >(
   options?: {
     mutation?: UseMutationOptions<
       Awaited<
-        ReturnType<
-          typeof updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatch
-        >
+        ReturnType<typeof addContributionApiV1GoalsGoalIdContributionsPost>
       >,
       TError,
-      { goalId: string; milestoneId: string; data: GoalMilestoneUpdate },
+      { goalId: string; data: GoalContributionCreate },
       TContext
     >;
     request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
 ): UseMutationResult<
-  Awaited<
-    ReturnType<typeof updateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatch>
-  >,
+  Awaited<ReturnType<typeof addContributionApiV1GoalsGoalIdContributionsPost>>,
   TError,
-  { goalId: string; milestoneId: string; data: GoalMilestoneUpdate },
+  { goalId: string; data: GoalContributionCreate },
   TContext
 > => {
   const mutationOptions =
-    getUpdateMilestoneApiV1GoalsGoalIdMilestonesMilestoneIdPatchMutationOptions(
-      options,
-    );
+    getAddContributionApiV1GoalsGoalIdContributionsPostMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };
 /**
- * Mark a financial goal as completed
- * @summary Mark goal as completed
+ * List all contributions for a goal
+ * @summary List contributions
  */
-export type completeGoalApiV1GoalsGoalIdCompletePostResponse200 = {
-  data: FinancialGoalResponse;
+export type listContributionsApiV1GoalsGoalIdContributionsGetResponse200 = {
+  data: GoalContributionResponse[];
   status: 200;
 };
 
-export type completeGoalApiV1GoalsGoalIdCompletePostResponse403 = {
-  data: void;
-  status: 403;
-};
-
-export type completeGoalApiV1GoalsGoalIdCompletePostResponse404 = {
-  data: void;
-  status: 404;
-};
-
-export type completeGoalApiV1GoalsGoalIdCompletePostResponse422 = {
+export type listContributionsApiV1GoalsGoalIdContributionsGetResponse422 = {
   data: HTTPValidationError;
   status: 422;
 };
 
-export type completeGoalApiV1GoalsGoalIdCompletePostResponseSuccess =
-  completeGoalApiV1GoalsGoalIdCompletePostResponse200 & {
+export type listContributionsApiV1GoalsGoalIdContributionsGetResponseSuccess =
+  listContributionsApiV1GoalsGoalIdContributionsGetResponse200 & {
     headers: Headers;
   };
-export type completeGoalApiV1GoalsGoalIdCompletePostResponseError = (
-  | completeGoalApiV1GoalsGoalIdCompletePostResponse403
-  | completeGoalApiV1GoalsGoalIdCompletePostResponse404
-  | completeGoalApiV1GoalsGoalIdCompletePostResponse422
-) & {
-  headers: Headers;
-};
+export type listContributionsApiV1GoalsGoalIdContributionsGetResponseError =
+  listContributionsApiV1GoalsGoalIdContributionsGetResponse422 & {
+    headers: Headers;
+  };
 
-export type completeGoalApiV1GoalsGoalIdCompletePostResponse =
-  | completeGoalApiV1GoalsGoalIdCompletePostResponseSuccess
-  | completeGoalApiV1GoalsGoalIdCompletePostResponseError;
+export type listContributionsApiV1GoalsGoalIdContributionsGetResponse =
+  | listContributionsApiV1GoalsGoalIdContributionsGetResponseSuccess
+  | listContributionsApiV1GoalsGoalIdContributionsGetResponseError;
 
-export const getCompleteGoalApiV1GoalsGoalIdCompletePostUrl = (
+export const getListContributionsApiV1GoalsGoalIdContributionsGetUrl = (
   goalId: string,
+  params?: ListContributionsApiV1GoalsGoalIdContributionsGetParams,
 ) => {
-  return `/api/v1/goals/${goalId}/complete`;
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/v1/goals/${goalId}/contributions?${stringifiedParams}`
+    : `/api/v1/goals/${goalId}/contributions`;
 };
 
-export const completeGoalApiV1GoalsGoalIdCompletePost = async (
+export const listContributionsApiV1GoalsGoalIdContributionsGet = async (
   goalId: string,
+  params?: ListContributionsApiV1GoalsGoalIdContributionsGetParams,
   options?: RequestInit,
-): Promise<completeGoalApiV1GoalsGoalIdCompletePostResponse> => {
-  return customInstance<completeGoalApiV1GoalsGoalIdCompletePostResponse>(
-    getCompleteGoalApiV1GoalsGoalIdCompletePostUrl(goalId),
+): Promise<listContributionsApiV1GoalsGoalIdContributionsGetResponse> => {
+  return customInstance<listContributionsApiV1GoalsGoalIdContributionsGetResponse>(
+    getListContributionsApiV1GoalsGoalIdContributionsGetUrl(goalId, params),
     {
       ...options,
-      method: "POST",
+      method: "GET",
     },
   );
 };
 
-export const getCompleteGoalApiV1GoalsGoalIdCompletePostMutationOptions = <
-  TError = void | HTTPValidationError,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof completeGoalApiV1GoalsGoalIdCompletePost>>,
-    TError,
-    { goalId: string },
-    TContext
-  >;
-  request?: SecondParameter<typeof customInstance>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof completeGoalApiV1GoalsGoalIdCompletePost>>,
-  TError,
-  { goalId: string },
-  TContext
-> => {
-  const mutationKey = ["completeGoalApiV1GoalsGoalIdCompletePost"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof completeGoalApiV1GoalsGoalIdCompletePost>>,
-    { goalId: string }
-  > = (props) => {
-    const { goalId } = props ?? {};
-
-    return completeGoalApiV1GoalsGoalIdCompletePost(goalId, requestOptions);
-  };
-
-  return { mutationFn, ...mutationOptions };
+export const getListContributionsApiV1GoalsGoalIdContributionsGetQueryKey = (
+  goalId?: string,
+  params?: ListContributionsApiV1GoalsGoalIdContributionsGetParams,
+) => {
+  return [
+    `/api/v1/goals/${goalId}/contributions`,
+    ...(params ? [params] : []),
+  ] as const;
 };
 
-export type CompleteGoalApiV1GoalsGoalIdCompletePostMutationResult =
-  NonNullable<
-    Awaited<ReturnType<typeof completeGoalApiV1GoalsGoalIdCompletePost>>
-  >;
+export const getListContributionsApiV1GoalsGoalIdContributionsGetQueryOptions =
+  <
+    TData = Awaited<
+      ReturnType<typeof listContributionsApiV1GoalsGoalIdContributionsGet>
+    >,
+    TError = HTTPValidationError,
+  >(
+    goalId: string,
+    params?: ListContributionsApiV1GoalsGoalIdContributionsGetParams,
+    options?: {
+      query?: Partial<
+        UseQueryOptions<
+          Awaited<
+            ReturnType<typeof listContributionsApiV1GoalsGoalIdContributionsGet>
+          >,
+          TError,
+          TData
+        >
+      >;
+      request?: SecondParameter<typeof customInstance>;
+    },
+  ) => {
+    const { query: queryOptions, request: requestOptions } = options ?? {};
 
-export type CompleteGoalApiV1GoalsGoalIdCompletePostMutationError =
-  void | HTTPValidationError;
+    const queryKey =
+      queryOptions?.queryKey ??
+      getListContributionsApiV1GoalsGoalIdContributionsGetQueryKey(
+        goalId,
+        params,
+      );
 
-/**
- * @summary Mark goal as completed
- */
-export const useCompleteGoalApiV1GoalsGoalIdCompletePost = <
-  TError = void | HTTPValidationError,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof completeGoalApiV1GoalsGoalIdCompletePost>>,
+    const queryFn: QueryFunction<
+      Awaited<
+        ReturnType<typeof listContributionsApiV1GoalsGoalIdContributionsGet>
+      >
+    > = ({ signal }) =>
+      listContributionsApiV1GoalsGoalIdContributionsGet(goalId, params, {
+        signal,
+        ...requestOptions,
+      });
+
+    return {
+      queryKey,
+      queryFn,
+      enabled: !!goalId,
+      ...queryOptions,
+    } as UseQueryOptions<
+      Awaited<
+        ReturnType<typeof listContributionsApiV1GoalsGoalIdContributionsGet>
+      >,
       TError,
-      { goalId: string },
-      TContext
+      TData
+    > & { queryKey: DataTag<QueryKey, TData, TError> };
+  };
+
+export type ListContributionsApiV1GoalsGoalIdContributionsGetQueryResult =
+  NonNullable<
+    Awaited<
+      ReturnType<typeof listContributionsApiV1GoalsGoalIdContributionsGet>
+    >
+  >;
+export type ListContributionsApiV1GoalsGoalIdContributionsGetQueryError =
+  HTTPValidationError;
+
+export function useListContributionsApiV1GoalsGoalIdContributionsGet<
+  TData = Awaited<
+    ReturnType<typeof listContributionsApiV1GoalsGoalIdContributionsGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  goalId: string,
+  params: undefined | ListContributionsApiV1GoalsGoalIdContributionsGetParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof listContributionsApiV1GoalsGoalIdContributionsGet>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof listContributionsApiV1GoalsGoalIdContributionsGet>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof listContributionsApiV1GoalsGoalIdContributionsGet>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListContributionsApiV1GoalsGoalIdContributionsGet<
+  TData = Awaited<
+    ReturnType<typeof listContributionsApiV1GoalsGoalIdContributionsGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  goalId: string,
+  params?: ListContributionsApiV1GoalsGoalIdContributionsGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof listContributionsApiV1GoalsGoalIdContributionsGet>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof listContributionsApiV1GoalsGoalIdContributionsGet>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof listContributionsApiV1GoalsGoalIdContributionsGet>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListContributionsApiV1GoalsGoalIdContributionsGet<
+  TData = Awaited<
+    ReturnType<typeof listContributionsApiV1GoalsGoalIdContributionsGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  goalId: string,
+  params?: ListContributionsApiV1GoalsGoalIdContributionsGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof listContributionsApiV1GoalsGoalIdContributionsGet>
+        >,
+        TError,
+        TData
+      >
     >;
     request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient,
-): UseMutationResult<
-  Awaited<ReturnType<typeof completeGoalApiV1GoalsGoalIdCompletePost>>,
-  TError,
-  { goalId: string },
-  TContext
-> => {
-  const mutationOptions =
-    getCompleteGoalApiV1GoalsGoalIdCompletePostMutationOptions(options);
-
-  return useMutation(mutationOptions, queryClient);
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
 };
+/**
+ * @summary List contributions
+ */
+
+export function useListContributionsApiV1GoalsGoalIdContributionsGet<
+  TData = Awaited<
+    ReturnType<typeof listContributionsApiV1GoalsGoalIdContributionsGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  goalId: string,
+  params?: ListContributionsApiV1GoalsGoalIdContributionsGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof listContributionsApiV1GoalsGoalIdContributionsGet>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getListContributionsApiV1GoalsGoalIdContributionsGetQueryOptions(
+      goalId,
+      params,
+      options,
+    );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * List all milestones for a goal
+ * @summary List milestones
+ */
+export type listMilestonesApiV1GoalsGoalIdMilestonesGetResponse200 = {
+  data: MilestoneResponse[];
+  status: 200;
+};
+
+export type listMilestonesApiV1GoalsGoalIdMilestonesGetResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type listMilestonesApiV1GoalsGoalIdMilestonesGetResponseSuccess =
+  listMilestonesApiV1GoalsGoalIdMilestonesGetResponse200 & {
+    headers: Headers;
+  };
+export type listMilestonesApiV1GoalsGoalIdMilestonesGetResponseError =
+  listMilestonesApiV1GoalsGoalIdMilestonesGetResponse422 & {
+    headers: Headers;
+  };
+
+export type listMilestonesApiV1GoalsGoalIdMilestonesGetResponse =
+  | listMilestonesApiV1GoalsGoalIdMilestonesGetResponseSuccess
+  | listMilestonesApiV1GoalsGoalIdMilestonesGetResponseError;
+
+export const getListMilestonesApiV1GoalsGoalIdMilestonesGetUrl = (
+  goalId: string,
+) => {
+  return `/api/v1/goals/${goalId}/milestones`;
+};
+
+export const listMilestonesApiV1GoalsGoalIdMilestonesGet = async (
+  goalId: string,
+  options?: RequestInit,
+): Promise<listMilestonesApiV1GoalsGoalIdMilestonesGetResponse> => {
+  return customInstance<listMilestonesApiV1GoalsGoalIdMilestonesGetResponse>(
+    getListMilestonesApiV1GoalsGoalIdMilestonesGetUrl(goalId),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getListMilestonesApiV1GoalsGoalIdMilestonesGetQueryKey = (
+  goalId?: string,
+) => {
+  return [`/api/v1/goals/${goalId}/milestones`] as const;
+};
+
+export const getListMilestonesApiV1GoalsGoalIdMilestonesGetQueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof listMilestonesApiV1GoalsGoalIdMilestonesGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  goalId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listMilestonesApiV1GoalsGoalIdMilestonesGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getListMilestonesApiV1GoalsGoalIdMilestonesGetQueryKey(goalId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listMilestonesApiV1GoalsGoalIdMilestonesGet>>
+  > = ({ signal }) =>
+    listMilestonesApiV1GoalsGoalIdMilestonesGet(goalId, {
+      signal,
+      ...requestOptions,
+    });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!goalId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof listMilestonesApiV1GoalsGoalIdMilestonesGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type ListMilestonesApiV1GoalsGoalIdMilestonesGetQueryResult =
+  NonNullable<
+    Awaited<ReturnType<typeof listMilestonesApiV1GoalsGoalIdMilestonesGet>>
+  >;
+export type ListMilestonesApiV1GoalsGoalIdMilestonesGetQueryError =
+  HTTPValidationError;
+
+export function useListMilestonesApiV1GoalsGoalIdMilestonesGet<
+  TData = Awaited<
+    ReturnType<typeof listMilestonesApiV1GoalsGoalIdMilestonesGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  goalId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listMilestonesApiV1GoalsGoalIdMilestonesGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof listMilestonesApiV1GoalsGoalIdMilestonesGet>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof listMilestonesApiV1GoalsGoalIdMilestonesGet>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListMilestonesApiV1GoalsGoalIdMilestonesGet<
+  TData = Awaited<
+    ReturnType<typeof listMilestonesApiV1GoalsGoalIdMilestonesGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  goalId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listMilestonesApiV1GoalsGoalIdMilestonesGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof listMilestonesApiV1GoalsGoalIdMilestonesGet>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof listMilestonesApiV1GoalsGoalIdMilestonesGet>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListMilestonesApiV1GoalsGoalIdMilestonesGet<
+  TData = Awaited<
+    ReturnType<typeof listMilestonesApiV1GoalsGoalIdMilestonesGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  goalId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listMilestonesApiV1GoalsGoalIdMilestonesGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary List milestones
+ */
+
+export function useListMilestonesApiV1GoalsGoalIdMilestonesGet<
+  TData = Awaited<
+    ReturnType<typeof listMilestonesApiV1GoalsGoalIdMilestonesGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  goalId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listMilestonesApiV1GoalsGoalIdMilestonesGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getListMilestonesApiV1GoalsGoalIdMilestonesGetQueryOptions(goalId, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}

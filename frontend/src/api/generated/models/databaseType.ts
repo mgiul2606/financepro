@@ -17,7 +17,7 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 /**
- * Supported database types for distributed storage
+ * Deprecated: Supported database types for distributed storage
  */
 export type DatabaseType = (typeof DatabaseType)[keyof typeof DatabaseType];
 

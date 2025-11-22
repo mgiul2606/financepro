@@ -9,7 +9,6 @@ import {
   useCreateGoalApiV1GoalsPost,
   useUpdateGoalApiV1GoalsGoalIdPatch,
   useDeleteGoalApiV1GoalsGoalIdDelete,
-  useCompleteGoalApiV1GoalsGoalIdCompletePost,
   getListGoalsApiV1GoalsGetQueryKey,
   listGoalsApiV1GoalsGet,
 } from '@/api/generated/financial-goals/financial-goals';
@@ -145,27 +144,3 @@ export const useDeleteGoal = () => {
   };
 };
 
-/**
- * Hook to mark a goal as completed
- */
-export const useCompleteGoal = () => {
-  const queryClient = useQueryClient();
-
-  const mutation = useCompleteGoalApiV1GoalsGoalIdCompletePost({
-    mutation: {
-      onSuccess: () => {
-        // Invalidate goals list to refetch
-        queryClient.invalidateQueries({
-          queryKey: getListGoalsApiV1GoalsGetQueryKey(),
-        });
-      },
-    },
-  });
-
-  return {
-    completeGoal: (goalId: string) => mutation.mutateAsync({ goalId }),
-    isCompleting: mutation.isPending,
-    error: mutation.error,
-    reset: mutation.reset,
-  };
-};

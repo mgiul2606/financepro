@@ -103,7 +103,7 @@ export const Settings = () => {
       />
 
       <div className="max-w-4xl">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs defaultValue="profile" value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="profile">
               <User className="h-4 w-4 mr-2" />
@@ -190,7 +190,7 @@ export const Settings = () => {
                     </div>
                     <Toggle
                       checked={emailNotifications}
-                      onChange={(checked) => setEmailNotifications(checked)}
+                      onChange={(e) => setEmailNotifications(e.target.checked)}
                     />
                   </div>
 
@@ -205,7 +205,7 @@ export const Settings = () => {
                     </div>
                     <Toggle
                       checked={pushNotifications}
-                      onChange={(checked) => setPushNotifications(checked)}
+                      onChange={(e) => setPushNotifications(e.target.checked)}
                     />
                   </div>
 
@@ -220,9 +220,9 @@ export const Settings = () => {
                     </div>
                     <Toggle
                       checked={preferences.notifications.budgetAlerts}
-                      onChange={(checked) =>
+                      onChange={(e) =>
                         updatePreferences({
-                          notifications: { ...preferences.notifications, budgetAlerts: checked },
+                          notifications: { ...preferences.notifications, budgetAlerts: e.target.checked },
                         })
                       }
                     />
@@ -239,11 +239,11 @@ export const Settings = () => {
                     </div>
                     <Toggle
                       checked={preferences.notifications.anomalyDetection}
-                      onChange={(checked) =>
+                      onChange={(e) =>
                         updatePreferences({
                           notifications: {
                             ...preferences.notifications,
-                            anomalyDetection: checked,
+                            anomalyDetection: e.target.checked,
                           },
                         })
                       }
@@ -261,11 +261,11 @@ export const Settings = () => {
                     </div>
                     <Toggle
                       checked={preferences.notifications.goalMilestones}
-                      onChange={(checked) =>
+                      onChange={(e) =>
                         updatePreferences({
                           notifications: {
                             ...preferences.notifications,
-                            goalMilestones: checked,
+                            goalMilestones: e.target.checked,
                           },
                         })
                       }
@@ -283,11 +283,11 @@ export const Settings = () => {
                     </div>
                     <Toggle
                       checked={preferences.notifications.recurringReminders}
-                      onChange={(checked) =>
+                      onChange={(e) =>
                         updatePreferences({
                           notifications: {
                             ...preferences.notifications,
-                            recurringReminders: checked,
+                            recurringReminders: e.target.checked,
                           },
                         })
                       }

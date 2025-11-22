@@ -18,16 +18,16 @@ export const Dashboard = () => {
 
   // Fetch data
   const { accounts, isLoading: accountsLoading } = useAccounts();
-  const { data: budgets, isLoading: budgetsLoading } = useBudgets();
-  const { data: goals, isLoading: goalsLoading } = useGoals();
+  const { budgets, isLoading: budgetsLoading } = useBudgets();
+  const { goals, isLoading: goalsLoading } = useGoals();
 
   // Calculate stats
-  const totalBalance = accounts.reduce((sum, acc) => sum + parseFloat(acc.current_balance), 0);
-  const totalBudget = budgets?.reduce((sum, b) => sum + b.amount, 0) || 0;
-  const totalBudgetSpent = budgets?.reduce((sum, b) => sum + b.spent, 0) || 0;
-  const activeGoals = goals?.filter((g) => g.status === 'in_progress').length || 0;
+  const totalBalance = accounts.reduce((sum: number, acc) => sum + parseFloat(acc.current_balance || '0'), 0);
+  const totalBudget = budgets?.reduce((sum: number, b: any) => sum + (b.amount || 0), 0) || 0;
+  const totalBudgetSpent = budgets?.reduce((sum: number, b: any) => sum + (b.spent || 0), 0) || 0;
+  const activeGoals = goals?.filter((g: any) => g.status === 'in_progress').length || 0;
   const totalGoalProgress =
-    goals?.reduce((sum, g) => sum + (g.currentAmount / g.targetAmount) * 100, 0) || 0;
+    goals?.reduce((sum: number, g: any) => sum + ((g.current_amount || 0) / (g.target_amount || 1)) * 100, 0) || 0;
   const avgGoalProgress = goals && goals.length > 0 ? totalGoalProgress / goals.length : 0;
 
   const isLoading = accountsLoading || budgetsLoading || goalsLoading;
@@ -83,7 +83,7 @@ export const Dashboard = () => {
                   />
                 </h3>
                 <p className="text-xs text-gray-500 mt-1">
-                  <CurrencyText value={totalBudgetSpent} decimals={0} /> / <CurrencyText value={totalBudget} decimals={0} />
+                  <CurrencyText value={totalBudgetSpent} options={{ maximumFractionDigits: 0 }} /> / <CurrencyText value={totalBudget} options={{ maximumFractionDigits: 0 }} />
                 </p>
               </div>
               <div className="h-12 w-12 bg-yellow-100 rounded-full flex items-center justify-center">
@@ -204,8 +204,8 @@ export const Dashboard = () => {
           />
           <CardBody className="pt-0">
             <div className="space-y-3">
-              {budgets?.slice(0, 3).map((budget) => {
-                const percentage = (budget.spent / budget.amount) * 100;
+              {budgets?.slice(0, 3).map((budget: any) => {
+                const percentage = ((budget.spent_amount || 0) / (budget.amount || 1)) * 100;
                 return (
                   <div
                     key={budget.id}
@@ -215,7 +215,7 @@ export const Dashboard = () => {
                     <div className="flex items-center justify-between mb-2">
                       <div>
                         <p className="font-medium text-gray-900">{budget.name}</p>
-                        <p className="text-xs text-gray-500">{budget.category}</p>
+                        <p className="text-xs text-gray-500">{budget.period_type}</p>
                       </div>
                       <Badge
                         variant={
@@ -261,8 +261,8 @@ export const Dashboard = () => {
           />
           <CardBody className="pt-0">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {goals?.slice(0, 4).map((goal) => {
-                const percentage = (goal.currentAmount / goal.targetAmount) * 100;
+              {goals?.slice(0, 4).map((goal: any) => {
+                const percentage = ((goal.current_amount || 0) / (goal.target_amount || 1)) * 100;
                 return (
                   <div
                     key={goal.id}
@@ -272,10 +272,10 @@ export const Dashboard = () => {
                     <div className="flex items-center justify-between mb-3">
                       <div>
                         <p className="font-medium text-gray-900">{goal.name}</p>
-                        <p className="text-xs text-gray-500">{goal.category}</p>
+                        <p className="text-xs text-gray-500">{goal.goal_type}</p>
                       </div>
-                      <Badge variant={goal.priority === 'high' ? 'danger' : 'default'} size="sm">
-                        {goal.priority}
+                      <Badge variant={goal.status === 'completed' ? 'success' : 'info'} size="sm">
+                        {goal.status}
                       </Badge>
                     </div>
                     <div className="space-y-2">
@@ -293,10 +293,10 @@ export const Dashboard = () => {
                       </div>
                       <div className="flex justify-between text-xs text-gray-500">
                         <span>
-                          <CurrencyText value={goal.currentAmount} currency={goal.currency as any} decimals={0} />
+                          <CurrencyText value={goal.current_amount || 0} currency={goal.currency} options={{ maximumFractionDigits: 0 }} />
                         </span>
                         <span>
-                          <CurrencyText value={goal.targetAmount} currency={goal.currency as any} decimals={0} />
+                          <CurrencyText value={goal.target_amount || 0} currency={goal.currency} options={{ maximumFractionDigits: 0 }} />
                         </span>
                       </div>
                     </div>

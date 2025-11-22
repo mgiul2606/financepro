@@ -9,14 +9,20 @@ export type {
   FinancialProfileCreate,
   FinancialProfileUpdate,
   FinancialProfileListResponse,
-  ProfileType,
-  DatabaseType,
-  ProfileSelectionResponse as ProfileSelection,
-  ProfileSelectionUpdate,
-  MainProfileResponse as MainProfile,
-  MainProfileUpdate,
-  ListProfilesApiV1ProfilesGetParams as ProfileFilters,
 } from '@/api/generated/models';
 
-// Re-export const values for enum-like usage
+// Re-export const/type values for enum-like usage
 export { ProfileType, DatabaseType } from '@/api/generated/models';
+export type { ProfileType, DatabaseType } from '@/api/generated/models';
+
+// Define ProfileFilters since the generated params may not exist
+export interface ProfileFilters {
+  skip?: number;
+  limit?: number;
+  is_active?: boolean;
+}
+
+// Define MainProfileUpdate
+export interface MainProfileUpdate {
+  profile_id: string;
+}

@@ -82,6 +82,12 @@ class RecurringTransaction(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
 
     # Foreign keys
+    financial_profile_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("financial_profiles.id"),
+        nullable=False,
+        index=True
+    )
     account_id = Column(
         UUID(as_uuid=True),
         ForeignKey("accounts.id"),
@@ -136,6 +142,7 @@ class RecurringTransaction(Base):
     )
 
     # Relationships
+    financial_profile = relationship("FinancialProfile", back_populates="recurring_transactions")
     account = relationship("Account", back_populates="recurring_transactions")
     category = relationship("Category")
     generated_transactions = relationship(

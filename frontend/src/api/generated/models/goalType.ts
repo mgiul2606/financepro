@@ -30,5 +30,6 @@ export const GoalType = {
   emergency_fund: "emergency_fund",
   education: "education",
   investment: "investment",
+  debt_payoff: "debt_payoff",
   custom: "custom",
 } as const;

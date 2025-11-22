@@ -11,16 +11,12 @@ import {
   useDeleteProfileApiV1ProfilesProfileIdDelete,
   useGetMainProfileApiV1ProfilesMainGet,
   useSetMainProfileApiV1ProfilesMainPatch,
-  useGetProfileSelectionApiV1ProfilesSelectionGet,
-  useUpdateProfileSelectionApiV1ProfilesSelectionPost,
   getListProfilesApiV1ProfilesGetQueryKey,
   getGetMainProfileApiV1ProfilesMainGetQueryKey,
-  getGetProfileSelectionApiV1ProfilesSelectionGetQueryKey,
 } from '@/api/generated/financial-profiles/financial-profiles';
 import type {
   FinancialProfileCreate,
   FinancialProfileUpdate,
-  ProfileSelectionUpdate,
   MainProfileUpdate,
   ProfileFilters,
 } from '../types';
@@ -173,41 +169,3 @@ export const useSetMainProfile = () => {
   };
 };
 
-/**
- * Hook to get the profile selection
- */
-export const useProfileSelection = () => {
-  const query = useGetProfileSelectionApiV1ProfilesSelectionGet();
-
-  return {
-    selection: query.data?.data,
-    isLoading: query.isLoading,
-    error: query.error,
-    refetch: query.refetch,
-  };
-};
-
-/**
- * Hook to update the profile selection
- */
-export const useUpdateProfileSelection = () => {
-  const queryClient = useQueryClient();
-
-  const mutation = useUpdateProfileSelectionApiV1ProfilesSelectionPost({
-    mutation: {
-      onSuccess: () => {
-        // Invalidate profile selection to refetch
-        queryClient.invalidateQueries({
-          queryKey: getGetProfileSelectionApiV1ProfilesSelectionGetQueryKey(),
-        });
-      },
-    },
-  });
-
-  return {
-    updateSelection: (data: ProfileSelectionUpdate) => mutation.mutateAsync({ data }),
-    isUpdating: mutation.isPending,
-    error: mutation.error,
-    reset: mutation.reset,
-  };
-};
