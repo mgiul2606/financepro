@@ -16,6 +16,7 @@ class MLClassificationLog(Base):
 
     Attributes:
         id: UUID primary key
+        financial_profile_id: Foreign key to FinancialProfile
         transaction_id: Foreign key to Transaction
         model_version: Version of the ML model used (e.g., "v1.2.3")
         predicted_category_id: Foreign key to Category (ML prediction)
@@ -27,6 +28,7 @@ class MLClassificationLog(Base):
         timestamp: When the classification occurred
 
     Relationships:
+        financial_profile: Financial profile this log belongs to
         transaction: Transaction that was classified
         predicted_category: Category predicted by ML model
         corrected_category: Category corrected by user (if not accepted)
@@ -37,6 +39,12 @@ class MLClassificationLog(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
 
     # Foreign keys
+    financial_profile_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("financial_profiles.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
     transaction_id = Column(
         UUID(as_uuid=True),
         ForeignKey("transactions.id"),
@@ -71,6 +79,7 @@ class MLClassificationLog(Base):
     timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
 
     # Relationships
+    financial_profile = relationship("FinancialProfile", back_populates="ml_classification_logs")
     transaction = relationship("Transaction", back_populates="ml_classification_logs")
     predicted_category = relationship(
         "Category",
