@@ -15,6 +15,6 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { PeriodType } from "./periodType";
+import type { PeriodType } from './periodType';
 
 export type BudgetUpdatePeriodType = PeriodType | null;

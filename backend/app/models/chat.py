@@ -130,7 +130,8 @@ class ChatMessage(Base):
     processing_time_ms = Column(Integer, nullable=True)
 
     # Additional data (charts, query results, etc.)
-    metadata = Column(JSONB, nullable=True)
+    asset_metadata = Column('metadata', JSONB, nullable=True)
+    # metadata = Column(JSONB, nullable=True)
 
     # Timestamp
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)

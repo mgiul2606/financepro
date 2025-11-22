@@ -19,11 +19,12 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 /**
  * Scope type for budgets, goals, recommendations
  */
-export type ScopeType = (typeof ScopeType)[keyof typeof ScopeType];
+export type ScopeType = typeof ScopeType[keyof typeof ScopeType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ScopeType = {
-  user: "user",
-  profile: "profile",
-  multi_profile: "multi_profile",
+  user: 'user',
+  profile: 'profile',
+  multi_profile: 'multi_profile',
 } as const;

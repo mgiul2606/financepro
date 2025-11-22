@@ -15,12 +15,12 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { AccountType } from "./accountType";
-import type { AccountCreateInstitutionName } from "./accountCreateInstitutionName";
-import type { AccountCreateNotes } from "./accountCreateNotes";
-import type { AccountCreateFinancialProfileId } from "./accountCreateFinancialProfileId";
-import type { AccountCreateInitialBalance } from "./accountCreateInitialBalance";
-import type { AccountCreateAccountNumber } from "./accountCreateAccountNumber";
+import type { AccountType } from './accountType';
+import type { AccountCreateInstitutionName } from './accountCreateInstitutionName';
+import type { AccountCreateNotes } from './accountCreateNotes';
+import type { AccountCreateFinancialProfileId } from './accountCreateFinancialProfileId';
+import type { AccountCreateInitialBalance } from './accountCreateInitialBalance';
+import type { AccountCreateAccountNumber } from './accountCreateAccountNumber';
 
 /**
  * Schema for creating a new account.

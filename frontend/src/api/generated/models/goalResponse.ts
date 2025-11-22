@@ -15,13 +15,13 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { GoalType } from "./goalType";
-import type { ScopeType } from "./scopeType";
-import type { GoalResponseScopeProfileIds } from "./goalResponseScopeProfileIds";
-import type { GoalResponseLinkedAccountId } from "./goalResponseLinkedAccountId";
-import type { GoalResponseDescription } from "./goalResponseDescription";
-import type { GoalStatus } from "./goalStatus";
-import type { GoalResponseAchievementProbability } from "./goalResponseAchievementProbability";
+import type { GoalType } from './goalType';
+import type { ScopeType } from './scopeType';
+import type { GoalResponseScopeProfileIds } from './goalResponseScopeProfileIds';
+import type { GoalResponseLinkedAccountId } from './goalResponseLinkedAccountId';
+import type { GoalResponseDescription } from './goalResponseDescription';
+import type { GoalStatus } from './goalStatus';
+import type { GoalResponseAchievementProbability } from './goalResponseAchievementProbability';
 
 /**
  * Schema for goal response

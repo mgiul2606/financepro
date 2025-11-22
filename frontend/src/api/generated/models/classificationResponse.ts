@@ -15,8 +15,8 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { ClassificationResponsePredictedCategoryId } from "./classificationResponsePredictedCategoryId";
-import type { ClassificationResponsePredictedCategoryName } from "./classificationResponsePredictedCategoryName";
+import type { ClassificationResponsePredictedCategoryId } from './classificationResponsePredictedCategoryId';
+import type { ClassificationResponsePredictedCategoryName } from './classificationResponsePredictedCategoryName';
 
 /**
  * Response from classification

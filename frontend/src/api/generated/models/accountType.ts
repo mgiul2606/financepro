@@ -19,16 +19,17 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 /**
  * Types of financial accounts
  */
-export type AccountType = (typeof AccountType)[keyof typeof AccountType];
+export type AccountType = typeof AccountType[keyof typeof AccountType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AccountType = {
-  checking: "checking",
-  savings: "savings",
-  credit_card: "credit_card",
-  investment: "investment",
-  cash: "cash",
-  loan: "loan",
-  mortgage: "mortgage",
-  other: "other",
+  checking: 'checking',
+  savings: 'savings',
+  credit_card: 'credit_card',
+  investment: 'investment',
+  cash: 'cash',
+  loan: 'loan',
+  mortgage: 'mortgage',
+  other: 'other',
 } as const;

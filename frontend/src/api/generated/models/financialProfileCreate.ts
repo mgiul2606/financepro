@@ -15,10 +15,10 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { FinancialProfileCreateDescription } from "./financialProfileCreateDescription";
-import type { ProfileType } from "./profileType";
-import type { FinancialProfileCreateDatabaseConnectionString } from "./financialProfileCreateDatabaseConnectionString";
-import type { FinancialProfileCreateDatabaseType } from "./financialProfileCreateDatabaseType";
+import type { FinancialProfileCreateDescription } from './financialProfileCreateDescription';
+import type { ProfileType } from './profileType';
+import type { FinancialProfileCreateDatabaseConnectionString } from './financialProfileCreateDatabaseConnectionString';
+import type { FinancialProfileCreateDatabaseType } from './financialProfileCreateDatabaseType';
 
 /**
  * Schema for creating a new financial profile.

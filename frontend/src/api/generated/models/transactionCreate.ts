@@ -15,15 +15,15 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { TransactionCreateCategoryId } from "./transactionCreateCategoryId";
-import type { TransactionType } from "./transactionType";
-import type { TransactionCreateAmount } from "./transactionCreateAmount";
-import type { TransactionCreateMerchantName } from "./transactionCreateMerchantName";
-import type { TransactionCreateNotes } from "./transactionCreateNotes";
-import type { TransactionCreateValueDate } from "./transactionCreateValueDate";
-import type { TransactionCreateLocation } from "./transactionCreateLocation";
-import type { TransactionCreateReceiptUrl } from "./transactionCreateReceiptUrl";
-import type { TransactionSource } from "./transactionSource";
+import type { TransactionCreateCategoryId } from './transactionCreateCategoryId';
+import type { TransactionType } from './transactionType';
+import type { TransactionCreateAmount } from './transactionCreateAmount';
+import type { TransactionCreateMerchantName } from './transactionCreateMerchantName';
+import type { TransactionCreateNotes } from './transactionCreateNotes';
+import type { TransactionCreateValueDate } from './transactionCreateValueDate';
+import type { TransactionCreateLocation } from './transactionCreateLocation';
+import type { TransactionCreateReceiptUrl } from './transactionCreateReceiptUrl';
+import type { TransactionSource } from './transactionSource';
 
 /**
  * Schema for creating a new transaction.

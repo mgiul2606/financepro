@@ -17,8 +17,8 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 export type CompareBudgetVsActualApiV1AnalysisBudgetComparisonGetParams = {
-  /**
-   * Target currency
-   */
-  currency?: string;
+/**
+ * Target currency
+ */
+currency?: string;
 };

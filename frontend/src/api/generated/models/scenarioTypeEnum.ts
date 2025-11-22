@@ -19,12 +19,12 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 /**
  * Forecast scenario types
  */
-export type ScenarioTypeEnum =
-  (typeof ScenarioTypeEnum)[keyof typeof ScenarioTypeEnum];
+export type ScenarioTypeEnum = typeof ScenarioTypeEnum[keyof typeof ScenarioTypeEnum];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ScenarioTypeEnum = {
-  optimistic: "optimistic",
-  likely: "likely",
-  pessimistic: "pessimistic",
+  optimistic: 'optimistic',
+  likely: 'likely',
+  pessimistic: 'pessimistic',
 } as const;

@@ -98,7 +98,8 @@ class Asset(Base):
 
     # Additional information
     notes = Column(Text, nullable=True)
-    metadata = Column(JSONB, nullable=True)
+    asset_metadata = Column('metadata', JSONB, nullable=True)
+    # metadata = Column(JSONB, nullable=True)
 
     # Timestamps
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)

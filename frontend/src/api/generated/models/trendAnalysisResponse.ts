@@ -15,7 +15,7 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { SpendingTrend } from "./spendingTrend";
+import type { SpendingTrend } from './spendingTrend';
 
 export interface TrendAnalysisResponse {
   trends: SpendingTrend[];

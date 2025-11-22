@@ -15,18 +15,18 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { TransactionResponseCategoryId } from "./transactionResponseCategoryId";
-import type { TransactionType } from "./transactionType";
-import type { TransactionResponseMerchantName } from "./transactionResponseMerchantName";
-import type { TransactionResponseNotes } from "./transactionResponseNotes";
-import type { TransactionResponseRecurringTransactionId } from "./transactionResponseRecurringTransactionId";
-import type { TransactionResponseExchangeRateId } from "./transactionResponseExchangeRateId";
-import type { TransactionResponseAmountInProfileCurrency } from "./transactionResponseAmountInProfileCurrency";
-import type { TransactionResponseMerchantNormalized } from "./transactionResponseMerchantNormalized";
-import type { TransactionResponseValueDate } from "./transactionResponseValueDate";
-import type { TransactionResponseLocation } from "./transactionResponseLocation";
-import type { TransactionResponseReceiptUrl } from "./transactionResponseReceiptUrl";
-import type { TransactionSource } from "./transactionSource";
+import type { TransactionResponseCategoryId } from './transactionResponseCategoryId';
+import type { TransactionType } from './transactionType';
+import type { TransactionResponseMerchantName } from './transactionResponseMerchantName';
+import type { TransactionResponseNotes } from './transactionResponseNotes';
+import type { TransactionResponseRecurringTransactionId } from './transactionResponseRecurringTransactionId';
+import type { TransactionResponseExchangeRateId } from './transactionResponseExchangeRateId';
+import type { TransactionResponseAmountInProfileCurrency } from './transactionResponseAmountInProfileCurrency';
+import type { TransactionResponseMerchantNormalized } from './transactionResponseMerchantNormalized';
+import type { TransactionResponseValueDate } from './transactionResponseValueDate';
+import type { TransactionResponseLocation } from './transactionResponseLocation';
+import type { TransactionResponseReceiptUrl } from './transactionResponseReceiptUrl';
+import type { TransactionSource } from './transactionSource';
 
 /**
  * Complete transaction schema returned by API endpoints.

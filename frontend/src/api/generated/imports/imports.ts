@@ -15,7 +15,10 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery
+} from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
@@ -28,8 +31,8 @@ import type {
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
-  UseQueryResult,
-} from "@tanstack/react-query";
+  UseQueryResult
+} from '@tanstack/react-query';
 
 import type {
   BodyImportCsvApiV1ImportsPost,
@@ -40,842 +43,562 @@ import type {
   ImportJobResponse,
   ImportPreviewResponse,
   ImportResultResponse,
-  ListImportJobsApiV1ImportsGetParams,
-} from ".././models";
+  ListImportJobsApiV1ImportsGetParams
+} from '.././models';
 
-import { customInstance } from "../../client";
+import { customInstance } from '../../client';
+
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+
 
 /**
  * List all import jobs for the user
  * @summary List import jobs
  */
 export type listImportJobsApiV1ImportsGetResponse200 = {
-  data: ImportJobListResponse;
-  status: 200;
-};
+  data: ImportJobListResponse
+  status: 200
+}
 
 export type listImportJobsApiV1ImportsGetResponse422 = {
-  data: HTTPValidationError;
-  status: 422;
+  data: HTTPValidationError
+  status: 422
+}
+    
+export type listImportJobsApiV1ImportsGetResponseSuccess = (listImportJobsApiV1ImportsGetResponse200) & {
+  headers: Headers;
+};
+export type listImportJobsApiV1ImportsGetResponseError = (listImportJobsApiV1ImportsGetResponse422) & {
+  headers: Headers;
 };
 
-export type listImportJobsApiV1ImportsGetResponseSuccess =
-  listImportJobsApiV1ImportsGetResponse200 & {
-    headers: Headers;
-  };
-export type listImportJobsApiV1ImportsGetResponseError =
-  listImportJobsApiV1ImportsGetResponse422 & {
-    headers: Headers;
-  };
+export type listImportJobsApiV1ImportsGetResponse = (listImportJobsApiV1ImportsGetResponseSuccess | listImportJobsApiV1ImportsGetResponseError)
 
-export type listImportJobsApiV1ImportsGetResponse =
-  | listImportJobsApiV1ImportsGetResponseSuccess
-  | listImportJobsApiV1ImportsGetResponseError;
-
-export const getListImportJobsApiV1ImportsGetUrl = (
-  params?: ListImportJobsApiV1ImportsGetParams,
-) => {
+export const getListImportJobsApiV1ImportsGetUrl = (params?: ListImportJobsApiV1ImportsGetParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
+    
     if (value !== undefined) {
-      normalizedParams.append(key, value === null ? "null" : value.toString());
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
     }
   });
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0
-    ? `/api/v1/imports/?${stringifiedParams}`
-    : `/api/v1/imports/`;
-};
+  return stringifiedParams.length > 0 ? `/api/v1/imports/?${stringifiedParams}` : `/api/v1/imports/`
+}
 
-export const listImportJobsApiV1ImportsGet = async (
-  params?: ListImportJobsApiV1ImportsGetParams,
-  options?: RequestInit,
-): Promise<listImportJobsApiV1ImportsGetResponse> => {
-  return customInstance<listImportJobsApiV1ImportsGetResponse>(
-    getListImportJobsApiV1ImportsGetUrl(params),
-    {
-      ...options,
-      method: "GET",
-    },
-  );
-};
+export const listImportJobsApiV1ImportsGet = async (params?: ListImportJobsApiV1ImportsGetParams, options?: RequestInit): Promise<listImportJobsApiV1ImportsGetResponse> => {
+  
+  return customInstance<listImportJobsApiV1ImportsGetResponse>(getListImportJobsApiV1ImportsGetUrl(params),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
 
-export const getListImportJobsApiV1ImportsGetQueryKey = (
-  params?: ListImportJobsApiV1ImportsGetParams,
+
+
+
+
+export const getListImportJobsApiV1ImportsGetQueryKey = (params?: ListImportJobsApiV1ImportsGetParams,) => {
+    return [
+    `/api/v1/imports/`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getListImportJobsApiV1ImportsGetQueryOptions = <TData = Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>, TError = HTTPValidationError>(params?: ListImportJobsApiV1ImportsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
-  return [`/api/v1/imports/`, ...(params ? [params] : [])] as const;
-};
 
-export const getListImportJobsApiV1ImportsGetQueryOptions = <
-  TData = Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>,
-  TError = HTTPValidationError,
->(
-  params?: ListImportJobsApiV1ImportsGetParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>,
-        TError,
-        TData
-      >
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =
-    queryOptions?.queryKey ?? getListImportJobsApiV1ImportsGetQueryKey(params);
+  const queryKey =  queryOptions?.queryKey ?? getListImportJobsApiV1ImportsGetQueryKey(params);
 
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>
-  > = ({ signal }) =>
-    listImportJobsApiV1ImportsGet(params, { signal, ...requestOptions });
+  
 
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>> = ({ signal }) => listImportJobsApiV1ImportsGet(params, { signal, ...requestOptions });
 
-export type ListImportJobsApiV1ImportsGetQueryResult = NonNullable<
-  Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>
->;
-export type ListImportJobsApiV1ImportsGetQueryError = HTTPValidationError;
+      
 
-export function useListImportJobsApiV1ImportsGet<
-  TData = Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>,
-  TError = HTTPValidationError,
->(
-  params: undefined | ListImportJobsApiV1ImportsGetParams,
-  options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type ListImportJobsApiV1ImportsGetQueryResult = NonNullable<Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>>
+export type ListImportJobsApiV1ImportsGetQueryError = HTTPValidationError
+
+
+export function useListImportJobsApiV1ImportsGet<TData = Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>, TError = HTTPValidationError>(
+ params: undefined |  ListImportJobsApiV1ImportsGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>,
           TError,
           Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>
-        >,
-        "initialData"
-      >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useListImportJobsApiV1ImportsGet<
-  TData = Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>,
-  TError = HTTPValidationError,
->(
-  params?: ListImportJobsApiV1ImportsGetParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListImportJobsApiV1ImportsGet<TData = Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>, TError = HTTPValidationError>(
+ params?: ListImportJobsApiV1ImportsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>,
           TError,
           Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>
-        >,
-        "initialData"
-      >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useListImportJobsApiV1ImportsGet<
-  TData = Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>,
-  TError = HTTPValidationError,
->(
-  params?: ListImportJobsApiV1ImportsGetParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>,
-        TError,
-        TData
-      >
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useListImportJobsApiV1ImportsGet<TData = Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>, TError = HTTPValidationError>(
+ params?: ListImportJobsApiV1ImportsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary List import jobs
  */
 
-export function useListImportJobsApiV1ImportsGet<
-  TData = Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>,
-  TError = HTTPValidationError,
->(
-  params?: ListImportJobsApiV1ImportsGetParams,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>,
-        TError,
-        TData
-      >
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getListImportJobsApiV1ImportsGetQueryOptions(
-    params,
-    options,
-  );
+export function useListImportJobsApiV1ImportsGet<TData = Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>, TError = HTTPValidationError>(
+ params?: ListImportJobsApiV1ImportsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listImportJobsApiV1ImportsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-    TData,
-    TError
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
+  const queryOptions = getListImportJobsApiV1ImportsGetQueryOptions(params,options)
 
-  query.queryKey = queryOptions.queryKey;
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
 
   return query;
 }
+
+
+
 
 /**
  * Import transactions from CSV file
  * @summary Import CSV file
  */
 export type importCsvApiV1ImportsPostResponse201 = {
-  data: ImportResultResponse;
-  status: 201;
-};
+  data: ImportResultResponse
+  status: 201
+}
 
 export type importCsvApiV1ImportsPostResponse422 = {
-  data: HTTPValidationError;
-  status: 422;
+  data: HTTPValidationError
+  status: 422
+}
+    
+export type importCsvApiV1ImportsPostResponseSuccess = (importCsvApiV1ImportsPostResponse201) & {
+  headers: Headers;
+};
+export type importCsvApiV1ImportsPostResponseError = (importCsvApiV1ImportsPostResponse422) & {
+  headers: Headers;
 };
 
-export type importCsvApiV1ImportsPostResponseSuccess =
-  importCsvApiV1ImportsPostResponse201 & {
-    headers: Headers;
-  };
-export type importCsvApiV1ImportsPostResponseError =
-  importCsvApiV1ImportsPostResponse422 & {
-    headers: Headers;
-  };
-
-export type importCsvApiV1ImportsPostResponse =
-  | importCsvApiV1ImportsPostResponseSuccess
-  | importCsvApiV1ImportsPostResponseError;
+export type importCsvApiV1ImportsPostResponse = (importCsvApiV1ImportsPostResponseSuccess | importCsvApiV1ImportsPostResponseError)
 
 export const getImportCsvApiV1ImportsPostUrl = () => {
-  return `/api/v1/imports/`;
-};
 
-export const importCsvApiV1ImportsPost = async (
-  bodyImportCsvApiV1ImportsPost: BodyImportCsvApiV1ImportsPost,
-  options?: RequestInit,
-): Promise<importCsvApiV1ImportsPostResponse> => {
-  const formData = new FormData();
-  formData.append(`file`, bodyImportCsvApiV1ImportsPost.file);
-  formData.append(`profile_id`, bodyImportCsvApiV1ImportsPost.profile_id);
-  if (
-    bodyImportCsvApiV1ImportsPost.account_id !== undefined &&
-    bodyImportCsvApiV1ImportsPost.account_id !== null
-  ) {
-    formData.append(`account_id`, bodyImportCsvApiV1ImportsPost.account_id);
+
+  
+
+  return `/api/v1/imports/`
+}
+
+export const importCsvApiV1ImportsPost = async (bodyImportCsvApiV1ImportsPost: BodyImportCsvApiV1ImportsPost, options?: RequestInit): Promise<importCsvApiV1ImportsPostResponse> => {
+    const formData = new FormData();
+formData.append(`file`, bodyImportCsvApiV1ImportsPost.file)
+formData.append(`profile_id`, bodyImportCsvApiV1ImportsPost.profile_id)
+if(bodyImportCsvApiV1ImportsPost.account_id !== undefined && bodyImportCsvApiV1ImportsPost.account_id !== null) {
+ formData.append(`account_id`, bodyImportCsvApiV1ImportsPost.account_id)
+ }
+if(bodyImportCsvApiV1ImportsPost.mapping !== undefined && bodyImportCsvApiV1ImportsPost.mapping !== null) {
+ formData.append(`mapping`, bodyImportCsvApiV1ImportsPost.mapping)
+ }
+if(bodyImportCsvApiV1ImportsPost.skip_duplicates !== undefined) {
+ formData.append(`skip_duplicates`, bodyImportCsvApiV1ImportsPost.skip_duplicates.toString())
+ }
+if(bodyImportCsvApiV1ImportsPost.user_password !== undefined && bodyImportCsvApiV1ImportsPost.user_password !== null) {
+ formData.append(`user_password`, bodyImportCsvApiV1ImportsPost.user_password)
+ }
+
+  return customInstance<importCsvApiV1ImportsPostResponse>(getImportCsvApiV1ImportsPostUrl(),
+  {      
+    ...options,
+    method: 'POST'
+    ,
+    body: 
+      formData,
   }
-  if (
-    bodyImportCsvApiV1ImportsPost.mapping !== undefined &&
-    bodyImportCsvApiV1ImportsPost.mapping !== null
-  ) {
-    formData.append(`mapping`, bodyImportCsvApiV1ImportsPost.mapping);
-  }
-  if (bodyImportCsvApiV1ImportsPost.skip_duplicates !== undefined) {
-    formData.append(
-      `skip_duplicates`,
-      bodyImportCsvApiV1ImportsPost.skip_duplicates.toString(),
-    );
-  }
-  if (
-    bodyImportCsvApiV1ImportsPost.user_password !== undefined &&
-    bodyImportCsvApiV1ImportsPost.user_password !== null
-  ) {
-    formData.append(
-      `user_password`,
-      bodyImportCsvApiV1ImportsPost.user_password,
-    );
-  }
+);}
 
-  return customInstance<importCsvApiV1ImportsPostResponse>(
-    getImportCsvApiV1ImportsPostUrl(),
-    {
-      ...options,
-      method: "POST",
-      body: formData,
-    },
-  );
-};
 
-export const getImportCsvApiV1ImportsPostMutationOptions = <
-  TError = HTTPValidationError,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof importCsvApiV1ImportsPost>>,
-    TError,
-    { data: BodyImportCsvApiV1ImportsPost },
-    TContext
-  >;
-  request?: SecondParameter<typeof customInstance>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof importCsvApiV1ImportsPost>>,
-  TError,
-  { data: BodyImportCsvApiV1ImportsPost },
-  TContext
-> => {
-  const mutationKey = ["importCsvApiV1ImportsPost"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof importCsvApiV1ImportsPost>>,
-    { data: BodyImportCsvApiV1ImportsPost }
-  > = (props) => {
-    const { data } = props ?? {};
 
-    return importCsvApiV1ImportsPost(data, requestOptions);
-  };
+export const getImportCsvApiV1ImportsPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof importCsvApiV1ImportsPost>>, TError,{data: BodyImportCsvApiV1ImportsPost}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof importCsvApiV1ImportsPost>>, TError,{data: BodyImportCsvApiV1ImportsPost}, TContext> => {
 
-  return { mutationFn, ...mutationOptions };
-};
+const mutationKey = ['importCsvApiV1ImportsPost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
 
-export type ImportCsvApiV1ImportsPostMutationResult = NonNullable<
-  Awaited<ReturnType<typeof importCsvApiV1ImportsPost>>
->;
-export type ImportCsvApiV1ImportsPostMutationBody =
-  BodyImportCsvApiV1ImportsPost;
-export type ImportCsvApiV1ImportsPostMutationError = HTTPValidationError;
+      
 
-/**
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof importCsvApiV1ImportsPost>>, {data: BodyImportCsvApiV1ImportsPost}> = (props) => {
+          const {data} = props ?? {};
+
+          return  importCsvApiV1ImportsPost(data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ImportCsvApiV1ImportsPostMutationResult = NonNullable<Awaited<ReturnType<typeof importCsvApiV1ImportsPost>>>
+    export type ImportCsvApiV1ImportsPostMutationBody = BodyImportCsvApiV1ImportsPost
+    export type ImportCsvApiV1ImportsPostMutationError = HTTPValidationError
+
+    /**
  * @summary Import CSV file
  */
-export const useImportCsvApiV1ImportsPost = <
-  TError = HTTPValidationError,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof importCsvApiV1ImportsPost>>,
-      TError,
-      { data: BodyImportCsvApiV1ImportsPost },
-      TContext
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient,
-): UseMutationResult<
-  Awaited<ReturnType<typeof importCsvApiV1ImportsPost>>,
-  TError,
-  { data: BodyImportCsvApiV1ImportsPost },
-  TContext
-> => {
-  const mutationOptions = getImportCsvApiV1ImportsPostMutationOptions(options);
+export const useImportCsvApiV1ImportsPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof importCsvApiV1ImportsPost>>, TError,{data: BodyImportCsvApiV1ImportsPost}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof importCsvApiV1ImportsPost>>,
+        TError,
+        {data: BodyImportCsvApiV1ImportsPost},
+        TContext
+      > => {
 
-  return useMutation(mutationOptions, queryClient);
-};
-/**
+      const mutationOptions = getImportCsvApiV1ImportsPostMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * Preview CSV file before importing
  * @summary Preview CSV import
  */
 export type previewImportApiV1ImportsPreviewPostResponse200 = {
-  data: ImportPreviewResponse;
-  status: 200;
-};
+  data: ImportPreviewResponse
+  status: 200
+}
 
 export type previewImportApiV1ImportsPreviewPostResponse422 = {
-  data: HTTPValidationError;
-  status: 422;
+  data: HTTPValidationError
+  status: 422
+}
+    
+export type previewImportApiV1ImportsPreviewPostResponseSuccess = (previewImportApiV1ImportsPreviewPostResponse200) & {
+  headers: Headers;
+};
+export type previewImportApiV1ImportsPreviewPostResponseError = (previewImportApiV1ImportsPreviewPostResponse422) & {
+  headers: Headers;
 };
 
-export type previewImportApiV1ImportsPreviewPostResponseSuccess =
-  previewImportApiV1ImportsPreviewPostResponse200 & {
-    headers: Headers;
-  };
-export type previewImportApiV1ImportsPreviewPostResponseError =
-  previewImportApiV1ImportsPreviewPostResponse422 & {
-    headers: Headers;
-  };
-
-export type previewImportApiV1ImportsPreviewPostResponse =
-  | previewImportApiV1ImportsPreviewPostResponseSuccess
-  | previewImportApiV1ImportsPreviewPostResponseError;
+export type previewImportApiV1ImportsPreviewPostResponse = (previewImportApiV1ImportsPreviewPostResponseSuccess | previewImportApiV1ImportsPreviewPostResponseError)
 
 export const getPreviewImportApiV1ImportsPreviewPostUrl = () => {
-  return `/api/v1/imports/preview`;
-};
 
-export const previewImportApiV1ImportsPreviewPost = async (
-  bodyPreviewImportApiV1ImportsPreviewPost: BodyPreviewImportApiV1ImportsPreviewPost,
-  options?: RequestInit,
-): Promise<previewImportApiV1ImportsPreviewPostResponse> => {
-  const formData = new FormData();
-  formData.append(`file`, bodyPreviewImportApiV1ImportsPreviewPost.file);
-  if (
-    bodyPreviewImportApiV1ImportsPreviewPost.mapping !== undefined &&
-    bodyPreviewImportApiV1ImportsPreviewPost.mapping !== null
-  ) {
-    formData.append(
-      `mapping`,
-      bodyPreviewImportApiV1ImportsPreviewPost.mapping,
-    );
+
+  
+
+  return `/api/v1/imports/preview`
+}
+
+export const previewImportApiV1ImportsPreviewPost = async (bodyPreviewImportApiV1ImportsPreviewPost: BodyPreviewImportApiV1ImportsPreviewPost, options?: RequestInit): Promise<previewImportApiV1ImportsPreviewPostResponse> => {
+    const formData = new FormData();
+formData.append(`file`, bodyPreviewImportApiV1ImportsPreviewPost.file)
+if(bodyPreviewImportApiV1ImportsPreviewPost.mapping !== undefined && bodyPreviewImportApiV1ImportsPreviewPost.mapping !== null) {
+ formData.append(`mapping`, bodyPreviewImportApiV1ImportsPreviewPost.mapping)
+ }
+
+  return customInstance<previewImportApiV1ImportsPreviewPostResponse>(getPreviewImportApiV1ImportsPreviewPostUrl(),
+  {      
+    ...options,
+    method: 'POST'
+    ,
+    body: 
+      formData,
   }
+);}
 
-  return customInstance<previewImportApiV1ImportsPreviewPostResponse>(
-    getPreviewImportApiV1ImportsPreviewPostUrl(),
-    {
-      ...options,
-      method: "POST",
-      body: formData,
-    },
-  );
-};
 
-export const getPreviewImportApiV1ImportsPreviewPostMutationOptions = <
-  TError = HTTPValidationError,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof previewImportApiV1ImportsPreviewPost>>,
-    TError,
-    { data: BodyPreviewImportApiV1ImportsPreviewPost },
-    TContext
-  >;
-  request?: SecondParameter<typeof customInstance>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof previewImportApiV1ImportsPreviewPost>>,
-  TError,
-  { data: BodyPreviewImportApiV1ImportsPreviewPost },
-  TContext
-> => {
-  const mutationKey = ["previewImportApiV1ImportsPreviewPost"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof previewImportApiV1ImportsPreviewPost>>,
-    { data: BodyPreviewImportApiV1ImportsPreviewPost }
-  > = (props) => {
-    const { data } = props ?? {};
 
-    return previewImportApiV1ImportsPreviewPost(data, requestOptions);
-  };
+export const getPreviewImportApiV1ImportsPreviewPostMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof previewImportApiV1ImportsPreviewPost>>, TError,{data: BodyPreviewImportApiV1ImportsPreviewPost}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof previewImportApiV1ImportsPreviewPost>>, TError,{data: BodyPreviewImportApiV1ImportsPreviewPost}, TContext> => {
 
-  return { mutationFn, ...mutationOptions };
-};
+const mutationKey = ['previewImportApiV1ImportsPreviewPost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
 
-export type PreviewImportApiV1ImportsPreviewPostMutationResult = NonNullable<
-  Awaited<ReturnType<typeof previewImportApiV1ImportsPreviewPost>>
->;
-export type PreviewImportApiV1ImportsPreviewPostMutationBody =
-  BodyPreviewImportApiV1ImportsPreviewPost;
-export type PreviewImportApiV1ImportsPreviewPostMutationError =
-  HTTPValidationError;
+      
 
-/**
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof previewImportApiV1ImportsPreviewPost>>, {data: BodyPreviewImportApiV1ImportsPreviewPost}> = (props) => {
+          const {data} = props ?? {};
+
+          return  previewImportApiV1ImportsPreviewPost(data,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PreviewImportApiV1ImportsPreviewPostMutationResult = NonNullable<Awaited<ReturnType<typeof previewImportApiV1ImportsPreviewPost>>>
+    export type PreviewImportApiV1ImportsPreviewPostMutationBody = BodyPreviewImportApiV1ImportsPreviewPost
+    export type PreviewImportApiV1ImportsPreviewPostMutationError = HTTPValidationError
+
+    /**
  * @summary Preview CSV import
  */
-export const usePreviewImportApiV1ImportsPreviewPost = <
-  TError = HTTPValidationError,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof previewImportApiV1ImportsPreviewPost>>,
-      TError,
-      { data: BodyPreviewImportApiV1ImportsPreviewPost },
-      TContext
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient,
-): UseMutationResult<
-  Awaited<ReturnType<typeof previewImportApiV1ImportsPreviewPost>>,
-  TError,
-  { data: BodyPreviewImportApiV1ImportsPreviewPost },
-  TContext
-> => {
-  const mutationOptions =
-    getPreviewImportApiV1ImportsPreviewPostMutationOptions(options);
+export const usePreviewImportApiV1ImportsPreviewPost = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof previewImportApiV1ImportsPreviewPost>>, TError,{data: BodyPreviewImportApiV1ImportsPreviewPost}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof previewImportApiV1ImportsPreviewPost>>,
+        TError,
+        {data: BodyPreviewImportApiV1ImportsPreviewPost},
+        TContext
+      > => {
 
-  return useMutation(mutationOptions, queryClient);
-};
-/**
+      const mutationOptions = getPreviewImportApiV1ImportsPreviewPostMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    /**
  * Get import job by ID
  * @summary Get import job
  */
 export type getImportJobApiV1ImportsJobIdGetResponse200 = {
-  data: ImportJobResponse;
-  status: 200;
-};
+  data: ImportJobResponse
+  status: 200
+}
 
 export type getImportJobApiV1ImportsJobIdGetResponse422 = {
-  data: HTTPValidationError;
-  status: 422;
+  data: HTTPValidationError
+  status: 422
+}
+    
+export type getImportJobApiV1ImportsJobIdGetResponseSuccess = (getImportJobApiV1ImportsJobIdGetResponse200) & {
+  headers: Headers;
+};
+export type getImportJobApiV1ImportsJobIdGetResponseError = (getImportJobApiV1ImportsJobIdGetResponse422) & {
+  headers: Headers;
 };
 
-export type getImportJobApiV1ImportsJobIdGetResponseSuccess =
-  getImportJobApiV1ImportsJobIdGetResponse200 & {
-    headers: Headers;
-  };
-export type getImportJobApiV1ImportsJobIdGetResponseError =
-  getImportJobApiV1ImportsJobIdGetResponse422 & {
-    headers: Headers;
-  };
+export type getImportJobApiV1ImportsJobIdGetResponse = (getImportJobApiV1ImportsJobIdGetResponseSuccess | getImportJobApiV1ImportsJobIdGetResponseError)
 
-export type getImportJobApiV1ImportsJobIdGetResponse =
-  | getImportJobApiV1ImportsJobIdGetResponseSuccess
-  | getImportJobApiV1ImportsJobIdGetResponseError;
+export const getGetImportJobApiV1ImportsJobIdGetUrl = (jobId: string,) => {
 
-export const getGetImportJobApiV1ImportsJobIdGetUrl = (jobId: string) => {
-  return `/api/v1/imports/${jobId}`;
-};
 
-export const getImportJobApiV1ImportsJobIdGet = async (
-  jobId: string,
-  options?: RequestInit,
-): Promise<getImportJobApiV1ImportsJobIdGetResponse> => {
-  return customInstance<getImportJobApiV1ImportsJobIdGetResponse>(
-    getGetImportJobApiV1ImportsJobIdGetUrl(jobId),
-    {
-      ...options,
-      method: "GET",
-    },
-  );
-};
+  
 
-export const getGetImportJobApiV1ImportsJobIdGetQueryKey = (jobId?: string) => {
-  return [`/api/v1/imports/${jobId}`] as const;
-};
+  return `/api/v1/imports/${jobId}`
+}
 
-export const getGetImportJobApiV1ImportsJobIdGetQueryOptions = <
-  TData = Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>,
-  TError = HTTPValidationError,
->(
-  jobId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>,
-        TError,
-        TData
-      >
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
+export const getImportJobApiV1ImportsJobIdGet = async (jobId: string, options?: RequestInit): Promise<getImportJobApiV1ImportsJobIdGetResponse> => {
+  
+  return customInstance<getImportJobApiV1ImportsJobIdGetResponse>(getGetImportJobApiV1ImportsJobIdGetUrl(jobId),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+
+export const getGetImportJobApiV1ImportsJobIdGetQueryKey = (jobId?: string,) => {
+    return [
+    `/api/v1/imports/${jobId}`
+    ] as const;
+    }
+
+    
+export const getGetImportJobApiV1ImportsJobIdGetQueryOptions = <TData = Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>, TError = HTTPValidationError>(jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey =
-    queryOptions?.queryKey ??
-    getGetImportJobApiV1ImportsJobIdGetQueryKey(jobId);
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>
-  > = ({ signal }) =>
-    getImportJobApiV1ImportsJobIdGet(jobId, { signal, ...requestOptions });
+  const queryKey =  queryOptions?.queryKey ?? getGetImportJobApiV1ImportsJobIdGetQueryKey(jobId);
 
-  return {
-    queryKey,
-    queryFn,
-    enabled: !!jobId,
-    ...queryOptions,
-  } as UseQueryOptions<
-    Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
+  
 
-export type GetImportJobApiV1ImportsJobIdGetQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>
->;
-export type GetImportJobApiV1ImportsJobIdGetQueryError = HTTPValidationError;
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>> = ({ signal }) => getImportJobApiV1ImportsJobIdGet(jobId, { signal, ...requestOptions });
 
-export function useGetImportJobApiV1ImportsJobIdGet<
-  TData = Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>,
-  TError = HTTPValidationError,
->(
-  jobId: string,
-  options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(jobId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetImportJobApiV1ImportsJobIdGetQueryResult = NonNullable<Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>>
+export type GetImportJobApiV1ImportsJobIdGetQueryError = HTTPValidationError
+
+
+export function useGetImportJobApiV1ImportsJobIdGet<TData = Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>, TError = HTTPValidationError>(
+ jobId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>,
           TError,
           Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>
-        >,
-        "initialData"
-      >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetImportJobApiV1ImportsJobIdGet<
-  TData = Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>,
-  TError = HTTPValidationError,
->(
-  jobId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetImportJobApiV1ImportsJobIdGet<TData = Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>, TError = HTTPValidationError>(
+ jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>,
           TError,
           Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>
-        >,
-        "initialData"
-      >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetImportJobApiV1ImportsJobIdGet<
-  TData = Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>,
-  TError = HTTPValidationError,
->(
-  jobId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>,
-        TError,
-        TData
-      >
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetImportJobApiV1ImportsJobIdGet<TData = Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>, TError = HTTPValidationError>(
+ jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get import job
  */
 
-export function useGetImportJobApiV1ImportsJobIdGet<
-  TData = Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>,
-  TError = HTTPValidationError,
->(
-  jobId: string,
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>,
-        TError,
-        TData
-      >
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions = getGetImportJobApiV1ImportsJobIdGetQueryOptions(
-    jobId,
-    options,
-  );
+export function useGetImportJobApiV1ImportsJobIdGet<TData = Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>, TError = HTTPValidationError>(
+ jobId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getImportJobApiV1ImportsJobIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-    TData,
-    TError
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
+  const queryOptions = getGetImportJobApiV1ImportsJobIdGetQueryOptions(jobId,options)
 
-  query.queryKey = queryOptions.queryKey;
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
 
   return query;
 }
+
+
+
 
 /**
  * Delete an import job
  * @summary Delete import job
  */
 export type deleteImportJobApiV1ImportsJobIdDeleteResponse204 = {
-  data: void;
-  status: 204;
-};
+  data: void
+  status: 204
+}
 
 export type deleteImportJobApiV1ImportsJobIdDeleteResponse422 = {
-  data: HTTPValidationError;
-  status: 422;
+  data: HTTPValidationError
+  status: 422
+}
+    
+export type deleteImportJobApiV1ImportsJobIdDeleteResponseSuccess = (deleteImportJobApiV1ImportsJobIdDeleteResponse204) & {
+  headers: Headers;
+};
+export type deleteImportJobApiV1ImportsJobIdDeleteResponseError = (deleteImportJobApiV1ImportsJobIdDeleteResponse422) & {
+  headers: Headers;
 };
 
-export type deleteImportJobApiV1ImportsJobIdDeleteResponseSuccess =
-  deleteImportJobApiV1ImportsJobIdDeleteResponse204 & {
-    headers: Headers;
-  };
-export type deleteImportJobApiV1ImportsJobIdDeleteResponseError =
-  deleteImportJobApiV1ImportsJobIdDeleteResponse422 & {
-    headers: Headers;
-  };
+export type deleteImportJobApiV1ImportsJobIdDeleteResponse = (deleteImportJobApiV1ImportsJobIdDeleteResponseSuccess | deleteImportJobApiV1ImportsJobIdDeleteResponseError)
 
-export type deleteImportJobApiV1ImportsJobIdDeleteResponse =
-  | deleteImportJobApiV1ImportsJobIdDeleteResponseSuccess
-  | deleteImportJobApiV1ImportsJobIdDeleteResponseError;
-
-export const getDeleteImportJobApiV1ImportsJobIdDeleteUrl = (
-  jobId: string,
-  params?: DeleteImportJobApiV1ImportsJobIdDeleteParams,
-) => {
+export const getDeleteImportJobApiV1ImportsJobIdDeleteUrl = (jobId: string,
+    params?: DeleteImportJobApiV1ImportsJobIdDeleteParams,) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
+    
     if (value !== undefined) {
-      normalizedParams.append(key, value === null ? "null" : value.toString());
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
     }
   });
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0
-    ? `/api/v1/imports/${jobId}?${stringifiedParams}`
-    : `/api/v1/imports/${jobId}`;
-};
+  return stringifiedParams.length > 0 ? `/api/v1/imports/${jobId}?${stringifiedParams}` : `/api/v1/imports/${jobId}`
+}
 
-export const deleteImportJobApiV1ImportsJobIdDelete = async (
-  jobId: string,
-  params?: DeleteImportJobApiV1ImportsJobIdDeleteParams,
-  options?: RequestInit,
-): Promise<deleteImportJobApiV1ImportsJobIdDeleteResponse> => {
-  return customInstance<deleteImportJobApiV1ImportsJobIdDeleteResponse>(
-    getDeleteImportJobApiV1ImportsJobIdDeleteUrl(jobId, params),
-    {
-      ...options,
-      method: "DELETE",
-    },
-  );
-};
+export const deleteImportJobApiV1ImportsJobIdDelete = async (jobId: string,
+    params?: DeleteImportJobApiV1ImportsJobIdDeleteParams, options?: RequestInit): Promise<deleteImportJobApiV1ImportsJobIdDeleteResponse> => {
+  
+  return customInstance<deleteImportJobApiV1ImportsJobIdDeleteResponse>(getDeleteImportJobApiV1ImportsJobIdDeleteUrl(jobId,params),
+  {      
+    ...options,
+    method: 'DELETE'
+    
+    
+  }
+);}
 
-export const getDeleteImportJobApiV1ImportsJobIdDeleteMutationOptions = <
-  TError = HTTPValidationError,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof deleteImportJobApiV1ImportsJobIdDelete>>,
-    TError,
-    { jobId: string; params?: DeleteImportJobApiV1ImportsJobIdDeleteParams },
-    TContext
-  >;
-  request?: SecondParameter<typeof customInstance>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof deleteImportJobApiV1ImportsJobIdDelete>>,
-  TError,
-  { jobId: string; params?: DeleteImportJobApiV1ImportsJobIdDeleteParams },
-  TContext
-> => {
-  const mutationKey = ["deleteImportJobApiV1ImportsJobIdDelete"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
 
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof deleteImportJobApiV1ImportsJobIdDelete>>,
-    { jobId: string; params?: DeleteImportJobApiV1ImportsJobIdDeleteParams }
-  > = (props) => {
-    const { jobId, params } = props ?? {};
 
-    return deleteImportJobApiV1ImportsJobIdDelete(
-      jobId,
-      params,
-      requestOptions,
-    );
-  };
 
-  return { mutationFn, ...mutationOptions };
-};
+export const getDeleteImportJobApiV1ImportsJobIdDeleteMutationOptions = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteImportJobApiV1ImportsJobIdDelete>>, TError,{jobId: string;params?: DeleteImportJobApiV1ImportsJobIdDeleteParams}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteImportJobApiV1ImportsJobIdDelete>>, TError,{jobId: string;params?: DeleteImportJobApiV1ImportsJobIdDeleteParams}, TContext> => {
 
-export type DeleteImportJobApiV1ImportsJobIdDeleteMutationResult = NonNullable<
-  Awaited<ReturnType<typeof deleteImportJobApiV1ImportsJobIdDelete>>
->;
+const mutationKey = ['deleteImportJobApiV1ImportsJobIdDelete'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
 
-export type DeleteImportJobApiV1ImportsJobIdDeleteMutationError =
-  HTTPValidationError;
+      
 
-/**
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteImportJobApiV1ImportsJobIdDelete>>, {jobId: string;params?: DeleteImportJobApiV1ImportsJobIdDeleteParams}> = (props) => {
+          const {jobId,params} = props ?? {};
+
+          return  deleteImportJobApiV1ImportsJobIdDelete(jobId,params,requestOptions)
+        }
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteImportJobApiV1ImportsJobIdDeleteMutationResult = NonNullable<Awaited<ReturnType<typeof deleteImportJobApiV1ImportsJobIdDelete>>>
+    
+    export type DeleteImportJobApiV1ImportsJobIdDeleteMutationError = HTTPValidationError
+
+    /**
  * @summary Delete import job
  */
-export const useDeleteImportJobApiV1ImportsJobIdDelete = <
-  TError = HTTPValidationError,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof deleteImportJobApiV1ImportsJobIdDelete>>,
-      TError,
-      { jobId: string; params?: DeleteImportJobApiV1ImportsJobIdDeleteParams },
-      TContext
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient,
-): UseMutationResult<
-  Awaited<ReturnType<typeof deleteImportJobApiV1ImportsJobIdDelete>>,
-  TError,
-  { jobId: string; params?: DeleteImportJobApiV1ImportsJobIdDeleteParams },
-  TContext
-> => {
-  const mutationOptions =
-    getDeleteImportJobApiV1ImportsJobIdDeleteMutationOptions(options);
+export const useDeleteImportJobApiV1ImportsJobIdDelete = <TError = HTTPValidationError,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteImportJobApiV1ImportsJobIdDelete>>, TError,{jobId: string;params?: DeleteImportJobApiV1ImportsJobIdDeleteParams}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof deleteImportJobApiV1ImportsJobIdDelete>>,
+        TError,
+        {jobId: string;params?: DeleteImportJobApiV1ImportsJobIdDeleteParams},
+        TContext
+      > => {
 
-  return useMutation(mutationOptions, queryClient);
-};
+      const mutationOptions = getDeleteImportJobApiV1ImportsJobIdDeleteMutationOptions(options);
+
+      return useMutation(mutationOptions, queryClient);
+    }
+    

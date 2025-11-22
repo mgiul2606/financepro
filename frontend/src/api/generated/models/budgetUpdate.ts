@@ -15,18 +15,18 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { BudgetUpdateName } from "./budgetUpdateName";
-import type { BudgetUpdatePeriodType } from "./budgetUpdatePeriodType";
-import type { BudgetUpdateStartDate } from "./budgetUpdateStartDate";
-import type { BudgetUpdateEndDate } from "./budgetUpdateEndDate";
-import type { BudgetUpdateTotalAmount } from "./budgetUpdateTotalAmount";
-import type { BudgetUpdateCurrency } from "./budgetUpdateCurrency";
-import type { BudgetUpdateRolloverEnabled } from "./budgetUpdateRolloverEnabled";
-import type { BudgetUpdateAlertThresholdPercent } from "./budgetUpdateAlertThresholdPercent";
-import type { BudgetUpdateIsActive } from "./budgetUpdateIsActive";
-import type { BudgetUpdateScopeType } from "./budgetUpdateScopeType";
-import type { BudgetUpdateScopeProfileIds } from "./budgetUpdateScopeProfileIds";
-import type { BudgetUpdateCategoryAllocations } from "./budgetUpdateCategoryAllocations";
+import type { BudgetUpdateName } from './budgetUpdateName';
+import type { BudgetUpdatePeriodType } from './budgetUpdatePeriodType';
+import type { BudgetUpdateStartDate } from './budgetUpdateStartDate';
+import type { BudgetUpdateEndDate } from './budgetUpdateEndDate';
+import type { BudgetUpdateTotalAmount } from './budgetUpdateTotalAmount';
+import type { BudgetUpdateCurrency } from './budgetUpdateCurrency';
+import type { BudgetUpdateRolloverEnabled } from './budgetUpdateRolloverEnabled';
+import type { BudgetUpdateAlertThresholdPercent } from './budgetUpdateAlertThresholdPercent';
+import type { BudgetUpdateIsActive } from './budgetUpdateIsActive';
+import type { BudgetUpdateScopeType } from './budgetUpdateScopeType';
+import type { BudgetUpdateScopeProfileIds } from './budgetUpdateScopeProfileIds';
+import type { BudgetUpdateCategoryAllocations } from './budgetUpdateCategoryAllocations';
 
 /**
  * Schema for updating a budget

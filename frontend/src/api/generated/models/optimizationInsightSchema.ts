@@ -15,8 +15,8 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { OptimizationCategory } from "./optimizationCategory";
-import type { OptimizationPriority } from "./optimizationPriority";
+import type { OptimizationCategory } from './optimizationCategory';
+import type { OptimizationPriority } from './optimizationPriority';
 
 /**
  * An optimization insight

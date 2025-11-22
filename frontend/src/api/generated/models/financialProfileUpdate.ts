@@ -15,13 +15,13 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { FinancialProfileUpdateName } from "./financialProfileUpdateName";
-import type { FinancialProfileUpdateDescription } from "./financialProfileUpdateDescription";
-import type { FinancialProfileUpdateProfileType } from "./financialProfileUpdateProfileType";
-import type { FinancialProfileUpdateDefaultCurrency } from "./financialProfileUpdateDefaultCurrency";
-import type { FinancialProfileUpdateDatabaseConnectionString } from "./financialProfileUpdateDatabaseConnectionString";
-import type { FinancialProfileUpdateDatabaseType } from "./financialProfileUpdateDatabaseType";
-import type { FinancialProfileUpdateIsActive } from "./financialProfileUpdateIsActive";
+import type { FinancialProfileUpdateName } from './financialProfileUpdateName';
+import type { FinancialProfileUpdateDescription } from './financialProfileUpdateDescription';
+import type { FinancialProfileUpdateProfileType } from './financialProfileUpdateProfileType';
+import type { FinancialProfileUpdateDefaultCurrency } from './financialProfileUpdateDefaultCurrency';
+import type { FinancialProfileUpdateDatabaseConnectionString } from './financialProfileUpdateDatabaseConnectionString';
+import type { FinancialProfileUpdateDatabaseType } from './financialProfileUpdateDatabaseType';
+import type { FinancialProfileUpdateIsActive } from './financialProfileUpdateIsActive';
 
 /**
  * Schema for updating an existing financial profile.

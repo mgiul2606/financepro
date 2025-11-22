@@ -15,8 +15,8 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { GoalContributionResponseTransactionId } from "./goalContributionResponseTransactionId";
-import type { GoalContributionResponseNotes } from "./goalContributionResponseNotes";
+import type { GoalContributionResponseTransactionId } from './goalContributionResponseTransactionId';
+import type { GoalContributionResponseNotes } from './goalContributionResponseNotes';
 
 /**
  * Schema for goal contribution response

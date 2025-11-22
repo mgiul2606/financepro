@@ -15,20 +15,20 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { GoalUpdateName } from "./goalUpdateName";
-import type { GoalUpdateGoalType } from "./goalUpdateGoalType";
-import type { GoalUpdateTargetAmount } from "./goalUpdateTargetAmount";
-import type { GoalUpdateCurrency } from "./goalUpdateCurrency";
-import type { GoalUpdateTargetDate } from "./goalUpdateTargetDate";
-import type { GoalUpdatePriority } from "./goalUpdatePriority";
-import type { GoalUpdateStatus } from "./goalUpdateStatus";
-import type { GoalUpdateIcon } from "./goalUpdateIcon";
-import type { GoalUpdateColor } from "./goalUpdateColor";
-import type { GoalUpdateImageUrl } from "./goalUpdateImageUrl";
-import type { GoalUpdateNotes } from "./goalUpdateNotes";
-import type { GoalUpdateScopeType } from "./goalUpdateScopeType";
-import type { GoalUpdateScopeProfileIds } from "./goalUpdateScopeProfileIds";
-import type { GoalUpdateMilestones } from "./goalUpdateMilestones";
+import type { GoalUpdateName } from './goalUpdateName';
+import type { GoalUpdateGoalType } from './goalUpdateGoalType';
+import type { GoalUpdateTargetAmount } from './goalUpdateTargetAmount';
+import type { GoalUpdateCurrency } from './goalUpdateCurrency';
+import type { GoalUpdateTargetDate } from './goalUpdateTargetDate';
+import type { GoalUpdatePriority } from './goalUpdatePriority';
+import type { GoalUpdateStatus } from './goalUpdateStatus';
+import type { GoalUpdateIcon } from './goalUpdateIcon';
+import type { GoalUpdateColor } from './goalUpdateColor';
+import type { GoalUpdateImageUrl } from './goalUpdateImageUrl';
+import type { GoalUpdateNotes } from './goalUpdateNotes';
+import type { GoalUpdateScopeType } from './goalUpdateScopeType';
+import type { GoalUpdateScopeProfileIds } from './goalUpdateScopeProfileIds';
+import type { GoalUpdateMilestones } from './goalUpdateMilestones';
 
 /**
  * Schema for updating a goal

@@ -15,19 +15,19 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { GoalType } from "./goalType";
-import type { GoalCreateTargetAmount } from "./goalCreateTargetAmount";
-import type { GoalCreateIcon } from "./goalCreateIcon";
-import type { GoalCreateColor } from "./goalCreateColor";
-import type { GoalCreateImageUrl } from "./goalCreateImageUrl";
-import type { GoalCreateNotes } from "./goalCreateNotes";
-import type { ScopeType } from "./scopeType";
-import type { GoalCreateScopeProfileIds } from "./goalCreateScopeProfileIds";
-import type { GoalCreateLinkedAccountId } from "./goalCreateLinkedAccountId";
-import type { GoalCreateDescription } from "./goalCreateDescription";
-import type { GoalCreateStartDate } from "./goalCreateStartDate";
-import type { GoalCreateMilestones } from "./goalCreateMilestones";
-import type { GoalCreateInitialAmount } from "./goalCreateInitialAmount";
+import type { GoalType } from './goalType';
+import type { GoalCreateTargetAmount } from './goalCreateTargetAmount';
+import type { GoalCreateIcon } from './goalCreateIcon';
+import type { GoalCreateColor } from './goalCreateColor';
+import type { GoalCreateImageUrl } from './goalCreateImageUrl';
+import type { GoalCreateNotes } from './goalCreateNotes';
+import type { ScopeType } from './scopeType';
+import type { GoalCreateScopeProfileIds } from './goalCreateScopeProfileIds';
+import type { GoalCreateLinkedAccountId } from './goalCreateLinkedAccountId';
+import type { GoalCreateDescription } from './goalCreateDescription';
+import type { GoalCreateStartDate } from './goalCreateStartDate';
+import type { GoalCreateMilestones } from './goalCreateMilestones';
+import type { GoalCreateInitialAmount } from './goalCreateInitialAmount';
 
 /**
  * Schema for creating a goal

@@ -19,13 +19,14 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 /**
  * Status of import jobs
  */
-export type ImportStatus = (typeof ImportStatus)[keyof typeof ImportStatus];
+export type ImportStatus = typeof ImportStatus[keyof typeof ImportStatus];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ImportStatus = {
-  pending: "pending",
-  processing: "processing",
-  completed: "completed",
-  failed: "failed",
-  partial: "partial",
+  pending: 'pending',
+  processing: 'processing',
+  completed: 'completed',
+  failed: 'failed',
+  partial: 'partial',
 } as const;

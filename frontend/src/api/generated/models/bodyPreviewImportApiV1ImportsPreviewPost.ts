@@ -15,7 +15,7 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { BodyPreviewImportApiV1ImportsPreviewPostMapping } from "./bodyPreviewImportApiV1ImportsPreviewPostMapping";
+import type { BodyPreviewImportApiV1ImportsPreviewPostMapping } from './bodyPreviewImportApiV1ImportsPreviewPostMapping';
 
 export interface BodyPreviewImportApiV1ImportsPreviewPost {
   /** CSV file to preview */

@@ -15,7 +15,7 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { PeriodSummary } from "./periodSummary";
+import type { PeriodSummary } from './periodSummary';
 
 export interface PeriodComparisonResponse {
   period1: PeriodSummary;

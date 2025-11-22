@@ -15,6 +15,6 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { GoalType } from "./goalType";
+import type { GoalType } from './goalType';
 
 export type GoalUpdateGoalType = GoalType | null;

@@ -17,8 +17,8 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 export type DeleteImportJobApiV1ImportsJobIdDeleteParams = {
-  /**
-   * Also delete imported transactions
-   */
-  delete_transactions?: boolean;
+/**
+ * Also delete imported transactions
+ */
+delete_transactions?: boolean;
 };

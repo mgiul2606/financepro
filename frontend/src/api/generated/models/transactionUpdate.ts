@@ -15,18 +15,18 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { TransactionUpdateCategoryId } from "./transactionUpdateCategoryId";
-import type { TransactionUpdateTransactionType } from "./transactionUpdateTransactionType";
-import type { TransactionUpdateAmount } from "./transactionUpdateAmount";
-import type { TransactionUpdateCurrency } from "./transactionUpdateCurrency";
-import type { TransactionUpdateDescription } from "./transactionUpdateDescription";
-import type { TransactionUpdateMerchantName } from "./transactionUpdateMerchantName";
-import type { TransactionUpdateTransactionDate } from "./transactionUpdateTransactionDate";
-import type { TransactionUpdateValueDate } from "./transactionUpdateValueDate";
-import type { TransactionUpdateNotes } from "./transactionUpdateNotes";
-import type { TransactionUpdateIsReconciled } from "./transactionUpdateIsReconciled";
-import type { TransactionUpdateLocation } from "./transactionUpdateLocation";
-import type { TransactionUpdateReceiptUrl } from "./transactionUpdateReceiptUrl";
+import type { TransactionUpdateCategoryId } from './transactionUpdateCategoryId';
+import type { TransactionUpdateTransactionType } from './transactionUpdateTransactionType';
+import type { TransactionUpdateAmount } from './transactionUpdateAmount';
+import type { TransactionUpdateCurrency } from './transactionUpdateCurrency';
+import type { TransactionUpdateDescription } from './transactionUpdateDescription';
+import type { TransactionUpdateMerchantName } from './transactionUpdateMerchantName';
+import type { TransactionUpdateTransactionDate } from './transactionUpdateTransactionDate';
+import type { TransactionUpdateValueDate } from './transactionUpdateValueDate';
+import type { TransactionUpdateNotes } from './transactionUpdateNotes';
+import type { TransactionUpdateIsReconciled } from './transactionUpdateIsReconciled';
+import type { TransactionUpdateLocation } from './transactionUpdateLocation';
+import type { TransactionUpdateReceiptUrl } from './transactionUpdateReceiptUrl';
 
 /**
  * Schema for updating an existing transaction.
