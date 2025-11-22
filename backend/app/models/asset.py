@@ -1,37 +1,20 @@
 # app/models/asset.py
 from sqlalchemy import Column, String, Numeric, ForeignKey, DateTime, Boolean, Text, Date
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 from decimal import Decimal
-import enum
 import uuid
 from app.db.database import Base
 from app.db.types import StringEnum
-
-
-class AssetType(str, enum.Enum):
-    """Types of assets"""
-    REAL_ESTATE = "real_estate"
-    VEHICLE = "vehicle"
-    PRECIOUS_METAL = "precious_metal"
-    INVESTMENT = "investment"
-    ARTWORK = "artwork"
-    JEWELRY = "jewelry"
-    OTHER = "other"
-
-
-class ValuationMethod(str, enum.Enum):
-    """Methods for asset valuation"""
-    MARKET_QUOTE = "market_quote"  # Objective market prices (e.g., gold)
-    RANGE = "range"  # Range of values (e.g., real estate)
-    COMPARATIVE = "comparative"  # Comparative valuation
-    MANUAL = "manual"  # Manual estimation
+from app.models.enums import AssetType, ValuationMethod
 
 
 class Asset(Base):
     """
     Asset model for patrimony management.
+
+    Based on FinancePro Database Technical Documentation v2.1
 
     Tracks movable and immovable assets with flexible valuation methods.
 
@@ -39,21 +22,27 @@ class Asset(Base):
         id: UUID primary key
         financial_profile_id: Foreign key to FinancialProfile
         name: Asset name
-        asset_type: Type of asset
+        asset_type: Type of asset (real_estate, vehicle, stock, crypto, etc.)
         purchase_date: When the asset was acquired
         purchase_price: Original purchase price
-        current_value: Current estimated value
+        purchase_transaction_id: FK to purchase transaction
+        current_value: Current estimated value (best estimate)
         current_value_min: Minimum value in range
         current_value_max: Maximum value in range
         valuation_method: Method used for valuation
+        last_valuation_date: Date of last valuation
         currency: ISO 4217 currency code
         is_liquid: Whether the asset is easily liquidable
+        quantity: Quantity for fractional assets (stocks, crypto)
+        ticker_symbol: Ticker symbol for quoted assets
         notes: Additional notes
+        metadata: Extensible JSONB metadata
         created_at: Creation timestamp
         updated_at: Last update timestamp
 
     Relationships:
         financial_profile: Parent financial profile
+        purchase_transaction: Transaction of purchase
         valuations: Historical valuations for this asset
     """
     __tablename__ = "assets"
@@ -76,6 +65,11 @@ class Asset(Base):
     # Purchase information
     purchase_date = Column(Date, nullable=True)
     purchase_price = Column(Numeric(precision=15, scale=2), nullable=True)
+    purchase_transaction_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("transactions.id", ondelete="SET NULL"),
+        nullable=True
+    )
 
     # Current valuation
     current_value = Column(Numeric(precision=15, scale=2), nullable=False)
@@ -84,15 +78,19 @@ class Asset(Base):
 
     # Valuation method
     valuation_method = Column(StringEnum(ValuationMethod), default=ValuationMethod.MANUAL, nullable=False)
+    last_valuation_date = Column(Date, nullable=True)
 
     # Currency
     currency = Column(String(3), nullable=False)
 
-    # Liquidity
+    # Liquidity and quantity
     is_liquid = Column(Boolean, default=False, nullable=False)
+    quantity = Column(Numeric(precision=18, scale=8), nullable=True)  # For fractional assets
+    ticker_symbol = Column(String(20), nullable=True, index=True)  # For quoted assets
 
     # Additional information
     notes = Column(Text, nullable=True)
+    metadata = Column(JSONB, nullable=True)
 
     # Timestamps
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
@@ -105,6 +103,7 @@ class Asset(Base):
 
     # Relationships
     financial_profile = relationship("FinancialProfile", back_populates="assets")
+    purchase_transaction = relationship("Transaction", foreign_keys=[purchase_transaction_id])
     valuations = relationship(
         "AssetValuation",
         back_populates="asset",
@@ -154,9 +153,10 @@ class AssetValuation(Base):
     value = Column(Numeric(precision=15, scale=2), nullable=False)
     value_min = Column(Numeric(precision=15, scale=2), nullable=True)
     value_max = Column(Numeric(precision=15, scale=2), nullable=True)
+    valuation_method = Column(StringEnum(ValuationMethod), nullable=False)
 
     # Source
-    source = Column(String(255), nullable=True)
+    source = Column(String(100), nullable=True)
 
     # Notes
     notes = Column(Text, nullable=True)

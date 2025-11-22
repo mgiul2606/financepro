@@ -28,24 +28,26 @@ class FinancialGoal(Base):
         id: UUID primary key
         user_id: Goal owner (USER-LEVEL)
         name: Goal name
+        description: Goal description
         goal_type: Type of goal
         scope_type: Scope pattern
         scope_profile_ids: Array of profile IDs
+        linked_account_id: Dedicated account for goal (optional)
         target_amount: Target amount
         current_amount: Current saved (denormalized)
         currency: Goal currency
+        start_date: When goal started
         target_date: Target completion date
+        monthly_contribution: Suggested monthly contribution
+        auto_allocate: Auto-allocate funds from transactions
         priority: Priority (1-10)
         status: Goal status
+        achievement_probability: ML probability
+        gamification_points: Points earned
         icon: Goal icon
         color: HEX color
         image_url: Goal image
         milestones: Milestones (JSONB)
-        gamification_level: Current level
-        gamification_points: Points earned
-        gamification_badges: Earned badges (JSONB)
-        achievement_probability: ML probability
-        monthly_contribution: Calculated monthly need
         notes: Optional notes
     """
     __tablename__ = "financial_goals"
@@ -63,11 +65,19 @@ class FinancialGoal(Base):
 
     # Goal information
     name = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
     goal_type = Column(StringEnum(GoalType), nullable=False)
 
     # Scope pattern
     scope_type = Column(StringEnum(ScopeType), default=ScopeType.USER, nullable=False)
     scope_profile_ids = Column(ARRAY(UUID(as_uuid=True)), nullable=True)
+
+    # Linked account
+    linked_account_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("accounts.id", ondelete="SET NULL"),
+        nullable=True
+    )
 
     # Amounts
     target_amount = Column(Numeric(15, 2), nullable=False)
@@ -75,7 +85,12 @@ class FinancialGoal(Base):
     currency = Column(String(3), nullable=False)
 
     # Dates
+    start_date = Column(Date, nullable=False)
     target_date = Column(Date, nullable=False)
+
+    # Monthly contribution and automation
+    monthly_contribution = Column(Numeric(15, 2), nullable=True)
+    auto_allocate = Column(Boolean, default=False, nullable=False)
 
     # Priority and status
     priority = Column(Integer, default=5, nullable=False)  # 1-10
@@ -90,16 +105,11 @@ class FinancialGoal(Base):
     milestones = Column(JSONB, nullable=True)
     # Format: [{"name": "First 1000", "target_amount": 1000, "completed": false, "completed_at": null}]
 
-    # Gamification
-    gamification_level = Column(Integer, default=1, nullable=False)
-    gamification_points = Column(Integer, default=0, nullable=False)
-    gamification_badges = Column(JSONB, nullable=True)  # ["first_deposit", "50_percent", etc.]
-
     # ML predictions
-    achievement_probability = Column(Numeric(5, 4), nullable=True)  # 0-1
+    achievement_probability = Column(Numeric(5, 2), nullable=True)  # Percentage
 
-    # Calculated values
-    monthly_contribution = Column(Numeric(15, 2), nullable=True)
+    # Gamification
+    gamification_points = Column(Integer, default=0, nullable=False)
 
     # Notes
     notes = Column(Text, nullable=True)
@@ -115,6 +125,7 @@ class FinancialGoal(Base):
 
     # Relationships
     user = relationship("User", back_populates="financial_goals")
+    linked_account = relationship("Account", foreign_keys=[linked_account_id])
     contributions = relationship(
         "GoalContribution",
         back_populates="goal",

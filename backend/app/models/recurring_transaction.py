@@ -4,76 +4,55 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone, date as date_type
 from decimal import Decimal
-import enum
 import uuid
 from app.db.database import Base
 from app.db.types import StringEnum
-
-
-class AmountModel(str, enum.Enum):
-    """Models for recurring transaction amount variation"""
-    FIXED = "fixed"  # Fixed amount
-    VARIABLE_WITHIN_RANGE = "variable_within_range"  # Variable with min/max
-    PROGRESSIVE = "progressive"  # Progressive amounts (e.g., loan payments)
-    SEASONAL = "seasonal"  # Seasonal variations
-
-
-class Frequency(str, enum.Enum):
-    """Frequency of recurring transactions"""
-    DAILY = "daily"
-    WEEKLY = "weekly"
-    BIWEEKLY = "biweekly"
-    MONTHLY = "monthly"
-    QUARTERLY = "quarterly"
-    YEARLY = "yearly"
-    CUSTOM = "custom"  # Custom interval in days
-
-
-class OccurrenceStatus(str, enum.Enum):
-    """Status of a recurring transaction occurrence"""
-    PENDING = "pending"
-    EXECUTED = "executed"
-    SKIPPED = "skipped"
-    OVERRIDDEN = "overridden"  # Manually modified
+from app.models.enums import AmountModel, Frequency, OccurrenceStatus, TransactionType
 
 
 class RecurringTransaction(Base):
     """
     Recurring Transaction model for managing repeating transactions.
 
+    Based on FinancePro Database Technical Documentation v2.1
+
     Supports sophisticated amount variation models:
     - FIXED: Constant amount
     - VARIABLE_WITHIN_RANGE: Amount varies within min/max bounds
     - PROGRESSIVE: Amount changes according to a formula
     - SEASONAL: Amount varies by season
+    - FORMULA: Custom calculation formula
 
     Attributes:
         id: UUID primary key
+        financial_profile_id: Foreign key to FinancialProfile
         account_id: Foreign key to Account
         category_id: Foreign key to Category
         name: Name of the recurring transaction
         description: Detailed description
+        transaction_type: Type of transaction (bank_transfer, purchase, etc.)
         amount_model: Model for amount variation
-        base_amount: Base amount
-        min_amount: Minimum amount (for VARIABLE)
-        max_amount: Maximum amount (for VARIABLE)
+        base_amount: Base amount (negative=expense, positive=income)
+        amount_min: Minimum amount (for VARIABLE)
+        amount_max: Maximum amount (for VARIABLE)
+        formula: Calculation formula (for FORMULA model)
+        currency: Currency code (ISO 4217)
         frequency: How often it recurs
-        custom_interval_days: Custom interval in days (if frequency is CUSTOM)
+        interval: Frequency multiplier (e.g., 2 for "every 2 months")
         start_date: When recurring transactions start
         end_date: When they end (optional)
         next_occurrence_date: Next scheduled occurrence
-        calculation_formula: Mathematical formula for PROGRESSIVE model
-        is_active: Whether this recurring transaction is active
-        notification_enabled: Whether to send notifications
+        auto_create: Automatically create transaction at due date
         notification_days_before: Days before occurrence to send notification
-        anomaly_threshold_percentage: Percentage deviation to flag as anomaly
+        is_active: Whether this recurring transaction is active
         created_at: Creation timestamp
         updated_at: Last update timestamp
 
     Relationships:
+        financial_profile: Parent financial profile
         account: Account this recurring transaction belongs to
         category: Category of transactions
-        generated_transactions: Actual transactions generated from this recurring transaction
+        generated_transactions: Actual transactions generated from this
         occurrences: Scheduled and executed occurrences
     """
     __tablename__ = "recurring_transactions"
@@ -103,34 +82,31 @@ class RecurringTransaction(Base):
     # Basic information
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
+    transaction_type = Column(StringEnum(TransactionType), nullable=False)
 
     # Amount model
     amount_model = Column(StringEnum(AmountModel), default=AmountModel.FIXED, nullable=False)
     base_amount = Column(Numeric(precision=15, scale=2), nullable=False)
-    min_amount = Column(Numeric(precision=15, scale=2), nullable=True)  # For VARIABLE_WITHIN_RANGE
-    max_amount = Column(Numeric(precision=15, scale=2), nullable=True)  # For VARIABLE_WITHIN_RANGE
+    amount_min = Column(Numeric(precision=15, scale=2), nullable=True)  # For VARIABLE_WITHIN_RANGE
+    amount_max = Column(Numeric(precision=15, scale=2), nullable=True)  # For VARIABLE_WITHIN_RANGE
+    formula = Column(Text, nullable=True)  # Mathematical formula for FORMULA model
+    currency = Column(String(3), nullable=False)
 
     # Frequency
     frequency = Column(StringEnum(Frequency), default=Frequency.MONTHLY, nullable=False)
-    custom_interval_days = Column(Integer, nullable=True)  # For CUSTOM frequency
+    interval = Column(Integer, default=1, nullable=False)  # Frequency multiplier
 
     # Schedule
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=True)
-    next_occurrence_date = Column(Date, nullable=False, index=True)
+    next_occurrence_date = Column(Date, nullable=True, index=True)
 
-    # Advanced features
-    calculation_formula = Column(Text, nullable=True)  # Mathematical formula for PROGRESSIVE
+    # Automation
+    auto_create = Column(Boolean, default=False, nullable=False)
+    notification_days_before = Column(Integer, default=3, nullable=False)
 
     # Status
     is_active = Column(Boolean, default=True, nullable=False)
-
-    # Notifications
-    notification_enabled = Column(Boolean, default=True, nullable=False)
-    notification_days_before = Column(Integer, default=3, nullable=False)
-
-    # Anomaly detection
-    anomaly_threshold_percentage = Column(Numeric(precision=5, scale=2), default=Decimal("20.00"), nullable=False)
 
     # Timestamps
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)

@@ -4,37 +4,34 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 from decimal import Decimal
-import enum
 import uuid
 from app.db.database import Base
 from app.db.types import StringEnum
-
-
-class AccountType(str, enum.Enum):
-    """Types of financial accounts"""
-    CHECKING = "checking"
-    SAVINGS = "savings"
-    CREDIT_CARD = "credit_card"
-    INVESTMENT = "investment"
-    CASH = "cash"
-    LOAN = "loan"
-    OTHER = "other"
+from app.models.enums import AccountType
 
 
 class Account(Base):
     """
     Account model representing a financial account within a financial profile.
 
+    Based on FinancePro Database Technical Documentation v2.1
+
     Attributes:
         id: UUID primary key
         financial_profile_id: Foreign key to FinancialProfile
         name: Account name
-        account_type: Type of account (checking, savings, etc.)
+        account_type: Type of account (checking, savings, credit_card, etc.)
         currency: ISO 4217 currency code (3 letters)
         initial_balance: Starting balance when account was created
+        current_balance: Current calculated balance
+        credit_limit: Credit limit (for credit cards)
+        interest_rate: Annual interest rate (for loans/savings)
         institution_name: Name of the financial institution
-        account_number: Encrypted account number
+        account_number_last4: Last 4 digits of account number (safe display)
+        iban: Full IBAN (encrypted for HS profiles)
         is_active: Whether the account is active
+        is_included_in_totals: Include in net worth calculation
+        notes: Free-form notes
         created_at: Creation timestamp
         updated_at: Last update timestamp
 
@@ -43,9 +40,7 @@ class Account(Base):
         transactions: All transactions for this account
         recurring_transactions: Recurring transactions linked to this account
         import_jobs: Import jobs for this account
-
-    Properties:
-        current_balance: Computed balance (initial + sum of transactions)
+        bank_conditions: Bank contract terms for this account
     """
     __tablename__ = "accounts"
 
@@ -73,17 +68,28 @@ class Account(Base):
         default=Decimal("0.00"),
         nullable=False
     )
+    current_balance = Column(
+        Numeric(precision=15, scale=2),
+        default=Decimal("0.00"),
+        nullable=False
+    )
+
+    # Credit/Interest
+    credit_limit = Column(Numeric(precision=15, scale=2), nullable=True)  # For credit cards
+    interest_rate = Column(Numeric(precision=5, scale=2), nullable=True)  # Annual % for loans/savings
 
     # Institution details
     institution_name = Column(String(255), nullable=True)
-    # NOTE: This field should be encrypted in production using app.core.encryption
-    account_number = Column(String(255), nullable=True)
+    account_number_last4 = Column(String(4), nullable=True)  # Safe display
+    # NOTE: This field should be encrypted in production for HS profiles
+    iban = Column(String(34), nullable=True)
 
     # Notes
     notes = Column(Text, nullable=True)
 
     # Status
     is_active = Column(Boolean, default=True, nullable=False)
+    is_included_in_totals = Column(Boolean, default=True, nullable=False)  # For net worth calc
 
     # Timestamps
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
@@ -112,26 +118,11 @@ class Account(Base):
         back_populates="account",
         cascade="all, delete-orphan"
     )
-
-    @property
-    def current_balance(self) -> Decimal:
-        """
-        Calcola il saldo corrente sommando initial_balance e tutte le transazioni.
-
-        Returns:
-            Decimal: Saldo corrente con precisione a 2 decimali
-        """
-        from app.models.transaction import TransactionType
-
-        # Calculate sum of transactions
-        transaction_sum = Decimal("0.00")
-        for t in self.transactions:
-            if t.transaction_type == TransactionType.INCOME:
-                transaction_sum += Decimal(str(t.amount))
-            else:
-                transaction_sum -= Decimal(str(t.amount))
-
-        return self.initial_balance + transaction_sum
+    bank_conditions = relationship(
+        "BankCondition",
+        back_populates="account",
+        cascade="all, delete-orphan"
+    )
 
     def __repr__(self) -> str:
         return f"<Account(id={self.id}, name='{self.name}', type={self.account_type.value})>"
