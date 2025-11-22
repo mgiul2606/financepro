@@ -1,6 +1,6 @@
 # app/models/ml_classification_log.py
-from sqlalchemy import Column, String, ForeignKey, DateTime, Boolean, Numeric, Text
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import Column, String, ForeignKey, DateTime, Boolean, Numeric, Text, Integer
+from sqlalchemy.dialects.postgresql import UUID, JSONB, ARRAY
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 import uuid
@@ -9,27 +9,37 @@ from app.db.database import Base
 
 class MLClassificationLog(Base):
     """
-    ML Classification Log model for tracking machine learning classification results.
+    ML classification log for audit, performance analysis, and retraining.
 
-    This model logs all ML-based transaction categorization attempts, including
-    model predictions, confidence scores, and user corrections for model retraining.
+    Tracks ML predictions for categorization and merchant detection.
+
+    Based on FinancePro Database Technical Documentation v2.1
 
     Attributes:
         id: UUID primary key
-        transaction_id: Foreign key to Transaction
-        model_version: Version of the ML model used (e.g., "v1.2.3")
-        predicted_category_id: Foreign key to Category (ML prediction)
-        confidence_score: Confidence score between 0 and 1 (Decimal(5,4))
-        was_accepted: Whether user accepted the ML prediction
-        corrected_category_id: Foreign key to Category (user correction, nullable)
-        features_used: JSONB containing features used for prediction
-        explanation: Human-readable explanation of the prediction
-        timestamp: When the classification occurred
+        transaction_id: Classified transaction
+        financial_profile_id: Profile (for RLS)
+        original_description: Original transaction description
+        suggested_category_id: ML-suggested category
+        suggested_merchant_id: ML-suggested merchant
+        suggested_tags: ML-suggested tags
+        confidence_score: Model confidence (0-1)
+        model_name: Model name
+        model_version: Model version
+        features_used: Features used for prediction
+        explanation: Human-readable explanation
+        was_accepted: User accepted suggestion
+        actual_category_id: Actual category (if different)
+        user_feedback: User feedback
+        processing_time_ms: Prediction time in ms
+        created_at: Log creation timestamp
 
     Relationships:
         transaction: Transaction that was classified
-        predicted_category: Category predicted by ML model
-        corrected_category: Category corrected by user (if not accepted)
+        financial_profile: Profile for RLS
+        suggested_category: Category predicted by ML model
+        suggested_merchant: Merchant predicted by ML model
+        actual_category: Actual category (if corrected)
     """
     __tablename__ = "ml_classification_logs"
 
@@ -39,48 +49,76 @@ class MLClassificationLog(Base):
     # Foreign keys
     transaction_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("transactions.id"),
+        ForeignKey("transactions.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
-    predicted_category_id = Column(
+    financial_profile_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("categories.id"),
+        ForeignKey("financial_profiles.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
-    corrected_category_id = Column(
+    suggested_category_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("categories.id"),
+        ForeignKey("categories.id", ondelete="SET NULL"),
         nullable=True,
         index=True
     )
+    suggested_merchant_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("merchants.id", ondelete="SET NULL"),
+        nullable=True
+    )
+    actual_category_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("categories.id", ondelete="SET NULL"),
+        nullable=True
+    )
 
-    # ML model information
-    model_version = Column(String(50), nullable=False, index=True)
+    # Original input
+    original_description = Column(String(500), nullable=False)
+
+    # ML suggestions
+    suggested_tags = Column(ARRAY(String), nullable=True)
 
     # Classification results
-    confidence_score = Column(Numeric(precision=5, scale=4), nullable=False)  # 0.0000 to 1.0000
-    was_accepted = Column(Boolean, default=False, nullable=False, index=True)
+    confidence_score = Column(Numeric(precision=5, scale=4), nullable=False)
+
+    # Model information
+    model_name = Column(String(100), nullable=False)
+    model_version = Column(String(50), nullable=False)
 
     # Features and explanation
     features_used = Column(JSONB, nullable=True)
     explanation = Column(Text, nullable=True)
 
+    # User feedback
+    was_accepted = Column(Boolean, nullable=True)
+    user_feedback = Column(Text, nullable=True)
+
+    # Performance
+    processing_time_ms = Column(Integer, nullable=True)
+
     # Timestamp
-    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
 
     # Relationships
     transaction = relationship("Transaction", back_populates="ml_classification_logs")
-    predicted_category = relationship(
+    financial_profile = relationship("FinancialProfile", back_populates="ml_classification_logs")
+    suggested_category = relationship(
         "Category",
-        foreign_keys=[predicted_category_id],
-        back_populates="ml_classification_logs_predicted"
+        foreign_keys=[suggested_category_id],
+        back_populates="ml_classification_logs_suggested"
     )
-    corrected_category = relationship(
+    suggested_merchant = relationship(
+        "Merchant",
+        foreign_keys=[suggested_merchant_id]
+    )
+    actual_category = relationship(
         "Category",
-        foreign_keys=[corrected_category_id],
-        back_populates="ml_classification_logs_corrected"
+        foreign_keys=[actual_category_id],
+        back_populates="ml_classification_logs_actual"
     )
 
     def __repr__(self) -> str:

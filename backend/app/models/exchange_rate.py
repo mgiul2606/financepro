@@ -1,29 +1,33 @@
 # app/models/exchange_rate.py
-from sqlalchemy import Column, String, Numeric, Date, DateTime, Index
+from sqlalchemy import Column, String, Numeric, Date, DateTime, Index, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
-from datetime import datetime, timezone, date as date_type
+from datetime import datetime, timezone
 import uuid
 from app.db.database import Base
 
 
 class ExchangeRate(Base):
     """
-    Exchange Rate model for multi-currency support.
+    Historical currency exchange rates for multi-currency transaction conversion.
 
-    Stores historical exchange rates for currency conversion.
-    Rates are fetched from external sources (ECB, etc.) or entered manually.
+    GLOBAL level - shared across ALL users (no RLS).
+
+    Based on FinancePro Database Technical Documentation v2.1
 
     Attributes:
         id: UUID primary key
-        from_currency: Source currency (ISO 4217 code)
-        to_currency: Target currency (ISO 4217 code)
-        rate: Exchange rate (how much 1 unit of from_currency equals in to_currency)
-        date: Date for which this rate is valid
-        source: Source of the rate (e.g., "ECB", "Manual", "Yahoo Finance")
-        created_at: Creation timestamp
+        base_currency: Base currency (ISO 4217)
+        target_currency: Target currency (ISO 4217)
+        rate: Exchange rate with high precision (8 decimals). 1 base = rate target.
+        rate_date: Date of validity
+        source: Data source ('ECB', 'OpenExchangeRates', 'Manual')
+        created_at: Record creation timestamp
+
+    Constraints:
+        - UNIQUE (base_currency, target_currency, rate_date)
 
     Indexes:
-        - Composite index on (from_currency, to_currency, date DESC) for fast lookups
+        - Composite index on (base_currency, target_currency, rate_date) for fast lookups
     """
     __tablename__ = "exchange_rates"
 
@@ -31,28 +35,29 @@ class ExchangeRate(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
 
     # Currency pair
-    from_currency = Column(String(3), nullable=False)  # ISO 4217 code
-    to_currency = Column(String(3), nullable=False)  # ISO 4217 code
+    base_currency = Column(String(3), nullable=False)  # ISO 4217 code
+    target_currency = Column(String(3), nullable=False)  # ISO 4217 code
 
     # Exchange rate with high precision
     rate = Column(Numeric(precision=18, scale=8), nullable=False)
 
     # Date for which this rate is valid
-    date = Column(Date, nullable=False, index=True)
+    rate_date = Column(Date, nullable=False)
 
     # Source of the rate
-    source = Column(String(100), default="Manual", nullable=False)
+    source = Column(String(50), nullable=False)
 
     # Timestamp
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
 
-    # Composite index for efficient lookups
+    # Constraints and indexes
     __table_args__ = (
+        UniqueConstraint('base_currency', 'target_currency', 'rate_date', name='uq_exchange_rates_currencies_date'),
         Index(
             "ix_exchange_rates_currency_date",
-            "from_currency",
-            "to_currency",
-            "date",
+            "base_currency",
+            "target_currency",
+            "rate_date",
             postgresql_using="btree"
         ),
     )
@@ -60,6 +65,6 @@ class ExchangeRate(Base):
     def __repr__(self) -> str:
         return (
             f"<ExchangeRate("
-            f"1 {self.from_currency} = {self.rate} {self.to_currency}, "
-            f"date={self.date})>"
+            f"1 {self.base_currency} = {self.rate} {self.target_currency}, "
+            f"date={self.rate_date})>"
         )

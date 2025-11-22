@@ -1,35 +1,31 @@
 # app/models/chat.py
-from sqlalchemy import Column, String, ForeignKey, DateTime, Text
+from sqlalchemy import Column, String, ForeignKey, DateTime, Text, Boolean, Integer
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
-import enum
 import uuid
 from app.db.database import Base
 from app.db.types import StringEnum
-
-
-class MessageRole(str, enum.Enum):
-    """Roles in a chat conversation"""
-    USER = "user"
-    ASSISTANT = "assistant"
-    SYSTEM = "system"
+from app.models.enums import MessageRole
 
 
 class ChatConversation(Base):
     """
-    Chat Conversation model representing an AI chat session.
+    AI assistant chat conversations.
 
-    A conversation is a thread of messages between the user and the AI assistant,
-    typically focused on financial analysis, insights, or queries.
+    USER-level entity with optional profile context.
+
+    Based on FinancePro Database Technical Documentation v2.1
 
     Attributes:
         id: UUID primary key
-        user_id: Foreign key to User
-        financial_profile_id: Foreign key to FinancialProfile (nullable)
-        title: Conversation title (auto-generated from first message)
-        created_at: When the conversation started
-        updated_at: Last activity timestamp
+        user_id: Conversation owner
+        financial_profile_id: Profile context (optional)
+        title: Conversation title (auto from first message)
+        summary: AI-generated summary
+        is_archived: Archive flag
+        created_at: Conversation creation timestamp
+        updated_at: Last message timestamp
 
     Relationships:
         user: User who owns this conversation
@@ -44,19 +40,23 @@ class ChatConversation(Base):
     # Foreign keys
     user_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("users.id"),
+        ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
     financial_profile_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("financial_profiles.id"),
+        ForeignKey("financial_profiles.id", ondelete="SET NULL"),
         nullable=True,
         index=True
     )
 
     # Conversation information
     title = Column(String(255), nullable=True)
+    summary = Column(Text, nullable=True)
+
+    # Status
+    is_archived = Column(Boolean, default=False, nullable=False)
 
     # Timestamps
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
@@ -74,31 +74,35 @@ class ChatConversation(Base):
         "ChatMessage",
         back_populates="conversation",
         cascade="all, delete-orphan",
-        order_by="ChatMessage.timestamp"
+        order_by="ChatMessage.created_at"
     )
 
     def __repr__(self) -> str:
         return (
             f"<ChatConversation(id={self.id}, "
             f"title='{self.title}', "
-            f"created_at={self.created_at})>"
+            f"archived={self.is_archived})>"
         )
 
 
 class ChatMessage(Base):
     """
-    Chat Message model representing a single message in a conversation.
+    Individual chat messages.
 
-    Each message has a role (user, assistant, or system) and can include
-    metadata such as charts, query results, or other structured data.
+    Child of chat_conversations.
+
+    Based on FinancePro Database Technical Documentation v2.1
 
     Attributes:
         id: UUID primary key
-        conversation_id: Foreign key to ChatConversation
-        role: Role of the message sender (USER, ASSISTANT, SYSTEM)
-        content: Text content of the message
-        message_metadata: JSONB for additional data (charts, query results, etc.)
-        timestamp: When the message was created
+        conversation_id: Parent conversation
+        role: Message role (user/assistant/system)
+        content: Message text
+        tokens_used: Tokens used
+        model_name: LLM model used
+        processing_time_ms: Response generation time
+        metadata: Charts, query results, etc.
+        created_at: Message timestamp
 
     Relationships:
         conversation: Conversation this message belongs to
@@ -111,7 +115,7 @@ class ChatMessage(Base):
     # Foreign keys
     conversation_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("chat_conversations.id"),
+        ForeignKey("chat_conversations.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
@@ -120,11 +124,16 @@ class ChatMessage(Base):
     role = Column(StringEnum(MessageRole), nullable=False, index=True)
     content = Column(Text, nullable=False)
 
+    # LLM tracking
+    tokens_used = Column(Integer, nullable=True)
+    model_name = Column(String(50), nullable=True)
+    processing_time_ms = Column(Integer, nullable=True)
+
     # Additional data (charts, query results, etc.)
-    message_metadata = Column(JSONB, nullable=True)
+    metadata = Column(JSONB, nullable=True)
 
     # Timestamp
-    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
 
     # Relationships
     conversation = relationship("ChatConversation", back_populates="messages")

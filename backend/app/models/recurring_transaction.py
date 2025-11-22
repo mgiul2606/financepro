@@ -2,78 +2,58 @@
 from sqlalchemy import Column, String, Numeric, ForeignKey, DateTime, Boolean, Text, Date, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from datetime import datetime, timezone, date as date_type
-from decimal import Decimal
-import enum
+from datetime import datetime, timezone
 import uuid
 from app.db.database import Base
 from app.db.types import StringEnum
-
-
-class AmountModel(str, enum.Enum):
-    """Models for recurring transaction amount variation"""
-    FIXED = "fixed"  # Fixed amount
-    VARIABLE_WITHIN_RANGE = "variable_within_range"  # Variable with min/max
-    PROGRESSIVE = "progressive"  # Progressive amounts (e.g., loan payments)
-    SEASONAL = "seasonal"  # Seasonal variations
-
-
-class Frequency(str, enum.Enum):
-    """Frequency of recurring transactions"""
-    DAILY = "daily"
-    WEEKLY = "weekly"
-    BIWEEKLY = "biweekly"
-    MONTHLY = "monthly"
-    QUARTERLY = "quarterly"
-    YEARLY = "yearly"
-    CUSTOM = "custom"  # Custom interval in days
-
-
-class OccurrenceStatus(str, enum.Enum):
-    """Status of a recurring transaction occurrence"""
-    PENDING = "pending"
-    EXECUTED = "executed"
-    SKIPPED = "skipped"
-    OVERRIDDEN = "overridden"  # Manually modified
+from app.models.enums import AmountModel, Frequency, OccurrenceStatus, TransactionType
 
 
 class RecurringTransaction(Base):
     """
-    Recurring Transaction model for managing repeating transactions.
+    Templates for recurring transactions (subscriptions, salaries, bills).
 
-    Supports sophisticated amount variation models:
-    - FIXED: Constant amount
-    - VARIABLE_WITHIN_RANGE: Amount varies within min/max bounds
-    - PROGRESSIVE: Amount changes according to a formula
-    - SEASONAL: Amount varies by season
+    PROFILE-level entity.
+
+    Based on FinancePro Database Technical Documentation v2.1
+
+    Amount Models:
+    - fixed: Constant amount (rent, subscriptions)
+    - variable_within_range: Varies between min/max (utilities)
+    - progressive: Programmed increase (mortgage with rising payments)
+    - seasonal: Seasonal variation (heating in winter)
+    - formula: Custom calculation
 
     Attributes:
         id: UUID primary key
-        account_id: Foreign key to Account
-        category_id: Foreign key to Category
-        name: Name of the recurring transaction
+        financial_profile_id: Profile owner
+        account_id: Associated account
+        category_id: Default category
+        name: Template name
         description: Detailed description
-        amount_model: Model for amount variation
-        base_amount: Base amount
-        min_amount: Minimum amount (for VARIABLE)
-        max_amount: Maximum amount (for VARIABLE)
-        frequency: How often it recurs
-        custom_interval_days: Custom interval in days (if frequency is CUSTOM)
-        start_date: When recurring transactions start
-        end_date: When they end (optional)
-        next_occurrence_date: Next scheduled occurrence
-        calculation_formula: Mathematical formula for PROGRESSIVE model
-        is_active: Whether this recurring transaction is active
-        notification_enabled: Whether to send notifications
-        notification_days_before: Days before occurrence to send notification
-        anomaly_threshold_percentage: Percentage deviation to flag as anomaly
+        transaction_type: Type of transaction
+        amount_model: Amount variation model
+        base_amount: Base amount (negative=expense, positive=income)
+        amount_min: Minimum amount (for variable model)
+        amount_max: Maximum amount (for variable model)
+        formula: Calculation formula (for formula model)
+        currency: Currency
+        frequency: Recurrence frequency
+        interval: Frequency multiplier
+        start_date: Start date
+        end_date: End date (optional, NULL = indefinite)
+        next_occurrence_date: Next calculated occurrence
+        auto_create: Auto-create transaction at due date
+        notification_days_before: Days before due date to notify
+        is_active: Template status
         created_at: Creation timestamp
         updated_at: Last update timestamp
 
     Relationships:
-        account: Account this recurring transaction belongs to
-        category: Category of transactions
-        generated_transactions: Actual transactions generated from this recurring transaction
+        financial_profile: Profile owner
+        account: Account for transactions
+        category: Default category
+        generated_transactions: Actual transactions generated
         occurrences: Scheduled and executed occurrences
     """
     __tablename__ = "recurring_transactions"
@@ -84,19 +64,19 @@ class RecurringTransaction(Base):
     # Foreign keys
     financial_profile_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("financial_profiles.id"),
+        ForeignKey("financial_profiles.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
     account_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("accounts.id"),
+        ForeignKey("accounts.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
     category_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("categories.id"),
+        ForeignKey("categories.id", ondelete="SET NULL"),
         nullable=True
     )
 
@@ -104,33 +84,36 @@ class RecurringTransaction(Base):
     name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
 
+    # Transaction type
+    transaction_type = Column(StringEnum(TransactionType), nullable=False)
+
     # Amount model
     amount_model = Column(StringEnum(AmountModel), default=AmountModel.FIXED, nullable=False)
     base_amount = Column(Numeric(precision=15, scale=2), nullable=False)
-    min_amount = Column(Numeric(precision=15, scale=2), nullable=True)  # For VARIABLE_WITHIN_RANGE
-    max_amount = Column(Numeric(precision=15, scale=2), nullable=True)  # For VARIABLE_WITHIN_RANGE
+    amount_min = Column(Numeric(precision=15, scale=2), nullable=True)
+    amount_max = Column(Numeric(precision=15, scale=2), nullable=True)
+    formula = Column(Text, nullable=True)
+
+    # Currency
+    currency = Column(String(3), nullable=False)
 
     # Frequency
-    frequency = Column(StringEnum(Frequency), default=Frequency.MONTHLY, nullable=False)
-    custom_interval_days = Column(Integer, nullable=True)  # For CUSTOM frequency
+    frequency = Column(StringEnum(Frequency), nullable=False)
+    interval = Column(Integer, default=1, nullable=False)
 
     # Schedule
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=True)
-    next_occurrence_date = Column(Date, nullable=False, index=True)
+    next_occurrence_date = Column(Date, nullable=True, index=True)
 
-    # Advanced features
-    calculation_formula = Column(Text, nullable=True)  # Mathematical formula for PROGRESSIVE
+    # Automation
+    auto_create = Column(Boolean, default=False, nullable=False)
+
+    # Notifications
+    notification_days_before = Column(Integer, default=3, nullable=False)
 
     # Status
     is_active = Column(Boolean, default=True, nullable=False)
-
-    # Notifications
-    notification_enabled = Column(Boolean, default=True, nullable=False)
-    notification_days_before = Column(Integer, default=3, nullable=False)
-
-    # Anomaly detection
-    anomaly_threshold_percentage = Column(Numeric(precision=5, scale=2), default=Decimal("20.00"), nullable=False)
 
     # Timestamps
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
@@ -162,20 +145,28 @@ class RecurringTransaction(Base):
 
 class RecurringTransactionOccurrence(Base):
     """
-    Occurrence of a recurring transaction.
+    Individual occurrences generated from recurring templates.
 
-    Tracks each scheduled and executed occurrence of a recurring transaction.
+    Tracks execution status of each scheduled occurrence.
+
+    Based on FinancePro Database Technical Documentation v2.1
+
+    Statuses:
+    - pending: Not yet executed, waiting
+    - executed: Transaction created successfully
+    - skipped: Deliberately skipped
+    - overridden: Manually modified
+    - failed: Creation attempt failed
 
     Attributes:
         id: UUID primary key
-        recurring_transaction_id: Foreign key to RecurringTransaction
-        transaction_id: Foreign key to Transaction (once executed)
-        scheduled_date: When this occurrence is scheduled
-        expected_amount: Expected amount based on the model
-        actual_amount: Actual amount (once executed)
-        status: Status of this occurrence
-        is_anomaly: Whether this occurrence was flagged as anomaly
-        notes: Additional notes
+        recurring_transaction_id: Parent template
+        transaction_id: Actual transaction created (if executed)
+        scheduled_date: Scheduled date
+        expected_amount: Expected amount (calculated from amount_model)
+        actual_amount: Actual amount (if different from expected)
+        status: Occurrence status
+        notes: Notes (e.g., skip reason)
         created_at: Creation timestamp
         updated_at: Last update timestamp
 
@@ -191,13 +182,13 @@ class RecurringTransactionOccurrence(Base):
     # Foreign keys
     recurring_transaction_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("recurring_transactions.id"),
+        ForeignKey("recurring_transactions.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
     transaction_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("transactions.id"),
+        ForeignKey("transactions.id", ondelete="SET NULL"),
         nullable=True
     )
 
@@ -208,7 +199,6 @@ class RecurringTransactionOccurrence(Base):
 
     # Status
     status = Column(StringEnum(OccurrenceStatus), default=OccurrenceStatus.PENDING, nullable=False)
-    is_anomaly = Column(Boolean, default=False, nullable=False)
 
     # Notes
     notes = Column(Text, nullable=True)

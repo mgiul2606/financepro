@@ -1,52 +1,42 @@
 # app/models/import_job.py
-from sqlalchemy import Column, String, Integer, ForeignKey, DateTime
+from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, Text
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
-import enum
 import uuid
 from app.db.database import Base
 from app.db.types import StringEnum
-
-
-class ImportType(str, enum.Enum):
-    """Types of import sources"""
-    CSV = "csv"
-    OCR = "ocr"
-    BANK_API = "bank_api"
-
-
-class ImportStatus(str, enum.Enum):
-    """Status of import job"""
-    PENDING = "pending"
-    PROCESSING = "processing"
-    COMPLETED = "completed"
-    FAILED = "failed"
+from app.models.enums import ImportType, ImportStatus
 
 
 class ImportJob(Base):
     """
-    Import Job model for tracking data import operations.
+    Batch import job tracking (CSV, Excel, OFX, API).
 
-    This model tracks the progress and status of bulk data imports from
-    various sources (CSV files, OCR, bank APIs).
+    PROFILE-level entity.
+
+    Based on FinancePro Database Technical Documentation v2.1
 
     Attributes:
         id: UUID primary key
-        financial_profile_id: Foreign key to FinancialProfile
-        account_id: Foreign key to Account (nullable, for account-specific imports)
-        import_type: Type of import source (CSV, OCR, BANK_API)
-        file_name: Original filename or identifier
-        file_url: URL or path to the imported file
-        status: Current status of the import job
-        total_records: Total number of records to import
-        processed_records: Number of records processed so far
-        successful_records: Number of successfully imported records
-        failed_records: Number of failed records
-        error_details: JSONB containing error information
-        mapping_config: JSONB containing field mapping configuration
-        created_at: When the import job was created
-        completed_at: When the import job finished (nullable)
+        financial_profile_id: Profile owner
+        account_id: Target account (if applicable)
+        file_name: Imported filename
+        file_path: File storage path
+        import_type: Type of import
+        status: Job status
+        total_rows: Total rows/records to import
+        processed_rows: Rows processed
+        successful_imports: Successful imports
+        failed_imports: Failed imports
+        skipped_duplicates: Duplicates skipped
+        error_message: Error message (if failed)
+        error_details: Per-row error details
+        mapping_config: Column mapping configuration
+        started_at: Processing start timestamp
+        completed_at: Completion timestamp
+        created_at: Job creation timestamp
+        updated_at: Last update timestamp
 
     Relationships:
         financial_profile: Financial profile this import belongs to
@@ -60,38 +50,49 @@ class ImportJob(Base):
     # Foreign keys
     financial_profile_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("financial_profiles.id"),
+        ForeignKey("financial_profiles.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
     account_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("accounts.id"),
+        ForeignKey("accounts.id", ondelete="SET NULL"),
         nullable=True,
         index=True
     )
 
     # Import information
+    file_name = Column(String(255), nullable=False)
+    file_path = Column(String(500), nullable=False)
     import_type = Column(StringEnum(ImportType), nullable=False, index=True)
-    file_name = Column(String(255), nullable=True)
-    file_url = Column(String(500), nullable=True)
 
     # Status
     status = Column(StringEnum(ImportStatus), default=ImportStatus.PENDING, nullable=False, index=True)
 
     # Progress tracking
-    total_records = Column(Integer, default=0, nullable=False)
-    processed_records = Column(Integer, default=0, nullable=False)
-    successful_records = Column(Integer, default=0, nullable=False)
-    failed_records = Column(Integer, default=0, nullable=False)
+    total_rows = Column(Integer, nullable=True)
+    processed_rows = Column(Integer, nullable=True)
+    successful_imports = Column(Integer, nullable=True)
+    failed_imports = Column(Integer, nullable=True)
+    skipped_duplicates = Column(Integer, nullable=True)
 
-    # Error tracking and configuration
+    # Error tracking
+    error_message = Column(Text, nullable=True)
     error_details = Column(JSONB, nullable=True)
+
+    # Configuration
     mapping_config = Column(JSONB, nullable=True)
 
     # Timestamps
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
+    started_at = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    updated_at = Column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
 
     # Relationships
     financial_profile = relationship("FinancialProfile", back_populates="import_jobs")
@@ -99,20 +100,15 @@ class ImportJob(Base):
 
     @property
     def progress_percentage(self) -> float:
-        """
-        Calculate the progress percentage of the import job.
-
-        Returns:
-            float: Progress percentage (0-100)
-        """
-        if self.total_records == 0:
+        """Calculate the progress percentage of the import job."""
+        if not self.total_rows or self.total_rows == 0:
             return 0.0
-        return (self.processed_records / self.total_records) * 100
+        return ((self.processed_rows or 0) / self.total_rows) * 100
 
     def __repr__(self) -> str:
         return (
             f"<ImportJob(id={self.id}, "
             f"type={self.import_type.value}, "
             f"status={self.status.value}, "
-            f"progress={self.processed_records}/{self.total_records})>"
+            f"progress={self.processed_rows or 0}/{self.total_rows or 0})>"
         )

@@ -3,50 +3,45 @@ from sqlalchemy import Column, String, ForeignKey, DateTime, Text
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
-import enum
 import uuid
 from app.db.database import Base
 from app.db.types import StringEnum
-
-
-class EventType(str, enum.Enum):
-    """Types of audit events"""
-    ACCESS = "access"
-    SECURITY = "security"
-    FINANCIAL_OP = "financial_op"
-    AI_INTERACTION = "ai_interaction"
-    SYSTEM = "system"
-
-
-class SeverityLevel(str, enum.Enum):
-    """Severity levels for audit events"""
-    INFO = "info"
-    WARNING = "warning"
-    ERROR = "error"
-    CRITICAL = "critical"
+from app.models.enums import EventType, SeverityLevel
 
 
 class AuditLog(Base):
     """
-    Audit Log model for tracking all system events.
+    Immutable audit log for security and compliance. Append-only.
 
-    This model provides comprehensive audit trail for security, compliance,
-    and debugging purposes. All significant events in the system are logged here.
+    Based on FinancePro Database Technical Documentation v2.1
+
+    Event types:
+    - access: Login, logout, password change
+    - security: Failed logins, password resets, 2FA changes
+    - financial_op: Create/update/delete transactions, accounts
+    - ai_interaction: Chat queries, recommendations
+    - system: Scheduled jobs, imports, exports
+    - user_action: Profile changes, settings
+    - data_export: Data exports
 
     Attributes:
         id: UUID primary key
-        user_id: Foreign key to User (nullable for system events)
-        financial_profile_id: Foreign key to FinancialProfile (nullable)
-        event_type: Type of event (ACCESS, SECURITY, FINANCIAL_OP, AI_INTERACTION, SYSTEM)
-        entity_type: Type of entity affected (e.g., "Transaction", "Account")
-        entity_id: UUID of the affected entity
-        action: Action performed (e.g., "create", "update", "delete", "view")
-        details: Additional data in JSONB format
-        ip_address: IP address of the client
-        user_agent: User agent string from the client
-        device_info: Device information (parsed from user agent)
-        timestamp: When the event occurred
-        severity: Severity level of the event
+        user_id: Actor (NULL for system events)
+        financial_profile_id: Profile context
+        event_type: Event type
+        severity: Severity level
+        action: Action performed
+        entity_type: Entity type affected
+        entity_id: Entity ID affected
+        old_values: Previous state
+        new_values: New state
+        ip_address: Client IP
+        user_agent: Client user agent
+        device_info: Parsed device info
+        geolocation: Location from IP
+        session_id: Session correlation
+        request_id: Request correlation
+        created_at: Event timestamp
 
     Relationships:
         user: User who triggered the event (if applicable)
@@ -60,34 +55,40 @@ class AuditLog(Base):
     # Foreign keys
     user_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("users.id"),
+        ForeignKey("users.id", ondelete="SET NULL"),
         nullable=True,
         index=True
     )
     financial_profile_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("financial_profiles.id"),
+        ForeignKey("financial_profiles.id", ondelete="SET NULL"),
         nullable=True,
         index=True
     )
 
     # Event information
     event_type = Column(StringEnum(EventType), nullable=False, index=True)
-    entity_type = Column(String(100), nullable=True, index=True)
-    entity_id = Column(UUID(as_uuid=True), nullable=True, index=True)
+    severity = Column(StringEnum(SeverityLevel), default=SeverityLevel.INFO, nullable=False, index=True)
     action = Column(String(50), nullable=False, index=True)
+    entity_type = Column(String(100), nullable=True, index=True)
+    entity_id = Column(UUID(as_uuid=True), nullable=True)
 
-    # Details and metadata
-    details = Column(JSONB, nullable=True)
+    # State tracking
+    old_values = Column(JSONB, nullable=True)
+    new_values = Column(JSONB, nullable=True)
 
     # Request context
     ip_address = Column(String(45), nullable=True)  # IPv6 max length is 45
     user_agent = Column(Text, nullable=True)
     device_info = Column(String(255), nullable=True)
+    geolocation = Column(String(100), nullable=True)
 
-    # Timestamp and severity
-    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
-    severity = Column(StringEnum(SeverityLevel), default=SeverityLevel.INFO, nullable=False, index=True)
+    # Correlation IDs
+    session_id = Column(UUID(as_uuid=True), nullable=True, index=True)
+    request_id = Column(UUID(as_uuid=True), nullable=True)
+
+    # Timestamp
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
 
     # Relationships
     user = relationship("User", back_populates="audit_logs")
@@ -98,5 +99,5 @@ class AuditLog(Base):
             f"<AuditLog(id={self.id}, "
             f"event_type={self.event_type.value}, "
             f"action='{self.action}', "
-            f"timestamp={self.timestamp})>"
+            f"severity={self.severity.value})>"
         )
