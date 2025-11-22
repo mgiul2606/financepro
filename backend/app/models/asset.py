@@ -1,59 +1,54 @@
 # app/models/asset.py
 from sqlalchemy import Column, String, Numeric, ForeignKey, DateTime, Boolean, Text, Date
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
-from decimal import Decimal
-import enum
 import uuid
 from app.db.database import Base
 from app.db.types import StringEnum
-
-
-class AssetType(str, enum.Enum):
-    """Types of assets"""
-    REAL_ESTATE = "real_estate"
-    VEHICLE = "vehicle"
-    PRECIOUS_METAL = "precious_metal"
-    INVESTMENT = "investment"
-    ARTWORK = "artwork"
-    JEWELRY = "jewelry"
-    OTHER = "other"
-
-
-class ValuationMethod(str, enum.Enum):
-    """Methods for asset valuation"""
-    MARKET_QUOTE = "market_quote"  # Objective market prices (e.g., gold)
-    RANGE = "range"  # Range of values (e.g., real estate)
-    COMPARATIVE = "comparative"  # Comparative valuation
-    MANUAL = "manual"  # Manual estimation
+from app.models.enums import AssetType, ValuationMethod
 
 
 class Asset(Base):
     """
-    Asset model for patrimony management.
+    Physical and financial assets (real estate, vehicles, investments, collectibles).
 
-    Tracks movable and immovable assets with flexible valuation methods.
+    PROFILE-level entity (legal ownership).
+
+    Based on FinancePro Database Technical Documentation v2.1
+
+    Valuation Methods:
+    - market_quote: Market quotation (stocks, crypto). Auto-updated from API.
+    - range: Range valuation (real estate). current_value = midpoint.
+    - comparative: Market comparison (vehicles, collectibles).
+    - manual: User manual estimate.
+    - appraisal: Professional appraisal.
 
     Attributes:
         id: UUID primary key
-        financial_profile_id: Foreign key to FinancialProfile
+        financial_profile_id: Profile owner
         name: Asset name
         asset_type: Type of asset
-        purchase_date: When the asset was acquired
+        purchase_date: Purchase date
         purchase_price: Original purchase price
-        current_value: Current estimated value
-        current_value_min: Minimum value in range
-        current_value_max: Maximum value in range
+        purchase_transaction_id: Purchase transaction
+        current_value: Current value (best estimate)
+        current_value_min: Minimum estimated value
+        current_value_max: Maximum estimated value
         valuation_method: Method used for valuation
-        currency: ISO 4217 currency code
-        is_liquid: Whether the asset is easily liquidable
-        notes: Additional notes
+        last_valuation_date: Last valuation date
+        currency: Currency
+        is_liquid: Liquid asset flag
+        quantity: Quantity (for fractional assets)
+        ticker_symbol: Ticker symbol (for quoted assets)
+        notes: Notes
+        metadata: Extensible metadata
         created_at: Creation timestamp
         updated_at: Last update timestamp
 
     Relationships:
         financial_profile: Parent financial profile
+        purchase_transaction: Purchase transaction
         valuations: Historical valuations for this asset
     """
     __tablename__ = "assets"
@@ -61,12 +56,17 @@ class Asset(Base):
     # Primary key - UUID for security
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
 
-    # Foreign key
+    # Foreign keys
     financial_profile_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("financial_profiles.id"),
+        ForeignKey("financial_profiles.id", ondelete="CASCADE"),
         nullable=False,
         index=True
+    )
+    purchase_transaction_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("transactions.id", ondelete="SET NULL"),
+        nullable=True
     )
 
     # Asset information
@@ -79,11 +79,12 @@ class Asset(Base):
 
     # Current valuation
     current_value = Column(Numeric(precision=15, scale=2), nullable=False)
-    current_value_min = Column(Numeric(precision=15, scale=2), nullable=True)  # For range valuations
-    current_value_max = Column(Numeric(precision=15, scale=2), nullable=True)  # For range valuations
+    current_value_min = Column(Numeric(precision=15, scale=2), nullable=True)
+    current_value_max = Column(Numeric(precision=15, scale=2), nullable=True)
 
-    # Valuation method
+    # Valuation method and date
     valuation_method = Column(StringEnum(ValuationMethod), default=ValuationMethod.MANUAL, nullable=False)
+    last_valuation_date = Column(Date, nullable=True)
 
     # Currency
     currency = Column(String(3), nullable=False)
@@ -91,8 +92,13 @@ class Asset(Base):
     # Liquidity
     is_liquid = Column(Boolean, default=False, nullable=False)
 
+    # For fractional assets (stocks, crypto)
+    quantity = Column(Numeric(precision=18, scale=8), nullable=True)
+    ticker_symbol = Column(String(20), nullable=True, index=True)
+
     # Additional information
     notes = Column(Text, nullable=True)
+    metadata = Column(JSONB, nullable=True)
 
     # Timestamps
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
@@ -105,6 +111,7 @@ class Asset(Base):
 
     # Relationships
     financial_profile = relationship("FinancialProfile", back_populates="assets")
+    purchase_transaction = relationship("Transaction")
     valuations = relationship(
         "AssetValuation",
         back_populates="asset",
@@ -118,20 +125,23 @@ class Asset(Base):
 
 class AssetValuation(Base):
     """
-    Historical valuation record for an asset.
+    Historical asset valuations. Time series for performance analysis.
 
-    Tracks how asset values change over time.
+    Child of assets.
+
+    Based on FinancePro Database Technical Documentation v2.1
 
     Attributes:
         id: UUID primary key
-        asset_id: Foreign key to Asset
-        valuation_date: Date of this valuation
-        value: Estimated value
-        value_min: Minimum value (for range valuations)
-        value_max: Maximum value (for range valuations)
-        source: Source of valuation
-        notes: Additional notes
-        created_at: Creation timestamp
+        asset_id: Parent asset
+        valuation_date: Valuation date
+        value: Value (best estimate)
+        value_min: Minimum value (if range)
+        value_max: Maximum value (if range)
+        valuation_method: Method used
+        source: Valuation source
+        notes: Valuation notes
+        created_at: Record creation timestamp
 
     Relationships:
         asset: Parent asset
@@ -144,7 +154,7 @@ class AssetValuation(Base):
     # Foreign key
     asset_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("assets.id"),
+        ForeignKey("assets.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
@@ -155,8 +165,11 @@ class AssetValuation(Base):
     value_min = Column(Numeric(precision=15, scale=2), nullable=True)
     value_max = Column(Numeric(precision=15, scale=2), nullable=True)
 
+    # Valuation method
+    valuation_method = Column(StringEnum(ValuationMethod), nullable=False)
+
     # Source
-    source = Column(String(255), nullable=True)
+    source = Column(String(100), nullable=True)
 
     # Notes
     notes = Column(Text, nullable=True)

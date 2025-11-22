@@ -61,9 +61,17 @@ class FinancialGoal(Base):
         index=True
     )
 
+    # Linked account (optional dedicated account for goal)
+    linked_account_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("accounts.id", ondelete="SET NULL"),
+        nullable=True
+    )
+
     # Goal information
     name = Column(String(255), nullable=False)
     goal_type = Column(StringEnum(GoalType), nullable=False)
+    description = Column(Text, nullable=True)
 
     # Scope pattern
     scope_type = Column(StringEnum(ScopeType), default=ScopeType.USER, nullable=False)
@@ -75,7 +83,11 @@ class FinancialGoal(Base):
     currency = Column(String(3), nullable=False)
 
     # Dates
-    target_date = Column(Date, nullable=False)
+    start_date = Column(Date, nullable=False)
+    target_date = Column(Date, nullable=False, index=True)
+
+    # Auto-allocation
+    auto_allocate = Column(Boolean, default=False, nullable=False)
 
     # Priority and status
     priority = Column(Integer, default=5, nullable=False)  # 1-10
@@ -115,6 +127,7 @@ class FinancialGoal(Base):
 
     # Relationships
     user = relationship("User", back_populates="financial_goals")
+    linked_account = relationship("Account", back_populates="financial_goals")
     contributions = relationship(
         "GoalContribution",
         back_populates="goal",
