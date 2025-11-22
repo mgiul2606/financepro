@@ -16,7 +16,4 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
 
-/**
- * Updated start date
- */
 export type BudgetUpdateStartDate = string | null;

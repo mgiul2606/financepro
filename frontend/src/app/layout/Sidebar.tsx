@@ -13,6 +13,9 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  RefreshCw,
+  Building,
+  Upload,
 } from 'lucide-react';
 import { useState } from 'react';
 import { ProfileSelector } from '../../features/profiles/components/ProfileSelector';
@@ -40,8 +43,10 @@ const navigationSections: NavSection[] = [
     items: [
       { label: 'Accounts', href: '/accounts', icon: Wallet },
       { label: 'Transactions', href: '/transactions', icon: ArrowLeftRight },
+      { label: 'Recurring', href: '/recurring', icon: RefreshCw },
       { label: 'Budgets', href: '/budgets', icon: PiggyBank },
       { label: 'Goals', href: '/goals', icon: Target },
+      { label: 'Assets', href: '/assets', icon: Building },
     ],
   },
   {
@@ -50,6 +55,7 @@ const navigationSections: NavSection[] = [
       { label: 'Analytics', href: '/analytics', icon: BarChart3 },
       { label: 'Optimization', href: '/optimization', icon: TrendingUp },
       { label: 'AI Assistant', href: '/ai-assistant', icon: Bot },
+      { label: 'Import Data', href: '/imports', icon: Upload },
     ],
   },
   {

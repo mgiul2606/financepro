@@ -39,8 +39,6 @@ import type {
   HTTPValidationError,
   MainProfileResponse,
   MainProfileUpdate,
-  ProfileSelectionResponse,
-  ProfileSelectionUpdate,
 } from ".././models";
 
 import { customInstance } from "../../client";
@@ -337,6 +335,315 @@ export const useCreateProfileApiV1ProfilesPost = <
 > => {
   const mutationOptions =
     getCreateProfileApiV1ProfilesPostMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
+ * Get the main financial profile for the authenticated user
+ * @summary Get main financial profile
+ */
+export type getMainProfileApiV1ProfilesMainGetResponse200 = {
+  data: MainProfileResponse;
+  status: 200;
+};
+
+export type getMainProfileApiV1ProfilesMainGetResponseSuccess =
+  getMainProfileApiV1ProfilesMainGetResponse200 & {
+    headers: Headers;
+  };
+export type getMainProfileApiV1ProfilesMainGetResponse =
+  getMainProfileApiV1ProfilesMainGetResponseSuccess;
+
+export const getGetMainProfileApiV1ProfilesMainGetUrl = () => {
+  return `/api/v1/profiles/main`;
+};
+
+export const getMainProfileApiV1ProfilesMainGet = async (
+  options?: RequestInit,
+): Promise<getMainProfileApiV1ProfilesMainGetResponse> => {
+  return customInstance<getMainProfileApiV1ProfilesMainGetResponse>(
+    getGetMainProfileApiV1ProfilesMainGetUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetMainProfileApiV1ProfilesMainGetQueryKey = () => {
+  return [`/api/v1/profiles/main`] as const;
+};
+
+export const getGetMainProfileApiV1ProfilesMainGetQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetMainProfileApiV1ProfilesMainGetQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>
+  > = ({ signal }) =>
+    getMainProfileApiV1ProfilesMainGet({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetMainProfileApiV1ProfilesMainGetQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>
+>;
+export type GetMainProfileApiV1ProfilesMainGetQueryError = unknown;
+
+export function useGetMainProfileApiV1ProfilesMainGet<
+  TData = Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
+          TError,
+          Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMainProfileApiV1ProfilesMainGet<
+  TData = Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
+          TError,
+          Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetMainProfileApiV1ProfilesMainGet<
+  TData = Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get main financial profile
+ */
+
+export function useGetMainProfileApiV1ProfilesMainGet<
+  TData = Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getGetMainProfileApiV1ProfilesMainGetQueryOptions(options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Set the main financial profile for the authenticated user
+ * @summary Set main financial profile
+ */
+export type setMainProfileApiV1ProfilesMainPatchResponse200 = {
+  data: MainProfileResponse;
+  status: 200;
+};
+
+export type setMainProfileApiV1ProfilesMainPatchResponse403 = {
+  data: void;
+  status: 403;
+};
+
+export type setMainProfileApiV1ProfilesMainPatchResponse404 = {
+  data: void;
+  status: 404;
+};
+
+export type setMainProfileApiV1ProfilesMainPatchResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type setMainProfileApiV1ProfilesMainPatchResponseSuccess =
+  setMainProfileApiV1ProfilesMainPatchResponse200 & {
+    headers: Headers;
+  };
+export type setMainProfileApiV1ProfilesMainPatchResponseError = (
+  | setMainProfileApiV1ProfilesMainPatchResponse403
+  | setMainProfileApiV1ProfilesMainPatchResponse404
+  | setMainProfileApiV1ProfilesMainPatchResponse422
+) & {
+  headers: Headers;
+};
+
+export type setMainProfileApiV1ProfilesMainPatchResponse =
+  | setMainProfileApiV1ProfilesMainPatchResponseSuccess
+  | setMainProfileApiV1ProfilesMainPatchResponseError;
+
+export const getSetMainProfileApiV1ProfilesMainPatchUrl = () => {
+  return `/api/v1/profiles/main`;
+};
+
+export const setMainProfileApiV1ProfilesMainPatch = async (
+  mainProfileUpdate: MainProfileUpdate,
+  options?: RequestInit,
+): Promise<setMainProfileApiV1ProfilesMainPatchResponse> => {
+  return customInstance<setMainProfileApiV1ProfilesMainPatchResponse>(
+    getSetMainProfileApiV1ProfilesMainPatchUrl(),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(mainProfileUpdate),
+    },
+  );
+};
+
+export const getSetMainProfileApiV1ProfilesMainPatchMutationOptions = <
+  TError = void | HTTPValidationError,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setMainProfileApiV1ProfilesMainPatch>>,
+    TError,
+    { data: MainProfileUpdate },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof setMainProfileApiV1ProfilesMainPatch>>,
+  TError,
+  { data: MainProfileUpdate },
+  TContext
+> => {
+  const mutationKey = ["setMainProfileApiV1ProfilesMainPatch"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof setMainProfileApiV1ProfilesMainPatch>>,
+    { data: MainProfileUpdate }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return setMainProfileApiV1ProfilesMainPatch(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SetMainProfileApiV1ProfilesMainPatchMutationResult = NonNullable<
+  Awaited<ReturnType<typeof setMainProfileApiV1ProfilesMainPatch>>
+>;
+export type SetMainProfileApiV1ProfilesMainPatchMutationBody =
+  MainProfileUpdate;
+export type SetMainProfileApiV1ProfilesMainPatchMutationError =
+  void | HTTPValidationError;
+
+/**
+ * @summary Set main financial profile
+ */
+export const useSetMainProfileApiV1ProfilesMainPatch = <
+  TError = void | HTTPValidationError,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof setMainProfileApiV1ProfilesMainPatch>>,
+      TError,
+      { data: MainProfileUpdate },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof setMainProfileApiV1ProfilesMainPatch>>,
+  TError,
+  { data: MainProfileUpdate },
+  TContext
+> => {
+  const mutationOptions =
+    getSetMainProfileApiV1ProfilesMainPatchMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };
@@ -835,673 +1142,6 @@ export const useDeleteProfileApiV1ProfilesProfileIdDelete = <
 > => {
   const mutationOptions =
     getDeleteProfileApiV1ProfilesProfileIdDeleteMutationOptions(options);
-
-  return useMutation(mutationOptions, queryClient);
-};
-/**
- * Get the main financial profile for the authenticated user
- * @summary Get main financial profile
- */
-export type getMainProfileApiV1ProfilesMainGetResponse200 = {
-  data: MainProfileResponse;
-  status: 200;
-};
-
-export type getMainProfileApiV1ProfilesMainGetResponseSuccess =
-  getMainProfileApiV1ProfilesMainGetResponse200 & {
-    headers: Headers;
-  };
-export type getMainProfileApiV1ProfilesMainGetResponse =
-  getMainProfileApiV1ProfilesMainGetResponseSuccess;
-
-export const getGetMainProfileApiV1ProfilesMainGetUrl = () => {
-  return `/api/v1/profiles/main`;
-};
-
-export const getMainProfileApiV1ProfilesMainGet = async (
-  options?: RequestInit,
-): Promise<getMainProfileApiV1ProfilesMainGetResponse> => {
-  return customInstance<getMainProfileApiV1ProfilesMainGetResponse>(
-    getGetMainProfileApiV1ProfilesMainGetUrl(),
-    {
-      ...options,
-      method: "GET",
-    },
-  );
-};
-
-export const getGetMainProfileApiV1ProfilesMainGetQueryKey = () => {
-  return [`/api/v1/profiles/main`] as const;
-};
-
-export const getGetMainProfileApiV1ProfilesMainGetQueryOptions = <
-  TData = Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
-  TError = unknown,
->(options?: {
-  query?: Partial<
-    UseQueryOptions<
-      Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
-      TError,
-      TData
-    >
-  >;
-  request?: SecondParameter<typeof customInstance>;
-}) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-
-  const queryKey =
-    queryOptions?.queryKey ?? getGetMainProfileApiV1ProfilesMainGetQueryKey();
-
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>
-  > = ({ signal }) =>
-    getMainProfileApiV1ProfilesMainGet({ signal, ...requestOptions });
-
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type GetMainProfileApiV1ProfilesMainGetQueryResult = NonNullable<
-  Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>
->;
-export type GetMainProfileApiV1ProfilesMainGetQueryError = unknown;
-
-export function useGetMainProfileApiV1ProfilesMainGet<
-  TData = Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
-  TError = unknown,
->(
-  options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
-          TError,
-          Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>
-        >,
-        "initialData"
-      >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetMainProfileApiV1ProfilesMainGet<
-  TData = Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
-          TError,
-          Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>
-        >,
-        "initialData"
-      >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetMainProfileApiV1ProfilesMainGet<
-  TData = Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
-        TError,
-        TData
-      >
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-/**
- * @summary Get main financial profile
- */
-
-export function useGetMainProfileApiV1ProfilesMainGet<
-  TData = Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
-  TError = unknown,
->(
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
-        TError,
-        TData
-      >
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions =
-    getGetMainProfileApiV1ProfilesMainGetQueryOptions(options);
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-    TData,
-    TError
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey;
-
-  return query;
-}
-
-/**
- * Set the main financial profile for the authenticated user
- * @summary Set main financial profile
- */
-export type setMainProfileApiV1ProfilesMainPatchResponse200 = {
-  data: MainProfileResponse;
-  status: 200;
-};
-
-export type setMainProfileApiV1ProfilesMainPatchResponse403 = {
-  data: void;
-  status: 403;
-};
-
-export type setMainProfileApiV1ProfilesMainPatchResponse404 = {
-  data: void;
-  status: 404;
-};
-
-export type setMainProfileApiV1ProfilesMainPatchResponse422 = {
-  data: HTTPValidationError;
-  status: 422;
-};
-
-export type setMainProfileApiV1ProfilesMainPatchResponseSuccess =
-  setMainProfileApiV1ProfilesMainPatchResponse200 & {
-    headers: Headers;
-  };
-export type setMainProfileApiV1ProfilesMainPatchResponseError = (
-  | setMainProfileApiV1ProfilesMainPatchResponse403
-  | setMainProfileApiV1ProfilesMainPatchResponse404
-  | setMainProfileApiV1ProfilesMainPatchResponse422
-) & {
-  headers: Headers;
-};
-
-export type setMainProfileApiV1ProfilesMainPatchResponse =
-  | setMainProfileApiV1ProfilesMainPatchResponseSuccess
-  | setMainProfileApiV1ProfilesMainPatchResponseError;
-
-export const getSetMainProfileApiV1ProfilesMainPatchUrl = () => {
-  return `/api/v1/profiles/main`;
-};
-
-export const setMainProfileApiV1ProfilesMainPatch = async (
-  mainProfileUpdate: MainProfileUpdate,
-  options?: RequestInit,
-): Promise<setMainProfileApiV1ProfilesMainPatchResponse> => {
-  return customInstance<setMainProfileApiV1ProfilesMainPatchResponse>(
-    getSetMainProfileApiV1ProfilesMainPatchUrl(),
-    {
-      ...options,
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(mainProfileUpdate),
-    },
-  );
-};
-
-export const getSetMainProfileApiV1ProfilesMainPatchMutationOptions = <
-  TError = void | HTTPValidationError,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof setMainProfileApiV1ProfilesMainPatch>>,
-    TError,
-    { data: MainProfileUpdate },
-    TContext
-  >;
-  request?: SecondParameter<typeof customInstance>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof setMainProfileApiV1ProfilesMainPatch>>,
-  TError,
-  { data: MainProfileUpdate },
-  TContext
-> => {
-  const mutationKey = ["setMainProfileApiV1ProfilesMainPatch"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation &&
-      "mutationKey" in options.mutation &&
-      options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof setMainProfileApiV1ProfilesMainPatch>>,
-    { data: MainProfileUpdate }
-  > = (props) => {
-    const { data } = props ?? {};
-
-    return setMainProfileApiV1ProfilesMainPatch(data, requestOptions);
-  };
-
-  return { mutationFn, ...mutationOptions };
-};
-
-export type SetMainProfileApiV1ProfilesMainPatchMutationResult = NonNullable<
-  Awaited<ReturnType<typeof setMainProfileApiV1ProfilesMainPatch>>
->;
-export type SetMainProfileApiV1ProfilesMainPatchMutationBody =
-  MainProfileUpdate;
-export type SetMainProfileApiV1ProfilesMainPatchMutationError =
-  void | HTTPValidationError;
-
-/**
- * @summary Set main financial profile
- */
-export const useSetMainProfileApiV1ProfilesMainPatch = <
-  TError = void | HTTPValidationError,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof setMainProfileApiV1ProfilesMainPatch>>,
-      TError,
-      { data: MainProfileUpdate },
-      TContext
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient,
-): UseMutationResult<
-  Awaited<ReturnType<typeof setMainProfileApiV1ProfilesMainPatch>>,
-  TError,
-  { data: MainProfileUpdate },
-  TContext
-> => {
-  const mutationOptions =
-    getSetMainProfileApiV1ProfilesMainPatchMutationOptions(options);
-
-  return useMutation(mutationOptions, queryClient);
-};
-/**
- * Get which profiles are currently active for the authenticated user
- * @summary Get active profile selection
- */
-export type getProfileSelectionApiV1ProfilesSelectionGetResponse200 = {
-  data: ProfileSelectionResponse;
-  status: 200;
-};
-
-export type getProfileSelectionApiV1ProfilesSelectionGetResponse404 = {
-  data: void;
-  status: 404;
-};
-
-export type getProfileSelectionApiV1ProfilesSelectionGetResponseSuccess =
-  getProfileSelectionApiV1ProfilesSelectionGetResponse200 & {
-    headers: Headers;
-  };
-export type getProfileSelectionApiV1ProfilesSelectionGetResponseError =
-  getProfileSelectionApiV1ProfilesSelectionGetResponse404 & {
-    headers: Headers;
-  };
-
-export type getProfileSelectionApiV1ProfilesSelectionGetResponse =
-  | getProfileSelectionApiV1ProfilesSelectionGetResponseSuccess
-  | getProfileSelectionApiV1ProfilesSelectionGetResponseError;
-
-export const getGetProfileSelectionApiV1ProfilesSelectionGetUrl = () => {
-  return `/api/v1/profiles/selection`;
-};
-
-export const getProfileSelectionApiV1ProfilesSelectionGet = async (
-  options?: RequestInit,
-): Promise<getProfileSelectionApiV1ProfilesSelectionGetResponse> => {
-  return customInstance<getProfileSelectionApiV1ProfilesSelectionGetResponse>(
-    getGetProfileSelectionApiV1ProfilesSelectionGetUrl(),
-    {
-      ...options,
-      method: "GET",
-    },
-  );
-};
-
-export const getGetProfileSelectionApiV1ProfilesSelectionGetQueryKey = () => {
-  return [`/api/v1/profiles/selection`] as const;
-};
-
-export const getGetProfileSelectionApiV1ProfilesSelectionGetQueryOptions = <
-  TData = Awaited<
-    ReturnType<typeof getProfileSelectionApiV1ProfilesSelectionGet>
-  >,
-  TError = void,
->(options?: {
-  query?: Partial<
-    UseQueryOptions<
-      Awaited<ReturnType<typeof getProfileSelectionApiV1ProfilesSelectionGet>>,
-      TError,
-      TData
-    >
-  >;
-  request?: SecondParameter<typeof customInstance>;
-}) => {
-  const { query: queryOptions, request: requestOptions } = options ?? {};
-
-  const queryKey =
-    queryOptions?.queryKey ??
-    getGetProfileSelectionApiV1ProfilesSelectionGetQueryKey();
-
-  const queryFn: QueryFunction<
-    Awaited<ReturnType<typeof getProfileSelectionApiV1ProfilesSelectionGet>>
-  > = ({ signal }) =>
-    getProfileSelectionApiV1ProfilesSelectionGet({ signal, ...requestOptions });
-
-  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getProfileSelectionApiV1ProfilesSelectionGet>>,
-    TError,
-    TData
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type GetProfileSelectionApiV1ProfilesSelectionGetQueryResult =
-  NonNullable<
-    Awaited<ReturnType<typeof getProfileSelectionApiV1ProfilesSelectionGet>>
-  >;
-export type GetProfileSelectionApiV1ProfilesSelectionGetQueryError = void;
-
-export function useGetProfileSelectionApiV1ProfilesSelectionGet<
-  TData = Awaited<
-    ReturnType<typeof getProfileSelectionApiV1ProfilesSelectionGet>
-  >,
-  TError = void,
->(
-  options: {
-    query: Partial<
-      UseQueryOptions<
-        Awaited<
-          ReturnType<typeof getProfileSelectionApiV1ProfilesSelectionGet>
-        >,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        DefinedInitialDataOptions<
-          Awaited<
-            ReturnType<typeof getProfileSelectionApiV1ProfilesSelectionGet>
-          >,
-          TError,
-          Awaited<
-            ReturnType<typeof getProfileSelectionApiV1ProfilesSelectionGet>
-          >
-        >,
-        "initialData"
-      >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient,
-): DefinedUseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetProfileSelectionApiV1ProfilesSelectionGet<
-  TData = Awaited<
-    ReturnType<typeof getProfileSelectionApiV1ProfilesSelectionGet>
-  >,
-  TError = void,
->(
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<
-          ReturnType<typeof getProfileSelectionApiV1ProfilesSelectionGet>
-        >,
-        TError,
-        TData
-      >
-    > &
-      Pick<
-        UndefinedInitialDataOptions<
-          Awaited<
-            ReturnType<typeof getProfileSelectionApiV1ProfilesSelectionGet>
-          >,
-          TError,
-          Awaited<
-            ReturnType<typeof getProfileSelectionApiV1ProfilesSelectionGet>
-          >
-        >,
-        "initialData"
-      >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-export function useGetProfileSelectionApiV1ProfilesSelectionGet<
-  TData = Awaited<
-    ReturnType<typeof getProfileSelectionApiV1ProfilesSelectionGet>
-  >,
-  TError = void,
->(
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<
-          ReturnType<typeof getProfileSelectionApiV1ProfilesSelectionGet>
-        >,
-        TError,
-        TData
-      >
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-};
-/**
- * @summary Get active profile selection
- */
-
-export function useGetProfileSelectionApiV1ProfilesSelectionGet<
-  TData = Awaited<
-    ReturnType<typeof getProfileSelectionApiV1ProfilesSelectionGet>
-  >,
-  TError = void,
->(
-  options?: {
-    query?: Partial<
-      UseQueryOptions<
-        Awaited<
-          ReturnType<typeof getProfileSelectionApiV1ProfilesSelectionGet>
-        >,
-        TError,
-        TData
-      >
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient,
-): UseQueryResult<TData, TError> & {
-  queryKey: DataTag<QueryKey, TData, TError>;
-} {
-  const queryOptions =
-    getGetProfileSelectionApiV1ProfilesSelectionGetQueryOptions(options);
-
-  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
-    TData,
-    TError
-  > & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey;
-
-  return query;
-}
-
-/**
- * Update which profiles are currently active for multi-profile operations
- * @summary Update active profile selection
- */
-export type updateProfileSelectionApiV1ProfilesSelectionPostResponse200 = {
-  data: ProfileSelectionResponse;
-  status: 200;
-};
-
-export type updateProfileSelectionApiV1ProfilesSelectionPostResponse403 = {
-  data: void;
-  status: 403;
-};
-
-export type updateProfileSelectionApiV1ProfilesSelectionPostResponse404 = {
-  data: void;
-  status: 404;
-};
-
-export type updateProfileSelectionApiV1ProfilesSelectionPostResponse422 = {
-  data: HTTPValidationError;
-  status: 422;
-};
-
-export type updateProfileSelectionApiV1ProfilesSelectionPostResponseSuccess =
-  updateProfileSelectionApiV1ProfilesSelectionPostResponse200 & {
-    headers: Headers;
-  };
-export type updateProfileSelectionApiV1ProfilesSelectionPostResponseError = (
-  | updateProfileSelectionApiV1ProfilesSelectionPostResponse403
-  | updateProfileSelectionApiV1ProfilesSelectionPostResponse404
-  | updateProfileSelectionApiV1ProfilesSelectionPostResponse422
-) & {
-  headers: Headers;
-};
-
-export type updateProfileSelectionApiV1ProfilesSelectionPostResponse =
-  | updateProfileSelectionApiV1ProfilesSelectionPostResponseSuccess
-  | updateProfileSelectionApiV1ProfilesSelectionPostResponseError;
-
-export const getUpdateProfileSelectionApiV1ProfilesSelectionPostUrl = () => {
-  return `/api/v1/profiles/selection`;
-};
-
-export const updateProfileSelectionApiV1ProfilesSelectionPost = async (
-  profileSelectionUpdate: ProfileSelectionUpdate,
-  options?: RequestInit,
-): Promise<updateProfileSelectionApiV1ProfilesSelectionPostResponse> => {
-  return customInstance<updateProfileSelectionApiV1ProfilesSelectionPostResponse>(
-    getUpdateProfileSelectionApiV1ProfilesSelectionPostUrl(),
-    {
-      ...options,
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(profileSelectionUpdate),
-    },
-  );
-};
-
-export const getUpdateProfileSelectionApiV1ProfilesSelectionPostMutationOptions =
-  <TError = void | HTTPValidationError, TContext = unknown>(options?: {
-    mutation?: UseMutationOptions<
-      Awaited<
-        ReturnType<typeof updateProfileSelectionApiV1ProfilesSelectionPost>
-      >,
-      TError,
-      { data: ProfileSelectionUpdate },
-      TContext
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  }): UseMutationOptions<
-    Awaited<
-      ReturnType<typeof updateProfileSelectionApiV1ProfilesSelectionPost>
-    >,
-    TError,
-    { data: ProfileSelectionUpdate },
-    TContext
-  > => {
-    const mutationKey = ["updateProfileSelectionApiV1ProfilesSelectionPost"];
-    const { mutation: mutationOptions, request: requestOptions } = options
-      ? options.mutation &&
-        "mutationKey" in options.mutation &&
-        options.mutation.mutationKey
-        ? options
-        : { ...options, mutation: { ...options.mutation, mutationKey } }
-      : { mutation: { mutationKey }, request: undefined };
-
-    const mutationFn: MutationFunction<
-      Awaited<
-        ReturnType<typeof updateProfileSelectionApiV1ProfilesSelectionPost>
-      >,
-      { data: ProfileSelectionUpdate }
-    > = (props) => {
-      const { data } = props ?? {};
-
-      return updateProfileSelectionApiV1ProfilesSelectionPost(
-        data,
-        requestOptions,
-      );
-    };
-
-    return { mutationFn, ...mutationOptions };
-  };
-
-export type UpdateProfileSelectionApiV1ProfilesSelectionPostMutationResult =
-  NonNullable<
-    Awaited<ReturnType<typeof updateProfileSelectionApiV1ProfilesSelectionPost>>
-  >;
-export type UpdateProfileSelectionApiV1ProfilesSelectionPostMutationBody =
-  ProfileSelectionUpdate;
-export type UpdateProfileSelectionApiV1ProfilesSelectionPostMutationError =
-  void | HTTPValidationError;
-
-/**
- * @summary Update active profile selection
- */
-export const useUpdateProfileSelectionApiV1ProfilesSelectionPost = <
-  TError = void | HTTPValidationError,
-  TContext = unknown,
->(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<
-        ReturnType<typeof updateProfileSelectionApiV1ProfilesSelectionPost>
-      >,
-      TError,
-      { data: ProfileSelectionUpdate },
-      TContext
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient,
-): UseMutationResult<
-  Awaited<ReturnType<typeof updateProfileSelectionApiV1ProfilesSelectionPost>>,
-  TError,
-  { data: ProfileSelectionUpdate },
-  TContext
-> => {
-  const mutationOptions =
-    getUpdateProfileSelectionApiV1ProfilesSelectionPostMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

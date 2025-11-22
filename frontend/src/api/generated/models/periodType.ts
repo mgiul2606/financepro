@@ -23,6 +23,8 @@ export type PeriodType = (typeof PeriodType)[keyof typeof PeriodType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PeriodType = {
+  daily: "daily",
+  weekly: "weekly",
   monthly: "monthly",
   quarterly: "quarterly",
   yearly: "yearly",

@@ -49,10 +49,10 @@ export const TransactionsPage: React.FC = () => {
 
     return transactions.filter((txn) => {
       // Date range filter
-      if (filters.dateFrom && new Date(txn.date) < new Date(filters.dateFrom)) {
+      if (filters.transaction_dateFrom && new Date(txn.transaction_date) < new Date(filters.transaction_dateFrom)) {
         return false;
       }
-      if (filters.dateTo && new Date(txn.date) > new Date(filters.dateTo)) {
+      if (filters.transaction_dateTo && new Date(txn.transaction_date) > new Date(filters.transaction_dateTo)) {
         return false;
       }
 
@@ -65,7 +65,7 @@ export const TransactionsPage: React.FC = () => {
       }
 
       // Type filter
-      if (filters.types && filters.types.length > 0 && !filters.types.includes(txn.type)) {
+      if (filters.transaction_types && filters.transaction_types.length > 0 && !filters.transaction_types.includes(txn.transaction_type)) {
         return false;
       }
 
@@ -73,22 +73,22 @@ export const TransactionsPage: React.FC = () => {
       if (
         filters.categories &&
         filters.categories.length > 0 &&
-        (!txn.category || !filters.categories.includes(txn.category))
+        (!txn.category_id || !filters.categories.includes(txn.category_id))
       ) {
         return false;
       }
 
       // Merchant name filter
       if (
-        filters.merchantName &&
-        (!txn.merchantName ||
-          !txn.merchantName.toLowerCase().includes(filters.merchantName.toLowerCase()))
+        filters.merchant_name &&
+        (!txn.merchant_name ||
+          !txn.merchant_name.toLowerCase().includes(filters.merchant_name.toLowerCase()))
       ) {
         return false;
       }
 
       // Account filter
-      if (filters.accountId && txn.accountId !== filters.accountId) {
+      if (filters.account_id && txn.account_id !== filters.account_id) {
         return false;
       }
 
@@ -143,11 +143,11 @@ export const TransactionsPage: React.FC = () => {
   const columns: Column<Transaction>[] = [
     {
       key: 'date',
-      label: t('transactions.date'),
+      label: t('transactions.transaction_date'),
       sortable: true,
       render: (item) => (
         <span className="text-sm font-medium">
-          {format(new Date(item.date), 'MMM dd, yyyy')}
+          {format(new Date(item.transaction_date), 'MMM dd, yyyy')}
         </span>
       ),
       width: '120px',
@@ -159,19 +159,19 @@ export const TransactionsPage: React.FC = () => {
       render: (item) => (
         <div>
           <div className="font-medium text-sm">{item.description}</div>
-          {item.merchantName && (
-            <div className="text-xs text-neutral-500">{item.merchantName}</div>
+          {item.merchant_name && (
+            <div className="text-xs text-neutral-500">{item.merchant_name}</div>
           )}
         </div>
       ),
     },
     {
       key: 'category',
-      label: t('transactions.category'),
+      label: t('transactions.category_id'),
       render: (item) =>
-        item.category ? (
+        item.category_id ? (
           <Badge variant="secondary" size="sm">
-            {item.category}
+            {item.category_id}
           </Badge>
         ) : (
           <span className="text-neutral-400 text-sm">-</span>
@@ -180,10 +180,10 @@ export const TransactionsPage: React.FC = () => {
     },
     {
       key: 'type',
-      label: t('transactions.type'),
+      label: t('transactions.transaction_type'),
       render: (item) => (
-        <Badge variant={item.type === 'income' ? 'success' : 'danger'} size="sm">
-          {t(`transactions.types.${item.type}`)}
+        <Badge variant={item.transaction_type === 'income' ? 'success' : 'danger'} size="sm">
+          {t(`transactions.transaction_types.${item.transaction_type}`)}
         </Badge>
       ),
       width: '100px',
@@ -200,7 +200,7 @@ export const TransactionsPage: React.FC = () => {
           showSign
           colorCoded={false}
           className={`text-sm font-semibold ${
-            item.type === 'income' ? 'text-green-600' : 'text-red-600'
+            item.transaction_type === 'income' ? 'text-green-600' : 'text-red-600'
           }`}
         />
       ),
@@ -398,7 +398,7 @@ export const TransactionsPage: React.FC = () => {
         <TransactionForm
           onSubmit={handleCreate}
           onCancel={() => setIsCreateModalOpen(false)}
-          isLoading={createMutation.isPending}
+          isLoading={createMutation.isCreating}
         />
       </Modal>
 
@@ -412,16 +412,16 @@ export const TransactionsPage: React.FC = () => {
           <TransactionForm
             onSubmit={handleUpdate}
             onCancel={() => setEditingTransaction(null)}
-            isLoading={updateMutation.isPending}
+            isLoading={updateMutation.isCreating}
             initialData={{
-              accountId: editingTransaction.accountId,
-              type: editingTransaction.type,
+              accountId: editingTransaction.account_id,
+              type: editingTransaction.transaction_type,
               amount: editingTransaction.amount,
               currency: editingTransaction.currency,
-              category: editingTransaction.category,
+              category: editingTransaction.category_id,
               description: editingTransaction.description,
-              date: editingTransaction.date,
-              merchantName: editingTransaction.merchantName,
+              date: editingTransaction.transaction_date,
+              merchantName: editingTransaction.merchant_name,
               notes: editingTransaction.notes,
             }}
           />

@@ -17,12 +17,7 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 import type { BudgetResponse } from "./budgetResponse";
 
-/**
- * Schema for list budgets response with pagination support.
- */
 export interface BudgetListResponse {
-  /** List of budgets */
   items: BudgetResponse[];
-  /** Total number of budgets */
   total: number;
 }

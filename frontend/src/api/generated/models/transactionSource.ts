@@ -29,4 +29,5 @@ export const TransactionSource = {
   import_ocr: "import_ocr",
   import_api: "import_api",
   recurring: "recurring",
+  bank_sync: "bank_sync",
 } as const;

@@ -29,5 +29,6 @@ export const AccountType = {
   investment: "investment",
   cash: "cash",
   loan: "loan",
+  mortgage: "mortgage",
   other: "other",
 } as const;

@@ -16,40 +16,38 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
 import type { PeriodType } from "./periodType";
-import type { BudgetCreateAmount } from "./budgetCreateAmount";
-import type { BudgetCreateAlertThresholdPercentage } from "./budgetCreateAlertThresholdPercentage";
+import type { BudgetCreateEndDate } from "./budgetCreateEndDate";
+import type { BudgetCreateTotalAmount } from "./budgetCreateTotalAmount";
+import type { ScopeType } from "./scopeType";
+import type { BudgetCreateScopeProfileIds } from "./budgetCreateScopeProfileIds";
+import type { BudgetCreateCategoryAllocations } from "./budgetCreateCategoryAllocations";
 
 /**
- * Schema for creating a new budget.
-Requires financial_profile_id and category allocations.
+ * Schema for creating a budget
  */
 export interface BudgetCreate {
   /**
-   * Budget name
    * @minLength 1
    * @maxLength 255
    */
   name: string;
-  /** Type of budget period (monthly, quarterly, yearly, custom) */
-  period_type: PeriodType;
-  /** Start date of the budget period */
+  period_type?: PeriodType;
   start_date: string;
-  /** End date of the budget period */
-  end_date: string;
-  /** Total budget amount (must be positive) */
-  amount: BudgetCreateAmount;
+  end_date?: BudgetCreateEndDate;
+  total_amount: BudgetCreateTotalAmount;
   /**
-   * ISO 4217 currency code (3 uppercase letters)
-   * @pattern ^[A-Z]{3}$
+   * @minLength 3
+   * @maxLength 3
    */
   currency: string;
-  /** ID of the financial profile this budget belongs to */
-  financial_profile_id: string;
+  rollover_enabled?: boolean;
   /**
-   * List of category IDs to assign to this budget
-   * @minItems 1
+   * @minimum 0
+   * @maximum 100
    */
-  category_ids: string[];
-  /** Percentage of budget to trigger alerts (0-100) */
-  alert_threshold_percentage?: BudgetCreateAlertThresholdPercentage;
+  alert_threshold_percent?: number;
+  is_active?: boolean;
+  scope_type?: ScopeType;
+  scope_profile_ids?: BudgetCreateScopeProfileIds;
+  category_allocations?: BudgetCreateCategoryAllocations;
 }

@@ -4,12 +4,10 @@
  */
 import { useQueryClient, useQueries } from '@tanstack/react-query';
 import {
-  useListTransactionsApiV1TransactionsGet,
   useGetTransactionApiV1TransactionsTransactionIdGet,
   useCreateTransactionApiV1TransactionsPost,
   useUpdateTransactionApiV1TransactionsTransactionIdPatch,
   useDeleteTransactionApiV1TransactionsTransactionIdDelete,
-  useGetTransactionStatsApiV1TransactionsStatsGet,
   getListTransactionsApiV1TransactionsGetQueryKey,
   listTransactionsApiV1TransactionsGet,
   getTransactionStatsApiV1TransactionsStatsGet,
@@ -39,8 +37,20 @@ export const useTransactions = (filters?: TransactionFilters) => {
   });
 
   // Aggregate results from all profiles
-  const allTransactions = queries.flatMap((query) => query.data?.data?.items || []);
-  const totalCount = queries.reduce((sum, query) => sum + (query.data?.data?.total || 0), 0);
+  const allTransactions = queries.flatMap((query) => {
+    const data = query.data?.data;
+    if (data && 'items' in data) {
+      return data.items || [];
+    }
+    return [];
+  });
+  const totalCount = queries.reduce((sum, query) => {
+    const data = query.data?.data;
+    if (data && 'total' in data) {
+      return sum + (data.total || 0);
+    }
+    return sum;
+  }, 0);
   const isLoading = profileLoading || queries.some((query) => query.isLoading);
   const error = queries.find((query) => query.error)?.error || null;
 
@@ -103,12 +113,12 @@ export const useTransactionStats = (params?: {
   const aggregatedStats = queries.reduce(
     (acc, query) => {
       const data = query.data?.data;
-      if (data) {
+      if (data && 'total_income' in data) {
         return {
-          total_income: (acc.total_income || 0) + (data.total_income || 0),
-          total_expenses: (acc.total_expenses || 0) + (data.total_expenses || 0),
-          net_balance: (acc.net_balance || 0) + (data.net_balance || 0),
-          transaction_count: (acc.transaction_count || 0) + (data.transaction_count || 0),
+          total_income: (acc.total_income || 0) + ((data as any).total_income || 0),
+          total_expenses: (acc.total_expenses || 0) + ((data as any).total_expenses || 0),
+          net_balance: (acc.net_balance || 0) + ((data as any).net_balance || 0),
+          transaction_count: (acc.transaction_count || 0) + ((data as any).transaction_count || 0),
         };
       }
       return acc;

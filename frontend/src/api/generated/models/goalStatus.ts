@@ -24,7 +24,8 @@ export type GoalStatus = (typeof GoalStatus)[keyof typeof GoalStatus];
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const GoalStatus = {
   active: "active",
-  paused: "paused",
   completed: "completed",
+  paused: "paused",
   cancelled: "cancelled",
+  failed: "failed",
 } as const;

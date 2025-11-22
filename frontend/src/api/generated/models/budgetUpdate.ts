@@ -19,33 +19,29 @@ import type { BudgetUpdateName } from "./budgetUpdateName";
 import type { BudgetUpdatePeriodType } from "./budgetUpdatePeriodType";
 import type { BudgetUpdateStartDate } from "./budgetUpdateStartDate";
 import type { BudgetUpdateEndDate } from "./budgetUpdateEndDate";
-import type { BudgetUpdateAmount } from "./budgetUpdateAmount";
+import type { BudgetUpdateTotalAmount } from "./budgetUpdateTotalAmount";
 import type { BudgetUpdateCurrency } from "./budgetUpdateCurrency";
-import type { BudgetUpdateCategoryIds } from "./budgetUpdateCategoryIds";
+import type { BudgetUpdateRolloverEnabled } from "./budgetUpdateRolloverEnabled";
+import type { BudgetUpdateAlertThresholdPercent } from "./budgetUpdateAlertThresholdPercent";
 import type { BudgetUpdateIsActive } from "./budgetUpdateIsActive";
-import type { BudgetUpdateAlertThresholdPercentage } from "./budgetUpdateAlertThresholdPercentage";
+import type { BudgetUpdateScopeType } from "./budgetUpdateScopeType";
+import type { BudgetUpdateScopeProfileIds } from "./budgetUpdateScopeProfileIds";
+import type { BudgetUpdateCategoryAllocations } from "./budgetUpdateCategoryAllocations";
 
 /**
- * Schema for updating an existing budget.
-All fields are optional (partial update).
+ * Schema for updating a budget
  */
 export interface BudgetUpdate {
-  /** Updated budget name */
   name?: BudgetUpdateName;
-  /** Updated period type */
   period_type?: BudgetUpdatePeriodType;
-  /** Updated start date */
   start_date?: BudgetUpdateStartDate;
-  /** Updated end date */
   end_date?: BudgetUpdateEndDate;
-  /** Updated budget amount */
-  amount?: BudgetUpdateAmount;
-  /** Updated currency code */
+  total_amount?: BudgetUpdateTotalAmount;
   currency?: BudgetUpdateCurrency;
-  /** Updated list of category IDs */
-  category_ids?: BudgetUpdateCategoryIds;
-  /** Whether the budget is active */
+  rollover_enabled?: BudgetUpdateRolloverEnabled;
+  alert_threshold_percent?: BudgetUpdateAlertThresholdPercent;
   is_active?: BudgetUpdateIsActive;
-  /** Updated alert threshold percentage */
-  alert_threshold_percentage?: BudgetUpdateAlertThresholdPercentage;
+  scope_type?: BudgetUpdateScopeType;
+  scope_profile_ids?: BudgetUpdateScopeProfileIds;
+  category_allocations?: BudgetUpdateCategoryAllocations;
 }
