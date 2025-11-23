@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
@@ -8,7 +8,7 @@ import { Button } from '@/core/components/atomic/Button';
 import { CurrencyText, NumberText } from '@/core/components/atomic';
 import { formatCurrency } from '@/utils/currency';
 import { usePreferences } from '@/contexts/PreferencesContext';
-import { LineChart, PieChart, BarChart } from '@/core/components/composite/charts';
+import { LineChart, PieChart, BarChart, PieChartDataPoint } from '@/core/components/composite/charts';
 import {
   useAnalyticOverview,
   useTimeSeriesData,
@@ -22,7 +22,7 @@ import { OverviewStats } from '../components/OverviewStats';
 import { AnomalyCard } from '../components/AnomalyCard';
 import { RecurringPatternCard } from '../components/RecurringPatternCard';
 import { ReportCard } from '../components/ReportCard';
-import { Filter, Download, Calendar } from 'lucide-react';
+import { Filter, Download, Calendar, X } from 'lucide-react';
 import { format } from 'date-fns';
 
 export const AnalyticPage = () => {
@@ -33,15 +33,32 @@ export const AnalyticPage = () => {
     dateFrom: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     dateTo: new Date().toISOString().split('T')[0],
   });
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const handleCategoryClick = (dataPoint: PieChartDataPoint, index: number) => {
+    setSelectedCategory((prev) => (prev === dataPoint.name ? null : dataPoint.name));
+  };
+
+  // Create filters for time series with selected category
+  const timeSeriesFilters = useMemo(() => ({
+    ...filters,
+    categories: selectedCategory ? [selectedCategory] : undefined,
+  }), [filters, selectedCategory]);
 
   // Fetch data
   const { data: overview, isLoading: overviewLoading } = useAnalyticOverview(filters);
-  const { data: timeSeriesData, isLoading: timeSeriesLoading } = useTimeSeriesData(filters);
+  const { data: timeSeriesData, isLoading: timeSeriesLoading } = useTimeSeriesData(timeSeriesFilters);
   const { data: categories, isLoading: categoriesLoading } = useCategoryBreakdown(filters);
   const { data: merchants, isLoading: merchantsLoading } = useMerchantAnalysis(filters);
   const { data: anomalies, isLoading: anomaliesLoading } = useAnomalies(filters);
   const { data: patterns, isLoading: patternsLoading } = useRecurringPatterns(filters);
   const { data: reports, isLoading: reportsLoading } = useReports(filters);
+
+  // Calculate selected index for PieChart highlighting
+  const selectedCategoryIndex = useMemo(() => {
+    if (!selectedCategory || !categories) return undefined;
+    return categories.findIndex((c) => c.category === selectedCategory);
+  }, [selectedCategory, categories]);
 
   const tabs = [
     { id: 'overview', label: t('analytics.overview') },
@@ -102,6 +119,21 @@ export const AnalyticPage = () => {
               <>
                 <OverviewStats overview={overview} />
 
+                {selectedCategory && (
+                  <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <span className="text-sm text-blue-800">
+                      {t('analytics.filteringBy')}: <strong>{selectedCategory}</strong>
+                    </span>
+                    <button
+                      onClick={() => setSelectedCategory(null)}
+                      className="ml-auto flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      <X className="h-4 w-4" />
+                      {t('analytics.clearFilter')}
+                    </button>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Time Series Chart */}
                   <Card variant="elevated">
@@ -141,6 +173,8 @@ export const AnalyticPage = () => {
                           }))}
                           height={250}
                           formatValue={(value) => formatCurrency(value, preferences.currency, preferences.locale)}
+                          onSliceClick={handleCategoryClick}
+                          selectedIndex={selectedCategoryIndex !== undefined && selectedCategoryIndex >= 0 ? selectedCategoryIndex : undefined}
                         />
                       ) : null}
                     </CardBody>

@@ -389,7 +389,9 @@
     "amount": "Amount",
     "merchant": "Merchant",
     "noSuggestionsYet": "No suggestions at the moment",
-    "viewAll": "View All"
+    "viewAll": "View All",
+    "filteringBy": "Filtering by category",
+    "clearFilter": "Clear filter"
   },
   "aiAssistant": {
     "title": "AI Assistant",

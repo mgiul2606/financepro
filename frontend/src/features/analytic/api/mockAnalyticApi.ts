@@ -50,6 +50,58 @@ const mockTimeSeriesData: TimeSeriesData[] = generateDates(30).map((date, index)
   balance: 1000 + (Math.random() * 500 - 250),
 }));
 
+// Category-specific time series data for filtering
+const categoryTimeSeriesData: Record<string, TimeSeriesData[]> = {
+  'Alimentari': generateDates(30).map((date) => ({
+    date,
+    income: 0,
+    expenses: Math.random() * 60 + 20,
+    balance: 0,
+  })),
+  'Trasporti': generateDates(30).map((date) => ({
+    date,
+    income: 0,
+    expenses: Math.random() * 40 + 15,
+    balance: 0,
+  })),
+  'Ristoranti': generateDates(30).map((date) => ({
+    date,
+    income: 0,
+    expenses: Math.random() * 35 + 10,
+    balance: 0,
+  })),
+  'Bollette': generateDates(30).map((date) => ({
+    date,
+    income: 0,
+    expenses: Math.random() * 30 + 10,
+    balance: 0,
+  })),
+  'Shopping': generateDates(30).map((date) => ({
+    date,
+    income: 0,
+    expenses: Math.random() * 25 + 8,
+    balance: 0,
+  })),
+  'Intrattenimento': generateDates(30).map((date) => ({
+    date,
+    income: 0,
+    expenses: Math.random() * 20 + 5,
+    balance: 0,
+  })),
+  'Salute': generateDates(30).map((date) => ({
+    date,
+    income: 0,
+    expenses: Math.random() * 15 + 5,
+    balance: 0,
+  })),
+  'Altro': generateDates(30).map((date) => ({
+    date,
+    income: 0,
+    expenses: Math.random() * 18 + 4,
+    balance: 0,
+  })),
+};
+
 const mockCategoryBreakdown: CategoryBreakdown[] = [
   { category: 'Alimentari', amount: 1234.56, percentage: 27, transactionCount: 42, color: '#3b82f6' },
   { category: 'Trasporti', amount: 876.23, percentage: 19, transactionCount: 28, color: '#10b981' },
@@ -250,6 +302,13 @@ export const mockAnalyticApi = {
 
   getTimeSeriesData: async (filters?: AnalyticFilters): Promise<TimeSeriesData[]> => {
     await delay(600);
+    // Filter by category if specified
+    if (filters?.categories && filters.categories.length === 1) {
+      const category = filters.categories[0];
+      if (categoryTimeSeriesData[category]) {
+        return categoryTimeSeriesData[category];
+      }
+    }
     return mockTimeSeriesData;
   },
 
