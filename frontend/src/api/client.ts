@@ -5,6 +5,9 @@ import { api } from '../services/api';
  * Custom Axios instance for Orval
  * This mutator uses the configured axios instance with interceptors
  * Handles both URL strings and config objects from orval-generated code
+ *
+ * Returns response in the format expected by Orval-generated types:
+ * { data: ResponseBody, status: number, headers: Headers }
  */
 export const customInstance = <T>(
   config: AxiosRequestConfig | string,
@@ -25,7 +28,12 @@ export const customInstance = <T>(
     delete (requestConfig as any).body;
   }
 
-  const promise = api(requestConfig).then(({ data }: AxiosResponse<T>) => data);
+  // Return response in Orval-expected format: { data, status, headers }
+  const promise = api(requestConfig).then((response: AxiosResponse) => ({
+    data: response.data,
+    status: response.status,
+    headers: response.headers as unknown as Headers,
+  } as T));
 
   return promise;
 };
