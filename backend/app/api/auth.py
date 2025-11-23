@@ -48,14 +48,12 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
         description="Your default financial profile",
         profile_type=ProfileType.PERSONAL,
         default_currency="EUR",
-        is_active=True
+        is_active=True,
+        is_default=True  # Mark as default profile
     )
 
     db.add(default_profile)
     db.flush()  # Flush to get profile.id
-
-    # Imposta il profilo di default come main_profile
-    db_user.main_profile_id = default_profile.id
 
     # Crea la selezione profili con il profilo di default attivo
     profile_selection = UserProfileSelection(

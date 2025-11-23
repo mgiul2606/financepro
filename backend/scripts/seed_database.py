@@ -107,6 +107,7 @@ def create_profiles(session, users):
         profile_type=ProfileType.PERSONAL,
         default_currency="EUR",
         is_active=True,
+        is_default=True,  # Set as default profile for Mario
         created_at=datetime.now(),
         updated_at=datetime.now()
     )
@@ -135,17 +136,13 @@ def create_profiles(session, users):
         profile_type=ProfileType.PERSONAL,
         default_currency="EUR",
         is_active=True,
+        is_default=True,  # Set as default profile for Giulia
         created_at=datetime.now(),
         updated_at=datetime.now()
     )
     profiles.append(profile_giulia)
 
     session.add_all(profiles)
-    session.commit()
-
-    # Imposta il profilo principale per gli utenti
-    users[0].main_profile_id = profile_mario.id
-    users[1].main_profile_id = profile_giulia.id
     session.commit()
 
     print(f"✅ Creati {len(profiles)} profili finanziari")
