@@ -2,7 +2,8 @@
  * React Query hooks for Budget operations
  * Wraps the generated orval hooks for better usability
  */
-import { useQueryClient, useQueries } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import {
   useListBudgetsApiV1BudgetsGet,
   useGetBudgetApiV1BudgetsBudgetIdGet,
@@ -10,43 +11,39 @@ import {
   useUpdateBudgetApiV1BudgetsBudgetIdPatch,
   useDeleteBudgetApiV1BudgetsBudgetIdDelete,
   getListBudgetsApiV1BudgetsGetQueryKey,
-  listBudgetsApiV1BudgetsGet,
 } from '@/api/generated/budgets/budgets';
 import { useProfileContext } from '@/contexts/ProfileContext';
 import type { BudgetCreate, BudgetUpdate, BudgetFilters } from '../types';
 
 /**
  * Hook to list all budgets with optional filters
- * Fetches budgets from all active profiles and aggregates the results
+ * Budgets are USER-LEVEL entities, so we fetch all budgets for the user
+ * and they will be filtered by scope_profile_ids on the backend
  */
 export const useBudgets = (filters?: BudgetFilters) => {
-  const { activeProfileIds, isLoading: profileLoading } = useProfileContext();
+  const { activeProfileIds, isLoading: profileLoading, isInitialized } = useProfileContext();
+  const queryClient = useQueryClient();
 
-  // Create queries for each active profile
-  const queries = useQueries({
-    queries: activeProfileIds.map((profileId) => ({
-      queryKey: getListBudgetsApiV1BudgetsGetQueryKey({ ...filters, profile_id: profileId }),
-      queryFn: () => listBudgetsApiV1BudgetsGet({ ...filters, profile_id: profileId }),
-      enabled: !profileLoading && activeProfileIds.length > 0,
-    })),
+  // Single query for all user budgets (budgets are USER-LEVEL, not profile-level)
+  const query = useListBudgetsApiV1BudgetsGet(filters, {
+    query: {
+      enabled: !profileLoading && isInitialized,
+    },
   });
 
-  // Aggregate results from all profiles
-  const allBudgets = queries.flatMap((query) => query.data?.data?.items || []);
-  const totalCount = queries.reduce((sum, query) => sum + (query.data?.data?.total || 0), 0);
-  const isLoading = profileLoading || queries.some((query) => query.isLoading);
-  const error = queries.find((query) => query.error)?.error || null;
-
-  const refetch = () => {
-    queries.forEach((query) => query.refetch());
-  };
+  // Refetch when active profiles change to ensure fresh data
+  useEffect(() => {
+    if (isInitialized && !profileLoading && activeProfileIds.length > 0) {
+      query.refetch();
+    }
+  }, [activeProfileIds, isInitialized, profileLoading]);
 
   return {
-    budgets: allBudgets,
-    total: totalCount,
-    isLoading,
-    error,
-    refetch,
+    budgets: query.data?.data?.items || [],
+    total: query.data?.data?.total || 0,
+    isLoading: profileLoading || query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
   };
 };
 
