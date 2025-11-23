@@ -43,7 +43,7 @@ export const ProfileSelector: React.FC = () => {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+        className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-900 dark:text-white"
       >
         <span className="text-sm font-medium">{displayText}</span>
         <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -93,13 +93,13 @@ export const ProfileSelector: React.FC = () => {
                       {/* Profile info */}
                       <div className="flex-1 text-left min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium truncate">{profile.name}</span>
+                          <span className="text-sm font-medium truncate text-gray-900 dark:text-white">{profile.name}</span>
                           {isMain && (
                             <Star className="w-3 h-3 text-yellow-500 fill-yellow-500 flex-shrink-0" />
                           )}
                         </div>
                         <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {profile.profile_type} • {profile.default_currency}
+                          {profile.profile_type || 'personal'} • {profile.default_currency || 'USD'}
                         </span>
                       </div>
 

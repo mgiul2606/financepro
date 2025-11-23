@@ -31,11 +31,13 @@ export const useGoals = (filters?: GoalFilters) => {
     },
   });
 
-  // Refetch when active profiles change to ensure fresh data
+  // Note: Refetching is now handled by ProfileContext cache invalidation
+  // This effect ensures immediate refetch when profiles change
   useEffect(() => {
     if (isInitialized && !profileLoading && activeProfileIds.length > 0) {
       query.refetch();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeProfileIds, isInitialized, profileLoading]);
 
   return {

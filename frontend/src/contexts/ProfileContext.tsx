@@ -1,5 +1,6 @@
 // Profile Context for managing active profiles and main profile
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   useProfiles,
   useMainProfile,
@@ -48,6 +49,9 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [isInitialized, setIsInitialized] = useState(false);
   const [showCreateProfileModal, setShowCreateProfileModal] = useState(false);
 
+  // Query client for cache invalidation
+  const queryClient = useQueryClient();
+
   // Fetch data
   const { profiles: profilesList, isLoading: profilesLoading, refetch: refetchProfiles } = useProfiles();
   const { mainProfile: mainProfileData, isLoading: mainProfileLoading, refetch: refetchMainProfile } = useMainProfile();
@@ -55,6 +59,29 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Mutations
   const setMainProfileMutation = useSetMainProfile();
   const createProfileMutation = useCreateProfile();
+
+  // Helper function to invalidate all profile-dependent queries
+  const invalidateProfileDependentQueries = useCallback(() => {
+    // Invalidate all queries that depend on profile selection
+    queryClient.invalidateQueries({
+      predicate: (query) => {
+        const key = query.queryKey;
+        // Check if queryKey contains profile-related endpoints
+        if (Array.isArray(key) && key.length > 0) {
+          const firstKey = String(key[0]);
+          return (
+            firstKey.includes('/transactions') ||
+            firstKey.includes('/goals') ||
+            firstKey.includes('/budgets') ||
+            firstKey.includes('/accounts') ||
+            firstKey.includes('/analytics') ||
+            firstKey.includes('/analysis')
+          );
+        }
+        return false;
+      },
+    });
+  }, [queryClient]);
 
   // Filter only active profiles
   const profiles = profilesList.filter((p) => p.is_active);
@@ -159,8 +186,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const setActiveProfiles = useCallback(
     (profileIds: string[]) => {
       setActiveProfileIdsState(profileIds);
+      // Invalidate all profile-dependent queries when profiles change
+      invalidateProfileDependentQueries();
     },
-    []
+    [invalidateProfileDependentQueries]
   );
 
   const toggleProfileSelection = useCallback(
@@ -170,8 +199,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
           ? prev.filter((id) => id !== profileId)
           : [...prev, profileId]
       );
+      // Invalidate all profile-dependent queries when profile selection changes
+      invalidateProfileDependentQueries();
     },
-    []
+    [invalidateProfileDependentQueries]
   );
 
   const refreshProfiles = useCallback(async () => {
