@@ -23,15 +23,35 @@ export const formatCurrency = (
   }
 
   // Sanitize fraction digits options to valid range (0-20)
-  const sanitizedOptions = options ? {
-    ...options,
-    ...(options.minimumFractionDigits !== undefined && {
-      minimumFractionDigits: Math.max(0, Math.min(20, options.minimumFractionDigits))
-    }),
-    ...(options.maximumFractionDigits !== undefined && {
-      maximumFractionDigits: Math.max(0, Math.min(20, options.maximumFractionDigits))
-    }),
-  } : undefined;
+  // and ensure minimumFractionDigits <= maximumFractionDigits
+  let sanitizedOptions: Intl.NumberFormatOptions | undefined;
+
+  if (options) {
+    const minDigits = options.minimumFractionDigits !== undefined
+      ? Math.max(0, Math.min(20, options.minimumFractionDigits))
+      : undefined;
+    const maxDigits = options.maximumFractionDigits !== undefined
+      ? Math.max(0, Math.min(20, options.maximumFractionDigits))
+      : undefined;
+
+    // Determine final values ensuring min <= max
+    let finalMin = minDigits;
+    let finalMax = maxDigits;
+
+    if (finalMax !== undefined && finalMin === undefined) {
+      // Only max specified: set min to not exceed max
+      finalMin = Math.min(2, finalMax);
+    } else if (finalMin !== undefined && finalMax === undefined) {
+      // Only min specified: set max to not be less than min
+      finalMax = Math.max(2, finalMin);
+    }
+
+    sanitizedOptions = {
+      ...options,
+      ...(finalMin !== undefined && { minimumFractionDigits: finalMin }),
+      ...(finalMax !== undefined && { maximumFractionDigits: finalMax }),
+    };
+  }
 
   return new Intl.NumberFormat(locale, {
     style: 'currency',
@@ -57,15 +77,35 @@ export const formatNumber = (
   }
 
   // Sanitize fraction digits options to valid range (0-20)
-  const sanitizedOptions = options ? {
-    ...options,
-    ...(options.minimumFractionDigits !== undefined && {
-      minimumFractionDigits: Math.max(0, Math.min(20, options.minimumFractionDigits))
-    }),
-    ...(options.maximumFractionDigits !== undefined && {
-      maximumFractionDigits: Math.max(0, Math.min(20, options.maximumFractionDigits))
-    }),
-  } : undefined;
+  // and ensure minimumFractionDigits <= maximumFractionDigits
+  let sanitizedOptions: Intl.NumberFormatOptions | undefined;
+
+  if (options) {
+    const minDigits = options.minimumFractionDigits !== undefined
+      ? Math.max(0, Math.min(20, options.minimumFractionDigits))
+      : undefined;
+    const maxDigits = options.maximumFractionDigits !== undefined
+      ? Math.max(0, Math.min(20, options.maximumFractionDigits))
+      : undefined;
+
+    // Determine final values ensuring min <= max
+    let finalMin = minDigits;
+    let finalMax = maxDigits;
+
+    if (finalMax !== undefined && finalMin === undefined) {
+      // Only max specified: set min to not exceed max
+      finalMin = Math.min(2, finalMax);
+    } else if (finalMin !== undefined && finalMax === undefined) {
+      // Only min specified: set max to not be less than min
+      finalMax = Math.max(2, finalMin);
+    }
+
+    sanitizedOptions = {
+      ...options,
+      ...(finalMin !== undefined && { minimumFractionDigits: finalMin }),
+      ...(finalMax !== undefined && { maximumFractionDigits: finalMax }),
+    };
+  }
 
   return new Intl.NumberFormat(locale, {
     minimumFractionDigits: 2,
