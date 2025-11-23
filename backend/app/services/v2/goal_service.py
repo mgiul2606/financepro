@@ -151,8 +151,8 @@ class GoalService:
                     goal_id=goal.id,
                     name=ms.get('name', f"{ms['percentage']}% milestone"),
                     target_amount=target_amount * Decimal(str(ms['percentage'])) / 100,
-                    target_percentage=ms['percentage'],
-                    is_achieved=False
+                    target_date=target_date,
+                    is_completed=False
                 )
                 self.db.add(milestone)
         else:
@@ -162,8 +162,8 @@ class GoalService:
                     goal_id=goal.id,
                     name=f"{pct}% milestone",
                     target_amount=target_amount * Decimal(str(pct)) / 100,
-                    target_percentage=pct,
-                    is_achieved=False
+                    target_date=target_date,
+                    is_completed=False
                 )
                 self.db.add(milestone)
 
@@ -475,7 +475,7 @@ class GoalService:
 
         return self.db.query(GoalMilestone).filter(
             GoalMilestone.goal_id == goal_id
-        ).order_by(GoalMilestone.target_percentage.asc()).all()
+        ).order_by(GoalMilestone.target_amount.asc()).all()
 
     def update_milestone(
         self,
@@ -518,23 +518,26 @@ class GoalService:
         """Check and update milestone achievements."""
         milestones = self.db.query(GoalMilestone).filter(
             GoalMilestone.goal_id == goal.id,
-            GoalMilestone.is_achieved == False
+            GoalMilestone.is_completed == False
         ).all()
 
         for milestone in milestones:
             if goal.current_amount >= milestone.target_amount:
-                milestone.is_achieved = True
-                milestone.achieved_date = date.today()
+                milestone.is_completed = True
+                milestone.completed_at = datetime.now(timezone.utc)
 
                 # Award milestone points
                 goal.gamification_points += 100
+
+                # Calculate percentage for notification message
+                percentage = int((milestone.target_amount / goal.target_amount) * 100) if goal.target_amount > 0 else 0
 
                 # Create notification
                 self._create_notification(
                     user_id=goal.user_id,
                     notification_type=NotificationType.GOAL_MILESTONE,
                     title=f"Milestone reached for '{goal.name}'!",
-                    message=f"You've reached {milestone.target_percentage}% of your goal.",
+                    message=f"You've reached {percentage}% of your goal.",
                     priority=7
                 )
 

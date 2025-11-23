@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from typing import Annotated, Optional, List
 from uuid import UUID
 from decimal import Decimal
-from datetime import date
+from datetime import date, datetime
 
 from app.db.database import get_db
 from app.models.user import User
@@ -61,9 +61,9 @@ class MilestoneResponse(BaseModel):
     goal_id: str
     name: str
     target_amount: float
-    target_percentage: int
-    is_achieved: bool
-    achieved_date: Optional[date] = None
+    target_date: date
+    is_completed: bool
+    completed_at: Optional[datetime] = None
 
 
 def get_goal_service(
@@ -423,9 +423,9 @@ async def list_milestones(
                 goal_id=str(m.goal_id),
                 name=m.name,
                 target_amount=float(m.target_amount),
-                target_percentage=m.target_percentage,
-                is_achieved=m.is_achieved,
-                achieved_date=m.achieved_date
+                target_date=m.target_date,
+                is_completed=m.is_completed,
+                completed_at=m.completed_at
             )
             for m in milestones
         ]

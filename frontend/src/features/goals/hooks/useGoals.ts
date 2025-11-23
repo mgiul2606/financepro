@@ -2,7 +2,8 @@
  * React Query hooks for Financial Goal operations
  * Wraps the generated orval hooks for better usability
  */
-import { useQueryClient, useQueries } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import {
   useListGoalsApiV1GoalsGet,
   useGetGoalApiV1GoalsGoalIdGet,
@@ -10,43 +11,39 @@ import {
   useUpdateGoalApiV1GoalsGoalIdPatch,
   useDeleteGoalApiV1GoalsGoalIdDelete,
   getListGoalsApiV1GoalsGetQueryKey,
-  listGoalsApiV1GoalsGet,
 } from '@/api/generated/financial-goals/financial-goals';
 import { useProfileContext } from '@/contexts/ProfileContext';
 import type { GoalCreate, GoalUpdate, GoalFilters } from '../types';
 
 /**
  * Hook to list all financial goals with optional filters
- * Fetches goals from all active profiles and aggregates the results
+ * Goals are USER-LEVEL entities, so we fetch all goals for the user
+ * and they will be filtered by scope_profile_ids on the backend
  */
 export const useGoals = (filters?: GoalFilters) => {
-  const { activeProfileIds, isLoading: profileLoading } = useProfileContext();
+  const { activeProfileIds, isLoading: profileLoading, isInitialized } = useProfileContext();
+  const queryClient = useQueryClient();
 
-  // Create queries for each active profile
-  const queries = useQueries({
-    queries: activeProfileIds.map((profileId) => ({
-      queryKey: getListGoalsApiV1GoalsGetQueryKey({ ...filters, profile_id: profileId }),
-      queryFn: () => listGoalsApiV1GoalsGet({ ...filters, profile_id: profileId }),
-      enabled: !profileLoading && activeProfileIds.length > 0,
-    })),
+  // Single query for all user goals (goals are USER-LEVEL, not profile-level)
+  const query = useListGoalsApiV1GoalsGet(filters, {
+    query: {
+      enabled: !profileLoading && isInitialized,
+    },
   });
 
-  // Aggregate results from all profiles
-  const allGoals = queries.flatMap((query) => query.data?.data?.items || []);
-  const totalCount = queries.reduce((sum, query) => sum + (query.data?.data?.total || 0), 0);
-  const isLoading = profileLoading || queries.some((query) => query.isLoading);
-  const error = queries.find((query) => query.error)?.error || null;
-
-  const refetch = () => {
-    queries.forEach((query) => query.refetch());
-  };
+  // Refetch when active profiles change to ensure fresh data
+  useEffect(() => {
+    if (isInitialized && !profileLoading && activeProfileIds.length > 0) {
+      query.refetch();
+    }
+  }, [activeProfileIds, isInitialized, profileLoading]);
 
   return {
-    goals: allGoals,
-    total: totalCount,
-    isLoading,
-    error,
-    refetch,
+    goals: query.data?.data?.items || [],
+    total: query.data?.data?.total || 0,
+    isLoading: profileLoading || query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
   };
 };
 
