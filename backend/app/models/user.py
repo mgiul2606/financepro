@@ -1,5 +1,5 @@
 # app/models/user.py
-from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey
+from sqlalchemy import Column, String, DateTime, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
@@ -50,14 +50,6 @@ class User(Base):
     email = Column(String(255), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
 
-    # Main financial profile (for default operations)
-    main_profile_id = Column(
-        UUID(as_uuid=True),
-        ForeignKey("financial_profiles.id", ondelete="SET NULL"),
-        nullable=True,
-        index=True
-    )
-
     # User information
     full_name = Column(String(255), nullable=True)
 
@@ -91,12 +83,6 @@ class User(Base):
         foreign_keys="FinancialProfile.user_id",
         cascade="all, delete-orphan",
         lazy="noload"
-    )
-    main_profile = relationship(
-        "FinancialProfile",
-        foreign_keys=[main_profile_id],
-        lazy="noload",
-        uselist=False
     )
     profile_selection = relationship(
         "UserProfileSelection",

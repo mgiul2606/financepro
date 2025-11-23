@@ -242,7 +242,7 @@ def verify_special_fields(inspector: Inspector) -> Tuple[bool, List[str]]:
     issues = []
 
     special_fields = {
-        'users': ['main_profile_id', 'full_name', 'is_verified', 'last_login_at'],
+        'users': ['full_name', 'is_verified', 'last_login_at'],
         'tags': ['tag_type'],
         'chat_conversations': ['user_id'],
         'transaction_tags': ['created_at'],

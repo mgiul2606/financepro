@@ -128,9 +128,15 @@ async def get_main_profile(
     Returns:
         Main profile information
     """
+    # Find the default profile using is_default field
+    default_profile = db.query(FinancialProfile).filter(
+        FinancialProfile.user_id == current_user.id,
+        FinancialProfile.is_default == True
+    ).first()
+
     return MainProfileResponse(
         user_id=current_user.id,
-        main_profile_id=current_user.main_profile_id
+        main_profile_id=default_profile.id if default_profile else None
     )
 
 
@@ -184,14 +190,19 @@ async def set_main_profile(
             detail="Not authorized to set this profile as main"
         )
 
-    # Update user's main profile
-    current_user.main_profile_id = profile_data.main_profile_id
+    # Reset is_default on all user's profiles
+    db.query(FinancialProfile).filter(
+        FinancialProfile.user_id == current_user.id
+    ).update({"is_default": False})
+
+    # Set is_default=True on the selected profile
+    profile.is_default = True
     db.commit()
-    db.refresh(current_user)
+    db.refresh(profile)
 
     return MainProfileResponse(
         user_id=current_user.id,
-        main_profile_id=current_user.main_profile_id
+        main_profile_id=profile.id
     )
 
 
