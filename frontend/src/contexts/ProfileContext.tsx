@@ -95,16 +95,24 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       } else if (mainProfileData?.main_profile_id) {
         // Has profiles and main profile - select it
         setActiveProfileIdsState([mainProfileData.main_profile_id]);
+        setMainProfileId(mainProfileData.main_profile_id);
         setIsInitialized(true);
       } else {
-        // Has profiles but no main - select first active one
+        // Has profiles but no main - select first active one and set it as main in backend
         const firstProfile = activeProfiles[0];
         setActiveProfileIdsState([firstProfile.id]);
         setMainProfileId(firstProfile.id);
         setIsInitialized(true);
+
+        // Set as main profile in backend (fire and forget, we've already set local state)
+        setMainProfileMutation.setMainProfile({ main_profile_id: firstProfile.id })
+          .then(() => refetchMainProfile())
+          .catch((error) => {
+            console.error('Failed to set initial main profile:', error);
+          });
       }
     }
-  }, [isLoading, isInitialized, profilesList, mainProfileData]);
+  }, [isLoading, isInitialized, profilesList, mainProfileData, setMainProfileMutation, refetchMainProfile]);
 
   // Auto-show modal when profiles become empty (e.g., after deletion)
   useEffect(() => {
