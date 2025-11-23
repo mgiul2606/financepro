@@ -6,7 +6,6 @@ from datetime import timedelta
 from app.db.database import get_db
 from app.models.user import User
 from app.models.financial_profile import FinancialProfile, ProfileType
-from app.models.user_profile_selection import UserProfileSelection
 from app.schemas.auth import UserRegister, UserLogin, Token
 from app.schemas.user import UserResponse
 from app.services.auth_service import (
@@ -53,15 +52,6 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     )
 
     db.add(default_profile)
-    db.flush()  # Flush to get profile.id
-
-    # Crea la selezione profili con il profilo di default attivo
-    profile_selection = UserProfileSelection(
-        user_id=db_user.id,
-        active_profile_ids=[default_profile.id]
-    )
-
-    db.add(profile_selection)
     db.commit()
     db.refresh(db_user)
 
