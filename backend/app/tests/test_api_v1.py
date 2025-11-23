@@ -243,6 +243,143 @@ class TestFinancialProfiles:
         )
         assert response.status_code in [200, 201, 422]
 
+    def test_get_main_profile(self, client, auth_headers, db_session, test_user):
+        """Test getting main profile."""
+        # Create a profile with is_default=True
+        profile = FinancialProfile(
+            id=uuid4(),
+            user_id=test_user.id,
+            name="Main Profile",
+            profile_type=ProfileType.PERSONAL,
+            is_active=True,
+            is_default=True,
+            default_currency="EUR"
+        )
+        db_session.add(profile)
+        db_session.commit()
+
+        response = client.get("/api/v1/profiles/main", headers=auth_headers)
+        assert response.status_code == 200
+        data = response.json()
+        assert "main_profile_id" in data
+        assert data["main_profile_id"] == str(profile.id)
+
+    def test_set_main_profile(self, client, auth_headers, db_session, test_user):
+        """Test setting main profile."""
+        # Create two profiles
+        profile1 = FinancialProfile(
+            id=uuid4(),
+            user_id=test_user.id,
+            name="Profile 1",
+            profile_type=ProfileType.PERSONAL,
+            is_active=True,
+            is_default=True,
+            default_currency="EUR"
+        )
+        profile2 = FinancialProfile(
+            id=uuid4(),
+            user_id=test_user.id,
+            name="Profile 2",
+            profile_type=ProfileType.PERSONAL,
+            is_active=True,
+            is_default=False,
+            default_currency="EUR"
+        )
+        db_session.add_all([profile1, profile2])
+        db_session.commit()
+
+        # Set profile2 as main
+        response = client.patch("/api/v1/profiles/main",
+            headers=auth_headers,
+            json={"main_profile_id": str(profile2.id)}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["main_profile_id"] == str(profile2.id)
+
+        # Verify profile1 is no longer default
+        db_session.refresh(profile1)
+        db_session.refresh(profile2)
+        assert profile1.is_default == False
+        assert profile2.is_default == True
+
+    def test_delete_default_profile_sets_new_default(self, client, auth_headers, db_session, test_user):
+        """Test that deleting default profile sets another as default."""
+        # Create two profiles, first is default
+        profile1 = FinancialProfile(
+            id=uuid4(),
+            user_id=test_user.id,
+            name="Default Profile",
+            profile_type=ProfileType.PERSONAL,
+            is_active=True,
+            is_default=True,
+            default_currency="EUR"
+        )
+        profile2 = FinancialProfile(
+            id=uuid4(),
+            user_id=test_user.id,
+            name="Secondary Profile",
+            profile_type=ProfileType.PERSONAL,
+            is_active=True,
+            is_default=False,
+            default_currency="EUR"
+        )
+        db_session.add_all([profile1, profile2])
+        db_session.commit()
+
+        # Delete the default profile
+        response = client.delete(f"/api/v1/profiles/{profile1.id}", headers=auth_headers)
+        assert response.status_code == 204
+
+        # Verify profile2 is now default
+        db_session.refresh(profile2)
+        assert profile2.is_default == True
+
+        # Verify profile1 is inactive and not default
+        db_session.refresh(profile1)
+        assert profile1.is_active == False
+        assert profile1.is_default == False
+
+    def test_delete_non_default_profile_keeps_default(self, client, auth_headers, db_session, test_user):
+        """Test that deleting non-default profile doesn't change default."""
+        # Create two profiles
+        profile1 = FinancialProfile(
+            id=uuid4(),
+            user_id=test_user.id,
+            name="Default Profile",
+            profile_type=ProfileType.PERSONAL,
+            is_active=True,
+            is_default=True,
+            default_currency="EUR"
+        )
+        profile2 = FinancialProfile(
+            id=uuid4(),
+            user_id=test_user.id,
+            name="Secondary Profile",
+            profile_type=ProfileType.PERSONAL,
+            is_active=True,
+            is_default=False,
+            default_currency="EUR"
+        )
+        db_session.add_all([profile1, profile2])
+        db_session.commit()
+
+        # Delete the non-default profile
+        response = client.delete(f"/api/v1/profiles/{profile2.id}", headers=auth_headers)
+        assert response.status_code == 204
+
+        # Verify profile1 is still default
+        db_session.refresh(profile1)
+        assert profile1.is_default == True
+        assert profile1.is_active == True
+
+    def test_get_main_profile_returns_null_when_no_profiles(self, client, auth_headers):
+        """Test get_main_profile returns null when user has no profiles."""
+        response = client.get("/api/v1/profiles/main", headers=auth_headers)
+        assert response.status_code == 200
+        data = response.json()
+        assert data["main_profile_id"] is None
+
 
 # =============================================================================
 # Accounts Tests

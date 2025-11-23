@@ -132,10 +132,62 @@ All API calls go through React Query hooks for caching, background refetching, a
 
 ## Multi-Profile Support
 
-FinancePro supports multiple financial profiles:
-- Personal, Family, Business profile types
-- Separate accounts, transactions, budgets per profile
-- Cross-profile analytics and aggregated reporting
+FinancePro supports multiple financial profiles for managing different aspects of your finances:
+
+### Profile Features
+
+- **Profile Types**: Personal, Family, Business
+- **Separate Data**: Each profile has its own accounts, transactions, budgets, and goals
+- **Multi-Profile Analytics**: Aggregate reporting across selected profiles
+- **Default Currency**: Configurable default currency per profile
+
+### Profile Management
+
+- **Automatic Default Selection**: After login, the main (default) profile is automatically selected
+- **Mandatory Profile Creation**: If no profiles exist, a modal prompts you to create one before accessing the app
+- **Profile Selector**: Use the dropdown in the sidebar to select one or more profiles
+- **CRUD Operations**: Create, update, and delete profiles from Settings > Profiles
+
+### How Profiles Work
+
+1. **At Login**: The app fetches all user profiles and selects the default (main) profile automatically
+2. **Profile Selector**: Toggle profiles on/off to filter data across the app
+3. **Main Profile**: Set any profile as the main profile (marked with a star)
+4. **Multi-Select**: Select multiple profiles for aggregated views in Dashboard and Analytics
+5. **Delete Default**: When deleting the default profile, another active profile becomes the new default
+
+### ProfileContext API
+
+The `useProfileContext()` hook provides:
+
+```typescript
+const {
+  profiles,           // All user profiles
+  activeProfiles,     // Currently selected profiles
+  mainProfile,        // The default profile object
+  activeProfileIds,   // IDs of selected profiles
+  mainProfileId,      // ID of the default profile
+  isLoading,          // Loading state
+  hasProfiles,        // Whether user has any profiles
+  requiresProfileCreation, // True if user needs to create a profile
+  setMainProfile,     // Set a profile as default
+  setActiveProfiles,  // Set selected profile IDs
+  toggleProfileSelection, // Toggle a profile selection
+  refreshProfiles,    // Refetch profile data
+} = useProfileContext();
+```
+
+### Using Profiles in API Hooks
+
+All data-fetching hooks automatically use `activeProfileIds` to filter data:
+
+```typescript
+// Example: useTransactions fetches from all active profiles
+const { transactions, isLoading } = useTransactions(filters);
+
+// Example: useBudgets aggregates budgets from selected profiles
+const { budgets, total } = useBudgets();
+```
 
 ## Internationalization
 

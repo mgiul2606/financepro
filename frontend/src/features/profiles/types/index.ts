@@ -24,5 +24,5 @@ export interface ProfileFilters {
 
 // Define MainProfileUpdate
 export interface MainProfileUpdate {
-  profile_id: string;
+  main_profile_id: string;
 }

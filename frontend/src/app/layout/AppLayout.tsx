@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { useAuth } from '../../contexts/AuthContext';
+import { MandatoryProfileModal } from '../../features/profiles';
 
 export interface AppLayoutProps {
   children: ReactNode;
@@ -25,6 +26,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           {children}
         </div>
       </main>
+
+      {/* Mandatory profile creation modal */}
+      <MandatoryProfileModal />
     </div>
   );
 };

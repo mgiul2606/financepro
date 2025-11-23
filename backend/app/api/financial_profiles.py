@@ -338,6 +338,9 @@ async def delete_profile(
     This sets is_active to False instead of permanently deleting the record.
     This preserves data integrity and allows for potential recovery.
 
+    If the deleted profile was the default, another active profile will be
+    automatically set as the new default.
+
     Args:
         profile_id: The financial profile ID to delete
 
@@ -364,6 +367,21 @@ async def delete_profile(
             detail="Not authorized to delete this financial profile"
         )
 
-    # Soft delete - set is_active to False
+    was_default = profile.is_default
+
+    # Soft delete - set is_active to False and remove default status
     profile.is_active = False
+    profile.is_default = False
+
+    # If deleted profile was default, set another active profile as default
+    if was_default:
+        new_default = db.query(FinancialProfile).filter(
+            FinancialProfile.user_id == current_user.id,
+            FinancialProfile.is_active == True,
+            FinancialProfile.id != profile_id
+        ).first()
+
+        if new_default:
+            new_default.is_default = True
+
     db.commit()

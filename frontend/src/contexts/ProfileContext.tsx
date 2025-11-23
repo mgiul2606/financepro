@@ -4,8 +4,9 @@ import {
   useProfiles,
   useMainProfile,
   useSetMainProfile,
+  useCreateProfile,
 } from '../features/profiles/hooks/useProfiles';
-import type { FinancialProfile } from '../features/profiles/types';
+import type { FinancialProfile, FinancialProfileCreate } from '../features/profiles/types';
 
 interface ProfileContextValue {
   // Data
@@ -18,6 +19,14 @@ interface ProfileContextValue {
   // Loading states
   isLoading: boolean;
   isError: boolean;
+  isInitialized: boolean;
+
+  // Profile creation modal state
+  requiresProfileCreation: boolean;
+  showCreateProfileModal: boolean;
+  setShowCreateProfileModal: (show: boolean) => void;
+  createFirstProfile: (data: FinancialProfileCreate) => Promise<void>;
+  isCreatingProfile: boolean;
 
   // Actions
   setMainProfile: (profileId: string) => Promise<void>;
@@ -28,6 +37,7 @@ interface ProfileContextValue {
   // Computed
   hasMultipleProfiles: boolean;
   hasActiveProfiles: boolean;
+  hasProfiles: boolean;
 }
 
 const ProfileContext = createContext<ProfileContextValue | undefined>(undefined);
@@ -35,17 +45,24 @@ const ProfileContext = createContext<ProfileContextValue | undefined>(undefined)
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [activeProfileIds, setActiveProfileIdsState] = useState<string[]>([]);
   const [mainProfileId, setMainProfileId] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [showCreateProfileModal, setShowCreateProfileModal] = useState(false);
 
   // Fetch data
-  const { data: profilesData, isLoading: profilesLoading, refetch: refetchProfiles } = useProfiles();
-  const { data: mainProfileData, isLoading: mainProfileLoading } = useMainProfile();
+  const { profiles: profilesList, isLoading: profilesLoading, refetch: refetchProfiles } = useProfiles();
+  const { mainProfile: mainProfileData, isLoading: mainProfileLoading, refetch: refetchMainProfile } = useMainProfile();
 
   // Mutations
   const setMainProfileMutation = useSetMainProfile();
+  const createProfileMutation = useCreateProfile();
 
-  const profiles = profilesData?.profiles || [];
+  // Filter only active profiles
+  const profiles = profilesList.filter((p) => p.is_active);
   const isLoading = profilesLoading || mainProfileLoading;
   const isError = false; // TODO: Add error handling
+
+  // Check if user needs to create a profile
+  const requiresProfileCreation = !isLoading && profiles.length === 0;
 
   // Update local state when main profile data changes
   useEffect(() => {
@@ -54,13 +71,31 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [mainProfileData]);
 
-  // Initialize: when main profile is loaded and no profiles selected, select the main one
+  // Initialize: when profiles are loaded, set up initial state
   useEffect(() => {
-    if (profiles.length > 0 && activeProfileIds.length === 0 && mainProfileId) {
-      // Select main profile by default (local state only)
-      setActiveProfileIdsState([mainProfileId]);
+    if (!isLoading && !isInitialized) {
+      if (profiles.length === 0) {
+        // No profiles - show creation modal
+        setShowCreateProfileModal(true);
+      } else if (mainProfileData?.main_profile_id) {
+        // Has profiles and main profile - select it
+        setActiveProfileIdsState([mainProfileData.main_profile_id]);
+      } else if (profiles.length > 0) {
+        // Has profiles but no main - select first one
+        const firstProfile = profiles[0];
+        setActiveProfileIdsState([firstProfile.id]);
+        setMainProfileId(firstProfile.id);
+      }
+      setIsInitialized(true);
     }
-  }, [profiles.length, activeProfileIds.length, mainProfileId]);
+  }, [isLoading, isInitialized, profiles.length, mainProfileData]);
+
+  // Auto-show modal when profiles become empty (e.g., after deletion)
+  useEffect(() => {
+    if (isInitialized && profiles.length === 0 && !isLoading) {
+      setShowCreateProfileModal(true);
+    }
+  }, [isInitialized, profiles.length, isLoading]);
 
   // Get active profile objects
   const activeProfiles = profiles.filter((p) => activeProfileIds.includes(p.id));
@@ -68,13 +103,33 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Get main profile object
   const mainProfile = profiles.find((p) => p.id === mainProfileId) || null;
 
+  // Create first profile (for mandatory creation)
+  const createFirstProfile = useCallback(
+    async (data: FinancialProfileCreate) => {
+      const newProfile = await createProfileMutation.createProfile(data);
+      if (newProfile) {
+        // Set as main profile
+        await setMainProfileMutation.mutateAsync({ main_profile_id: newProfile.id });
+        // Refresh data
+        await refetchProfiles();
+        await refetchMainProfile();
+        // Select it
+        setMainProfileId(newProfile.id);
+        setActiveProfileIdsState([newProfile.id]);
+        setShowCreateProfileModal(false);
+      }
+    },
+    [createProfileMutation, setMainProfileMutation, refetchProfiles, refetchMainProfile]
+  );
+
   // Actions
   const setMainProfile = useCallback(
     async (profileId: string) => {
       setMainProfileId(profileId);
       await setMainProfileMutation.mutateAsync({ main_profile_id: profileId });
+      await refetchMainProfile();
     },
-    [setMainProfileMutation]
+    [setMainProfileMutation, refetchMainProfile]
   );
 
   const setActiveProfiles = useCallback(
@@ -95,9 +150,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     []
   );
 
-  const refreshProfiles = useCallback(() => {
-    refetchProfiles();
-  }, [refetchProfiles]);
+  const refreshProfiles = useCallback(async () => {
+    await refetchProfiles();
+    await refetchMainProfile();
+  }, [refetchProfiles, refetchMainProfile]);
 
   const value: ProfileContextValue = {
     profiles,
@@ -107,12 +163,19 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     mainProfileId,
     isLoading,
     isError,
+    isInitialized,
+    requiresProfileCreation,
+    showCreateProfileModal,
+    setShowCreateProfileModal,
+    createFirstProfile,
+    isCreatingProfile: createProfileMutation.isCreating,
     setMainProfile,
     setActiveProfiles,
     toggleProfileSelection,
     refreshProfiles,
     hasMultipleProfiles: profiles.length > 1,
     hasActiveProfiles: activeProfileIds.length > 0,
+    hasProfiles: profiles.length > 0,
   };
 
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;
