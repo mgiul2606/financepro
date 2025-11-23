@@ -22,12 +22,23 @@ export const formatCurrency = (
     return '-';
   }
 
+  // Sanitize fraction digits options to valid range (0-20)
+  const sanitizedOptions = options ? {
+    ...options,
+    ...(options.minimumFractionDigits !== undefined && {
+      minimumFractionDigits: Math.max(0, Math.min(20, options.minimumFractionDigits))
+    }),
+    ...(options.maximumFractionDigits !== undefined && {
+      maximumFractionDigits: Math.max(0, Math.min(20, options.maximumFractionDigits))
+    }),
+  } : undefined;
+
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-    ...options,
+    ...sanitizedOptions,
   }).format(numValue);
 };
 
@@ -45,10 +56,21 @@ export const formatNumber = (
     return '-';
   }
 
+  // Sanitize fraction digits options to valid range (0-20)
+  const sanitizedOptions = options ? {
+    ...options,
+    ...(options.minimumFractionDigits !== undefined && {
+      minimumFractionDigits: Math.max(0, Math.min(20, options.minimumFractionDigits))
+    }),
+    ...(options.maximumFractionDigits !== undefined && {
+      maximumFractionDigits: Math.max(0, Math.min(20, options.maximumFractionDigits))
+    }),
+  } : undefined;
+
   return new Intl.NumberFormat(locale, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-    ...options,
+    ...sanitizedOptions,
   }).format(numValue);
 };
 
