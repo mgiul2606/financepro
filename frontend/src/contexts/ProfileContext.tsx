@@ -61,8 +61,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const isLoading = profilesLoading || mainProfileLoading;
   const isError = false; // TODO: Add error handling
 
-  // Check if user needs to create a profile
-  const requiresProfileCreation = !isLoading && profiles.length === 0;
+  // Check if user needs to create a profile (only after data is loaded)
+  const requiresProfileCreation = !isLoading && isInitialized && profiles.length === 0;
 
   // Update local state when main profile data changes
   useEffect(() => {
@@ -72,23 +72,39 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [mainProfileData]);
 
   // Initialize: when profiles are loaded, set up initial state
+  // Use profilesList to check if data actually arrived (not just loading finished)
   useEffect(() => {
-    if (!isLoading && !isInitialized) {
-      if (profiles.length === 0) {
-        // No profiles - show creation modal
+    // Wait for both queries to finish loading
+    if (isLoading || isInitialized) {
+      return;
+    }
+
+    // Data has loaded, now initialize
+    if (profilesList.length === 0) {
+      // No profiles - show creation modal
+      setShowCreateProfileModal(true);
+      setIsInitialized(true);
+    } else {
+      // Has profiles - check for active ones
+      const activeProfiles = profilesList.filter((p) => p.is_active);
+
+      if (activeProfiles.length === 0) {
+        // All profiles are inactive - show creation modal
         setShowCreateProfileModal(true);
+        setIsInitialized(true);
       } else if (mainProfileData?.main_profile_id) {
         // Has profiles and main profile - select it
         setActiveProfileIdsState([mainProfileData.main_profile_id]);
-      } else if (profiles.length > 0) {
-        // Has profiles but no main - select first one
-        const firstProfile = profiles[0];
+        setIsInitialized(true);
+      } else {
+        // Has profiles but no main - select first active one
+        const firstProfile = activeProfiles[0];
         setActiveProfileIdsState([firstProfile.id]);
         setMainProfileId(firstProfile.id);
+        setIsInitialized(true);
       }
-      setIsInitialized(true);
     }
-  }, [isLoading, isInitialized, profiles.length, mainProfileData]);
+  }, [isLoading, isInitialized, profilesList, mainProfileData]);
 
   // Auto-show modal when profiles become empty (e.g., after deletion)
   useEffect(() => {
