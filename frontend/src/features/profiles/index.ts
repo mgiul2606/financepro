@@ -5,4 +5,5 @@ export * from './hooks/useProfiles';
 export * from './components/ProfileCard';
 export * from './components/ProfileSelector';
 export * from './components/CreateProfileModal';
+export * from './components/MandatoryProfileModal';
 export * from './pages/ProfilesPage';
