@@ -37,7 +37,6 @@ from app.models.enums import (
 # Core user models
 from app.models.user import User
 from app.models.user_preferences import UserPreferences
-from app.models.user_profile_selection import UserProfileSelection
 from app.models.financial_profile import FinancialProfile
 
 # Categorization models
@@ -110,7 +109,6 @@ __all__ = [
     # Core models
     "User",
     "UserPreferences",
-    "UserProfileSelection",
     "FinancialProfile",
     # Categorization
     "Category",
