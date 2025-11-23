@@ -3,7 +3,7 @@
  * React Query hooks for Account operations
  * Wraps the generated orval hooks for better usability
  */
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQueries } from '@tanstack/react-query';
 import {
   useListAccountsApiV1AccountsGet,
   useGetAccountApiV1AccountsAccountIdGet,
@@ -12,21 +12,49 @@ import {
   useDeleteAccountApiV1AccountsAccountIdDelete,
   useGetAccountBalanceApiV1AccountsAccountIdBalanceGet,
   getListAccountsApiV1AccountsGetQueryKey,
+  listAccountsApiV1AccountsGet,
 } from '@/api/generated/accounts/accounts';
+import { useProfileContext } from '@/contexts/ProfileContext';
 import type { AccountCreate, AccountUpdate } from '../types';
+
+export interface AccountFilters {
+  profile_id?: string;
+  skip?: number;
+  limit?: number;
+}
 
 /**
  * Hook to list all accounts
+ * Fetches accounts from all active profiles and aggregates the results
  */
-export const useAccounts = () => {
-  const query = useListAccountsApiV1AccountsGet();
+export const useAccounts = (filters?: AccountFilters) => {
+  const { activeProfileIds, isLoading: profileLoading } = useProfileContext();
+
+  // Create queries for each active profile
+  const queries = useQueries({
+    queries: activeProfileIds.map((profileId) => ({
+      queryKey: getListAccountsApiV1AccountsGetQueryKey({ ...filters, profile_id: profileId }),
+      queryFn: () => listAccountsApiV1AccountsGet({ ...filters, profile_id: profileId }),
+      enabled: !profileLoading && activeProfileIds.length > 0,
+    })),
+  });
+
+  // Aggregate results from all profiles
+  const allAccounts = queries.flatMap((query) => query.data?.data?.accounts || []);
+  const totalCount = queries.reduce((sum, query) => sum + (query.data?.data?.total || 0), 0);
+  const isLoading = profileLoading || queries.some((query) => query.isLoading);
+  const error = queries.find((query) => query.error)?.error || null;
+
+  const refetch = () => {
+    queries.forEach((query) => query.refetch());
+  };
 
   return {
-    accounts: query.data?.data?.accounts || [],
-    total: query.data?.data?.total || 0,
-    isLoading: query.isLoading,
-    error: query.error,
-    refetch: query.refetch,
+    accounts: allAccounts,
+    total: totalCount,
+    isLoading,
+    error,
+    refetch,
   };
 };
 
