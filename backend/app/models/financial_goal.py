@@ -37,13 +37,8 @@ class FinancialGoal(Base):
         target_date: Target completion date
         priority: Priority (1-10)
         status: Goal status
-        icon: Goal icon
-        color: HEX color
-        image_url: Goal image
         milestones: Milestones (JSONB)
-        gamification_level: Current level
         gamification_points: Points earned
-        gamification_badges: Earned badges (JSONB)
         achievement_probability: ML probability
         monthly_contribution: Calculated monthly need
         notes: Optional notes
@@ -93,19 +88,12 @@ class FinancialGoal(Base):
     priority = Column(Integer, default=5, nullable=False)  # 1-10
     status = Column(StringEnum(GoalStatus), default=GoalStatus.ACTIVE, nullable=False)
 
-    # UI customization
-    icon = Column(String(50), nullable=True)
-    color = Column(String(7), nullable=True)  # HEX
-    image_url = Column(String(500), nullable=True)
-
     # Milestones as JSONB (simpler than separate table for v2.1)
     milestones = Column(JSONB, nullable=True)
     # Format: [{"name": "First 1000", "target_amount": 1000, "completed": false, "completed_at": null}]
 
     # Gamification
-    gamification_level = Column(Integer, default=1, nullable=False)
     gamification_points = Column(Integer, default=0, nullable=False)
-    gamification_badges = Column(JSONB, nullable=True)  # ["first_deposit", "50_percent", etc.]
 
     # ML predictions
     achievement_probability = Column(Numeric(5, 4), nullable=True)  # 0-1

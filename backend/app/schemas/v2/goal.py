@@ -47,9 +47,6 @@ class GoalBase(BaseModel):
     currency: str = Field(..., min_length=3, max_length=3)
     target_date: date
     priority: int = Field(5, ge=1, le=10)
-    icon: Optional[str] = None
-    color: Optional[str] = Field(None, pattern=r'^#[0-9A-Fa-f]{6}$')
-    image_url: Optional[str] = None
     notes: Optional[str] = None
 
 
@@ -76,9 +73,6 @@ class GoalUpdate(BaseModel):
     target_date: Optional[date] = None
     priority: Optional[int] = Field(None, ge=1, le=10)
     status: Optional[GoalStatus] = None
-    icon: Optional[str] = None
-    color: Optional[str] = Field(None, pattern=r'^#[0-9A-Fa-f]{6}$')
-    image_url: Optional[str] = None
     notes: Optional[str] = None
     scope_type: Optional[ScopeType] = None
     scope_profile_ids: Optional[List[UUID]] = None
@@ -117,31 +111,8 @@ class GoalResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     @classmethod
-    def from_orm_with_calculations(cls, goal, include_contributions: bool = True):
+    def from_orm_with_calculations(cls, goal, include_contributions: bool = False):
         """Create response with calculated fields"""
-        recent_contributions = []
-        if include_contributions and goal.contributions:
-            recent_contributions = [
-                GoalContributionResponse(
-                    id=c.id,
-                    goal_id=c.goal_id,
-                    amount=c.amount,
-                    contribution_date=c.contribution_date,
-                    transaction_id=c.transaction_id,
-                    notes=c.notes,
-                    created_at=c.created_at
-                )
-                for c in goal.contributions[:5]  # Last 5 contributions
-            ]
-
-        milestones = None
-        if goal.milestones:
-            milestones = [MilestoneSchema(**m) for m in goal.milestones]
-
-        badges = None
-        if goal.gamification_badges:
-            badges = goal.gamification_badges
-
         return cls(
             id=goal.id,
             user_id=goal.user_id,
@@ -149,25 +120,21 @@ class GoalResponse(BaseModel):
             goal_type=goal.goal_type,
             scope_type=goal.scope_type,
             scope_profile_ids=goal.scope_profile_ids,
+            linked_account_id=goal.linked_account_id,
+            description=goal.description,
             target_amount=goal.target_amount,
             current_amount=goal.current_amount,
             currency=goal.currency,
+            start_date=goal.start_date,
             target_date=goal.target_date,
+            monthly_contribution=goal.monthly_contribution or Decimal("0.00"),
+            auto_allocate=goal.auto_allocate,
             priority=goal.priority,
             status=goal.status,
-            icon=goal.icon,
-            color=goal.color,
-            image_url=goal.image_url,
-            milestones=milestones,
-            gamification_level=goal.gamification_level,
+            achievement_probability=goal.achievement_probability,
             gamification_points=goal.gamification_points,
-            gamification_badges=badges,
-            achievement_probability=float(goal.achievement_probability) if goal.achievement_probability else None,
-            monthly_contribution=goal.monthly_contribution,
-            notes=goal.notes,
+            progress_percentage=Decimal(str(goal.progress_percentage)),
+            is_on_track=True,  # TODO: Calculate based on progress vs time
             created_at=goal.created_at,
-            updated_at=goal.updated_at,
-            progress_percentage=goal.progress_percentage,
-            remaining_amount=goal.remaining_amount,
-            recent_contributions=recent_contributions
+            updated_at=goal.updated_at
         )
