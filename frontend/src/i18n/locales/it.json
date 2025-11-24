@@ -389,7 +389,9 @@
     "amount": "Importo",
     "merchant": "Esercente",
     "noSuggestionsYet": "Nessun suggerimento al momento",
-    "viewAll": "Vedi Tutti"
+    "viewAll": "Vedi Tutti",
+    "filteringBy": "Filtro per categoria",
+    "clearFilter": "Rimuovi filtro"
   },
   "aiAssistant": {
     "title": "Assistente AI",

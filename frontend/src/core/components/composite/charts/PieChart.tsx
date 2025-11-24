@@ -26,6 +26,8 @@ export interface PieChartProps {
   className?: string;
   formatValue?: (value: number) => string;
   formatPercentage?: (value: number) => string;
+  onSliceClick?: (dataPoint: PieChartDataPoint, index: number) => void;
+  selectedIndex?: number;
 }
 
 const defaultColors = [
@@ -58,6 +60,8 @@ export const PieChart: React.FC<PieChartProps> = ({
   className,
   formatValue,
   formatPercentage,
+  onSliceClick,
+  selectedIndex,
 }) => {
   const CustomTooltip = ({ active, payload }: TooltipProps<any, any>) => {
     if (active && payload && payload.length) {
@@ -101,6 +105,11 @@ export const PieChart: React.FC<PieChartProps> = ({
               <Cell
                 key={`cell-${index}`}
                 fill={entry.color || defaultColors[index % defaultColors.length]}
+                onClick={() => onSliceClick?.(entry, index)}
+                cursor={onSliceClick ? 'pointer' : 'default'}
+                opacity={selectedIndex !== undefined && selectedIndex !== index ? 0.3 : 1}
+                stroke={selectedIndex === index ? '#1f2937' : 'none'}
+                strokeWidth={selectedIndex === index ? 2 : 0}
               />
             ))}
           </Pie>
