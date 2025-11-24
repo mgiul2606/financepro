@@ -68,7 +68,7 @@ class Prediction(Base):
     error = Column(Numeric(15, 2), nullable=True)
 
     # Timestamps
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
     # Relationships
     financial_profile = relationship("FinancialProfile", back_populates="predictions")

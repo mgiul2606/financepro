@@ -69,8 +69,8 @@ class AuditLog(Base):
     # Event information
     event_type = Column(StringEnum(EventType), nullable=False, index=True)
     severity = Column(StringEnum(SeverityLevel), default=SeverityLevel.INFO, nullable=False, index=True)
-    action = Column(String(50), nullable=False, index=True)
-    entity_type = Column(String(100), nullable=True, index=True)
+    action = Column(String(100), nullable=False, index=True)
+    entity_type = Column(String(50), nullable=True, index=True)
     entity_id = Column(UUID(as_uuid=True), nullable=True)
 
     # State tracking
@@ -80,7 +80,7 @@ class AuditLog(Base):
     # Request context
     ip_address = Column(String(45), nullable=True)  # IPv6 max length is 45
     user_agent = Column(Text, nullable=True)
-    device_info = Column(String(255), nullable=True)
+    device_info = Column(JSONB, nullable=True)  # Parsed device info as JSON
     geolocation = Column(String(100), nullable=True)
 
     # Correlation IDs
@@ -88,7 +88,7 @@ class AuditLog(Base):
     request_id = Column(UUID(as_uuid=True), nullable=True)
 
     # Timestamp
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
 
     # Relationships
     user = relationship("User", back_populates="audit_logs")

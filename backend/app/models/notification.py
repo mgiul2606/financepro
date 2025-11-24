@@ -70,11 +70,11 @@ class Notification(Base):
     sent_via_push = Column(Boolean, default=False, nullable=False)
 
     # Expiration and read tracking
-    expires_at = Column(DateTime, nullable=True)
-    read_at = Column(DateTime, nullable=True)
+    expires_at = Column(DateTime(timezone=True), nullable=True)
+    read_at = Column(DateTime(timezone=True), nullable=True)
 
     # Timestamps
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
     # Relationships
     user = relationship("User", back_populates="notifications")
