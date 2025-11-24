@@ -66,14 +66,14 @@ class User(Base):
     timezone = Column(String(50), default='Europe/Rome', nullable=False)  # IANA timezone
 
     # Timestamps
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = Column(
-        DateTime,
+        DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
         nullable=False
     )
-    last_login_at = Column(DateTime, nullable=True)
+    last_login_at = Column(DateTime(timezone=True), nullable=True)
     last_login_ip = Column(String(45), nullable=True)  # IPv4/IPv6
 
     # Relationships

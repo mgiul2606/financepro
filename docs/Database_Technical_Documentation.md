@@ -50,11 +50,12 @@ This document provides complete technical specifications for every table, column
 - `transactions` - All financial transactions
 - `transaction_tags` - M:N junction table
 
-### 4. Budgeting & Goals (4 tables)
+### 4. Budgeting & Goals (5 tables)
 - `budgets` - Budgets with scope (USER-level)
 - `budget_categories` - Budget allocations per category
 - `financial_goals` - Financial goals with scope (USER-level)
 - `goal_contributions` - Contributions to goals
+- `goal_milestones` - Individual goal milestones
 
 ### 5. Assets & Valuations (2 tables)
 - `assets` - Physical/financial assets (PROFILE-level)
@@ -78,7 +79,7 @@ This document provides complete technical specifications for every table, column
 ### 9. Audit & Security (1 table)
 - `audit_logs` - Complete audit trail
 
-**Total: 34 Tables**
+**Total: 35 Tables**
 
 ---
 
@@ -896,6 +897,7 @@ WHERE bc.budget_id = :budget_id
 | `currency` | VARCHAR(3) | NOT NULL | Goal currency. |
 | `start_date` | DATE | NOT NULL | Start date. |
 | `target_date` | DATE | NOT NULL | Target completion date. |
+| `notes` | TEXT | NULL | Optional notes about the goal. |
 | `monthly_contribution` | NUMERIC(15,2) | NULL | Suggested monthly contribution. Calculated: `(target - current) / months_remaining`. |
 | `auto_allocate` | BOOLEAN | DEFAULT false | Auto-allocate funds from transactions. |
 | `priority` | INTEGER | DEFAULT 5 | Priority (1-10). For resource allocation if limited funds. |
@@ -984,6 +986,44 @@ WHERE bc.budget_id = :budget_id
 - Contribution frequency analysis
 - Complete savings history
 - ML input for achievement_probability calculation
+
+---
+
+### Table: `goal_milestones`
+
+**Purpose**: Individual milestones for tracking progress toward financial goals.
+
+**Level**: Child of financial_goals
+
+| Column | Type | Constraints | Purpose |
+|--------|------|-------------|---------|
+| `id` | UUID | PK | Unique milestone identifier. |
+| `goal_id` | UUID | FK→financial_goals, NOT NULL | Parent goal. |
+| `name` | VARCHAR(255) | NOT NULL | Milestone name (e.g., "First 1000", "50%"). |
+| `target_amount` | NUMERIC(15,2) | NOT NULL | Target amount for this milestone. |
+| `target_date` | DATE | NOT NULL | Target date to reach milestone. |
+| `is_completed` | BOOLEAN | DEFAULT false | Completion flag. |
+| `completed_at` | TIMESTAMPTZ | NULL | Completion timestamp. |
+| `created_at` | TIMESTAMPTZ | DEFAULT NOW() | Creation timestamp. |
+
+**Constraints**:
+- PRIMARY KEY (`id`)
+- FOREIGN KEY (`goal_id`) REFERENCES `financial_goals`(id) ON DELETE CASCADE
+
+**Indexes**:
+- INDEX (`goal_id`)
+
+**Business Rules**:
+- Milestones help track intermediate progress toward goals
+- `is_completed` set to true when `current_amount >= target_amount`
+- `completed_at` populated when milestone achieved
+- Used for gamification: +100 points per milestone reached
+
+**Use Cases**:
+- Breaking large goals into manageable steps
+- Progress visualization
+- Gamification and motivation
+- Milestone-based notifications
 
 ---
 
@@ -1267,7 +1307,7 @@ WHERE bc.budget_id = :budget_id
 | Column | Type | Constraints | Purpose |
 |--------|------|-------------|---------|
 | `id` | UUID | PK | Unique log identifier. |
-| `transaction_id` | UUID | FK→transactions, NULL | Classified transaction. |
+| `transaction_id` | UUID | FK→transactions, NOT NULL | Classified transaction. |
 | `financial_profile_id` | UUID | FK→profiles, NOT NULL | For RLS. |
 | `original_description` | TEXT | NOT NULL | Original transaction description (ML input). |
 | `suggested_category_id` | UUID | FK→categories, NULL | Suggested category. |
@@ -1608,8 +1648,8 @@ WHERE bc.budget_id = :budget_id
 | `user_agent` | VARCHAR(500) | NULL | Browser/app User-Agent. |
 | `device_info` | JSONB | NULL | Device info. E.g., `{"os": "iOS 17", "device": "iPhone 14", "app_version": "2.1.0"}`. |
 | `geolocation` | VARCHAR(100) | NULL | Approximate geolocation ("Milan, IT"). |
-| `session_id` | VARCHAR(255) | NULL | Session ID. For correlating events in same session. |
-| `request_id` | VARCHAR(255) | NULL | Request ID (for distributed tracing). |
+| `session_id` | UUID | NULL | Session ID. For correlating events in same session. |
+| `request_id` | UUID | NULL | Request ID (for distributed tracing). |
 | `created_at` | TIMESTAMPTZ | DEFAULT NOW() | Event timestamp. **IMMUTABLE**. |
 
 **Constraints**:
@@ -1671,11 +1711,14 @@ WHERE bc.budget_id = :budget_id
 | financial_profiles | transactions | CASCADE | Profile deletion → delete transactions |
 | financial_profiles | assets | CASCADE | Profile deletion → delete assets |
 | accounts | transactions | CASCADE | Account deletion → delete transactions |
+| accounts | import_jobs | CASCADE | Account deletion → delete import jobs |
+| accounts | bank_conditions | CASCADE | Account deletion → delete bank conditions |
 | categories | transactions | SET NULL | Category deletion → preserve transactions, null category |
 | merchants | transactions | SET NULL | Merchant deletion → denormalized name preserved |
 | recurring_transactions | recurring_transaction_occurrences | CASCADE | Template deletion → delete occurrences |
 | budgets | budget_categories | CASCADE | Budget deletion → delete allocations |
 | financial_goals | goal_contributions | CASCADE | Goal deletion → delete contributions |
+| financial_goals | goal_milestones | CASCADE | Goal deletion → delete milestones |
 | assets | asset_valuations | CASCADE | Asset deletion → delete valuation history |
 
 ### B. Unique Constraints Summary
@@ -1853,9 +1896,18 @@ CREATE TYPE notificationstatus AS ENUM (
 
 ## Document End
 
-**Version**: 2.1 Final  
-**Last Updated**: 2025-11-20  
-**Total Tables**: 34  
-**Total ENUMs**: 17  
-**Authors**: FinancePro Architecture Team  
+**Version**: 2.1.1
+**Last Updated**: 2025-11-24
+**Total Tables**: 35
+**Total ENUMs**: 17
+**Authors**: FinancePro Architecture Team
 **Status**: ✅ PRODUCTION-READY COMPLETE SPECIFICATION
+
+### Changelog v2.1.1 (2025-11-24)
+- Added `goal_milestones` table
+- Added `financial_goals.notes` column
+- Changed `ml_classification_logs.transaction_id` to NOT NULL
+- Changed `audit_logs.session_id` and `request_id` to UUID type
+- Changed `audit_logs.user_agent` to TEXT type
+- Changed `import_jobs` and `bank_conditions` account FK to CASCADE DELETE
+- Fixed all DateTime columns to use timezone-aware timestamps

@@ -77,7 +77,7 @@ class MLClassificationLog(Base):
     )
 
     # Original input
-    original_description = Column(String(500), nullable=False)
+    original_description = Column(Text, nullable=False)
 
     # ML suggestions
     suggested_tags = Column(ARRAY(String), nullable=True)
@@ -101,7 +101,7 @@ class MLClassificationLog(Base):
     processing_time_ms = Column(Integer, nullable=True)
 
     # Timestamp
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
 
     # Relationships
     transaction = relationship("Transaction", back_populates="ml_classification_logs")

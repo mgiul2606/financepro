@@ -73,12 +73,12 @@ class AIRecommendation(Base):
     user_feedback = Column(Text, nullable=True)
 
     # Expiration
-    expires_at = Column(DateTime, nullable=True)
+    expires_at = Column(DateTime(timezone=True), nullable=True)
 
     # Timestamps
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = Column(
-        DateTime,
+        DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
         nullable=False

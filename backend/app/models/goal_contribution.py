@@ -46,7 +46,7 @@ class GoalContribution(Base):
     notes = Column(Text, nullable=True)
 
     # Timestamps
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
     # Relationships
     goal = relationship("FinancialGoal", back_populates="contributions")

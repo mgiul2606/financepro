@@ -59,9 +59,9 @@ class ChatConversation(Base):
     is_archived = Column(Boolean, default=False, nullable=False)
 
     # Timestamps
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
     updated_at = Column(
-        DateTime,
+        DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
         nullable=False
@@ -126,7 +126,7 @@ class ChatMessage(Base):
 
     # LLM tracking
     tokens_used = Column(Integer, nullable=True)
-    model_name = Column(String(50), nullable=True)
+    model_name = Column(String(100), nullable=True)
     processing_time_ms = Column(Integer, nullable=True)
 
     # Additional data (charts, query results, etc.)
@@ -134,7 +134,7 @@ class ChatMessage(Base):
     # metadata = Column(JSONB, nullable=True)
 
     # Timestamp
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
 
     # Relationships
     conversation = relationship("ChatConversation", back_populates="messages")

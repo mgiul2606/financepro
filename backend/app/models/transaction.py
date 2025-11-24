@@ -101,13 +101,13 @@ class Transaction(Base):
     import_job_id = Column(UUID(as_uuid=True), nullable=True)
     external_id = Column(String(255), nullable=True)
 
-    # Extensible metadata
-    transaction_metadata = Column(JSONB, nullable=True)
+    # Extensible metadata - note: 'metadata' is reserved in SQLAlchemy
+    transaction_metadata = Column('metadata', JSONB, nullable=True)
 
     # Timestamps
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = Column(
-        DateTime,
+        DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
         nullable=False
