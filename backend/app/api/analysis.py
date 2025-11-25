@@ -28,7 +28,7 @@ from app.models.exchange_rate import ExchangeRate
 from app.models.enums import TransactionType, ScopeType
 from app.core.rls import get_rls_context
 from app.api.dependencies import get_current_user
-from app.services.v2 import ExchangeRateService
+from app.services import ExchangeRateService
 from pydantic import BaseModel
 
 router = APIRouter()

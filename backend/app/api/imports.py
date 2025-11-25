@@ -16,7 +16,7 @@ from uuid import UUID
 from app.db.database import get_db
 from app.models.user import User
 from app.models.enums import ImportType, ImportStatus
-from app.services.v2 import ImportService
+from app.services import ImportService
 from app.core.rls import get_rls_context
 from app.api.dependencies import get_current_user
 from pydantic import BaseModel

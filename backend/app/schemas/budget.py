@@ -332,3 +332,22 @@ class BudgetSummary(BaseModel):
             }
         }
     )
+
+class BudgetCategoryCreate(BaseModel):
+    """Schema for budget category allocation"""
+    category_id: UUID
+    allocated_amount: Decimal = Field(..., ge=0, decimal_places=2)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class BudgetCategoryResponse(BaseModel):
+    """Schema for budget category response"""
+    id: UUID
+    budget_id: UUID
+    category_id: UUID
+    allocated_amount: Decimal
+    spent_amount: Decimal = Decimal("0.00")
+    percentage_used: float = 0.0
+
+    model_config = ConfigDict(from_attributes=True)

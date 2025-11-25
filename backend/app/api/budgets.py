@@ -17,10 +17,10 @@ from datetime import date
 from app.db.database import get_db
 from app.models.user import User
 from app.models.enums import ScopeType, PeriodType
-from app.services.v2 import BudgetService
+from app.services import BudgetService
 from app.core.rls import get_rls_context
 from app.api.dependencies import get_current_user
-from app.schemas.v2.budget import (
+from app.schemas.budget import (
     BudgetCreate,
     BudgetUpdate,
     BudgetResponse,

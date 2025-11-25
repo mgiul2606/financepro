@@ -18,15 +18,15 @@ from datetime import date, datetime
 from app.db.database import get_db
 from app.models.user import User
 from app.models.enums import ScopeType, GoalType, GoalStatus
-from app.services.v2 import GoalService
+from app.services import GoalService
 from app.core.rls import get_rls_context
 from app.api.dependencies import get_current_user
-from app.schemas.v2.goal import (
-    GoalCreate,
-    GoalUpdate,
-    GoalResponse,
-    GoalContributionCreate,
-    GoalContributionResponse
+from app.schemas.goal import (
+    FinancialGoalCreate,
+    FinancialGoalUpdate,
+    FinancialGoalResponse,
+    GoalMilestoneCreate,
+    GoalMilestoneResponse
 )
 from pydantic import BaseModel
 
@@ -35,7 +35,7 @@ router = APIRouter()
 
 # Response models
 class GoalListResponse(BaseModel):
-    items: List[GoalResponse]
+    items: List[FinancialGoalResponse]
     total: int
 
 
@@ -104,7 +104,7 @@ async def list_goals(
     for goal in goals:
         progress = service.calculate_progress(goal)
 
-        items.append(GoalResponse(
+        items.append(FinancialGoalResponse(
             id=goal.id,
             user_id=goal.user_id,
             name=goal.name,
@@ -135,16 +135,16 @@ async def list_goals(
 
 @router.post(
     "/",
-    response_model=GoalResponse,
+    response_model=FinancialGoalResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Create goal",
     description="Create a new financial goal"
 )
 async def create_goal(
-    goal_in: GoalCreate,
+    goal_in: FinancialGoalCreate,
     service: Annotated[GoalService, Depends(get_goal_service)],
     current_user: Annotated[User, Depends(get_current_user)]
-) -> GoalResponse:
+) -> FinancialGoalResponse:
     """Create a new goal."""
     try:
         goal = service.create_goal(
@@ -166,7 +166,7 @@ async def create_goal(
 
         progress = service.calculate_progress(goal)
 
-        return GoalResponse(
+        return FinancialGoalResponse(
             id=goal.id,
             user_id=goal.user_id,
             name=goal.name,
@@ -198,20 +198,20 @@ async def create_goal(
 
 @router.get(
     "/{goal_id}",
-    response_model=GoalResponse,
+    response_model=FinancialGoalResponse,
     summary="Get goal",
     description="Get a specific goal by ID"
 )
 async def get_goal(
     goal_id: UUID,
     service: Annotated[GoalService, Depends(get_goal_service)]
-) -> GoalResponse:
+) -> FinancialGoalResponse:
     """Get goal by ID."""
     try:
         goal = service.get_goal(goal_id)
         progress = service.calculate_progress(goal)
 
-        return GoalResponse(
+        return FinancialGoalResponse(
             id=goal.id,
             user_id=goal.user_id,
             name=goal.name,
@@ -243,22 +243,22 @@ async def get_goal(
 
 @router.patch(
     "/{goal_id}",
-    response_model=GoalResponse,
+    response_model=FinancialGoalResponse,
     summary="Update goal",
     description="Update an existing goal"
 )
 async def update_goal(
     goal_id: UUID,
-    goal_in: GoalUpdate,
+    goal_in: FinancialGoalUpdate,
     service: Annotated[GoalService, Depends(get_goal_service)]
-) -> GoalResponse:
+) -> FinancialGoalResponse:
     """Update goal."""
     try:
         updates = goal_in.model_dump(exclude_unset=True)
         goal = service.update_goal(goal_id, **updates)
         progress = service.calculate_progress(goal)
 
-        return GoalResponse(
+        return FinancialGoalResponse(
             id=goal.id,
             user_id=goal.user_id,
             name=goal.name,
@@ -328,16 +328,16 @@ async def get_goal_progress(
 
 @router.post(
     "/{goal_id}/contributions",
-    response_model=GoalContributionResponse,
+    response_model=GoalMilestoneResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Add contribution",
     description="Add a contribution to a goal"
 )
 async def add_contribution(
     goal_id: UUID,
-    contribution_in: GoalContributionCreate,
+    contribution_in: GoalMilestoneCreate,
     service: Annotated[GoalService, Depends(get_goal_service)]
-) -> GoalContributionResponse:
+) -> GoalMilestoneResponse:
     """Add contribution to goal."""
     try:
         contribution = service.add_contribution(
@@ -348,7 +348,7 @@ async def add_contribution(
             notes=contribution_in.notes
         )
 
-        return GoalContributionResponse(
+        return GoalMilestoneResponse(
             id=contribution.id,
             goal_id=contribution.goal_id,
             transaction_id=contribution.transaction_id,
@@ -364,7 +364,7 @@ async def add_contribution(
 
 @router.get(
     "/{goal_id}/contributions",
-    response_model=List[GoalContributionResponse],
+    response_model=List[GoalMilestoneResponse],
     summary="List contributions",
     description="List all contributions for a goal"
 )
@@ -375,7 +375,7 @@ async def list_contributions(
     end_date: Optional[date] = Query(None),
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0)
-) -> List[GoalContributionResponse]:
+) -> List[GoalMilestoneResponse]:
     """List contributions for a goal."""
     try:
         contributions = service.get_contributions(
@@ -387,7 +387,7 @@ async def list_contributions(
         )
 
         return [
-            GoalContributionResponse(
+            GoalMilestoneResponse(
                 id=c.id,
                 goal_id=c.goal_id,
                 transaction_id=c.transaction_id,
