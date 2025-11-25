@@ -25,7 +25,7 @@ export const GoalsPage: React.FC = () => {
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
 
   // Data fetching
-  const { data: goals, isLoading, error: loadError } = useGoals();
+  const { goals, isLoading, error: loadError } = useGoals();
 
   // Mutations
   const createMutation = useCreateGoal();
@@ -157,17 +157,17 @@ export const GoalsPage: React.FC = () => {
           /* Goals Cards Grid */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {goals?.map((goal) => {
-              const percentage = (goal.currentAmount / goal.targetAmount) * 100;
-              const remaining = goal.targetAmount - goal.currentAmount;
-              const daysRemaining = getDaysRemaining(goal.targetDate);
+              const percentage = (parseFloat(goal.current_amount) / parseFloat(goal.target_amount)) * 100;
+              const remaining = parseFloat(goal.target_amount) - parseFloat(goal.current_amount);
+              const daysRemaining = getDaysRemaining(goal.target_date);
 
               return (
                 <Card key={goal.id} variant="elevated">
                   <CardHeader
                     title={goal.name}
-                    subtitle={goal.category ? t(`goals.categories.${goal.category}`) : t('goals.categories.general')}
+                    subtitle={goal.goal_type ? t(`goals.categories.${goal.goal_type}`) : t('goals.categories.general')}
                     action={
-                      <Badge variant={getPriorityVariant(goal.priority)} size="sm">
+                      <Badge variant={getPriorityVariant(goal.priority.toString())} size="sm">
                         {goal.priority}
                       </Badge>
                     }
@@ -189,7 +189,7 @@ export const GoalsPage: React.FC = () => {
                       </div>
                       <div className="w-full h-3 bg-neutral-200 rounded-full overflow-hidden">
                         <div
-                          className={`h-full transition-all duration-300 ${getProgressColor(goal.currentAmount, goal.targetAmount)}`}
+                          className={`h-full transition-all duration-300 ${getProgressColor(parseFloat(goal.current_amount), parseFloat(goal.target_amount))}`}
                           style={{ width: `${Math.min(percentage, 100)}%` }}
                         />
                       </div>
@@ -200,13 +200,13 @@ export const GoalsPage: React.FC = () => {
                       <div className="flex justify-between">
                         <span className="text-neutral-600">{t('goals.current')}</span>
                         <span className="font-medium">
-                          <CurrencyText value={goal.currentAmount} currency={goal.currency as any} />
+                          <CurrencyText value={parseFloat(goal.current_amount)} currency={goal.currency as any} />
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-neutral-600">{t('goals.target')}</span>
                         <span className="font-medium">
-                          <CurrencyText value={goal.targetAmount} currency={goal.currency as any} />
+                          <CurrencyText value={parseFloat(goal.target_amount)} currency={goal.currency as any} />
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -220,7 +220,7 @@ export const GoalsPage: React.FC = () => {
                       <div className="flex justify-between">
                         <span className="text-neutral-600">{t('goals.targetDate')}</span>
                         <span className="font-medium text-xs">
-                          <DateText value={goal.targetDate} />
+                          <DateText value={goal.target_date} />
                         </span>
                       </div>
                       <div className="flex justify-between">

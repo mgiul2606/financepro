@@ -23,11 +23,11 @@ export const Dashboard = () => {
 
   // Calculate stats
   const totalBalance = accounts.reduce((sum: number, acc) => sum + parseFloat(acc.current_balance || '0'), 0);
-  const totalBudget = budgets?.reduce((sum: number, b: any) => sum + (b.amount || 0), 0) || 0;
-  const totalBudgetSpent = budgets?.reduce((sum: number, b: any) => sum + (b.spent || 0), 0) || 0;
+  const totalBudget = budgets?.reduce((sum: number, b: any) => sum + parseFloat(b.total_amount || '0'), 0) || 0;
+  const totalBudgetSpent = budgets?.reduce((sum: number, b: any) => sum + parseFloat(b.total_spent || '0'), 0) || 0;
   const activeGoals = goals?.filter((g: any) => g.status === 'in_progress').length || 0;
   const totalGoalProgress =
-    goals?.reduce((sum: number, g: any) => sum + ((g.current_amount || 0) / (g.target_amount || 1)) * 100, 0) || 0;
+    goals?.reduce((sum: number, g: any) => sum + ((parseFloat(g.current_amount) || 0) / (parseFloat(g.target_amount) || 1)) * 100, 0) || 0;
   const avgGoalProgress = goals && goals.length > 0 ? totalGoalProgress / goals.length : 0;
 
   const isLoading = accountsLoading || budgetsLoading || goalsLoading;
@@ -205,7 +205,7 @@ export const Dashboard = () => {
           <CardBody className="pt-0">
             <div className="space-y-3">
               {budgets?.slice(0, 3).map((budget: any) => {
-                const percentage = ((budget.spent_amount || 0) / (budget.amount || 1)) * 100;
+                const percentage = ((parseFloat(budget.total_spent || '0')) / (parseFloat(budget.total_amount) || 1)) * 100;
                 return (
                   <div
                     key={budget.id}
