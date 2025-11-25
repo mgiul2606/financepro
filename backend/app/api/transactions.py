@@ -184,6 +184,119 @@ async def create_transaction(
     db.refresh(transaction)
     return transaction
 
+@router.get(
+    "/stats",
+    summary="Get transaction statistics",
+    description="Get spending statistics for transactions (total spent, total income, by category)",
+    responses={
+        200: {"description": "Statistics retrieved successfully"},
+    },
+    tags=["Transactions"]
+)
+async def get_transaction_stats(
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+    profile_id: Optional[UUID] = Query(None, description="Filter by financial profile ID"),
+    account_id: Optional[UUID] = Query(None, description="Filter by account ID"),
+    date_from: Optional[date] = Query(None, description="Statistics from this date (inclusive)"),
+    date_to: Optional[date] = Query(None, description="Statistics to this date (inclusive)"),
+):
+    """
+    Get transaction statistics.
+
+    Provides aggregated statistics about transactions including:
+    - Total amount spent (expenses)
+    - Total amount received (income)
+    - Net amount
+    - Transaction count
+    - Breakdown by category (if applicable)
+
+    Args:
+        profile_id: Filter by financial profile ID
+        account_id: Filter by account ID
+        date_from: Start date filter
+        date_to: End date filter
+
+    Returns:
+        Dictionary with transaction statistics
+    """
+    # Build base query
+    query = db.query(Transaction).join(
+        Account, Transaction.account_id == Account.id
+    ).join(
+        FinancialProfile, Account.financial_profile_id == FinancialProfile.id
+    ).filter(
+        FinancialProfile.user_id == current_user.id
+    )
+
+    # Apply filters
+    if profile_id:
+        query = query.filter(FinancialProfile.id == profile_id)
+
+    if account_id:
+        query = query.filter(Transaction.account_id == account_id)
+
+    if date_from:
+        query = query.filter(Transaction.transaction_date >= date_from)
+
+    if date_to:
+        query = query.filter(Transaction.transaction_date <= date_to)
+
+    # Calculate statistics
+    from app.models.transaction import TransactionType
+
+    transactions = query.all()
+
+    total_income = Decimal("0.00")
+    total_expenses = Decimal("0.00")
+
+    for t in transactions:
+        if t.amount_clear > 0:
+            total_income += Decimal(str(t.amount_clear))
+        else:
+            total_expenses += Decimal(str(t.amount_clear))
+
+    net_amount = total_income - total_expenses
+
+    # Category breakdown
+    category_stats = db.query(
+        Transaction.category_id,
+        func.count(Transaction.id).label("count"),
+        func.sum(Transaction.amount_clear).label("total_amount")
+    ).select_from(Transaction).join(
+        Account, Transaction.account_id == Account.id
+    ).join(
+        FinancialProfile, Account.financial_profile_id == FinancialProfile.id
+    ).filter(
+        FinancialProfile.user_id == current_user.id
+    )
+
+    # Apply same filters to category stats
+    if profile_id:
+        category_stats = category_stats.filter(FinancialProfile.id == profile_id)
+    if account_id:
+        category_stats = category_stats.filter(Transaction.account_id == account_id)
+    if date_from:
+        category_stats = category_stats.filter(Transaction.transaction_date >= date_from)
+    if date_to:
+        category_stats = category_stats.filter(Transaction.transaction_date <= date_to)
+
+    category_stats = category_stats.group_by(Transaction.category_id).all()
+
+    return {
+        "total_income": float(total_income),
+        "total_expenses": float(total_expenses),
+        "net_amount": float(net_amount),
+        "transaction_count": len(transactions),
+        "category_breakdown": [
+            {
+                "category_id": str(stat.category_id) if stat.category_id else None,
+                "count": stat.count,
+                "total_amount": float(stat.total_amount) if stat.total_amount else 0.0
+            }
+            for stat in category_stats
+        ]
+    }
 
 @router.get(
     "/{transaction_id}",
@@ -431,118 +544,3 @@ async def bulk_create_transactions(
         db.refresh(transaction)
 
     return TransactionListResponse(items=transactions, total=len(transactions))
-
-
-@router.get(
-    "/stats",
-    summary="Get transaction statistics",
-    description="Get spending statistics for transactions (total spent, total income, by category)",
-    responses={
-        200: {"description": "Statistics retrieved successfully"},
-    },
-    tags=["Transactions"]
-)
-async def get_transaction_stats(
-    db: Annotated[Session, Depends(get_db)],
-    current_user: Annotated[User, Depends(get_current_user)],
-    profile_id: Optional[UUID] = Query(None, description="Filter by financial profile ID"),
-    account_id: Optional[UUID] = Query(None, description="Filter by account ID"),
-    date_from: Optional[date] = Query(None, description="Statistics from this date (inclusive)"),
-    date_to: Optional[date] = Query(None, description="Statistics to this date (inclusive)"),
-):
-    """
-    Get transaction statistics.
-
-    Provides aggregated statistics about transactions including:
-    - Total amount spent (expenses)
-    - Total amount received (income)
-    - Net amount
-    - Transaction count
-    - Breakdown by category (if applicable)
-
-    Args:
-        profile_id: Filter by financial profile ID
-        account_id: Filter by account ID
-        date_from: Start date filter
-        date_to: End date filter
-
-    Returns:
-        Dictionary with transaction statistics
-    """
-    # Build base query
-    query = db.query(Transaction).join(
-        Account, Transaction.account_id == Account.id
-    ).join(
-        FinancialProfile, Account.financial_profile_id == FinancialProfile.id
-    ).filter(
-        FinancialProfile.user_id == current_user.id
-    )
-
-    # Apply filters
-    if profile_id:
-        query = query.filter(FinancialProfile.id == profile_id)
-
-    if account_id:
-        query = query.filter(Transaction.account_id == account_id)
-
-    if date_from:
-        query = query.filter(Transaction.transaction_date >= date_from)
-
-    if date_to:
-        query = query.filter(Transaction.transaction_date <= date_to)
-
-    # Calculate statistics
-    from app.models.transaction import TransactionType
-
-    transactions = query.all()
-
-    total_income = Decimal("0.00")
-    total_expenses = Decimal("0.00")
-
-    for t in transactions:
-        if t.transaction_type == TransactionType.INCOME:
-            total_income += Decimal(str(t.amount))
-        else:
-            total_expenses += Decimal(str(t.amount))
-
-    net_amount = total_income - total_expenses
-
-    # Category breakdown
-    category_stats = db.query(
-        Transaction.category_id,
-        func.count(Transaction.id).label("count"),
-        func.sum(Transaction.amount).label("total_amount")
-    ).select_from(Transaction).join(
-        Account, Transaction.account_id == Account.id
-    ).join(
-        FinancialProfile, Account.financial_profile_id == FinancialProfile.id
-    ).filter(
-        FinancialProfile.user_id == current_user.id
-    )
-
-    # Apply same filters to category stats
-    if profile_id:
-        category_stats = category_stats.filter(FinancialProfile.id == profile_id)
-    if account_id:
-        category_stats = category_stats.filter(Transaction.account_id == account_id)
-    if date_from:
-        category_stats = category_stats.filter(Transaction.transaction_date >= date_from)
-    if date_to:
-        category_stats = category_stats.filter(Transaction.transaction_date <= date_to)
-
-    category_stats = category_stats.group_by(Transaction.category_id).all()
-
-    return {
-        "total_income": float(total_income),
-        "total_expenses": float(total_expenses),
-        "net_amount": float(net_amount),
-        "transaction_count": len(transactions),
-        "category_breakdown": [
-            {
-                "category_id": str(stat.category_id) if stat.category_id else None,
-                "count": stat.count,
-                "total_amount": float(stat.total_amount) if stat.total_amount else 0.0
-            }
-            for stat in category_stats
-        ]
-    }

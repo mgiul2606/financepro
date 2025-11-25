@@ -27,8 +27,7 @@ class TransactionBase(BaseModel):
     )
     amount: Decimal = Field(
         ...,
-        gt=0,
-        decimal_places=2,
+        decimal_places=30,
         description="Transaction amount (must be positive)",
         examples=[50.00, 1250.75, 99.99]
     )
@@ -211,7 +210,7 @@ class TransactionResponse(TransactionBase):
         description="URL to receipt or document"
     )
     created_by: TransactionSource = Field(
-        ...,
+        None,
         description="Source of transaction creation"
     )
     created_at: datetime = Field(..., description="Transaction creation timestamp (UTC)")
