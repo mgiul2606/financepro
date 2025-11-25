@@ -58,11 +58,28 @@ class FinancialGoalBase(BaseModel):
 class FinancialGoalCreate(FinancialGoalBase):
     """
     Schema for creating a new financial goal.
-    Requires financial_profile_id to associate with a profile.
+    User-level goal with scope support.
     """
-    financial_profile_id: UUID = Field(
-        ...,
-        description="ID of the financial profile this goal belongs to"
+    scope_type: str = Field(
+        default="USER",
+        description="Scope type: USER, PROFILE, or MULTI_PROFILE"
+    )
+    scope_profile_ids: Optional[list[UUID]] = Field(
+        None,
+        description="Profile IDs for PROFILE or MULTI_PROFILE scope"
+    )
+    linked_account_id: Optional[UUID] = Field(
+        None,
+        description="Optional linked account for this goal"
+    )
+    currency: str = Field(
+        default="USD",
+        pattern="^[A-Z]{3}$",
+        description="ISO 4217 currency code"
+    )
+    start_date: Optional[date] = Field(
+        None,
+        description="Goal start date (defaults to today)"
     )
     current_amount: Decimal = Field(
         default=Decimal("0.00"),
@@ -70,16 +87,25 @@ class FinancialGoalCreate(FinancialGoalBase):
         decimal_places=2,
         description="Initial amount already saved towards this goal"
     )
+    auto_allocate: bool = Field(
+        default=False,
+        description="Enable automatic allocation"
+    )
+    milestones: Optional[list] = Field(
+        None,
+        description="Optional milestones for this goal"
+    )
 
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
-                "financial_profile_id": "550e8400-e29b-41d4-a716-446655440000",
                 "name": "New House Down Payment",
                 "description": "Save for 20% down payment on new house",
                 "goal_type": "house",
+                "scope_type": "USER",
                 "target_amount": 50000.00,
                 "current_amount": 5000.00,
+                "currency": "USD",
                 "target_date": "2026-12-31",
                 "priority": 9
             }
@@ -195,13 +221,37 @@ class FinancialGoalResponse(FinancialGoalBase):
     Includes all fields, computed progress, and optional milestones.
     """
     id: UUID = Field(..., description="Unique goal identifier")
-    financial_profile_id: UUID = Field(
+    user_id: UUID = Field(
         ...,
-        description="ID of the financial profile this goal belongs to"
+        description="ID of the user this goal belongs to"
+    )
+    scope_type: str = Field(
+        ...,
+        description="Scope type (user, profile, multi_profile)"
+    )
+    scope_profile_ids: Optional[list[UUID]] = Field(
+        None,
+        description="List of profile IDs when using profile or multi_profile scope"
+    )
+    linked_account_id: Optional[UUID] = Field(
+        None,
+        description="Optional linked account ID for this goal"
     )
     current_amount: Decimal = Field(
         ...,
         description="Current amount saved towards this goal"
+    )
+    currency: str = Field(
+        ...,
+        description="Currency code for the goal"
+    )
+    start_date: date = Field(
+        ...,
+        description="Goal start date"
+    )
+    auto_allocate: bool = Field(
+        default=False,
+        description="Whether to auto-allocate funds to this goal"
     )
     monthly_contribution: Optional[Decimal] = Field(
         None,
@@ -228,43 +278,39 @@ class FinancialGoalResponse(FinancialGoalBase):
     created_at: datetime = Field(..., description="Goal creation timestamp (UTC)")
     updated_at: datetime = Field(..., description="Last update timestamp (UTC)")
 
-    @computed_field
-    @property
-    def progress_percentage(self) -> Decimal:
-        """
-        Calculate progress towards goal as percentage.
-        Returns 0 if target_amount is 0.
-        """
-        if self.target_amount == 0:
-            return Decimal("0.00")
-        percentage = (self.current_amount / self.target_amount) * 100
-        # Round to 2 decimal places
-        return Decimal(str(round(percentage, 2)))
-
-    @computed_field
-    @property
-    def remaining_amount(self) -> Decimal:
-        """Calculate remaining amount to reach goal."""
-        return max(Decimal("0.00"), self.target_amount - self.current_amount)
+    progress_percentage: Decimal = Field(
+        ...,
+        description="Progress towards goal as percentage"
+    )
+    is_on_track: bool = Field(
+        ...,
+        description="Whether the goal is on track to be achieved"
+    )
 
     model_config = ConfigDict(
         from_attributes=True,
         json_schema_extra={
             "example": {
                 "id": "550e8400-e29b-41d4-a716-446655440040",
-                "financial_profile_id": "550e8400-e29b-41d4-a716-446655440000",
+                "user_id": "550e8400-e29b-41d4-a716-446655440001",
                 "name": "New House Down Payment",
                 "description": "Save for 20% down payment on new house",
                 "goal_type": "house",
+                "scope_type": "user",
+                "scope_profile_ids": None,
+                "linked_account_id": None,
                 "target_amount": 50000.00,
                 "current_amount": 15000.00,
+                "currency": "USD",
+                "start_date": "2025-01-01",
                 "target_date": "2026-12-31",
+                "auto_allocate": False,
                 "monthly_contribution": 1750.00,
                 "priority": 9,
                 "status": "active",
                 "achievement_probability": 85.50,
                 "progress_percentage": 30.00,
-                "remaining_amount": 35000.00,
+                "is_on_track": True,
                 "gamification_points": 150,
                 "milestones": [
                     {
@@ -301,19 +347,25 @@ class FinancialGoalListResponse(BaseModel):
                 "items": [
                     {
                         "id": "550e8400-e29b-41d4-a716-446655440040",
-                        "financial_profile_id": "550e8400-e29b-41d4-a716-446655440000",
+                        "user_id": "550e8400-e29b-41d4-a716-446655440001",
                         "name": "New House Down Payment",
                         "description": "Save for 20% down payment",
                         "goal_type": "house",
+                        "scope_type": "user",
+                        "scope_profile_ids": None,
+                        "linked_account_id": None,
                         "target_amount": 50000.00,
                         "current_amount": 15000.00,
+                        "currency": "USD",
+                        "start_date": "2025-01-01",
                         "target_date": "2026-12-31",
+                        "auto_allocate": False,
                         "monthly_contribution": 1750.00,
                         "priority": 9,
                         "status": "active",
                         "achievement_probability": 85.50,
                         "progress_percentage": 30.00,
-                        "remaining_amount": 35000.00,
+                        "is_on_track": True,
                         "gamification_points": 150,
                         "milestones": None,
                         "created_at": "2025-01-01T00:00:00Z",
