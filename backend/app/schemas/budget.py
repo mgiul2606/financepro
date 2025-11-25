@@ -28,11 +28,11 @@ class BudgetBase(BaseModel):
         ...,
         description="Start date of the budget period"
     )
-    end_date: date = Field(
-        ...,
-        description="End date of the budget period"
+    end_date: Optional[date] = Field(
+        None,
+        description="End date of the budget period (NULL for rolling budgets)"
     )
-    amount: Decimal = Field(
+    total_amount: Decimal = Field(
         ...,
         gt=0,
         decimal_places=2,
@@ -48,9 +48,9 @@ class BudgetBase(BaseModel):
 
     @field_validator('end_date')
     @classmethod
-    def validate_end_date(cls, v: date, info) -> date:
-        """Ensure end_date is after start_date"""
-        if 'start_date' in info.data and v <= info.data['start_date']:
+    def validate_end_date(cls, v: Optional[date], info) -> Optional[date]:
+        """Ensure end_date is after start_date if provided"""
+        if v is not None and 'start_date' in info.data and v <= info.data['start_date']:
             raise ValueError('end_date must be after start_date')
         return v
 
@@ -58,40 +58,43 @@ class BudgetBase(BaseModel):
 class BudgetCreate(BudgetBase):
     """
     Schema for creating a new budget.
-    Requires financial_profile_id and category allocations.
+    User-level budget with scope support.
     """
-    financial_profile_id: UUID = Field(
-        ...,
-        description="ID of the financial profile this budget belongs to"
+    scope_type: str = Field(
+        default="USER",
+        description="Scope type: USER, PROFILE, or MULTI_PROFILE"
     )
-    category_ids: list[UUID] = Field(
-        ...,
-        min_length=1,
-        description="List of category IDs to assign to this budget"
+    scope_profile_ids: Optional[list[UUID]] = Field(
+        None,
+        description="Profile IDs for PROFILE or MULTI_PROFILE scope"
     )
-    alert_threshold_percentage: Decimal = Field(
-        default=Decimal("80.00"),
+    rollover_enabled: bool = Field(
+        default=False,
+        description="Enable rollover of unspent amounts to next period"
+    )
+    alert_threshold_percent: int = Field(
+        default=80,
         ge=0,
         le=100,
-        decimal_places=2,
         description="Percentage of budget to trigger alerts (0-100)"
+    )
+    category_allocations: Optional[list] = Field(
+        None,
+        description="Optional category allocations for this budget"
     )
 
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
-                "financial_profile_id": "550e8400-e29b-41d4-a716-446655440000",
                 "name": "Monthly Expenses January 2025",
                 "period_type": "monthly",
                 "start_date": "2025-01-01",
                 "end_date": "2025-01-31",
-                "amount": 2000.00,
+                "total_amount": 2000.00,
                 "currency": "EUR",
-                "category_ids": [
-                    "550e8400-e29b-41d4-a716-446655440020",
-                    "550e8400-e29b-41d4-a716-446655440021"
-                ],
-                "alert_threshold_percentage": 80.00
+                "scope_type": "USER",
+                "rollover_enabled": False,
+                "alert_threshold_percent": 80
             }
         }
     )
@@ -120,7 +123,7 @@ class BudgetUpdate(BaseModel):
         None,
         description="Updated end date"
     )
-    amount: Optional[Decimal] = Field(
+    total_amount: Optional[Decimal] = Field(
         None,
         gt=0,
         decimal_places=2,
@@ -131,20 +134,26 @@ class BudgetUpdate(BaseModel):
         pattern="^[A-Z]{3}$",
         description="Updated currency code"
     )
-    category_ids: Optional[list[UUID]] = Field(
+    scope_type: Optional[str] = Field(
         None,
-        min_length=1,
-        description="Updated list of category IDs"
+        description="Updated scope type"
+    )
+    scope_profile_ids: Optional[list[UUID]] = Field(
+        None,
+        description="Updated profile IDs"
+    )
+    rollover_enabled: Optional[bool] = Field(
+        None,
+        description="Updated rollover setting"
     )
     is_active: Optional[bool] = Field(
         None,
         description="Whether the budget is active"
     )
-    alert_threshold_percentage: Optional[Decimal] = Field(
+    alert_threshold_percent: Optional[int] = Field(
         None,
         ge=0,
         le=100,
-        decimal_places=2,
         description="Updated alert threshold percentage"
     )
 
@@ -152,8 +161,8 @@ class BudgetUpdate(BaseModel):
         json_schema_extra={
             "example": {
                 "name": "Updated Budget Name",
-                "amount": 2500.00,
-                "alert_threshold_percentage": 85.00
+                "total_amount": 2500.00,
+                "alert_threshold_percent": 85
             }
         }
     )
@@ -189,29 +198,41 @@ class BudgetResponse(BudgetBase):
     Includes all fields, current usage, and category allocations.
     """
     id: UUID = Field(..., description="Unique budget identifier")
-    financial_profile_id: UUID = Field(
+    user_id: UUID = Field(
         ...,
-        description="ID of the financial profile this budget belongs to"
+        description="ID of the user this budget belongs to"
+    )
+    scope_type: str = Field(
+        ...,
+        description="Scope type (user, profile, multi_profile)"
+    )
+    scope_profile_ids: Optional[list[UUID]] = Field(
+        None,
+        description="List of profile IDs when using profile or multi_profile scope"
+    )
+    rollover_enabled: bool = Field(
+        default=False,
+        description="Whether unspent amounts rollover to next period"
     )
     is_active: bool = Field(
         default=True,
         description="Whether the budget is currently active"
     )
-    alert_threshold_percentage: Decimal = Field(
+    alert_threshold_percent: int = Field(
         ...,
         description="Percentage of budget to trigger alerts"
     )
-    current_usage: Optional[Decimal] = Field(
+    total_spent: Optional[Decimal] = Field(
         None,
-        description="Current spending against this budget (computed from transactions)"
+        description="Total spent against this budget (computed)"
+    )
+    remaining: Optional[Decimal] = Field(
+        None,
+        description="Remaining budget amount (computed)"
     )
     usage_percentage: Optional[Decimal] = Field(
         None,
         description="Percentage of budget used (computed)"
-    )
-    remaining_amount: Optional[Decimal] = Field(
-        None,
-        description="Remaining budget amount (computed)"
     )
     category_allocations: Optional[list[BudgetCategoryAllocation]] = Field(
         None,
@@ -225,18 +246,21 @@ class BudgetResponse(BudgetBase):
         json_schema_extra={
             "example": {
                 "id": "550e8400-e29b-41d4-a716-446655440030",
-                "financial_profile_id": "550e8400-e29b-41d4-a716-446655440000",
+                "user_id": "550e8400-e29b-41d4-a716-446655440001",
                 "name": "Monthly Expenses January 2025",
                 "period_type": "monthly",
                 "start_date": "2025-01-01",
                 "end_date": "2025-01-31",
-                "amount": 2000.00,
+                "total_amount": 2000.00,
                 "currency": "EUR",
+                "scope_type": "user",
+                "scope_profile_ids": None,
+                "rollover_enabled": False,
                 "is_active": True,
-                "alert_threshold_percentage": 80.00,
-                "current_usage": 1250.00,
+                "alert_threshold_percent": 80,
+                "total_spent": 1250.00,
+                "remaining": 750.00,
                 "usage_percentage": 62.50,
-                "remaining_amount": 750.00,
                 "category_allocations": [
                     {
                         "category_id": "550e8400-e29b-41d4-a716-446655440020",
@@ -267,18 +291,21 @@ class BudgetListResponse(BaseModel):
                 "items": [
                     {
                         "id": "550e8400-e29b-41d4-a716-446655440030",
-                        "financial_profile_id": "550e8400-e29b-41d4-a716-446655440000",
+                        "user_id": "550e8400-e29b-41d4-a716-446655440001",
                         "name": "Monthly Expenses January 2025",
                         "period_type": "monthly",
                         "start_date": "2025-01-01",
                         "end_date": "2025-01-31",
-                        "amount": 2000.00,
+                        "total_amount": 2000.00,
                         "currency": "EUR",
+                        "scope_type": "user",
+                        "scope_profile_ids": None,
+                        "rollover_enabled": False,
                         "is_active": True,
-                        "alert_threshold_percentage": 80.00,
-                        "current_usage": 1250.00,
+                        "alert_threshold_percent": 80,
+                        "total_spent": 1250.00,
+                        "remaining": 750.00,
                         "usage_percentage": 62.50,
-                        "remaining_amount": 750.00,
                         "category_allocations": None,
                         "created_at": "2025-01-01T00:00:00Z",
                         "updated_at": "2025-01-15T10:30:00Z"
