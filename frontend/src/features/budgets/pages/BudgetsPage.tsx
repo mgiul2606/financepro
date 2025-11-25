@@ -32,7 +32,7 @@ export const BudgetsPage: React.FC = () => {
   const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
 
   // Data fetching
-  const { data: budgets, isLoading, error: loadError } = useBudgets();
+  const { budgets, isLoading, error: loadError } = useBudgets();
 
   // Mutations
   const createMutation = useCreateBudget();
@@ -148,14 +148,14 @@ export const BudgetsPage: React.FC = () => {
           /* Budget Cards Grid */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {budgets?.map((budget) => {
-              const percentage = (budget.spent / budget.amount) * 100;
-              const remaining = budget.amount - budget.spent;
+              const percentage = (parseFloat(budget.total_spent || '0') / parseFloat(budget.total_amount)) * 100;
+              const remaining = parseFloat(budget.total_amount) - parseFloat(budget.total_spent || '0');
 
               return (
                 <Card key={budget.id} variant="elevated">
                   <CardHeader
                     title={budget.name}
-                    subtitle={budget.category}
+                    subtitle={budget.period_type}
                     action={
                       <Badge variant={getBadgeVariant(percentage)} size="sm">
                         <PercentageText value={percentage} decimals={0} />
@@ -169,12 +169,12 @@ export const BudgetsPage: React.FC = () => {
                       <div className="flex justify-between text-sm mb-2">
                         <span className="text-neutral-600">{t('budgets.spent')}</span>
                         <span className="font-semibold">
-                          <CurrencyText value={budget.spent} />
+                          <CurrencyText value={parseFloat(budget.total_spent || '0')} />
                         </span>
                       </div>
                       <div className="w-full h-2 bg-neutral-200 rounded-full overflow-hidden">
                         <div
-                          className={`h-full transition-all duration-300 ${getProgressColor(budget.spent, budget.amount)}`}
+                          className={`h-full transition-all duration-300 ${getProgressColor(parseFloat(budget.total_spent || '0'), parseFloat(budget.total_amount))}`}
                           style={{ width: `${Math.min(percentage, 100)}%` }}
                         />
                       </div>
@@ -185,7 +185,7 @@ export const BudgetsPage: React.FC = () => {
                       <div className="flex justify-between">
                         <span className="text-neutral-600">{t('budgets.amount')}</span>
                         <span className="font-medium">
-                          <CurrencyText value={budget.amount} />
+                          <CurrencyText value={parseFloat(budget.total_amount)} />
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -198,12 +198,12 @@ export const BudgetsPage: React.FC = () => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-neutral-600">{t('budgets.period')}</span>
-                        <span className="font-medium capitalize">{budget.period}</span>
+                        <span className="font-medium capitalize">{budget.period_type}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-neutral-600">{t('budgets.dates')}</span>
                         <span className="font-medium text-xs">
-                          <DateText value={budget.startDate} /> - <DateText value={budget.endDate} />
+                          <DateText value={budget.start_date} /> - <DateText value={budget.end_date} />
                         </span>
                       </div>
                     </div>
