@@ -83,7 +83,20 @@ export const AccountForm = ({
     }
 
     try {
-      await onSubmit(formData);
+      // In edit mode, exclude initial_balance and send only defined fields
+      if (isEditMode) {
+        const updateData: AccountUpdate = {};
+        if (formData.name) updateData.name = formData.name;
+        if (formData.account_type) updateData.account_type = formData.account_type;
+        if (formData.currency) updateData.currency = formData.currency;
+        if (formData.institution_name !== undefined) updateData.institution_name = formData.institution_name || undefined;
+        if (formData.notes !== undefined) updateData.notes = formData.notes || undefined;
+
+        await onSubmit(updateData);
+      } else {
+        // In create mode, send all fields including initial_balance
+        await onSubmit(formData as AccountCreate);
+      }
     } catch (err) {
       // Error handling is done by parent component
       console.error('Form submission error:', err);
@@ -136,31 +149,29 @@ export const AccountForm = ({
         hint={t('accounts.currencyHint')}
       />
 
-      <FormField
-        label={t('accounts.initialBalance')}
-        type="number"
-        step="0.01"
-        required
-        value={formData.initial_balance}
-        onChange={(e) =>
-          setFormData({ ...formData, initial_balance: parseFloat(e.target.value) || 0 })
-        }
-        placeholder="0.00"
-        disabled={isLoading}
-        hint={
-          isEditMode
-            ? t('accounts.initialBalanceHintEdit')
-            : t('accounts.initialBalanceHint') + ' ' + t('accounts.negativeBalanceAllowed')
-        }
-        validation={{
-          required: { value: true, message: t('accounts.errors.balanceRequired') },
-          // Allow negative balances for credit cards, loans, mortgages
-        }}
-        onValidationChange={(isValid, errors) => {
-          setFieldErrors((prev) => ({ ...prev, initial_balance: errors }));
-        }}
-        showValidation
-      />
+      {!isEditMode && (
+        <FormField
+          label={t('accounts.initialBalance')}
+          type="number"
+          step="0.01"
+          required
+          value={formData.initial_balance}
+          onChange={(e) =>
+            setFormData({ ...formData, initial_balance: parseFloat(e.target.value) || 0 })
+          }
+          placeholder="0.00"
+          disabled={isLoading}
+          hint={t('accounts.initialBalanceHint') + ' ' + t('accounts.negativeBalanceAllowed')}
+          validation={{
+            required: { value: true, message: t('accounts.errors.balanceRequired') },
+            // Allow negative balances for credit cards, loans, mortgages
+          }}
+          onValidationChange={(isValid, errors) => {
+            setFieldErrors((prev) => ({ ...prev, initial_balance: errors }));
+          }}
+          showValidation
+        />
+      )}
 
       <FormField
         label={t('accounts.institutionName')}
