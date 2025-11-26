@@ -285,19 +285,30 @@ export const TransactionsPage: React.FC = () => {
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
         {/* Active Filters Banner */}
         {activeFiltersCount > 0 && (
-          <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-blue-600" />
-              <span className="text-sm text-blue-900">
-                <strong>{activeFiltersCount}</strong> {t('common.filter').toLowerCase()}
-                {activeFiltersCount > 1 ? 's' : ''} active • Showing{' '}
-                <strong>{filteredTransactions.length}</strong> of{' '}
-                <strong>{transactions?.length || 0}</strong> {t('transactions.title').toLowerCase()}
-              </span>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Filter className="h-5 w-5 text-blue-600" />
+                <span className="text-sm font-semibold text-blue-900">
+                  {activeFiltersCount} {t('common.filter').toLowerCase()}
+                  {activeFiltersCount > 1 ? 's' : ''} active
+                </span>
+              </div>
+              <Button variant="ghost" size="sm" onClick={handleClearFilters}>
+                Clear Filters
+              </Button>
             </div>
-            <Button variant="ghost" size="sm" onClick={handleClearFilters}>
-              Clear Filters
-            </Button>
+            <div className="text-sm text-blue-800 space-y-1">
+              {filters.account_id && (
+                <div>
+                  <strong>Account ID:</strong> {filters.account_id}
+                </div>
+              )}
+              <div>
+                Showing <strong>{filteredTransactions.length}</strong> of{' '}
+                <strong>{transactions?.length || 0}</strong> {t('transactions.title').toLowerCase()}
+              </div>
+            </div>
           </div>
         )}
 
