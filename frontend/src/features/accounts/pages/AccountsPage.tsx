@@ -1,5 +1,6 @@
 // features/accounts/pages/AccountsPage.tsx
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PlusCircle, Wallet, TrendingUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
@@ -22,11 +23,13 @@ import type { AccountResponse, AccountCreate, AccountUpdate, AccountStatusInfo }
 
 export const AccountsPage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const confirm = useConfirm();
 
   // State
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingAccount, setEditingAccount] = useState<AccountResponse | null>(null);
+  const [deletingAccountId, setDeletingAccountId] = useState<string | null>(null);
 
   // Data fetching
   const { accounts, isLoading, error: loadError } = useAccounts();
@@ -73,10 +76,13 @@ export const AccountsPage = () => {
     });
 
     if (confirmed) {
+      setDeletingAccountId(account.id);
       try {
         await deleteAccount(account.id);
       } catch (error) {
         console.error('Failed to delete account:', error);
+      } finally {
+        setDeletingAccountId(null);
       }
     }
   };
@@ -145,14 +151,46 @@ export const AccountsPage = () => {
 
       {/* Summary Banner */}
       {accounts.length > 0 && (
-        <BannerAlert variant="info" className="mb-6" closable={false}>
-          <div className="flex items-center justify-between">
-            <span>
-              <strong>{accounts.length}</strong> {accounts.length !== 1 ? t('dashboard.accountsCount') : t('dashboard.account')} •{' '}
-              <strong>{t('accounts.totalBalance')}:</strong> <CurrencyText value={calculateTotalBalance()} />
-            </span>
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-6 shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Total Accounts */}
+            <div className="flex items-center space-x-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <Wallet className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600">{t('accounts.totalAccounts')}</p>
+                <p className="text-2xl font-bold text-gray-900">{accounts.length}</p>
+              </div>
+            </div>
+
+            {/* Total Balance */}
+            <div className="flex items-center space-x-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                <TrendingUp className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600">{t('accounts.totalBalance')}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  <CurrencyText value={calculateTotalBalance()} />
+                </p>
+              </div>
+            </div>
+
+            {/* Active Accounts */}
+            <div className="flex items-center space-x-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                <PlusCircle className="h-6 w-6 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-600">{t('accounts.activeAccounts')}</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {accounts.filter((acc) => acc.is_active !== false).length}
+                </p>
+              </div>
+            </div>
           </div>
-        </BannerAlert>
+        </div>
       )}
 
       {/* Empty State */}
@@ -215,13 +253,14 @@ export const AccountsPage = () => {
                       label: t('accounts.viewTransactions'),
                       icon: <TrendingUp size={16} />,
                       onClick: () => {
-                        // TODO: Navigate to transactions page with account filter
-                        console.log('View transactions for account:', account.id);
+                        // Navigate to transactions page with account filter
+                        navigate(`/transactions?account_id=${account.id}`);
                       },
                     },
                   ],
                 }}
-                className={isDeleting ? 'opacity-50' : ''}
+                className={deletingAccountId === account.id ? 'opacity-50 pointer-events-none' : ''}
+                isLoading={deletingAccountId === account.id}
               />
             );
           })}

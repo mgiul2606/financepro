@@ -61,10 +61,10 @@ export const useAccounts = (filters?: AccountFilters) => {
 /**
  * Hook to get a single account by ID
  */
-export const useAccount = (accountId: number) => {
+export const useAccount = (accountId: string) => {
   const query = useGetAccountApiV1AccountsAccountIdGet(accountId, {
     query: {
-      enabled: !!accountId && accountId > 0,
+      enabled: !!accountId && accountId.length > 0,
     },
   });
 
@@ -79,10 +79,10 @@ export const useAccount = (accountId: number) => {
 /**
  * Hook to get account balance
  */
-export const useAccountBalance = (accountId: number) => {
+export const useAccountBalance = (accountId: string) => {
   const query = useGetAccountBalanceApiV1AccountsAccountIdBalanceGet(accountId, {
     query: {
-      enabled: !!accountId && accountId > 0,
+      enabled: !!accountId && accountId.length > 0,
     },
   });
 
@@ -137,7 +137,7 @@ export const useUpdateAccount = () => {
   });
 
   return {
-    updateAccount: (accountId: number, data: AccountUpdate) =>
+    updateAccount: (accountId: string, data: AccountUpdate) =>
       mutation.mutateAsync({ accountId, data }),
     isUpdating: mutation.isPending,
     error: mutation.error,
@@ -163,7 +163,7 @@ export const useDeleteAccount = () => {
   });
 
   return {
-    deleteAccount: (accountId: number) => mutation.mutateAsync({ accountId }),
+    deleteAccount: (accountId: string) => mutation.mutateAsync({ accountId }),
     isDeleting: mutation.isPending,
     error: mutation.error,
     reset: mutation.reset,

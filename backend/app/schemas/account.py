@@ -53,13 +53,21 @@ class AccountCreate(AccountBase):
     initial_balance: Decimal = Field(
         default=Decimal("0.00"),
         decimal_places=2,
-        description="Initial account balance",
-        examples=[0, 1000.50, 5000]
+        # No ge constraint - allow negative balances (e.g., for credit cards, loans)
+        description="Initial account balance (can be negative for debts)",
+        examples=[0, 1000.50, -5000, 5000]
     )
-    account_number: Optional[str] = Field(
+    account_number_last4: Optional[str] = Field(
         None,
-        max_length=255,
-        description="Account number (will be encrypted in production)"
+        min_length=4,
+        max_length=4,
+        pattern="^[0-9]{4}$",
+        description="Last 4 digits of account number"
+    )
+    iban: Optional[str] = Field(
+        None,
+        max_length=34,
+        description="Full IBAN (will be encrypted for high-security profiles)"
     )
 
     model_config = ConfigDict(
@@ -102,10 +110,17 @@ class AccountUpdate(BaseModel):
         max_length=255,
         description="Updated institution name"
     )
-    account_number: Optional[str] = Field(
+    account_number_last4: Optional[str] = Field(
         None,
-        max_length=255,
-        description="Updated account number"
+        min_length=4,
+        max_length=4,
+        pattern="^[0-9]{4}$",
+        description="Updated last 4 digits of account number"
+    )
+    iban: Optional[str] = Field(
+        None,
+        max_length=34,
+        description="Updated IBAN"
     )
     notes: Optional[str] = Field(
         None,
@@ -136,11 +151,15 @@ class AccountResponse(AccountBase):
         ...,
         description="ID of the financial profile this account belongs to"
     )
-    initial_balance: Decimal = Field(..., description="Initial balance when account was created")
+    initial_balance: Decimal = Field(..., description="Initial balance when account was created (can be negative)")
     current_balance: Decimal = Field(..., description="Current balance (initial + transactions)")
-    account_number: Optional[str] = Field(
+    account_number_last4: Optional[str] = Field(
         None,
-        description="Account number (encrypted)"
+        description="Last 4 digits of account number"
+    )
+    iban: Optional[str] = Field(
+        None,
+        description="Full IBAN (encrypted for high-security profiles)"
     )
     is_active: bool = Field(
         default=True,

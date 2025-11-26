@@ -37,10 +37,24 @@ export const AccountForm = ({
     { value: 'JPY', label: t('settings.currencies.JPY') },
   ];
 
-  const [formData, setFormData] = useState<AccountCreate>({
+  const ACCOUNT_TYPE_OPTIONS = [
+    { value: 'checking', label: t('accounts.types.checking') },
+    { value: 'savings', label: t('accounts.types.savings') },
+    { value: 'credit_card', label: t('accounts.types.credit_card') },
+    { value: 'investment', label: t('accounts.types.investment') },
+    { value: 'cash', label: t('accounts.types.cash') },
+    { value: 'loan', label: t('accounts.types.loan') },
+    { value: 'mortgage', label: t('accounts.types.mortgage') },
+    { value: 'other', label: t('accounts.types.other') },
+  ];
+
+  const [formData, setFormData] = useState<AccountCreate | AccountUpdate>({
     name: account?.name || '',
     currency: account?.currency || 'EUR',
     initial_balance: account ? parseFloat(account.initial_balance) : 0,
+    account_type: account?.account_type,
+    institution_name: account?.institution_name,
+    notes: account?.notes,
   });
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
@@ -52,6 +66,9 @@ export const AccountForm = ({
         name: account.name,
         currency: account.currency || 'EUR',
         initial_balance: parseFloat(account.initial_balance),
+        account_type: account.account_type,
+        institution_name: account.institution_name,
+        notes: account.notes,
       });
     }
   }, [account]);
@@ -101,6 +118,15 @@ export const AccountForm = ({
       />
 
       <SelectField
+        label={t('accounts.accountType')}
+        value={formData.account_type || 'checking'}
+        onChange={(e) => setFormData({ ...formData, account_type: e.target.value as any })}
+        options={ACCOUNT_TYPE_OPTIONS}
+        disabled={isLoading}
+        hint={t('accounts.accountTypeHint')}
+      />
+
+      <SelectField
         label={t('accounts.currency')}
         required
         value={formData.currency}
@@ -124,16 +150,35 @@ export const AccountForm = ({
         hint={
           isEditMode
             ? t('accounts.initialBalanceHintEdit')
-            : t('accounts.initialBalanceHint')
+            : t('accounts.initialBalanceHint') + ' ' + t('accounts.negativeBalanceAllowed')
         }
         validation={{
           required: { value: true, message: t('accounts.errors.balanceRequired') },
-          min: { value: 0, message: t('accounts.errors.balanceNegative') },
+          // Allow negative balances for credit cards, loans, mortgages
         }}
         onValidationChange={(isValid, errors) => {
           setFieldErrors((prev) => ({ ...prev, initial_balance: errors }));
         }}
         showValidation
+      />
+
+      <FormField
+        label={t('accounts.institutionName')}
+        value={formData.institution_name || ''}
+        onChange={(e) => setFormData({ ...formData, institution_name: e.target.value })}
+        placeholder={t('accounts.institutionNamePlaceholder')}
+        disabled={isLoading}
+        hint={t('accounts.institutionNameHint')}
+      />
+
+      <FormField
+        label={t('accounts.notes')}
+        value={formData.notes || ''}
+        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+        placeholder={t('accounts.notesPlaceholder')}
+        disabled={isLoading}
+        multiline
+        rows={3}
       />
 
       {isEditMode && account && (
