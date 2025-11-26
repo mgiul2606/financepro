@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Annotated, List
 from uuid import UUID
+from decimal import Decimal
 
 from app.db.database import get_db
 from app.models.user import User
@@ -119,9 +120,12 @@ async def create_account(
 
     # Create account with the financial_profile_id
     account_data = account_in.model_dump(exclude={'financial_profile_id'})
+
+    # Set current_balance to initial_balance on creation
     account = Account(
         **account_data,
-        financial_profile_id=financial_profile.id
+        financial_profile_id=financial_profile.id,
+        current_balance=account_data.get('initial_balance', Decimal("0.00"))
     )
     db.add(account)
     db.commit()

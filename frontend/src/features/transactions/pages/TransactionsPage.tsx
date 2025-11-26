@@ -1,6 +1,7 @@
 // features/transactions/pages/TransactionsPage.tsx
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { Plus, Filter, Download, TrendingUp, TrendingDown, DollarSign, Edit } from 'lucide-react';
 import { format } from 'date-fns';
 import { PageHeader } from '../../../core/components/composite/PageHeader';
@@ -26,6 +27,7 @@ import type { SupportedCurrency } from '@/utils/currency';
 
 export const TransactionsPage: React.FC = () => {
   const { t } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -35,6 +37,14 @@ export const TransactionsPage: React.FC = () => {
 
   // Filter state
   const [filters, setFilters] = useState<TransactionFilters>({});
+
+  // Initialize filters from URL query parameters
+  useEffect(() => {
+    const accountId = searchParams.get('account_id');
+    if (accountId) {
+      setFilters((prev) => ({ ...prev, account_id: accountId }));
+    }
+  }, [searchParams]);
 
   // Data fetching
   const { data: transactions, isLoading } = useTransactions();
@@ -136,6 +146,8 @@ export const TransactionsPage: React.FC = () => {
 
   const handleClearFilters = () => {
     setFilters({});
+    // Also clear URL query parameters
+    setSearchParams({});
   };
 
   const activeFiltersCount = Object.keys(filters).length;
