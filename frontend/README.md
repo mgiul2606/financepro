@@ -29,8 +29,8 @@ A modern, modular React frontend for FinancePro - a comprehensive personal finan
 
 ## Prerequisites
 
-- Node.js 18+
-- npm 9+
+- Node.js 22.18+
+- npm 10+
 - Backend API running on localhost:8000
 
 ## Installation
