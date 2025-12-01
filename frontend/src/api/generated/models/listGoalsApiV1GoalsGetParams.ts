@@ -15,29 +15,29 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { GoalStatus } from './goalStatus';
-import type { GoalType } from './goalType';
+import type { GoalStatus } from "./goalStatus";
+import type { GoalType } from "./goalType";
 
 export type ListGoalsApiV1GoalsGetParams = {
-/**
- * Filter by status
- */
-status_filter?: GoalStatus | null;
-/**
- * Filter by type
- */
-goal_type?: GoalType | null;
-/**
- * Include completed goals
- */
-include_completed?: boolean;
-/**
- * @minimum 1
- * @maximum 500
- */
-limit?: number;
-/**
- * @minimum 0
- */
-offset?: number;
+  /**
+   * Filter by status
+   */
+  status_filter?: GoalStatus | null;
+  /**
+   * Filter by type
+   */
+  goal_type?: GoalType | null;
+  /**
+   * Include completed goals
+   */
+  include_completed?: boolean;
+  /**
+   * @minimum 1
+   * @maximum 500
+   */
+  limit?: number;
+  /**
+   * @minimum 0
+   */
+  offset?: number;
 };

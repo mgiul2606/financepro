@@ -15,10 +15,7 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import {
-  useMutation,
-  useQuery
-} from '@tanstack/react-query';
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
   DataTag,
   DefinedInitialDataOptions,
@@ -31,8 +28,8 @@ import type {
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
-  UseQueryResult
-} from '@tanstack/react-query';
+  UseQueryResult,
+} from "@tanstack/react-query";
 
 import type {
   AIServiceStatus,
@@ -53,1399 +50,2662 @@ import type {
   SpendingPatternsResponse,
   SuggestedTag,
   TrainModelRequest,
-  TrainModelResponse
-} from '.././models';
+  TrainModelResponse,
+} from ".././models";
 
-import { customInstance } from '../../client';
-
+import { customInstance } from "../../client";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
-
-
 
 /**
  * Use ML to classify a transaction into a category
  * @summary Classify a transaction
  */
 export type classifyTransactionApiV1AiAiClassifyTransactionPostResponse200 = {
-  data: ClassificationResponse
-  status: 200
-}
+  data: ClassificationResponse;
+  status: 200;
+};
 
 export type classifyTransactionApiV1AiAiClassifyTransactionPostResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type classifyTransactionApiV1AiAiClassifyTransactionPostResponseSuccess = (classifyTransactionApiV1AiAiClassifyTransactionPostResponse200) & {
-  headers: Headers;
-};
-export type classifyTransactionApiV1AiAiClassifyTransactionPostResponseError = (classifyTransactionApiV1AiAiClassifyTransactionPostResponse422) & {
-  headers: Headers;
+  data: HTTPValidationError;
+  status: 422;
 };
 
-export type classifyTransactionApiV1AiAiClassifyTransactionPostResponse = (classifyTransactionApiV1AiAiClassifyTransactionPostResponseSuccess | classifyTransactionApiV1AiAiClassifyTransactionPostResponseError)
+export type classifyTransactionApiV1AiAiClassifyTransactionPostResponseSuccess =
+  classifyTransactionApiV1AiAiClassifyTransactionPostResponse200 & {
+    headers: Headers;
+  };
+export type classifyTransactionApiV1AiAiClassifyTransactionPostResponseError =
+  classifyTransactionApiV1AiAiClassifyTransactionPostResponse422 & {
+    headers: Headers;
+  };
+
+export type classifyTransactionApiV1AiAiClassifyTransactionPostResponse =
+  | classifyTransactionApiV1AiAiClassifyTransactionPostResponseSuccess
+  | classifyTransactionApiV1AiAiClassifyTransactionPostResponseError;
 
 export const getClassifyTransactionApiV1AiAiClassifyTransactionPostUrl = () => {
+  return `/api/v1/ai/ai/classify/transaction`;
+};
 
+export const classifyTransactionApiV1AiAiClassifyTransactionPost = async (
+  classificationRequest: ClassificationRequest,
+  options?: RequestInit,
+): Promise<classifyTransactionApiV1AiAiClassifyTransactionPostResponse> => {
+  return customInstance<classifyTransactionApiV1AiAiClassifyTransactionPostResponse>(
+    getClassifyTransactionApiV1AiAiClassifyTransactionPostUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(classificationRequest),
+    },
+  );
+};
 
-  
+export const getClassifyTransactionApiV1AiAiClassifyTransactionPostMutationOptions =
+  <TError = HTTPValidationError, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof classifyTransactionApiV1AiAiClassifyTransactionPost>
+      >,
+      TError,
+      { data: ClassificationRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  }): UseMutationOptions<
+    Awaited<
+      ReturnType<typeof classifyTransactionApiV1AiAiClassifyTransactionPost>
+    >,
+    TError,
+    { data: ClassificationRequest },
+    TContext
+  > => {
+    const mutationKey = ["classifyTransactionApiV1AiAiClassifyTransactionPost"];
+    const { mutation: mutationOptions, request: requestOptions } = options
+      ? options.mutation &&
+        "mutationKey" in options.mutation &&
+        options.mutation.mutationKey
+        ? options
+        : { ...options, mutation: { ...options.mutation, mutationKey } }
+      : { mutation: { mutationKey }, request: undefined };
 
-  return `/api/v1/ai/ai/classify/transaction`
-}
+    const mutationFn: MutationFunction<
+      Awaited<
+        ReturnType<typeof classifyTransactionApiV1AiAiClassifyTransactionPost>
+      >,
+      { data: ClassificationRequest }
+    > = (props) => {
+      const { data } = props ?? {};
 
-export const classifyTransactionApiV1AiAiClassifyTransactionPost = async (classificationRequest: ClassificationRequest, options?: RequestInit): Promise<classifyTransactionApiV1AiAiClassifyTransactionPostResponse> => {
-  
-  return customInstance<classifyTransactionApiV1AiAiClassifyTransactionPostResponse>(getClassifyTransactionApiV1AiAiClassifyTransactionPostUrl(),
-  {      
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      classificationRequest,)
-  }
-);}
+      return classifyTransactionApiV1AiAiClassifyTransactionPost(
+        data,
+        requestOptions,
+      );
+    };
 
+    return { mutationFn, ...mutationOptions };
+  };
 
+export type ClassifyTransactionApiV1AiAiClassifyTransactionPostMutationResult =
+  NonNullable<
+    Awaited<
+      ReturnType<typeof classifyTransactionApiV1AiAiClassifyTransactionPost>
+    >
+  >;
+export type ClassifyTransactionApiV1AiAiClassifyTransactionPostMutationBody =
+  ClassificationRequest;
+export type ClassifyTransactionApiV1AiAiClassifyTransactionPostMutationError =
+  HTTPValidationError;
 
-
-export const getClassifyTransactionApiV1AiAiClassifyTransactionPostMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classifyTransactionApiV1AiAiClassifyTransactionPost>>, TError,{data: ClassificationRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof classifyTransactionApiV1AiAiClassifyTransactionPost>>, TError,{data: ClassificationRequest}, TContext> => {
-
-const mutationKey = ['classifyTransactionApiV1AiAiClassifyTransactionPost'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof classifyTransactionApiV1AiAiClassifyTransactionPost>>, {data: ClassificationRequest}> = (props) => {
-          const {data} = props ?? {};
-
-          return  classifyTransactionApiV1AiAiClassifyTransactionPost(data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type ClassifyTransactionApiV1AiAiClassifyTransactionPostMutationResult = NonNullable<Awaited<ReturnType<typeof classifyTransactionApiV1AiAiClassifyTransactionPost>>>
-    export type ClassifyTransactionApiV1AiAiClassifyTransactionPostMutationBody = ClassificationRequest
-    export type ClassifyTransactionApiV1AiAiClassifyTransactionPostMutationError = HTTPValidationError
-
-    /**
+/**
  * @summary Classify a transaction
  */
-export const useClassifyTransactionApiV1AiAiClassifyTransactionPost = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof classifyTransactionApiV1AiAiClassifyTransactionPost>>, TError,{data: ClassificationRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof classifyTransactionApiV1AiAiClassifyTransactionPost>>,
-        TError,
-        {data: ClassificationRequest},
-        TContext
-      > => {
+export const useClassifyTransactionApiV1AiAiClassifyTransactionPost = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof classifyTransactionApiV1AiAiClassifyTransactionPost>
+      >,
+      TError,
+      { data: ClassificationRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<
+    ReturnType<typeof classifyTransactionApiV1AiAiClassifyTransactionPost>
+  >,
+  TError,
+  { data: ClassificationRequest },
+  TContext
+> => {
+  const mutationOptions =
+    getClassifyTransactionApiV1AiAiClassifyTransactionPostMutationOptions(
+      options,
+    );
 
-      const mutationOptions = getClassifyTransactionApiV1AiAiClassifyTransactionPostMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
+  return useMutation(mutationOptions, queryClient);
+};
+/**
  * Train or retrain the user's personalized classification model
  * @summary Train user classification model
  */
 export type trainClassificationModelApiV1AiAiClassifyTrainPostResponse200 = {
-  data: TrainModelResponse
-  status: 200
-}
+  data: TrainModelResponse;
+  status: 200;
+};
 
 export type trainClassificationModelApiV1AiAiClassifyTrainPostResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type trainClassificationModelApiV1AiAiClassifyTrainPostResponseSuccess = (trainClassificationModelApiV1AiAiClassifyTrainPostResponse200) & {
-  headers: Headers;
-};
-export type trainClassificationModelApiV1AiAiClassifyTrainPostResponseError = (trainClassificationModelApiV1AiAiClassifyTrainPostResponse422) & {
-  headers: Headers;
+  data: HTTPValidationError;
+  status: 422;
 };
 
-export type trainClassificationModelApiV1AiAiClassifyTrainPostResponse = (trainClassificationModelApiV1AiAiClassifyTrainPostResponseSuccess | trainClassificationModelApiV1AiAiClassifyTrainPostResponseError)
+export type trainClassificationModelApiV1AiAiClassifyTrainPostResponseSuccess =
+  trainClassificationModelApiV1AiAiClassifyTrainPostResponse200 & {
+    headers: Headers;
+  };
+export type trainClassificationModelApiV1AiAiClassifyTrainPostResponseError =
+  trainClassificationModelApiV1AiAiClassifyTrainPostResponse422 & {
+    headers: Headers;
+  };
+
+export type trainClassificationModelApiV1AiAiClassifyTrainPostResponse =
+  | trainClassificationModelApiV1AiAiClassifyTrainPostResponseSuccess
+  | trainClassificationModelApiV1AiAiClassifyTrainPostResponseError;
 
 export const getTrainClassificationModelApiV1AiAiClassifyTrainPostUrl = () => {
+  return `/api/v1/ai/ai/classify/train`;
+};
 
+export const trainClassificationModelApiV1AiAiClassifyTrainPost = async (
+  trainModelRequest: TrainModelRequest,
+  options?: RequestInit,
+): Promise<trainClassificationModelApiV1AiAiClassifyTrainPostResponse> => {
+  return customInstance<trainClassificationModelApiV1AiAiClassifyTrainPostResponse>(
+    getTrainClassificationModelApiV1AiAiClassifyTrainPostUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(trainModelRequest),
+    },
+  );
+};
 
-  
+export const getTrainClassificationModelApiV1AiAiClassifyTrainPostMutationOptions =
+  <TError = HTTPValidationError, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof trainClassificationModelApiV1AiAiClassifyTrainPost>
+      >,
+      TError,
+      { data: TrainModelRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  }): UseMutationOptions<
+    Awaited<
+      ReturnType<typeof trainClassificationModelApiV1AiAiClassifyTrainPost>
+    >,
+    TError,
+    { data: TrainModelRequest },
+    TContext
+  > => {
+    const mutationKey = ["trainClassificationModelApiV1AiAiClassifyTrainPost"];
+    const { mutation: mutationOptions, request: requestOptions } = options
+      ? options.mutation &&
+        "mutationKey" in options.mutation &&
+        options.mutation.mutationKey
+        ? options
+        : { ...options, mutation: { ...options.mutation, mutationKey } }
+      : { mutation: { mutationKey }, request: undefined };
 
-  return `/api/v1/ai/ai/classify/train`
-}
+    const mutationFn: MutationFunction<
+      Awaited<
+        ReturnType<typeof trainClassificationModelApiV1AiAiClassifyTrainPost>
+      >,
+      { data: TrainModelRequest }
+    > = (props) => {
+      const { data } = props ?? {};
 
-export const trainClassificationModelApiV1AiAiClassifyTrainPost = async (trainModelRequest: TrainModelRequest, options?: RequestInit): Promise<trainClassificationModelApiV1AiAiClassifyTrainPostResponse> => {
-  
-  return customInstance<trainClassificationModelApiV1AiAiClassifyTrainPostResponse>(getTrainClassificationModelApiV1AiAiClassifyTrainPostUrl(),
-  {      
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      trainModelRequest,)
-  }
-);}
+      return trainClassificationModelApiV1AiAiClassifyTrainPost(
+        data,
+        requestOptions,
+      );
+    };
 
+    return { mutationFn, ...mutationOptions };
+  };
 
+export type TrainClassificationModelApiV1AiAiClassifyTrainPostMutationResult =
+  NonNullable<
+    Awaited<
+      ReturnType<typeof trainClassificationModelApiV1AiAiClassifyTrainPost>
+    >
+  >;
+export type TrainClassificationModelApiV1AiAiClassifyTrainPostMutationBody =
+  TrainModelRequest;
+export type TrainClassificationModelApiV1AiAiClassifyTrainPostMutationError =
+  HTTPValidationError;
 
-
-export const getTrainClassificationModelApiV1AiAiClassifyTrainPostMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof trainClassificationModelApiV1AiAiClassifyTrainPost>>, TError,{data: TrainModelRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof trainClassificationModelApiV1AiAiClassifyTrainPost>>, TError,{data: TrainModelRequest}, TContext> => {
-
-const mutationKey = ['trainClassificationModelApiV1AiAiClassifyTrainPost'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof trainClassificationModelApiV1AiAiClassifyTrainPost>>, {data: TrainModelRequest}> = (props) => {
-          const {data} = props ?? {};
-
-          return  trainClassificationModelApiV1AiAiClassifyTrainPost(data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type TrainClassificationModelApiV1AiAiClassifyTrainPostMutationResult = NonNullable<Awaited<ReturnType<typeof trainClassificationModelApiV1AiAiClassifyTrainPost>>>
-    export type TrainClassificationModelApiV1AiAiClassifyTrainPostMutationBody = TrainModelRequest
-    export type TrainClassificationModelApiV1AiAiClassifyTrainPostMutationError = HTTPValidationError
-
-    /**
+/**
  * @summary Train user classification model
  */
-export const useTrainClassificationModelApiV1AiAiClassifyTrainPost = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof trainClassificationModelApiV1AiAiClassifyTrainPost>>, TError,{data: TrainModelRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof trainClassificationModelApiV1AiAiClassifyTrainPost>>,
-        TError,
-        {data: TrainModelRequest},
-        TContext
-      > => {
+export const useTrainClassificationModelApiV1AiAiClassifyTrainPost = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof trainClassificationModelApiV1AiAiClassifyTrainPost>
+      >,
+      TError,
+      { data: TrainModelRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<
+    ReturnType<typeof trainClassificationModelApiV1AiAiClassifyTrainPost>
+  >,
+  TError,
+  { data: TrainModelRequest },
+  TContext
+> => {
+  const mutationOptions =
+    getTrainClassificationModelApiV1AiAiClassifyTrainPostMutationOptions(
+      options,
+    );
 
-      const mutationOptions = getTrainClassificationModelApiV1AiAiClassifyTrainPostMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
+  return useMutation(mutationOptions, queryClient);
+};
+/**
  * Get performance metrics for the classification model
  * @summary Get classification metrics
  */
-export type getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetResponse200 = {
-  data: ClassificationMetrics
-  status: 200
-}
+export type getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetResponse200 =
+  {
+    data: ClassificationMetrics;
+    status: 200;
+  };
 
-export type getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetResponseSuccess = (getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetResponse200) & {
-  headers: Headers;
-};
-export type getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetResponseError = (getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetResponse422) & {
-  headers: Headers;
-};
+export type getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetResponse422 =
+  {
+    data: HTTPValidationError;
+    status: 422;
+  };
 
-export type getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetResponse = (getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetResponseSuccess | getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetResponseError)
+export type getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetResponseSuccess =
+  getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetResponse200 & {
+    headers: Headers;
+  };
+export type getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetResponseError =
+  getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetResponse422 & {
+    headers: Headers;
+  };
 
-export const getGetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetUrl = (financialProfileId: string,) => {
+export type getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetResponse =
 
+    | getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetResponseSuccess
+    | getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetResponseError;
 
-  
+export const getGetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetUrl =
+  (financialProfileId: string) => {
+    return `/api/v1/ai/ai/classify/metrics/${financialProfileId}`;
+  };
 
-  return `/api/v1/ai/ai/classify/metrics/${financialProfileId}`
-}
+export const getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet =
+  async (
+    financialProfileId: string,
+    options?: RequestInit,
+  ): Promise<getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetResponse> => {
+    return customInstance<getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetResponse>(
+      getGetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetUrl(
+        financialProfileId,
+      ),
+      {
+        ...options,
+        method: "GET",
+      },
+    );
+  };
 
-export const getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet = async (financialProfileId: string, options?: RequestInit): Promise<getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetResponse> => {
-  
-  return customInstance<getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetResponse>(getGetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetUrl(financialProfileId),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
+export const getGetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetQueryKey =
+  (financialProfileId?: string) => {
+    return [`/api/v1/ai/ai/classify/metrics/${financialProfileId}`] as const;
+  };
 
+export const getGetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetQueryOptions =
+  <
+    TData = Awaited<
+      ReturnType<
+        typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet
+      >
+    >,
+    TError = HTTPValidationError,
+  >(
+    financialProfileId: string,
+    options?: {
+      query?: Partial<
+        UseQueryOptions<
+          Awaited<
+            ReturnType<
+              typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet
+            >
+          >,
+          TError,
+          TData
+        >
+      >;
+      request?: SecondParameter<typeof customInstance>;
+    },
+  ) => {
+    const { query: queryOptions, request: requestOptions } = options ?? {};
 
+    const queryKey =
+      queryOptions?.queryKey ??
+      getGetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetQueryKey(
+        financialProfileId,
+      );
 
+    const queryFn: QueryFunction<
+      Awaited<
+        ReturnType<
+          typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet
+        >
+      >
+    > = ({ signal }) =>
+      getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet(
+        financialProfileId,
+        { signal, ...requestOptions },
+      );
 
+    return {
+      queryKey,
+      queryFn,
+      enabled: !!financialProfileId,
+      ...queryOptions,
+    } as UseQueryOptions<
+      Awaited<
+        ReturnType<
+          typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet
+        >
+      >,
+      TError,
+      TData
+    > & { queryKey: DataTag<QueryKey, TData, TError> };
+  };
 
-export const getGetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetQueryKey = (financialProfileId?: string,) => {
-    return [
-    `/api/v1/ai/ai/classify/metrics/${financialProfileId}`
-    ] as const;
-    }
+export type GetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetQueryResult =
+  NonNullable<
+    Awaited<
+      ReturnType<
+        typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet
+      >
+    >
+  >;
+export type GetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetQueryError =
+  HTTPValidationError;
 
-    
-export const getGetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetQueryOptions = <TData = Awaited<ReturnType<typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet>>, TError = HTTPValidationError>(financialProfileId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetQueryKey(financialProfileId);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet>>> = ({ signal }) => getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet(financialProfileId, { signal, ...requestOptions });
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(financialProfileId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetQueryResult = NonNullable<Awaited<ReturnType<typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet>>>
-export type GetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetQueryError = HTTPValidationError
-
-
-export function useGetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet<TData = Awaited<ReturnType<typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet>>, TError = HTTPValidationError>(
- financialProfileId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet>>, TError, TData>> & Pick<
+export function useGetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet<
+  TData = Awaited<
+    ReturnType<
+      typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet
+    >
+  >,
+  TError = HTTPValidationError,
+>(
+  financialProfileId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet
+          >
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet>>,
+          Awaited<
+            ReturnType<
+              typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet
+            >
+          >,
           TError,
-          Awaited<ReturnType<typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet<TData = Awaited<ReturnType<typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet>>, TError = HTTPValidationError>(
- financialProfileId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet>>, TError, TData>> & Pick<
+          Awaited<
+            ReturnType<
+              typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet
+            >
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet<
+  TData = Awaited<
+    ReturnType<
+      typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet
+    >
+  >,
+  TError = HTTPValidationError,
+>(
+  financialProfileId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet
+          >
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet>>,
+          Awaited<
+            ReturnType<
+              typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet
+            >
+          >,
           TError,
-          Awaited<ReturnType<typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet<TData = Awaited<ReturnType<typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet>>, TError = HTTPValidationError>(
- financialProfileId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+          Awaited<
+            ReturnType<
+              typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet
+            >
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet<
+  TData = Awaited<
+    ReturnType<
+      typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet
+    >
+  >,
+  TError = HTTPValidationError,
+>(
+  financialProfileId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet
+          >
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Get classification metrics
  */
 
-export function useGetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet<TData = Awaited<ReturnType<typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet>>, TError = HTTPValidationError>(
- financialProfileId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet<
+  TData = Awaited<
+    ReturnType<
+      typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet
+    >
+  >,
+  TError = HTTPValidationError,
+>(
+  financialProfileId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGet
+          >
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getGetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetQueryOptions(
+      financialProfileId,
+      options,
+    );
 
-  const queryOptions = getGetClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdGetQueryOptions(financialProfileId,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
 
 /**
  * Get AI-suggested tags for a transaction
  * @summary Suggest tags for transaction
  */
-export type suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponse200 = {
-  data: SuggestedTag[]
-  status: 200
-}
+export type suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponse200 =
+  {
+    data: SuggestedTag[];
+    status: 200;
+  };
 
-export type suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponseSuccess = (suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponse200) & {
-  headers: Headers;
-};
-export type suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponseError = (suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponse422) & {
-  headers: Headers;
-};
+export type suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponse422 =
+  {
+    data: HTTPValidationError;
+    status: 422;
+  };
 
-export type suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponse = (suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponseSuccess | suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponseError)
+export type suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponseSuccess =
+  suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponse200 & {
+    headers: Headers;
+  };
+export type suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponseError =
+  suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponse422 & {
+    headers: Headers;
+  };
 
-export const getSuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetUrl = (transactionId: string,) => {
+export type suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponse =
+  | suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponseSuccess
+  | suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponseError;
 
-
-  
-
-  return `/api/v1/ai/ai/classify/suggest-tags/${transactionId}`
-}
-
-export const suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet = async (transactionId: string, options?: RequestInit): Promise<suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponse> => {
-  
-  return customInstance<suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponse>(getSuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetUrl(transactionId),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
-
-
-
-
-
-export const getSuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetQueryKey = (transactionId?: string,) => {
-    return [
-    `/api/v1/ai/ai/classify/suggest-tags/${transactionId}`
-    ] as const;
-    }
-
-    
-export const getSuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetQueryOptions = <TData = Awaited<ReturnType<typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet>>, TError = HTTPValidationError>(transactionId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getSuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetUrl = (
+  transactionId: string,
 ) => {
+  return `/api/v1/ai/ai/classify/suggest-tags/${transactionId}`;
+};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+export const suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet = async (
+  transactionId: string,
+  options?: RequestInit,
+): Promise<suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponse> => {
+  return customInstance<suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetResponse>(
+    getSuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetUrl(
+      transactionId,
+    ),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
 
-  const queryKey =  queryOptions?.queryKey ?? getSuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetQueryKey(transactionId);
+export const getSuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetQueryKey =
+  (transactionId?: string) => {
+    return [`/api/v1/ai/ai/classify/suggest-tags/${transactionId}`] as const;
+  };
 
-  
+export const getSuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetQueryOptions =
+  <
+    TData = Awaited<
+      ReturnType<typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet>
+    >,
+    TError = HTTPValidationError,
+  >(
+    transactionId: string,
+    options?: {
+      query?: Partial<
+        UseQueryOptions<
+          Awaited<
+            ReturnType<
+              typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet
+            >
+          >,
+          TError,
+          TData
+        >
+      >;
+      request?: SecondParameter<typeof customInstance>;
+    },
+  ) => {
+    const { query: queryOptions, request: requestOptions } = options ?? {};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet>>> = ({ signal }) => suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet(transactionId, { signal, ...requestOptions });
+    const queryKey =
+      queryOptions?.queryKey ??
+      getSuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetQueryKey(
+        transactionId,
+      );
 
-      
+    const queryFn: QueryFunction<
+      Awaited<
+        ReturnType<
+          typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet
+        >
+      >
+    > = ({ signal }) =>
+      suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet(transactionId, {
+        signal,
+        ...requestOptions,
+      });
 
-      
+    return {
+      queryKey,
+      queryFn,
+      enabled: !!transactionId,
+      ...queryOptions,
+    } as UseQueryOptions<
+      Awaited<
+        ReturnType<
+          typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet
+        >
+      >,
+      TError,
+      TData
+    > & { queryKey: DataTag<QueryKey, TData, TError> };
+  };
 
-   return  { queryKey, queryFn, enabled: !!(transactionId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
+export type SuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetQueryResult =
+  NonNullable<
+    Awaited<
+      ReturnType<typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet>
+    >
+  >;
+export type SuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetQueryError =
+  HTTPValidationError;
 
-export type SuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetQueryResult = NonNullable<Awaited<ReturnType<typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet>>>
-export type SuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetQueryError = HTTPValidationError
-
-
-export function useSuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet<TData = Awaited<ReturnType<typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet>>, TError = HTTPValidationError>(
- transactionId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet>>, TError, TData>> & Pick<
+export function useSuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet<
+  TData = Awaited<
+    ReturnType<typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  transactionId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet
+          >
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet>>,
+          Awaited<
+            ReturnType<
+              typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet
+            >
+          >,
           TError,
-          Awaited<ReturnType<typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet<TData = Awaited<ReturnType<typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet>>, TError = HTTPValidationError>(
- transactionId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet>>, TError, TData>> & Pick<
+          Awaited<
+            ReturnType<
+              typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet
+            >
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useSuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet<
+  TData = Awaited<
+    ReturnType<typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  transactionId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet
+          >
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet>>,
+          Awaited<
+            ReturnType<
+              typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet
+            >
+          >,
           TError,
-          Awaited<ReturnType<typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useSuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet<TData = Awaited<ReturnType<typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet>>, TError = HTTPValidationError>(
- transactionId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+          Awaited<
+            ReturnType<
+              typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet
+            >
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useSuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet<
+  TData = Awaited<
+    ReturnType<typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  transactionId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet
+          >
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Suggest tags for transaction
  */
 
-export function useSuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet<TData = Awaited<ReturnType<typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet>>, TError = HTTPValidationError>(
- transactionId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useSuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet<
+  TData = Awaited<
+    ReturnType<typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  transactionId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet
+          >
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getSuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetQueryOptions(
+      transactionId,
+      options,
+    );
 
-  const queryOptions = getSuggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGetQueryOptions(transactionId,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
 
 /**
  * Generate cash flow forecast with multiple scenarios
  * @summary Forecast cash flow
  */
 export type forecastCashflowApiV1AiAiForecastCashflowPostResponse200 = {
-  data: ForecastResponse
-  status: 200
-}
+  data: ForecastResponse;
+  status: 200;
+};
 
 export type forecastCashflowApiV1AiAiForecastCashflowPostResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type forecastCashflowApiV1AiAiForecastCashflowPostResponseSuccess = (forecastCashflowApiV1AiAiForecastCashflowPostResponse200) & {
-  headers: Headers;
-};
-export type forecastCashflowApiV1AiAiForecastCashflowPostResponseError = (forecastCashflowApiV1AiAiForecastCashflowPostResponse422) & {
-  headers: Headers;
+  data: HTTPValidationError;
+  status: 422;
 };
 
-export type forecastCashflowApiV1AiAiForecastCashflowPostResponse = (forecastCashflowApiV1AiAiForecastCashflowPostResponseSuccess | forecastCashflowApiV1AiAiForecastCashflowPostResponseError)
+export type forecastCashflowApiV1AiAiForecastCashflowPostResponseSuccess =
+  forecastCashflowApiV1AiAiForecastCashflowPostResponse200 & {
+    headers: Headers;
+  };
+export type forecastCashflowApiV1AiAiForecastCashflowPostResponseError =
+  forecastCashflowApiV1AiAiForecastCashflowPostResponse422 & {
+    headers: Headers;
+  };
+
+export type forecastCashflowApiV1AiAiForecastCashflowPostResponse =
+  | forecastCashflowApiV1AiAiForecastCashflowPostResponseSuccess
+  | forecastCashflowApiV1AiAiForecastCashflowPostResponseError;
 
 export const getForecastCashflowApiV1AiAiForecastCashflowPostUrl = () => {
+  return `/api/v1/ai/ai/forecast/cashflow`;
+};
 
+export const forecastCashflowApiV1AiAiForecastCashflowPost = async (
+  forecastRequest: ForecastRequest,
+  options?: RequestInit,
+): Promise<forecastCashflowApiV1AiAiForecastCashflowPostResponse> => {
+  return customInstance<forecastCashflowApiV1AiAiForecastCashflowPostResponse>(
+    getForecastCashflowApiV1AiAiForecastCashflowPostUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(forecastRequest),
+    },
+  );
+};
 
-  
+export const getForecastCashflowApiV1AiAiForecastCashflowPostMutationOptions = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof forecastCashflowApiV1AiAiForecastCashflowPost>>,
+    TError,
+    { data: ForecastRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof forecastCashflowApiV1AiAiForecastCashflowPost>>,
+  TError,
+  { data: ForecastRequest },
+  TContext
+> => {
+  const mutationKey = ["forecastCashflowApiV1AiAiForecastCashflowPost"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-  return `/api/v1/ai/ai/forecast/cashflow`
-}
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof forecastCashflowApiV1AiAiForecastCashflowPost>>,
+    { data: ForecastRequest }
+  > = (props) => {
+    const { data } = props ?? {};
 
-export const forecastCashflowApiV1AiAiForecastCashflowPost = async (forecastRequest: ForecastRequest, options?: RequestInit): Promise<forecastCashflowApiV1AiAiForecastCashflowPostResponse> => {
-  
-  return customInstance<forecastCashflowApiV1AiAiForecastCashflowPostResponse>(getForecastCashflowApiV1AiAiForecastCashflowPostUrl(),
-  {      
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      forecastRequest,)
-  }
-);}
+    return forecastCashflowApiV1AiAiForecastCashflowPost(data, requestOptions);
+  };
 
+  return { mutationFn, ...mutationOptions };
+};
 
+export type ForecastCashflowApiV1AiAiForecastCashflowPostMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof forecastCashflowApiV1AiAiForecastCashflowPost>>
+  >;
+export type ForecastCashflowApiV1AiAiForecastCashflowPostMutationBody =
+  ForecastRequest;
+export type ForecastCashflowApiV1AiAiForecastCashflowPostMutationError =
+  HTTPValidationError;
 
-
-export const getForecastCashflowApiV1AiAiForecastCashflowPostMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof forecastCashflowApiV1AiAiForecastCashflowPost>>, TError,{data: ForecastRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof forecastCashflowApiV1AiAiForecastCashflowPost>>, TError,{data: ForecastRequest}, TContext> => {
-
-const mutationKey = ['forecastCashflowApiV1AiAiForecastCashflowPost'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof forecastCashflowApiV1AiAiForecastCashflowPost>>, {data: ForecastRequest}> = (props) => {
-          const {data} = props ?? {};
-
-          return  forecastCashflowApiV1AiAiForecastCashflowPost(data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type ForecastCashflowApiV1AiAiForecastCashflowPostMutationResult = NonNullable<Awaited<ReturnType<typeof forecastCashflowApiV1AiAiForecastCashflowPost>>>
-    export type ForecastCashflowApiV1AiAiForecastCashflowPostMutationBody = ForecastRequest
-    export type ForecastCashflowApiV1AiAiForecastCashflowPostMutationError = HTTPValidationError
-
-    /**
+/**
  * @summary Forecast cash flow
  */
-export const useForecastCashflowApiV1AiAiForecastCashflowPost = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof forecastCashflowApiV1AiAiForecastCashflowPost>>, TError,{data: ForecastRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof forecastCashflowApiV1AiAiForecastCashflowPost>>,
-        TError,
-        {data: ForecastRequest},
-        TContext
-      > => {
+export const useForecastCashflowApiV1AiAiForecastCashflowPost = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof forecastCashflowApiV1AiAiForecastCashflowPost>>,
+      TError,
+      { data: ForecastRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof forecastCashflowApiV1AiAiForecastCashflowPost>>,
+  TError,
+  { data: ForecastRequest },
+  TContext
+> => {
+  const mutationOptions =
+    getForecastCashflowApiV1AiAiForecastCashflowPostMutationOptions(options);
 
-      const mutationOptions = getForecastCashflowApiV1AiAiForecastCashflowPostMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
+  return useMutation(mutationOptions, queryClient);
+};
+/**
  * Send a message to the AI assistant and get a response
  * @summary Send chat message
  */
 export type sendChatMessageApiV1AiAiChatMessagePostResponse200 = {
-  data: ChatMessageResponse
-  status: 200
-}
+  data: ChatMessageResponse;
+  status: 200;
+};
 
 export type sendChatMessageApiV1AiAiChatMessagePostResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type sendChatMessageApiV1AiAiChatMessagePostResponseSuccess = (sendChatMessageApiV1AiAiChatMessagePostResponse200) & {
-  headers: Headers;
-};
-export type sendChatMessageApiV1AiAiChatMessagePostResponseError = (sendChatMessageApiV1AiAiChatMessagePostResponse422) & {
-  headers: Headers;
+  data: HTTPValidationError;
+  status: 422;
 };
 
-export type sendChatMessageApiV1AiAiChatMessagePostResponse = (sendChatMessageApiV1AiAiChatMessagePostResponseSuccess | sendChatMessageApiV1AiAiChatMessagePostResponseError)
+export type sendChatMessageApiV1AiAiChatMessagePostResponseSuccess =
+  sendChatMessageApiV1AiAiChatMessagePostResponse200 & {
+    headers: Headers;
+  };
+export type sendChatMessageApiV1AiAiChatMessagePostResponseError =
+  sendChatMessageApiV1AiAiChatMessagePostResponse422 & {
+    headers: Headers;
+  };
+
+export type sendChatMessageApiV1AiAiChatMessagePostResponse =
+  | sendChatMessageApiV1AiAiChatMessagePostResponseSuccess
+  | sendChatMessageApiV1AiAiChatMessagePostResponseError;
 
 export const getSendChatMessageApiV1AiAiChatMessagePostUrl = () => {
+  return `/api/v1/ai/ai/chat/message`;
+};
 
+export const sendChatMessageApiV1AiAiChatMessagePost = async (
+  chatMessageRequest: ChatMessageRequest,
+  options?: RequestInit,
+): Promise<sendChatMessageApiV1AiAiChatMessagePostResponse> => {
+  return customInstance<sendChatMessageApiV1AiAiChatMessagePostResponse>(
+    getSendChatMessageApiV1AiAiChatMessagePostUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(chatMessageRequest),
+    },
+  );
+};
 
-  
+export const getSendChatMessageApiV1AiAiChatMessagePostMutationOptions = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof sendChatMessageApiV1AiAiChatMessagePost>>,
+    TError,
+    { data: ChatMessageRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof sendChatMessageApiV1AiAiChatMessagePost>>,
+  TError,
+  { data: ChatMessageRequest },
+  TContext
+> => {
+  const mutationKey = ["sendChatMessageApiV1AiAiChatMessagePost"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-  return `/api/v1/ai/ai/chat/message`
-}
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof sendChatMessageApiV1AiAiChatMessagePost>>,
+    { data: ChatMessageRequest }
+  > = (props) => {
+    const { data } = props ?? {};
 
-export const sendChatMessageApiV1AiAiChatMessagePost = async (chatMessageRequest: ChatMessageRequest, options?: RequestInit): Promise<sendChatMessageApiV1AiAiChatMessagePostResponse> => {
-  
-  return customInstance<sendChatMessageApiV1AiAiChatMessagePostResponse>(getSendChatMessageApiV1AiAiChatMessagePostUrl(),
-  {      
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      chatMessageRequest,)
-  }
-);}
+    return sendChatMessageApiV1AiAiChatMessagePost(data, requestOptions);
+  };
 
+  return { mutationFn, ...mutationOptions };
+};
 
+export type SendChatMessageApiV1AiAiChatMessagePostMutationResult = NonNullable<
+  Awaited<ReturnType<typeof sendChatMessageApiV1AiAiChatMessagePost>>
+>;
+export type SendChatMessageApiV1AiAiChatMessagePostMutationBody =
+  ChatMessageRequest;
+export type SendChatMessageApiV1AiAiChatMessagePostMutationError =
+  HTTPValidationError;
 
-
-export const getSendChatMessageApiV1AiAiChatMessagePostMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendChatMessageApiV1AiAiChatMessagePost>>, TError,{data: ChatMessageRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof sendChatMessageApiV1AiAiChatMessagePost>>, TError,{data: ChatMessageRequest}, TContext> => {
-
-const mutationKey = ['sendChatMessageApiV1AiAiChatMessagePost'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendChatMessageApiV1AiAiChatMessagePost>>, {data: ChatMessageRequest}> = (props) => {
-          const {data} = props ?? {};
-
-          return  sendChatMessageApiV1AiAiChatMessagePost(data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type SendChatMessageApiV1AiAiChatMessagePostMutationResult = NonNullable<Awaited<ReturnType<typeof sendChatMessageApiV1AiAiChatMessagePost>>>
-    export type SendChatMessageApiV1AiAiChatMessagePostMutationBody = ChatMessageRequest
-    export type SendChatMessageApiV1AiAiChatMessagePostMutationError = HTTPValidationError
-
-    /**
+/**
  * @summary Send chat message
  */
-export const useSendChatMessageApiV1AiAiChatMessagePost = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendChatMessageApiV1AiAiChatMessagePost>>, TError,{data: ChatMessageRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof sendChatMessageApiV1AiAiChatMessagePost>>,
-        TError,
-        {data: ChatMessageRequest},
-        TContext
-      > => {
+export const useSendChatMessageApiV1AiAiChatMessagePost = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof sendChatMessageApiV1AiAiChatMessagePost>>,
+      TError,
+      { data: ChatMessageRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof sendChatMessageApiV1AiAiChatMessagePost>>,
+  TError,
+  { data: ChatMessageRequest },
+  TContext
+> => {
+  const mutationOptions =
+    getSendChatMessageApiV1AiAiChatMessagePostMutationOptions(options);
 
-      const mutationOptions = getSendChatMessageApiV1AiAiChatMessagePostMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
+  return useMutation(mutationOptions, queryClient);
+};
+/**
  * Get list of user's chat conversations
  * @summary List conversations
  */
 export type listConversationsApiV1AiAiChatConversationsGetResponse200 = {
-  data: ConversationListItem[]
-  status: 200
-}
-    
-export type listConversationsApiV1AiAiChatConversationsGetResponseSuccess = (listConversationsApiV1AiAiChatConversationsGetResponse200) & {
-  headers: Headers;
+  data: ConversationListItem[];
+  status: 200;
 };
-;
 
-export type listConversationsApiV1AiAiChatConversationsGetResponse = (listConversationsApiV1AiAiChatConversationsGetResponseSuccess)
+export type listConversationsApiV1AiAiChatConversationsGetResponseSuccess =
+  listConversationsApiV1AiAiChatConversationsGetResponse200 & {
+    headers: Headers;
+  };
+export type listConversationsApiV1AiAiChatConversationsGetResponse =
+  listConversationsApiV1AiAiChatConversationsGetResponseSuccess;
 
 export const getListConversationsApiV1AiAiChatConversationsGetUrl = () => {
+  return `/api/v1/ai/ai/chat/conversations`;
+};
 
-
-  
-
-  return `/api/v1/ai/ai/chat/conversations`
-}
-
-export const listConversationsApiV1AiAiChatConversationsGet = async ( options?: RequestInit): Promise<listConversationsApiV1AiAiChatConversationsGetResponse> => {
-  
-  return customInstance<listConversationsApiV1AiAiChatConversationsGetResponse>(getListConversationsApiV1AiAiChatConversationsGetUrl(),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
-
-
-
-
+export const listConversationsApiV1AiAiChatConversationsGet = async (
+  options?: RequestInit,
+): Promise<listConversationsApiV1AiAiChatConversationsGetResponse> => {
+  return customInstance<listConversationsApiV1AiAiChatConversationsGetResponse>(
+    getListConversationsApiV1AiAiChatConversationsGetUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
 
 export const getListConversationsApiV1AiAiChatConversationsGetQueryKey = () => {
-    return [
-    `/api/v1/ai/ai/chat/conversations`
-    ] as const;
-    }
+  return [`/api/v1/ai/ai/chat/conversations`] as const;
+};
 
-    
-export const getListConversationsApiV1AiAiChatConversationsGetQueryOptions = <TData = Awaited<ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
+export const getListConversationsApiV1AiAiChatConversationsGetQueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>
+  >,
+  TError = unknown,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<
+        ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>
+      >,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey =
+    queryOptions?.queryKey ??
+    getListConversationsApiV1AiAiChatConversationsGetQueryKey();
 
-  const queryKey =  queryOptions?.queryKey ?? getListConversationsApiV1AiAiChatConversationsGetQueryKey();
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>>
+  > = ({ signal }) =>
+    listConversationsApiV1AiAiChatConversationsGet({
+      signal,
+      ...requestOptions,
+    });
 
-  
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>>> = ({ signal }) => listConversationsApiV1AiAiChatConversationsGet({ signal, ...requestOptions });
+export type ListConversationsApiV1AiAiChatConversationsGetQueryResult =
+  NonNullable<
+    Awaited<ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>>
+  >;
+export type ListConversationsApiV1AiAiChatConversationsGetQueryError = unknown;
 
-      
-
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ListConversationsApiV1AiAiChatConversationsGetQueryResult = NonNullable<Awaited<ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>>>
-export type ListConversationsApiV1AiAiChatConversationsGetQueryError = unknown
-
-
-export function useListConversationsApiV1AiAiChatConversationsGet<TData = Awaited<ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>>, TError, TData>> & Pick<
+export function useListConversationsApiV1AiAiChatConversationsGet<
+  TData = Awaited<
+    ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>
+  >,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>>,
+          Awaited<
+            ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>
+          >,
           TError,
-          Awaited<ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListConversationsApiV1AiAiChatConversationsGet<TData = Awaited<ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>>, TError, TData>> & Pick<
+          Awaited<
+            ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListConversationsApiV1AiAiChatConversationsGet<
+  TData = Awaited<
+    ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>
+  >,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>>,
+          Awaited<
+            ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>
+          >,
           TError,
-          Awaited<ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListConversationsApiV1AiAiChatConversationsGet<TData = Awaited<ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+          Awaited<
+            ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListConversationsApiV1AiAiChatConversationsGet<
+  TData = Awaited<
+    ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>
+  >,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary List conversations
  */
 
-export function useListConversationsApiV1AiAiChatConversationsGet<TData = Awaited<ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useListConversationsApiV1AiAiChatConversationsGet<
+  TData = Awaited<
+    ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>
+  >,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof listConversationsApiV1AiAiChatConversationsGet>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getListConversationsApiV1AiAiChatConversationsGetQueryOptions(options);
 
-  const queryOptions = getListConversationsApiV1AiAiChatConversationsGetQueryOptions(options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
 
 /**
  * Get detailed conversation with all messages
  * @summary Get conversation details
  */
-export type getConversationApiV1AiAiChatConversationsConversationIdGetResponse200 = {
-  data: ConversationDetail
-  status: 200
-}
+export type getConversationApiV1AiAiChatConversationsConversationIdGetResponse200 =
+  {
+    data: ConversationDetail;
+    status: 200;
+  };
 
-export type getConversationApiV1AiAiChatConversationsConversationIdGetResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type getConversationApiV1AiAiChatConversationsConversationIdGetResponseSuccess = (getConversationApiV1AiAiChatConversationsConversationIdGetResponse200) & {
-  headers: Headers;
-};
-export type getConversationApiV1AiAiChatConversationsConversationIdGetResponseError = (getConversationApiV1AiAiChatConversationsConversationIdGetResponse422) & {
-  headers: Headers;
-};
+export type getConversationApiV1AiAiChatConversationsConversationIdGetResponse422 =
+  {
+    data: HTTPValidationError;
+    status: 422;
+  };
 
-export type getConversationApiV1AiAiChatConversationsConversationIdGetResponse = (getConversationApiV1AiAiChatConversationsConversationIdGetResponseSuccess | getConversationApiV1AiAiChatConversationsConversationIdGetResponseError)
+export type getConversationApiV1AiAiChatConversationsConversationIdGetResponseSuccess =
+  getConversationApiV1AiAiChatConversationsConversationIdGetResponse200 & {
+    headers: Headers;
+  };
+export type getConversationApiV1AiAiChatConversationsConversationIdGetResponseError =
+  getConversationApiV1AiAiChatConversationsConversationIdGetResponse422 & {
+    headers: Headers;
+  };
 
-export const getGetConversationApiV1AiAiChatConversationsConversationIdGetUrl = (conversationId: string,) => {
+export type getConversationApiV1AiAiChatConversationsConversationIdGetResponse =
 
+    | getConversationApiV1AiAiChatConversationsConversationIdGetResponseSuccess
+    | getConversationApiV1AiAiChatConversationsConversationIdGetResponseError;
 
-  
+export const getGetConversationApiV1AiAiChatConversationsConversationIdGetUrl =
+  (conversationId: string) => {
+    return `/api/v1/ai/ai/chat/conversations/${conversationId}`;
+  };
 
-  return `/api/v1/ai/ai/chat/conversations/${conversationId}`
-}
+export const getConversationApiV1AiAiChatConversationsConversationIdGet =
+  async (
+    conversationId: string,
+    options?: RequestInit,
+  ): Promise<getConversationApiV1AiAiChatConversationsConversationIdGetResponse> => {
+    return customInstance<getConversationApiV1AiAiChatConversationsConversationIdGetResponse>(
+      getGetConversationApiV1AiAiChatConversationsConversationIdGetUrl(
+        conversationId,
+      ),
+      {
+        ...options,
+        method: "GET",
+      },
+    );
+  };
 
-export const getConversationApiV1AiAiChatConversationsConversationIdGet = async (conversationId: string, options?: RequestInit): Promise<getConversationApiV1AiAiChatConversationsConversationIdGetResponse> => {
-  
-  return customInstance<getConversationApiV1AiAiChatConversationsConversationIdGetResponse>(getGetConversationApiV1AiAiChatConversationsConversationIdGetUrl(conversationId),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
+export const getGetConversationApiV1AiAiChatConversationsConversationIdGetQueryKey =
+  (conversationId?: string) => {
+    return [`/api/v1/ai/ai/chat/conversations/${conversationId}`] as const;
+  };
 
+export const getGetConversationApiV1AiAiChatConversationsConversationIdGetQueryOptions =
+  <
+    TData = Awaited<
+      ReturnType<
+        typeof getConversationApiV1AiAiChatConversationsConversationIdGet
+      >
+    >,
+    TError = HTTPValidationError,
+  >(
+    conversationId: string,
+    options?: {
+      query?: Partial<
+        UseQueryOptions<
+          Awaited<
+            ReturnType<
+              typeof getConversationApiV1AiAiChatConversationsConversationIdGet
+            >
+          >,
+          TError,
+          TData
+        >
+      >;
+      request?: SecondParameter<typeof customInstance>;
+    },
+  ) => {
+    const { query: queryOptions, request: requestOptions } = options ?? {};
 
+    const queryKey =
+      queryOptions?.queryKey ??
+      getGetConversationApiV1AiAiChatConversationsConversationIdGetQueryKey(
+        conversationId,
+      );
 
+    const queryFn: QueryFunction<
+      Awaited<
+        ReturnType<
+          typeof getConversationApiV1AiAiChatConversationsConversationIdGet
+        >
+      >
+    > = ({ signal }) =>
+      getConversationApiV1AiAiChatConversationsConversationIdGet(
+        conversationId,
+        { signal, ...requestOptions },
+      );
 
+    return {
+      queryKey,
+      queryFn,
+      enabled: !!conversationId,
+      ...queryOptions,
+    } as UseQueryOptions<
+      Awaited<
+        ReturnType<
+          typeof getConversationApiV1AiAiChatConversationsConversationIdGet
+        >
+      >,
+      TError,
+      TData
+    > & { queryKey: DataTag<QueryKey, TData, TError> };
+  };
 
-export const getGetConversationApiV1AiAiChatConversationsConversationIdGetQueryKey = (conversationId?: string,) => {
-    return [
-    `/api/v1/ai/ai/chat/conversations/${conversationId}`
-    ] as const;
-    }
+export type GetConversationApiV1AiAiChatConversationsConversationIdGetQueryResult =
+  NonNullable<
+    Awaited<
+      ReturnType<
+        typeof getConversationApiV1AiAiChatConversationsConversationIdGet
+      >
+    >
+  >;
+export type GetConversationApiV1AiAiChatConversationsConversationIdGetQueryError =
+  HTTPValidationError;
 
-    
-export const getGetConversationApiV1AiAiChatConversationsConversationIdGetQueryOptions = <TData = Awaited<ReturnType<typeof getConversationApiV1AiAiChatConversationsConversationIdGet>>, TError = HTTPValidationError>(conversationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getConversationApiV1AiAiChatConversationsConversationIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetConversationApiV1AiAiChatConversationsConversationIdGetQueryKey(conversationId);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getConversationApiV1AiAiChatConversationsConversationIdGet>>> = ({ signal }) => getConversationApiV1AiAiChatConversationsConversationIdGet(conversationId, { signal, ...requestOptions });
-
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(conversationId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getConversationApiV1AiAiChatConversationsConversationIdGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetConversationApiV1AiAiChatConversationsConversationIdGetQueryResult = NonNullable<Awaited<ReturnType<typeof getConversationApiV1AiAiChatConversationsConversationIdGet>>>
-export type GetConversationApiV1AiAiChatConversationsConversationIdGetQueryError = HTTPValidationError
-
-
-export function useGetConversationApiV1AiAiChatConversationsConversationIdGet<TData = Awaited<ReturnType<typeof getConversationApiV1AiAiChatConversationsConversationIdGet>>, TError = HTTPValidationError>(
- conversationId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getConversationApiV1AiAiChatConversationsConversationIdGet>>, TError, TData>> & Pick<
+export function useGetConversationApiV1AiAiChatConversationsConversationIdGet<
+  TData = Awaited<
+    ReturnType<
+      typeof getConversationApiV1AiAiChatConversationsConversationIdGet
+    >
+  >,
+  TError = HTTPValidationError,
+>(
+  conversationId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof getConversationApiV1AiAiChatConversationsConversationIdGet
+          >
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getConversationApiV1AiAiChatConversationsConversationIdGet>>,
+          Awaited<
+            ReturnType<
+              typeof getConversationApiV1AiAiChatConversationsConversationIdGet
+            >
+          >,
           TError,
-          Awaited<ReturnType<typeof getConversationApiV1AiAiChatConversationsConversationIdGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetConversationApiV1AiAiChatConversationsConversationIdGet<TData = Awaited<ReturnType<typeof getConversationApiV1AiAiChatConversationsConversationIdGet>>, TError = HTTPValidationError>(
- conversationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getConversationApiV1AiAiChatConversationsConversationIdGet>>, TError, TData>> & Pick<
+          Awaited<
+            ReturnType<
+              typeof getConversationApiV1AiAiChatConversationsConversationIdGet
+            >
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetConversationApiV1AiAiChatConversationsConversationIdGet<
+  TData = Awaited<
+    ReturnType<
+      typeof getConversationApiV1AiAiChatConversationsConversationIdGet
+    >
+  >,
+  TError = HTTPValidationError,
+>(
+  conversationId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof getConversationApiV1AiAiChatConversationsConversationIdGet
+          >
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getConversationApiV1AiAiChatConversationsConversationIdGet>>,
+          Awaited<
+            ReturnType<
+              typeof getConversationApiV1AiAiChatConversationsConversationIdGet
+            >
+          >,
           TError,
-          Awaited<ReturnType<typeof getConversationApiV1AiAiChatConversationsConversationIdGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetConversationApiV1AiAiChatConversationsConversationIdGet<TData = Awaited<ReturnType<typeof getConversationApiV1AiAiChatConversationsConversationIdGet>>, TError = HTTPValidationError>(
- conversationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getConversationApiV1AiAiChatConversationsConversationIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+          Awaited<
+            ReturnType<
+              typeof getConversationApiV1AiAiChatConversationsConversationIdGet
+            >
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetConversationApiV1AiAiChatConversationsConversationIdGet<
+  TData = Awaited<
+    ReturnType<
+      typeof getConversationApiV1AiAiChatConversationsConversationIdGet
+    >
+  >,
+  TError = HTTPValidationError,
+>(
+  conversationId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof getConversationApiV1AiAiChatConversationsConversationIdGet
+          >
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Get conversation details
  */
 
-export function useGetConversationApiV1AiAiChatConversationsConversationIdGet<TData = Awaited<ReturnType<typeof getConversationApiV1AiAiChatConversationsConversationIdGet>>, TError = HTTPValidationError>(
- conversationId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getConversationApiV1AiAiChatConversationsConversationIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetConversationApiV1AiAiChatConversationsConversationIdGet<
+  TData = Awaited<
+    ReturnType<
+      typeof getConversationApiV1AiAiChatConversationsConversationIdGet
+    >
+  >,
+  TError = HTTPValidationError,
+>(
+  conversationId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof getConversationApiV1AiAiChatConversationsConversationIdGet
+          >
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getGetConversationApiV1AiAiChatConversationsConversationIdGetQueryOptions(
+      conversationId,
+      options,
+    );
 
-  const queryOptions = getGetConversationApiV1AiAiChatConversationsConversationIdGetQueryOptions(conversationId,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
 
 /**
  * Delete a chat conversation
  * @summary Delete conversation
  */
-export type deleteConversationApiV1AiAiChatConversationsConversationIdDeleteResponse204 = {
-  data: void
-  status: 204
-}
+export type deleteConversationApiV1AiAiChatConversationsConversationIdDeleteResponse204 =
+  {
+    data: void;
+    status: 204;
+  };
 
-export type deleteConversationApiV1AiAiChatConversationsConversationIdDeleteResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type deleteConversationApiV1AiAiChatConversationsConversationIdDeleteResponseSuccess = (deleteConversationApiV1AiAiChatConversationsConversationIdDeleteResponse204) & {
-  headers: Headers;
-};
-export type deleteConversationApiV1AiAiChatConversationsConversationIdDeleteResponseError = (deleteConversationApiV1AiAiChatConversationsConversationIdDeleteResponse422) & {
-  headers: Headers;
-};
+export type deleteConversationApiV1AiAiChatConversationsConversationIdDeleteResponse422 =
+  {
+    data: HTTPValidationError;
+    status: 422;
+  };
 
-export type deleteConversationApiV1AiAiChatConversationsConversationIdDeleteResponse = (deleteConversationApiV1AiAiChatConversationsConversationIdDeleteResponseSuccess | deleteConversationApiV1AiAiChatConversationsConversationIdDeleteResponseError)
+export type deleteConversationApiV1AiAiChatConversationsConversationIdDeleteResponseSuccess =
+  deleteConversationApiV1AiAiChatConversationsConversationIdDeleteResponse204 & {
+    headers: Headers;
+  };
+export type deleteConversationApiV1AiAiChatConversationsConversationIdDeleteResponseError =
+  deleteConversationApiV1AiAiChatConversationsConversationIdDeleteResponse422 & {
+    headers: Headers;
+  };
 
-export const getDeleteConversationApiV1AiAiChatConversationsConversationIdDeleteUrl = (conversationId: string,) => {
+export type deleteConversationApiV1AiAiChatConversationsConversationIdDeleteResponse =
 
+    | deleteConversationApiV1AiAiChatConversationsConversationIdDeleteResponseSuccess
+    | deleteConversationApiV1AiAiChatConversationsConversationIdDeleteResponseError;
 
-  
+export const getDeleteConversationApiV1AiAiChatConversationsConversationIdDeleteUrl =
+  (conversationId: string) => {
+    return `/api/v1/ai/ai/chat/conversations/${conversationId}`;
+  };
 
-  return `/api/v1/ai/ai/chat/conversations/${conversationId}`
-}
+export const deleteConversationApiV1AiAiChatConversationsConversationIdDelete =
+  async (
+    conversationId: string,
+    options?: RequestInit,
+  ): Promise<deleteConversationApiV1AiAiChatConversationsConversationIdDeleteResponse> => {
+    return customInstance<deleteConversationApiV1AiAiChatConversationsConversationIdDeleteResponse>(
+      getDeleteConversationApiV1AiAiChatConversationsConversationIdDeleteUrl(
+        conversationId,
+      ),
+      {
+        ...options,
+        method: "DELETE",
+      },
+    );
+  };
 
-export const deleteConversationApiV1AiAiChatConversationsConversationIdDelete = async (conversationId: string, options?: RequestInit): Promise<deleteConversationApiV1AiAiChatConversationsConversationIdDeleteResponse> => {
-  
-  return customInstance<deleteConversationApiV1AiAiChatConversationsConversationIdDeleteResponse>(getDeleteConversationApiV1AiAiChatConversationsConversationIdDeleteUrl(conversationId),
-  {      
-    ...options,
-    method: 'DELETE'
-    
-    
-  }
-);}
+export const getDeleteConversationApiV1AiAiChatConversationsConversationIdDeleteMutationOptions =
+  <TError = HTTPValidationError, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<
+          typeof deleteConversationApiV1AiAiChatConversationsConversationIdDelete
+        >
+      >,
+      TError,
+      { conversationId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  }): UseMutationOptions<
+    Awaited<
+      ReturnType<
+        typeof deleteConversationApiV1AiAiChatConversationsConversationIdDelete
+      >
+    >,
+    TError,
+    { conversationId: string },
+    TContext
+  > => {
+    const mutationKey = [
+      "deleteConversationApiV1AiAiChatConversationsConversationIdDelete",
+    ];
+    const { mutation: mutationOptions, request: requestOptions } = options
+      ? options.mutation &&
+        "mutationKey" in options.mutation &&
+        options.mutation.mutationKey
+        ? options
+        : { ...options, mutation: { ...options.mutation, mutationKey } }
+      : { mutation: { mutationKey }, request: undefined };
 
+    const mutationFn: MutationFunction<
+      Awaited<
+        ReturnType<
+          typeof deleteConversationApiV1AiAiChatConversationsConversationIdDelete
+        >
+      >,
+      { conversationId: string }
+    > = (props) => {
+      const { conversationId } = props ?? {};
 
+      return deleteConversationApiV1AiAiChatConversationsConversationIdDelete(
+        conversationId,
+        requestOptions,
+      );
+    };
 
+    return { mutationFn, ...mutationOptions };
+  };
 
-export const getDeleteConversationApiV1AiAiChatConversationsConversationIdDeleteMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteConversationApiV1AiAiChatConversationsConversationIdDelete>>, TError,{conversationId: string}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteConversationApiV1AiAiChatConversationsConversationIdDelete>>, TError,{conversationId: string}, TContext> => {
+export type DeleteConversationApiV1AiAiChatConversationsConversationIdDeleteMutationResult =
+  NonNullable<
+    Awaited<
+      ReturnType<
+        typeof deleteConversationApiV1AiAiChatConversationsConversationIdDelete
+      >
+    >
+  >;
 
-const mutationKey = ['deleteConversationApiV1AiAiChatConversationsConversationIdDelete'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+export type DeleteConversationApiV1AiAiChatConversationsConversationIdDeleteMutationError =
+  HTTPValidationError;
 
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteConversationApiV1AiAiChatConversationsConversationIdDelete>>, {conversationId: string}> = (props) => {
-          const {conversationId} = props ?? {};
-
-          return  deleteConversationApiV1AiAiChatConversationsConversationIdDelete(conversationId,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteConversationApiV1AiAiChatConversationsConversationIdDeleteMutationResult = NonNullable<Awaited<ReturnType<typeof deleteConversationApiV1AiAiChatConversationsConversationIdDelete>>>
-    
-    export type DeleteConversationApiV1AiAiChatConversationsConversationIdDeleteMutationError = HTTPValidationError
-
-    /**
+/**
  * @summary Delete conversation
  */
-export const useDeleteConversationApiV1AiAiChatConversationsConversationIdDelete = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteConversationApiV1AiAiChatConversationsConversationIdDelete>>, TError,{conversationId: string}, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteConversationApiV1AiAiChatConversationsConversationIdDelete>>,
+export const useDeleteConversationApiV1AiAiChatConversationsConversationIdDelete =
+  <TError = HTTPValidationError, TContext = unknown>(
+    options?: {
+      mutation?: UseMutationOptions<
+        Awaited<
+          ReturnType<
+            typeof deleteConversationApiV1AiAiChatConversationsConversationIdDelete
+          >
+        >,
         TError,
-        {conversationId: string},
+        { conversationId: string },
         TContext
-      > => {
+      >;
+      request?: SecondParameter<typeof customInstance>;
+    },
+    queryClient?: QueryClient,
+  ): UseMutationResult<
+    Awaited<
+      ReturnType<
+        typeof deleteConversationApiV1AiAiChatConversationsConversationIdDelete
+      >
+    >,
+    TError,
+    { conversationId: string },
+    TContext
+  > => {
+    const mutationOptions =
+      getDeleteConversationApiV1AiAiChatConversationsConversationIdDeleteMutationOptions(
+        options,
+      );
 
-      const mutationOptions = getDeleteConversationApiV1AiAiChatConversationsConversationIdDeleteMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
+    return useMutation(mutationOptions, queryClient);
+  };
+/**
  * Get AI-powered financial optimization insights
  * @summary Get optimization insights
  */
 export type getOptimizationInsightsApiV1AiAiOptimizeInsightsPostResponse200 = {
-  data: OptimizationResponse
-  status: 200
-}
+  data: OptimizationResponse;
+  status: 200;
+};
 
 export type getOptimizationInsightsApiV1AiAiOptimizeInsightsPostResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type getOptimizationInsightsApiV1AiAiOptimizeInsightsPostResponseSuccess = (getOptimizationInsightsApiV1AiAiOptimizeInsightsPostResponse200) & {
-  headers: Headers;
-};
-export type getOptimizationInsightsApiV1AiAiOptimizeInsightsPostResponseError = (getOptimizationInsightsApiV1AiAiOptimizeInsightsPostResponse422) & {
-  headers: Headers;
+  data: HTTPValidationError;
+  status: 422;
 };
 
-export type getOptimizationInsightsApiV1AiAiOptimizeInsightsPostResponse = (getOptimizationInsightsApiV1AiAiOptimizeInsightsPostResponseSuccess | getOptimizationInsightsApiV1AiAiOptimizeInsightsPostResponseError)
+export type getOptimizationInsightsApiV1AiAiOptimizeInsightsPostResponseSuccess =
+  getOptimizationInsightsApiV1AiAiOptimizeInsightsPostResponse200 & {
+    headers: Headers;
+  };
+export type getOptimizationInsightsApiV1AiAiOptimizeInsightsPostResponseError =
+  getOptimizationInsightsApiV1AiAiOptimizeInsightsPostResponse422 & {
+    headers: Headers;
+  };
 
-export const getGetOptimizationInsightsApiV1AiAiOptimizeInsightsPostUrl = () => {
+export type getOptimizationInsightsApiV1AiAiOptimizeInsightsPostResponse =
+  | getOptimizationInsightsApiV1AiAiOptimizeInsightsPostResponseSuccess
+  | getOptimizationInsightsApiV1AiAiOptimizeInsightsPostResponseError;
 
+export const getGetOptimizationInsightsApiV1AiAiOptimizeInsightsPostUrl =
+  () => {
+    return `/api/v1/ai/ai/optimize/insights`;
+  };
 
-  
+export const getOptimizationInsightsApiV1AiAiOptimizeInsightsPost = async (
+  optimizationRequest: OptimizationRequest,
+  options?: RequestInit,
+): Promise<getOptimizationInsightsApiV1AiAiOptimizeInsightsPostResponse> => {
+  return customInstance<getOptimizationInsightsApiV1AiAiOptimizeInsightsPostResponse>(
+    getGetOptimizationInsightsApiV1AiAiOptimizeInsightsPostUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(optimizationRequest),
+    },
+  );
+};
 
-  return `/api/v1/ai/ai/optimize/insights`
-}
+export const getGetOptimizationInsightsApiV1AiAiOptimizeInsightsPostMutationOptions =
+  <TError = HTTPValidationError, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof getOptimizationInsightsApiV1AiAiOptimizeInsightsPost>
+      >,
+      TError,
+      { data: OptimizationRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  }): UseMutationOptions<
+    Awaited<
+      ReturnType<typeof getOptimizationInsightsApiV1AiAiOptimizeInsightsPost>
+    >,
+    TError,
+    { data: OptimizationRequest },
+    TContext
+  > => {
+    const mutationKey = [
+      "getOptimizationInsightsApiV1AiAiOptimizeInsightsPost",
+    ];
+    const { mutation: mutationOptions, request: requestOptions } = options
+      ? options.mutation &&
+        "mutationKey" in options.mutation &&
+        options.mutation.mutationKey
+        ? options
+        : { ...options, mutation: { ...options.mutation, mutationKey } }
+      : { mutation: { mutationKey }, request: undefined };
 
-export const getOptimizationInsightsApiV1AiAiOptimizeInsightsPost = async (optimizationRequest: OptimizationRequest, options?: RequestInit): Promise<getOptimizationInsightsApiV1AiAiOptimizeInsightsPostResponse> => {
-  
-  return customInstance<getOptimizationInsightsApiV1AiAiOptimizeInsightsPostResponse>(getGetOptimizationInsightsApiV1AiAiOptimizeInsightsPostUrl(),
-  {      
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      optimizationRequest,)
-  }
-);}
+    const mutationFn: MutationFunction<
+      Awaited<
+        ReturnType<typeof getOptimizationInsightsApiV1AiAiOptimizeInsightsPost>
+      >,
+      { data: OptimizationRequest }
+    > = (props) => {
+      const { data } = props ?? {};
 
+      return getOptimizationInsightsApiV1AiAiOptimizeInsightsPost(
+        data,
+        requestOptions,
+      );
+    };
 
+    return { mutationFn, ...mutationOptions };
+  };
 
+export type GetOptimizationInsightsApiV1AiAiOptimizeInsightsPostMutationResult =
+  NonNullable<
+    Awaited<
+      ReturnType<typeof getOptimizationInsightsApiV1AiAiOptimizeInsightsPost>
+    >
+  >;
+export type GetOptimizationInsightsApiV1AiAiOptimizeInsightsPostMutationBody =
+  OptimizationRequest;
+export type GetOptimizationInsightsApiV1AiAiOptimizeInsightsPostMutationError =
+  HTTPValidationError;
 
-export const getGetOptimizationInsightsApiV1AiAiOptimizeInsightsPostMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getOptimizationInsightsApiV1AiAiOptimizeInsightsPost>>, TError,{data: OptimizationRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof getOptimizationInsightsApiV1AiAiOptimizeInsightsPost>>, TError,{data: OptimizationRequest}, TContext> => {
-
-const mutationKey = ['getOptimizationInsightsApiV1AiAiOptimizeInsightsPost'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof getOptimizationInsightsApiV1AiAiOptimizeInsightsPost>>, {data: OptimizationRequest}> = (props) => {
-          const {data} = props ?? {};
-
-          return  getOptimizationInsightsApiV1AiAiOptimizeInsightsPost(data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type GetOptimizationInsightsApiV1AiAiOptimizeInsightsPostMutationResult = NonNullable<Awaited<ReturnType<typeof getOptimizationInsightsApiV1AiAiOptimizeInsightsPost>>>
-    export type GetOptimizationInsightsApiV1AiAiOptimizeInsightsPostMutationBody = OptimizationRequest
-    export type GetOptimizationInsightsApiV1AiAiOptimizeInsightsPostMutationError = HTTPValidationError
-
-    /**
+/**
  * @summary Get optimization insights
  */
-export const useGetOptimizationInsightsApiV1AiAiOptimizeInsightsPost = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof getOptimizationInsightsApiV1AiAiOptimizeInsightsPost>>, TError,{data: OptimizationRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof getOptimizationInsightsApiV1AiAiOptimizeInsightsPost>>,
-        TError,
-        {data: OptimizationRequest},
-        TContext
-      > => {
+export const useGetOptimizationInsightsApiV1AiAiOptimizeInsightsPost = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof getOptimizationInsightsApiV1AiAiOptimizeInsightsPost>
+      >,
+      TError,
+      { data: OptimizationRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<
+    ReturnType<typeof getOptimizationInsightsApiV1AiAiOptimizeInsightsPost>
+  >,
+  TError,
+  { data: OptimizationRequest },
+  TContext
+> => {
+  const mutationOptions =
+    getGetOptimizationInsightsApiV1AiAiOptimizeInsightsPostMutationOptions(
+      options,
+    );
 
-      const mutationOptions = getGetOptimizationInsightsApiV1AiAiOptimizeInsightsPostMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
+  return useMutation(mutationOptions, queryClient);
+};
+/**
  * Get detected spending patterns
  * @summary Get spending patterns
  */
-export type getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetResponse200 = {
-  data: SpendingPatternsResponse
-  status: 200
-}
+export type getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetResponse200 =
+  {
+    data: SpendingPatternsResponse;
+    status: 200;
+  };
 
-export type getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetResponseSuccess = (getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetResponse200) & {
-  headers: Headers;
-};
-export type getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetResponseError = (getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetResponse422) & {
-  headers: Headers;
-};
+export type getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetResponse422 =
+  {
+    data: HTTPValidationError;
+    status: 422;
+  };
 
-export type getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetResponse = (getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetResponseSuccess | getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetResponseError)
+export type getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetResponseSuccess =
+  getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetResponse200 & {
+    headers: Headers;
+  };
+export type getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetResponseError =
+  getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetResponse422 & {
+    headers: Headers;
+  };
 
-export const getGetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetUrl = (financialProfileId: string,
-    params?: GetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetParams,) => {
-  const normalizedParams = new URLSearchParams();
+export type getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetResponse =
 
-  Object.entries(params || {}).forEach(([key, value]) => {
-    
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
-    }
-  });
+    | getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetResponseSuccess
+    | getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetResponseError;
 
-  const stringifiedParams = normalizedParams.toString();
+export const getGetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetUrl =
+  (
+    financialProfileId: string,
+    params?: GetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetParams,
+  ) => {
+    const normalizedParams = new URLSearchParams();
 
-  return stringifiedParams.length > 0 ? `/api/v1/ai/ai/optimize/patterns/${financialProfileId}?${stringifiedParams}` : `/api/v1/ai/ai/optimize/patterns/${financialProfileId}`
-}
+    Object.entries(params || {}).forEach(([key, value]) => {
+      if (value !== undefined) {
+        normalizedParams.append(
+          key,
+          value === null ? "null" : value.toString(),
+        );
+      }
+    });
 
-export const getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet = async (financialProfileId: string,
-    params?: GetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetParams, options?: RequestInit): Promise<getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetResponse> => {
-  
-  return customInstance<getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetResponse>(getGetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetUrl(financialProfileId,params),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
+    const stringifiedParams = normalizedParams.toString();
 
+    return stringifiedParams.length > 0
+      ? `/api/v1/ai/ai/optimize/patterns/${financialProfileId}?${stringifiedParams}`
+      : `/api/v1/ai/ai/optimize/patterns/${financialProfileId}`;
+  };
 
+export const getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet =
+  async (
+    financialProfileId: string,
+    params?: GetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetParams,
+    options?: RequestInit,
+  ): Promise<getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetResponse> => {
+    return customInstance<getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetResponse>(
+      getGetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetUrl(
+        financialProfileId,
+        params,
+      ),
+      {
+        ...options,
+        method: "GET",
+      },
+    );
+  };
 
-
-
-export const getGetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetQueryKey = (financialProfileId?: string,
-    params?: GetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetParams,) => {
+export const getGetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetQueryKey =
+  (
+    financialProfileId?: string,
+    params?: GetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetParams,
+  ) => {
     return [
-    `/api/v1/ai/ai/optimize/patterns/${financialProfileId}`, ...(params ? [params]: [])
+      `/api/v1/ai/ai/optimize/patterns/${financialProfileId}`,
+      ...(params ? [params] : []),
     ] as const;
-    }
+  };
 
-    
-export const getGetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetQueryOptions = <TData = Awaited<ReturnType<typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet>>, TError = HTTPValidationError>(financialProfileId: string,
-    params?: GetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
+export const getGetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetQueryOptions =
+  <
+    TData = Awaited<
+      ReturnType<
+        typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet
+      >
+    >,
+    TError = HTTPValidationError,
+  >(
+    financialProfileId: string,
+    params?: GetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetParams,
+    options?: {
+      query?: Partial<
+        UseQueryOptions<
+          Awaited<
+            ReturnType<
+              typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet
+            >
+          >,
+          TError,
+          TData
+        >
+      >;
+      request?: SecondParameter<typeof customInstance>;
+    },
+  ) => {
+    const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+    const queryKey =
+      queryOptions?.queryKey ??
+      getGetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetQueryKey(
+        financialProfileId,
+        params,
+      );
 
-  const queryKey =  queryOptions?.queryKey ?? getGetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetQueryKey(financialProfileId,params);
+    const queryFn: QueryFunction<
+      Awaited<
+        ReturnType<
+          typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet
+        >
+      >
+    > = ({ signal }) =>
+      getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet(
+        financialProfileId,
+        params,
+        { signal, ...requestOptions },
+      );
 
-  
+    return {
+      queryKey,
+      queryFn,
+      enabled: !!financialProfileId,
+      ...queryOptions,
+    } as UseQueryOptions<
+      Awaited<
+        ReturnType<
+          typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet
+        >
+      >,
+      TError,
+      TData
+    > & { queryKey: DataTag<QueryKey, TData, TError> };
+  };
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet>>> = ({ signal }) => getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet(financialProfileId,params, { signal, ...requestOptions });
+export type GetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetQueryResult =
+  NonNullable<
+    Awaited<
+      ReturnType<
+        typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet
+      >
+    >
+  >;
+export type GetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetQueryError =
+  HTTPValidationError;
 
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(financialProfileId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetQueryResult = NonNullable<Awaited<ReturnType<typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet>>>
-export type GetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetQueryError = HTTPValidationError
-
-
-export function useGetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet<TData = Awaited<ReturnType<typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet>>, TError = HTTPValidationError>(
- financialProfileId: string,
-    params: undefined |  GetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet>>, TError, TData>> & Pick<
+export function useGetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet<
+  TData = Awaited<
+    ReturnType<
+      typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet
+    >
+  >,
+  TError = HTTPValidationError,
+>(
+  financialProfileId: string,
+  params:
+    | undefined
+    | GetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet
+          >
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet>>,
+          Awaited<
+            ReturnType<
+              typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet
+            >
+          >,
           TError,
-          Awaited<ReturnType<typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet<TData = Awaited<ReturnType<typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet>>, TError = HTTPValidationError>(
- financialProfileId: string,
-    params?: GetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet>>, TError, TData>> & Pick<
+          Awaited<
+            ReturnType<
+              typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet
+            >
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet<
+  TData = Awaited<
+    ReturnType<
+      typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet
+    >
+  >,
+  TError = HTTPValidationError,
+>(
+  financialProfileId: string,
+  params?: GetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet
+          >
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet>>,
+          Awaited<
+            ReturnType<
+              typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet
+            >
+          >,
           TError,
-          Awaited<ReturnType<typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet<TData = Awaited<ReturnType<typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet>>, TError = HTTPValidationError>(
- financialProfileId: string,
-    params?: GetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+          Awaited<
+            ReturnType<
+              typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet
+            >
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet<
+  TData = Awaited<
+    ReturnType<
+      typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet
+    >
+  >,
+  TError = HTTPValidationError,
+>(
+  financialProfileId: string,
+  params?: GetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet
+          >
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Get spending patterns
  */
 
-export function useGetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet<TData = Awaited<ReturnType<typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet>>, TError = HTTPValidationError>(
- financialProfileId: string,
-    params?: GetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet<
+  TData = Awaited<
+    ReturnType<
+      typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet
+    >
+  >,
+  TError = HTTPValidationError,
+>(
+  financialProfileId: string,
+  params?: GetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet
+          >
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getGetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetQueryOptions(
+      financialProfileId,
+      params,
+      options,
+    );
 
-  const queryOptions = getGetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGetQueryOptions(financialProfileId,params,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
 
 /**
  * Get summary of potential savings
  * @summary Get savings summary
  */
-export type getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetResponse200 = {
-  data: SavingsSummary
-  status: 200
-}
+export type getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetResponse200 =
+  {
+    data: SavingsSummary;
+    status: 200;
+  };
 
-export type getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetResponseSuccess = (getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetResponse200) & {
-  headers: Headers;
-};
-export type getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetResponseError = (getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetResponse422) & {
-  headers: Headers;
-};
+export type getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetResponse422 =
+  {
+    data: HTTPValidationError;
+    status: 422;
+  };
 
-export type getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetResponse = (getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetResponseSuccess | getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetResponseError)
+export type getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetResponseSuccess =
+  getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetResponse200 & {
+    headers: Headers;
+  };
+export type getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetResponseError =
+  getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetResponse422 & {
+    headers: Headers;
+  };
 
-export const getGetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetUrl = (financialProfileId: string,) => {
+export type getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetResponse =
 
+    | getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetResponseSuccess
+    | getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetResponseError;
 
-  
+export const getGetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetUrl =
+  (financialProfileId: string) => {
+    return `/api/v1/ai/ai/optimize/savings-summary/${financialProfileId}`;
+  };
 
-  return `/api/v1/ai/ai/optimize/savings-summary/${financialProfileId}`
-}
+export const getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet =
+  async (
+    financialProfileId: string,
+    options?: RequestInit,
+  ): Promise<getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetResponse> => {
+    return customInstance<getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetResponse>(
+      getGetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetUrl(
+        financialProfileId,
+      ),
+      {
+        ...options,
+        method: "GET",
+      },
+    );
+  };
 
-export const getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet = async (financialProfileId: string, options?: RequestInit): Promise<getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetResponse> => {
-  
-  return customInstance<getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetResponse>(getGetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetUrl(financialProfileId),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
-
-
-
-
-
-export const getGetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetQueryKey = (financialProfileId?: string,) => {
+export const getGetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetQueryKey =
+  (financialProfileId?: string) => {
     return [
-    `/api/v1/ai/ai/optimize/savings-summary/${financialProfileId}`
+      `/api/v1/ai/ai/optimize/savings-summary/${financialProfileId}`,
     ] as const;
-    }
+  };
 
-    
-export const getGetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetQueryOptions = <TData = Awaited<ReturnType<typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet>>, TError = HTTPValidationError>(financialProfileId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
+export const getGetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetQueryOptions =
+  <
+    TData = Awaited<
+      ReturnType<
+        typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet
+      >
+    >,
+    TError = HTTPValidationError,
+  >(
+    financialProfileId: string,
+    options?: {
+      query?: Partial<
+        UseQueryOptions<
+          Awaited<
+            ReturnType<
+              typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet
+            >
+          >,
+          TError,
+          TData
+        >
+      >;
+      request?: SecondParameter<typeof customInstance>;
+    },
+  ) => {
+    const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+    const queryKey =
+      queryOptions?.queryKey ??
+      getGetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetQueryKey(
+        financialProfileId,
+      );
 
-  const queryKey =  queryOptions?.queryKey ?? getGetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetQueryKey(financialProfileId);
+    const queryFn: QueryFunction<
+      Awaited<
+        ReturnType<
+          typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet
+        >
+      >
+    > = ({ signal }) =>
+      getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet(
+        financialProfileId,
+        { signal, ...requestOptions },
+      );
 
-  
+    return {
+      queryKey,
+      queryFn,
+      enabled: !!financialProfileId,
+      ...queryOptions,
+    } as UseQueryOptions<
+      Awaited<
+        ReturnType<
+          typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet
+        >
+      >,
+      TError,
+      TData
+    > & { queryKey: DataTag<QueryKey, TData, TError> };
+  };
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet>>> = ({ signal }) => getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet(financialProfileId, { signal, ...requestOptions });
+export type GetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetQueryResult =
+  NonNullable<
+    Awaited<
+      ReturnType<
+        typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet
+      >
+    >
+  >;
+export type GetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetQueryError =
+  HTTPValidationError;
 
-      
-
-      
-
-   return  { queryKey, queryFn, enabled: !!(financialProfileId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetQueryResult = NonNullable<Awaited<ReturnType<typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet>>>
-export type GetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetQueryError = HTTPValidationError
-
-
-export function useGetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet<TData = Awaited<ReturnType<typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet>>, TError = HTTPValidationError>(
- financialProfileId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet>>, TError, TData>> & Pick<
+export function useGetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet<
+  TData = Awaited<
+    ReturnType<
+      typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet
+    >
+  >,
+  TError = HTTPValidationError,
+>(
+  financialProfileId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet
+          >
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet>>,
+          Awaited<
+            ReturnType<
+              typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet
+            >
+          >,
           TError,
-          Awaited<ReturnType<typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet<TData = Awaited<ReturnType<typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet>>, TError = HTTPValidationError>(
- financialProfileId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet>>, TError, TData>> & Pick<
+          Awaited<
+            ReturnType<
+              typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet
+            >
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet<
+  TData = Awaited<
+    ReturnType<
+      typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet
+    >
+  >,
+  TError = HTTPValidationError,
+>(
+  financialProfileId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet
+          >
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet>>,
+          Awaited<
+            ReturnType<
+              typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet
+            >
+          >,
           TError,
-          Awaited<ReturnType<typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet<TData = Awaited<ReturnType<typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet>>, TError = HTTPValidationError>(
- financialProfileId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+          Awaited<
+            ReturnType<
+              typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet
+            >
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet<
+  TData = Awaited<
+    ReturnType<
+      typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet
+    >
+  >,
+  TError = HTTPValidationError,
+>(
+  financialProfileId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet
+          >
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Get savings summary
  */
 
-export function useGetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet<TData = Awaited<ReturnType<typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet>>, TError = HTTPValidationError>(
- financialProfileId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet<
+  TData = Awaited<
+    ReturnType<
+      typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet
+    >
+  >,
+  TError = HTTPValidationError,
+>(
+  financialProfileId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet
+          >
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getGetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetQueryOptions(
+      financialProfileId,
+      options,
+    );
 
-  const queryOptions = getGetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGetQueryOptions(financialProfileId,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
 
 /**
  * Get status of all AI services
  * @summary Get AI services status
  */
 export type getAiStatusApiV1AiAiStatusGetResponse200 = {
-  data: AIServiceStatus
-  status: 200
-}
-    
-export type getAiStatusApiV1AiAiStatusGetResponseSuccess = (getAiStatusApiV1AiAiStatusGetResponse200) & {
-  headers: Headers;
+  data: AIServiceStatus;
+  status: 200;
 };
-;
 
-export type getAiStatusApiV1AiAiStatusGetResponse = (getAiStatusApiV1AiAiStatusGetResponseSuccess)
+export type getAiStatusApiV1AiAiStatusGetResponseSuccess =
+  getAiStatusApiV1AiAiStatusGetResponse200 & {
+    headers: Headers;
+  };
+export type getAiStatusApiV1AiAiStatusGetResponse =
+  getAiStatusApiV1AiAiStatusGetResponseSuccess;
 
 export const getGetAiStatusApiV1AiAiStatusGetUrl = () => {
+  return `/api/v1/ai/ai/status`;
+};
 
-
-  
-
-  return `/api/v1/ai/ai/status`
-}
-
-export const getAiStatusApiV1AiAiStatusGet = async ( options?: RequestInit): Promise<getAiStatusApiV1AiAiStatusGetResponse> => {
-  
-  return customInstance<getAiStatusApiV1AiAiStatusGetResponse>(getGetAiStatusApiV1AiAiStatusGetUrl(),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
-
-
-
-
+export const getAiStatusApiV1AiAiStatusGet = async (
+  options?: RequestInit,
+): Promise<getAiStatusApiV1AiAiStatusGetResponse> => {
+  return customInstance<getAiStatusApiV1AiAiStatusGetResponse>(
+    getGetAiStatusApiV1AiAiStatusGetUrl(),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
 
 export const getGetAiStatusApiV1AiAiStatusGetQueryKey = () => {
-    return [
-    `/api/v1/ai/ai/status`
-    ] as const;
-    }
+  return [`/api/v1/ai/ai/status`] as const;
+};
 
-    
-export const getGetAiStatusApiV1AiAiStatusGetQueryOptions = <TData = Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
+export const getGetAiStatusApiV1AiAiStatusGetQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey =
+    queryOptions?.queryKey ?? getGetAiStatusApiV1AiAiStatusGetQueryKey();
 
-  const queryKey =  queryOptions?.queryKey ?? getGetAiStatusApiV1AiAiStatusGetQueryKey();
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>
+  > = ({ signal }) =>
+    getAiStatusApiV1AiAiStatusGet({ signal, ...requestOptions });
 
-  
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>> = ({ signal }) => getAiStatusApiV1AiAiStatusGet({ signal, ...requestOptions });
+export type GetAiStatusApiV1AiAiStatusGetQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>
+>;
+export type GetAiStatusApiV1AiAiStatusGetQueryError = unknown;
 
-      
-
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetAiStatusApiV1AiAiStatusGetQueryResult = NonNullable<Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>>
-export type GetAiStatusApiV1AiAiStatusGetQueryError = unknown
-
-
-export function useGetAiStatusApiV1AiAiStatusGet<TData = Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>, TError, TData>> & Pick<
+export function useGetAiStatusApiV1AiAiStatusGet<
+  TData = Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>,
           TError,
           Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAiStatusApiV1AiAiStatusGet<TData = Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>, TError, TData>> & Pick<
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetAiStatusApiV1AiAiStatusGet<
+  TData = Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>,
           TError,
           Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetAiStatusApiV1AiAiStatusGet<TData = Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetAiStatusApiV1AiAiStatusGet<
+  TData = Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Get AI services status
  */
 
-export function useGetAiStatusApiV1AiAiStatusGet<TData = Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetAiStatusApiV1AiAiStatusGet<
+  TData = Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getAiStatusApiV1AiAiStatusGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetAiStatusApiV1AiAiStatusGetQueryOptions(options);
 
-  const queryOptions = getGetAiStatusApiV1AiAiStatusGetQueryOptions(options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
-

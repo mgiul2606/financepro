@@ -25,6 +25,11 @@ export default defineConfig({
           signal: true,
         },
       },
+      bundler: {
+        esbuild: {
+          target: 'esnext',
+        },
+      },
     },
   },
   'financepro-zod': {

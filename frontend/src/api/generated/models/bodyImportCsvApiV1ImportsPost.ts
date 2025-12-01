@@ -15,9 +15,9 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { BodyImportCsvApiV1ImportsPostAccountId } from './bodyImportCsvApiV1ImportsPostAccountId';
-import type { BodyImportCsvApiV1ImportsPostMapping } from './bodyImportCsvApiV1ImportsPostMapping';
-import type { BodyImportCsvApiV1ImportsPostUserPassword } from './bodyImportCsvApiV1ImportsPostUserPassword';
+import type { BodyImportCsvApiV1ImportsPostAccountId } from "./bodyImportCsvApiV1ImportsPostAccountId";
+import type { BodyImportCsvApiV1ImportsPostMapping } from "./bodyImportCsvApiV1ImportsPostMapping";
+import type { BodyImportCsvApiV1ImportsPostUserPassword } from "./bodyImportCsvApiV1ImportsPostUserPassword";
 
 export interface BodyImportCsvApiV1ImportsPost {
   /** CSV file to import */

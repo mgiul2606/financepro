@@ -15,11 +15,11 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { AccountType } from './accountType';
-import type { AccountResponseInstitutionName } from './accountResponseInstitutionName';
-import type { AccountResponseNotes } from './accountResponseNotes';
-import type { AccountResponseAccountNumberLast4 } from './accountResponseAccountNumberLast4';
-import type { AccountResponseIban } from './accountResponseIban';
+import type { AccountType } from "./accountType";
+import type { AccountResponseInstitutionName } from "./accountResponseInstitutionName";
+import type { AccountResponseNotes } from "./accountResponseNotes";
+import type { AccountResponseAccountNumberLast4 } from "./accountResponseAccountNumberLast4";
+import type { AccountResponseIban } from "./accountResponseIban";
 
 /**
  * Complete account schema returned by API endpoints.

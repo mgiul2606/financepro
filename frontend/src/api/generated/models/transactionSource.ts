@@ -19,15 +19,15 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 /**
  * Source of transaction creation
  */
-export type TransactionSource = typeof TransactionSource[keyof typeof TransactionSource];
-
+export type TransactionSource =
+  (typeof TransactionSource)[keyof typeof TransactionSource];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const TransactionSource = {
-  manual: 'manual',
-  import_csv: 'import_csv',
-  import_ocr: 'import_ocr',
-  import_api: 'import_api',
-  recurring: 'recurring',
-  bank_sync: 'bank_sync',
+  manual: "manual",
+  import_csv: "import_csv",
+  import_ocr: "import_ocr",
+  import_api: "import_api",
+  recurring: "recurring",
+  bank_sync: "bank_sync",
 } as const;

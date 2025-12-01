@@ -15,7 +15,7 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { CategoryResponse } from './categoryResponse';
+import type { CategoryResponse } from "./categoryResponse";
 
 /**
  * Schema for list categories response with pagination support.

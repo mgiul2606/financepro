@@ -15,7 +15,7 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { FinancialProfileResponse } from './financialProfileResponse';
+import type { FinancialProfileResponse } from "./financialProfileResponse";
 
 /**
  * Schema for list financial profiles response with pagination support.

@@ -17,18 +17,18 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 export type GetCashFlowApiV1AnalysisCashFlowGetParams = {
-/**
- * Number of months
- * @minimum 1
- * @maximum 24
- */
-months?: number;
-/**
- * Profile IDs
- */
-profile_ids?: string[] | null;
-/**
- * Target currency
- */
-currency?: string;
+  /**
+   * Number of months
+   * @minimum 1
+   * @maximum 24
+   */
+  months?: number;
+  /**
+   * Profile IDs
+   */
+  profile_ids?: string[] | null;
+  /**
+   * Target currency
+   */
+  currency?: string;
 };
