@@ -15,7 +15,7 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { GoalMilestoneResponseCompletedAt } from './goalMilestoneResponseCompletedAt';
+import type { GoalMilestoneResponseCompletedAt } from "./goalMilestoneResponseCompletedAt";
 
 /**
  * Schema for goal milestone.

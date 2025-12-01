@@ -15,14 +15,14 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { FinancialGoalCreateDescription } from './financialGoalCreateDescription';
-import type { GoalType } from './goalType';
-import type { FinancialGoalCreateTargetAmount } from './financialGoalCreateTargetAmount';
-import type { FinancialGoalCreateScopeProfileIds } from './financialGoalCreateScopeProfileIds';
-import type { FinancialGoalCreateLinkedAccountId } from './financialGoalCreateLinkedAccountId';
-import type { FinancialGoalCreateStartDate } from './financialGoalCreateStartDate';
-import type { FinancialGoalCreateCurrentAmount } from './financialGoalCreateCurrentAmount';
-import type { FinancialGoalCreateMilestones } from './financialGoalCreateMilestones';
+import type { FinancialGoalCreateDescription } from "./financialGoalCreateDescription";
+import type { GoalType } from "./goalType";
+import type { FinancialGoalCreateTargetAmount } from "./financialGoalCreateTargetAmount";
+import type { FinancialGoalCreateScopeProfileIds } from "./financialGoalCreateScopeProfileIds";
+import type { FinancialGoalCreateLinkedAccountId } from "./financialGoalCreateLinkedAccountId";
+import type { FinancialGoalCreateStartDate } from "./financialGoalCreateStartDate";
+import type { FinancialGoalCreateCurrentAmount } from "./financialGoalCreateCurrentAmount";
+import type { FinancialGoalCreateMilestones } from "./financialGoalCreateMilestones";
 
 /**
  * Schema for creating a new financial goal.

@@ -15,7 +15,7 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { AccountResponse } from './accountResponse';
+import type { AccountResponse } from "./accountResponse";
 
 /**
  * Schema for list accounts response with pagination.

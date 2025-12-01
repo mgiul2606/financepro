@@ -17,20 +17,20 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 export type ListCategoriesApiV1CategoriesGetParams = {
-/**
- * Financial profile ID
- */
-profile_id: string;
-/**
- * Filter by parent category ID (null for root categories)
- */
-parent_id?: string | null;
-/**
- * Filter by hierarchy level (1, 2, or 3)
- */
-level?: number | null;
-/**
- * Filter by active status
- */
-is_active?: boolean;
+  /**
+   * Financial profile ID
+   */
+  profile_id: string;
+  /**
+   * Filter by parent category ID (null for root categories)
+   */
+  parent_id?: string | null;
+  /**
+   * Filter by hierarchy level (1, 2, or 3)
+   */
+  level?: number | null;
+  /**
+   * Filter by active status
+   */
+  is_active?: boolean;
 };

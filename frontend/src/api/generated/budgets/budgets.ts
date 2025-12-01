@@ -15,10 +15,7 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import {
-  useMutation,
-  useQuery
-} from '@tanstack/react-query';
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
   DataTag,
   DefinedInitialDataOptions,
@@ -31,8 +28,8 @@ import type {
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
-  UseQueryResult
-} from '@tanstack/react-query';
+  UseQueryResult,
+} from "@tanstack/react-query";
 
 import type {
   BudgetCategoryCreate,
@@ -43,838 +40,1314 @@ import type {
   BudgetUpdate,
   BudgetUsageResponse,
   HTTPValidationError,
-  ListBudgetsApiV1BudgetsGetParams
-} from '.././models';
+  ListBudgetsApiV1BudgetsGetParams,
+} from ".././models";
 
-import { customInstance } from '../../client';
-
+import { customInstance } from "../../client";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
-
-
 
 /**
  * List all budgets for the current user with optional filters
  * @summary List budgets
  */
 export type listBudgetsApiV1BudgetsGetResponse200 = {
-  data: BudgetListResponse
-  status: 200
-}
+  data: BudgetListResponse;
+  status: 200;
+};
 
 export type listBudgetsApiV1BudgetsGetResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type listBudgetsApiV1BudgetsGetResponseSuccess = (listBudgetsApiV1BudgetsGetResponse200) & {
-  headers: Headers;
-};
-export type listBudgetsApiV1BudgetsGetResponseError = (listBudgetsApiV1BudgetsGetResponse422) & {
-  headers: Headers;
+  data: HTTPValidationError;
+  status: 422;
 };
 
-export type listBudgetsApiV1BudgetsGetResponse = (listBudgetsApiV1BudgetsGetResponseSuccess | listBudgetsApiV1BudgetsGetResponseError)
+export type listBudgetsApiV1BudgetsGetResponseSuccess =
+  listBudgetsApiV1BudgetsGetResponse200 & {
+    headers: Headers;
+  };
+export type listBudgetsApiV1BudgetsGetResponseError =
+  listBudgetsApiV1BudgetsGetResponse422 & {
+    headers: Headers;
+  };
 
-export const getListBudgetsApiV1BudgetsGetUrl = (params?: ListBudgetsApiV1BudgetsGetParams,) => {
+export type listBudgetsApiV1BudgetsGetResponse =
+  | listBudgetsApiV1BudgetsGetResponseSuccess
+  | listBudgetsApiV1BudgetsGetResponseError;
+
+export const getListBudgetsApiV1BudgetsGetUrl = (
+  params?: ListBudgetsApiV1BudgetsGetParams,
+) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
-    
     if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
+      normalizedParams.append(key, value === null ? "null" : value.toString());
     }
   });
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/budgets/?${stringifiedParams}` : `/api/v1/budgets/`
-}
+  return stringifiedParams.length > 0
+    ? `/api/v1/budgets/?${stringifiedParams}`
+    : `/api/v1/budgets/`;
+};
 
-export const listBudgetsApiV1BudgetsGet = async (params?: ListBudgetsApiV1BudgetsGetParams, options?: RequestInit): Promise<listBudgetsApiV1BudgetsGetResponse> => {
-  
-  return customInstance<listBudgetsApiV1BudgetsGetResponse>(getListBudgetsApiV1BudgetsGetUrl(params),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
+export const listBudgetsApiV1BudgetsGet = async (
+  params?: ListBudgetsApiV1BudgetsGetParams,
+  options?: RequestInit,
+): Promise<listBudgetsApiV1BudgetsGetResponse> => {
+  return customInstance<listBudgetsApiV1BudgetsGetResponse>(
+    getListBudgetsApiV1BudgetsGetUrl(params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
 
-
-
-
-
-export const getListBudgetsApiV1BudgetsGetQueryKey = (params?: ListBudgetsApiV1BudgetsGetParams,) => {
-    return [
-    `/api/v1/budgets/`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getListBudgetsApiV1BudgetsGetQueryOptions = <TData = Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>, TError = HTTPValidationError>(params?: ListBudgetsApiV1BudgetsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getListBudgetsApiV1BudgetsGetQueryKey = (
+  params?: ListBudgetsApiV1BudgetsGetParams,
 ) => {
+  return [`/api/v1/budgets/`, ...(params ? [params] : [])] as const;
+};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+export const getListBudgetsApiV1BudgetsGetQueryOptions = <
+  TData = Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>,
+  TError = HTTPValidationError,
+>(
+  params?: ListBudgetsApiV1BudgetsGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListBudgetsApiV1BudgetsGetQueryKey(params);
+  const queryKey =
+    queryOptions?.queryKey ?? getListBudgetsApiV1BudgetsGetQueryKey(params);
 
-  
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>
+  > = ({ signal }) =>
+    listBudgetsApiV1BudgetsGet(params, { signal, ...requestOptions });
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>> = ({ signal }) => listBudgetsApiV1BudgetsGet(params, { signal, ...requestOptions });
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-      
+export type ListBudgetsApiV1BudgetsGetQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>
+>;
+export type ListBudgetsApiV1BudgetsGetQueryError = HTTPValidationError;
 
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ListBudgetsApiV1BudgetsGetQueryResult = NonNullable<Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>>
-export type ListBudgetsApiV1BudgetsGetQueryError = HTTPValidationError
-
-
-export function useListBudgetsApiV1BudgetsGet<TData = Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>, TError = HTTPValidationError>(
- params: undefined |  ListBudgetsApiV1BudgetsGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>, TError, TData>> & Pick<
+export function useListBudgetsApiV1BudgetsGet<
+  TData = Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>,
+  TError = HTTPValidationError,
+>(
+  params: undefined | ListBudgetsApiV1BudgetsGetParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>,
           TError,
           Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListBudgetsApiV1BudgetsGet<TData = Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>, TError = HTTPValidationError>(
- params?: ListBudgetsApiV1BudgetsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>, TError, TData>> & Pick<
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListBudgetsApiV1BudgetsGet<
+  TData = Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>,
+  TError = HTTPValidationError,
+>(
+  params?: ListBudgetsApiV1BudgetsGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>,
           TError,
           Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useListBudgetsApiV1BudgetsGet<TData = Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>, TError = HTTPValidationError>(
- params?: ListBudgetsApiV1BudgetsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useListBudgetsApiV1BudgetsGet<
+  TData = Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>,
+  TError = HTTPValidationError,
+>(
+  params?: ListBudgetsApiV1BudgetsGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary List budgets
  */
 
-export function useListBudgetsApiV1BudgetsGet<TData = Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>, TError = HTTPValidationError>(
- params?: ListBudgetsApiV1BudgetsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useListBudgetsApiV1BudgetsGet<
+  TData = Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>,
+  TError = HTTPValidationError,
+>(
+  params?: ListBudgetsApiV1BudgetsGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listBudgetsApiV1BudgetsGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getListBudgetsApiV1BudgetsGetQueryOptions(
+    params,
+    options,
+  );
 
-  const queryOptions = getListBudgetsApiV1BudgetsGetQueryOptions(params,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
 
 /**
  * Create a new budget with scope support
  * @summary Create budget
  */
 export type createBudgetApiV1BudgetsPostResponse201 = {
-  data: BudgetResponse
-  status: 201
-}
+  data: BudgetResponse;
+  status: 201;
+};
 
 export type createBudgetApiV1BudgetsPostResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type createBudgetApiV1BudgetsPostResponseSuccess = (createBudgetApiV1BudgetsPostResponse201) & {
-  headers: Headers;
-};
-export type createBudgetApiV1BudgetsPostResponseError = (createBudgetApiV1BudgetsPostResponse422) & {
-  headers: Headers;
+  data: HTTPValidationError;
+  status: 422;
 };
 
-export type createBudgetApiV1BudgetsPostResponse = (createBudgetApiV1BudgetsPostResponseSuccess | createBudgetApiV1BudgetsPostResponseError)
+export type createBudgetApiV1BudgetsPostResponseSuccess =
+  createBudgetApiV1BudgetsPostResponse201 & {
+    headers: Headers;
+  };
+export type createBudgetApiV1BudgetsPostResponseError =
+  createBudgetApiV1BudgetsPostResponse422 & {
+    headers: Headers;
+  };
+
+export type createBudgetApiV1BudgetsPostResponse =
+  | createBudgetApiV1BudgetsPostResponseSuccess
+  | createBudgetApiV1BudgetsPostResponseError;
 
 export const getCreateBudgetApiV1BudgetsPostUrl = () => {
+  return `/api/v1/budgets/`;
+};
 
+export const createBudgetApiV1BudgetsPost = async (
+  budgetCreate: BudgetCreate,
+  options?: RequestInit,
+): Promise<createBudgetApiV1BudgetsPostResponse> => {
+  return customInstance<createBudgetApiV1BudgetsPostResponse>(
+    getCreateBudgetApiV1BudgetsPostUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(budgetCreate),
+    },
+  );
+};
 
-  
+export const getCreateBudgetApiV1BudgetsPostMutationOptions = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createBudgetApiV1BudgetsPost>>,
+    TError,
+    { data: BudgetCreate },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createBudgetApiV1BudgetsPost>>,
+  TError,
+  { data: BudgetCreate },
+  TContext
+> => {
+  const mutationKey = ["createBudgetApiV1BudgetsPost"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-  return `/api/v1/budgets/`
-}
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createBudgetApiV1BudgetsPost>>,
+    { data: BudgetCreate }
+  > = (props) => {
+    const { data } = props ?? {};
 
-export const createBudgetApiV1BudgetsPost = async (budgetCreate: BudgetCreate, options?: RequestInit): Promise<createBudgetApiV1BudgetsPostResponse> => {
-  
-  return customInstance<createBudgetApiV1BudgetsPostResponse>(getCreateBudgetApiV1BudgetsPostUrl(),
-  {      
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      budgetCreate,)
-  }
-);}
+    return createBudgetApiV1BudgetsPost(data, requestOptions);
+  };
 
+  return { mutationFn, ...mutationOptions };
+};
 
+export type CreateBudgetApiV1BudgetsPostMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createBudgetApiV1BudgetsPost>>
+>;
+export type CreateBudgetApiV1BudgetsPostMutationBody = BudgetCreate;
+export type CreateBudgetApiV1BudgetsPostMutationError = HTTPValidationError;
 
-
-export const getCreateBudgetApiV1BudgetsPostMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBudgetApiV1BudgetsPost>>, TError,{data: BudgetCreate}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof createBudgetApiV1BudgetsPost>>, TError,{data: BudgetCreate}, TContext> => {
-
-const mutationKey = ['createBudgetApiV1BudgetsPost'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createBudgetApiV1BudgetsPost>>, {data: BudgetCreate}> = (props) => {
-          const {data} = props ?? {};
-
-          return  createBudgetApiV1BudgetsPost(data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type CreateBudgetApiV1BudgetsPostMutationResult = NonNullable<Awaited<ReturnType<typeof createBudgetApiV1BudgetsPost>>>
-    export type CreateBudgetApiV1BudgetsPostMutationBody = BudgetCreate
-    export type CreateBudgetApiV1BudgetsPostMutationError = HTTPValidationError
-
-    /**
+/**
  * @summary Create budget
  */
-export const useCreateBudgetApiV1BudgetsPost = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBudgetApiV1BudgetsPost>>, TError,{data: BudgetCreate}, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof createBudgetApiV1BudgetsPost>>,
-        TError,
-        {data: BudgetCreate},
-        TContext
-      > => {
+export const useCreateBudgetApiV1BudgetsPost = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createBudgetApiV1BudgetsPost>>,
+      TError,
+      { data: BudgetCreate },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof createBudgetApiV1BudgetsPost>>,
+  TError,
+  { data: BudgetCreate },
+  TContext
+> => {
+  const mutationOptions =
+    getCreateBudgetApiV1BudgetsPostMutationOptions(options);
 
-      const mutationOptions = getCreateBudgetApiV1BudgetsPostMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
+  return useMutation(mutationOptions, queryClient);
+};
+/**
  * Get a specific budget by ID
  * @summary Get budget
  */
 export type getBudgetApiV1BudgetsBudgetIdGetResponse200 = {
-  data: BudgetResponse
-  status: 200
-}
+  data: BudgetResponse;
+  status: 200;
+};
 
 export type getBudgetApiV1BudgetsBudgetIdGetResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type getBudgetApiV1BudgetsBudgetIdGetResponseSuccess = (getBudgetApiV1BudgetsBudgetIdGetResponse200) & {
-  headers: Headers;
-};
-export type getBudgetApiV1BudgetsBudgetIdGetResponseError = (getBudgetApiV1BudgetsBudgetIdGetResponse422) & {
-  headers: Headers;
+  data: HTTPValidationError;
+  status: 422;
 };
 
-export type getBudgetApiV1BudgetsBudgetIdGetResponse = (getBudgetApiV1BudgetsBudgetIdGetResponseSuccess | getBudgetApiV1BudgetsBudgetIdGetResponseError)
+export type getBudgetApiV1BudgetsBudgetIdGetResponseSuccess =
+  getBudgetApiV1BudgetsBudgetIdGetResponse200 & {
+    headers: Headers;
+  };
+export type getBudgetApiV1BudgetsBudgetIdGetResponseError =
+  getBudgetApiV1BudgetsBudgetIdGetResponse422 & {
+    headers: Headers;
+  };
 
-export const getGetBudgetApiV1BudgetsBudgetIdGetUrl = (budgetId: string,) => {
+export type getBudgetApiV1BudgetsBudgetIdGetResponse =
+  | getBudgetApiV1BudgetsBudgetIdGetResponseSuccess
+  | getBudgetApiV1BudgetsBudgetIdGetResponseError;
 
+export const getGetBudgetApiV1BudgetsBudgetIdGetUrl = (budgetId: string) => {
+  return `/api/v1/budgets/${budgetId}`;
+};
 
-  
+export const getBudgetApiV1BudgetsBudgetIdGet = async (
+  budgetId: string,
+  options?: RequestInit,
+): Promise<getBudgetApiV1BudgetsBudgetIdGetResponse> => {
+  return customInstance<getBudgetApiV1BudgetsBudgetIdGetResponse>(
+    getGetBudgetApiV1BudgetsBudgetIdGetUrl(budgetId),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
 
-  return `/api/v1/budgets/${budgetId}`
-}
-
-export const getBudgetApiV1BudgetsBudgetIdGet = async (budgetId: string, options?: RequestInit): Promise<getBudgetApiV1BudgetsBudgetIdGetResponse> => {
-  
-  return customInstance<getBudgetApiV1BudgetsBudgetIdGetResponse>(getGetBudgetApiV1BudgetsBudgetIdGetUrl(budgetId),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
-
-
-
-
-
-export const getGetBudgetApiV1BudgetsBudgetIdGetQueryKey = (budgetId?: string,) => {
-    return [
-    `/api/v1/budgets/${budgetId}`
-    ] as const;
-    }
-
-    
-export const getGetBudgetApiV1BudgetsBudgetIdGetQueryOptions = <TData = Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>, TError = HTTPValidationError>(budgetId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetBudgetApiV1BudgetsBudgetIdGetQueryKey = (
+  budgetId?: string,
 ) => {
+  return [`/api/v1/budgets/${budgetId}`] as const;
+};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+export const getGetBudgetApiV1BudgetsBudgetIdGetQueryOptions = <
+  TData = Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>,
+  TError = HTTPValidationError,
+>(
+  budgetId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetBudgetApiV1BudgetsBudgetIdGetQueryKey(budgetId);
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetBudgetApiV1BudgetsBudgetIdGetQueryKey(budgetId);
 
-  
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>
+  > = ({ signal }) =>
+    getBudgetApiV1BudgetsBudgetIdGet(budgetId, { signal, ...requestOptions });
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>> = ({ signal }) => getBudgetApiV1BudgetsBudgetIdGet(budgetId, { signal, ...requestOptions });
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!budgetId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-      
+export type GetBudgetApiV1BudgetsBudgetIdGetQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>
+>;
+export type GetBudgetApiV1BudgetsBudgetIdGetQueryError = HTTPValidationError;
 
-      
-
-   return  { queryKey, queryFn, enabled: !!(budgetId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetBudgetApiV1BudgetsBudgetIdGetQueryResult = NonNullable<Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>>
-export type GetBudgetApiV1BudgetsBudgetIdGetQueryError = HTTPValidationError
-
-
-export function useGetBudgetApiV1BudgetsBudgetIdGet<TData = Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>, TError = HTTPValidationError>(
- budgetId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>, TError, TData>> & Pick<
+export function useGetBudgetApiV1BudgetsBudgetIdGet<
+  TData = Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>,
+  TError = HTTPValidationError,
+>(
+  budgetId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>,
           TError,
           Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetBudgetApiV1BudgetsBudgetIdGet<TData = Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>, TError = HTTPValidationError>(
- budgetId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>, TError, TData>> & Pick<
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetBudgetApiV1BudgetsBudgetIdGet<
+  TData = Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>,
+  TError = HTTPValidationError,
+>(
+  budgetId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>,
           TError,
           Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetBudgetApiV1BudgetsBudgetIdGet<TData = Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>, TError = HTTPValidationError>(
- budgetId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetBudgetApiV1BudgetsBudgetIdGet<
+  TData = Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>,
+  TError = HTTPValidationError,
+>(
+  budgetId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Get budget
  */
 
-export function useGetBudgetApiV1BudgetsBudgetIdGet<TData = Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>, TError = HTTPValidationError>(
- budgetId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetBudgetApiV1BudgetsBudgetIdGet<
+  TData = Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>,
+  TError = HTTPValidationError,
+>(
+  budgetId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getBudgetApiV1BudgetsBudgetIdGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetBudgetApiV1BudgetsBudgetIdGetQueryOptions(
+    budgetId,
+    options,
+  );
 
-  const queryOptions = getGetBudgetApiV1BudgetsBudgetIdGetQueryOptions(budgetId,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
 
 /**
  * Update an existing budget
  * @summary Update budget
  */
 export type updateBudgetApiV1BudgetsBudgetIdPatchResponse200 = {
-  data: BudgetResponse
-  status: 200
-}
+  data: BudgetResponse;
+  status: 200;
+};
 
 export type updateBudgetApiV1BudgetsBudgetIdPatchResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type updateBudgetApiV1BudgetsBudgetIdPatchResponseSuccess = (updateBudgetApiV1BudgetsBudgetIdPatchResponse200) & {
-  headers: Headers;
-};
-export type updateBudgetApiV1BudgetsBudgetIdPatchResponseError = (updateBudgetApiV1BudgetsBudgetIdPatchResponse422) & {
-  headers: Headers;
+  data: HTTPValidationError;
+  status: 422;
 };
 
-export type updateBudgetApiV1BudgetsBudgetIdPatchResponse = (updateBudgetApiV1BudgetsBudgetIdPatchResponseSuccess | updateBudgetApiV1BudgetsBudgetIdPatchResponseError)
+export type updateBudgetApiV1BudgetsBudgetIdPatchResponseSuccess =
+  updateBudgetApiV1BudgetsBudgetIdPatchResponse200 & {
+    headers: Headers;
+  };
+export type updateBudgetApiV1BudgetsBudgetIdPatchResponseError =
+  updateBudgetApiV1BudgetsBudgetIdPatchResponse422 & {
+    headers: Headers;
+  };
 
-export const getUpdateBudgetApiV1BudgetsBudgetIdPatchUrl = (budgetId: string,) => {
+export type updateBudgetApiV1BudgetsBudgetIdPatchResponse =
+  | updateBudgetApiV1BudgetsBudgetIdPatchResponseSuccess
+  | updateBudgetApiV1BudgetsBudgetIdPatchResponseError;
 
+export const getUpdateBudgetApiV1BudgetsBudgetIdPatchUrl = (
+  budgetId: string,
+) => {
+  return `/api/v1/budgets/${budgetId}`;
+};
 
-  
+export const updateBudgetApiV1BudgetsBudgetIdPatch = async (
+  budgetId: string,
+  budgetUpdate: BudgetUpdate,
+  options?: RequestInit,
+): Promise<updateBudgetApiV1BudgetsBudgetIdPatchResponse> => {
+  return customInstance<updateBudgetApiV1BudgetsBudgetIdPatchResponse>(
+    getUpdateBudgetApiV1BudgetsBudgetIdPatchUrl(budgetId),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(budgetUpdate),
+    },
+  );
+};
 
-  return `/api/v1/budgets/${budgetId}`
-}
+export const getUpdateBudgetApiV1BudgetsBudgetIdPatchMutationOptions = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateBudgetApiV1BudgetsBudgetIdPatch>>,
+    TError,
+    { budgetId: string; data: BudgetUpdate },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateBudgetApiV1BudgetsBudgetIdPatch>>,
+  TError,
+  { budgetId: string; data: BudgetUpdate },
+  TContext
+> => {
+  const mutationKey = ["updateBudgetApiV1BudgetsBudgetIdPatch"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const updateBudgetApiV1BudgetsBudgetIdPatch = async (budgetId: string,
-    budgetUpdate: BudgetUpdate, options?: RequestInit): Promise<updateBudgetApiV1BudgetsBudgetIdPatchResponse> => {
-  
-  return customInstance<updateBudgetApiV1BudgetsBudgetIdPatchResponse>(getUpdateBudgetApiV1BudgetsBudgetIdPatchUrl(budgetId),
-  {      
-    ...options,
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      budgetUpdate,)
-  }
-);}
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateBudgetApiV1BudgetsBudgetIdPatch>>,
+    { budgetId: string; data: BudgetUpdate }
+  > = (props) => {
+    const { budgetId, data } = props ?? {};
 
+    return updateBudgetApiV1BudgetsBudgetIdPatch(
+      budgetId,
+      data,
+      requestOptions,
+    );
+  };
 
+  return { mutationFn, ...mutationOptions };
+};
 
+export type UpdateBudgetApiV1BudgetsBudgetIdPatchMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateBudgetApiV1BudgetsBudgetIdPatch>>
+>;
+export type UpdateBudgetApiV1BudgetsBudgetIdPatchMutationBody = BudgetUpdate;
+export type UpdateBudgetApiV1BudgetsBudgetIdPatchMutationError =
+  HTTPValidationError;
 
-export const getUpdateBudgetApiV1BudgetsBudgetIdPatchMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBudgetApiV1BudgetsBudgetIdPatch>>, TError,{budgetId: string;data: BudgetUpdate}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateBudgetApiV1BudgetsBudgetIdPatch>>, TError,{budgetId: string;data: BudgetUpdate}, TContext> => {
-
-const mutationKey = ['updateBudgetApiV1BudgetsBudgetIdPatch'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateBudgetApiV1BudgetsBudgetIdPatch>>, {budgetId: string;data: BudgetUpdate}> = (props) => {
-          const {budgetId,data} = props ?? {};
-
-          return  updateBudgetApiV1BudgetsBudgetIdPatch(budgetId,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type UpdateBudgetApiV1BudgetsBudgetIdPatchMutationResult = NonNullable<Awaited<ReturnType<typeof updateBudgetApiV1BudgetsBudgetIdPatch>>>
-    export type UpdateBudgetApiV1BudgetsBudgetIdPatchMutationBody = BudgetUpdate
-    export type UpdateBudgetApiV1BudgetsBudgetIdPatchMutationError = HTTPValidationError
-
-    /**
+/**
  * @summary Update budget
  */
-export const useUpdateBudgetApiV1BudgetsBudgetIdPatch = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBudgetApiV1BudgetsBudgetIdPatch>>, TError,{budgetId: string;data: BudgetUpdate}, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof updateBudgetApiV1BudgetsBudgetIdPatch>>,
-        TError,
-        {budgetId: string;data: BudgetUpdate},
-        TContext
-      > => {
+export const useUpdateBudgetApiV1BudgetsBudgetIdPatch = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateBudgetApiV1BudgetsBudgetIdPatch>>,
+      TError,
+      { budgetId: string; data: BudgetUpdate },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateBudgetApiV1BudgetsBudgetIdPatch>>,
+  TError,
+  { budgetId: string; data: BudgetUpdate },
+  TContext
+> => {
+  const mutationOptions =
+    getUpdateBudgetApiV1BudgetsBudgetIdPatchMutationOptions(options);
 
-      const mutationOptions = getUpdateBudgetApiV1BudgetsBudgetIdPatchMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
+  return useMutation(mutationOptions, queryClient);
+};
+/**
  * Delete a budget
  * @summary Delete budget
  */
 export type deleteBudgetApiV1BudgetsBudgetIdDeleteResponse204 = {
-  data: void
-  status: 204
-}
+  data: void;
+  status: 204;
+};
 
 export type deleteBudgetApiV1BudgetsBudgetIdDeleteResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type deleteBudgetApiV1BudgetsBudgetIdDeleteResponseSuccess = (deleteBudgetApiV1BudgetsBudgetIdDeleteResponse204) & {
-  headers: Headers;
-};
-export type deleteBudgetApiV1BudgetsBudgetIdDeleteResponseError = (deleteBudgetApiV1BudgetsBudgetIdDeleteResponse422) & {
-  headers: Headers;
+  data: HTTPValidationError;
+  status: 422;
 };
 
-export type deleteBudgetApiV1BudgetsBudgetIdDeleteResponse = (deleteBudgetApiV1BudgetsBudgetIdDeleteResponseSuccess | deleteBudgetApiV1BudgetsBudgetIdDeleteResponseError)
+export type deleteBudgetApiV1BudgetsBudgetIdDeleteResponseSuccess =
+  deleteBudgetApiV1BudgetsBudgetIdDeleteResponse204 & {
+    headers: Headers;
+  };
+export type deleteBudgetApiV1BudgetsBudgetIdDeleteResponseError =
+  deleteBudgetApiV1BudgetsBudgetIdDeleteResponse422 & {
+    headers: Headers;
+  };
 
-export const getDeleteBudgetApiV1BudgetsBudgetIdDeleteUrl = (budgetId: string,) => {
+export type deleteBudgetApiV1BudgetsBudgetIdDeleteResponse =
+  | deleteBudgetApiV1BudgetsBudgetIdDeleteResponseSuccess
+  | deleteBudgetApiV1BudgetsBudgetIdDeleteResponseError;
 
+export const getDeleteBudgetApiV1BudgetsBudgetIdDeleteUrl = (
+  budgetId: string,
+) => {
+  return `/api/v1/budgets/${budgetId}`;
+};
 
-  
+export const deleteBudgetApiV1BudgetsBudgetIdDelete = async (
+  budgetId: string,
+  options?: RequestInit,
+): Promise<deleteBudgetApiV1BudgetsBudgetIdDeleteResponse> => {
+  return customInstance<deleteBudgetApiV1BudgetsBudgetIdDeleteResponse>(
+    getDeleteBudgetApiV1BudgetsBudgetIdDeleteUrl(budgetId),
+    {
+      ...options,
+      method: "DELETE",
+    },
+  );
+};
 
-  return `/api/v1/budgets/${budgetId}`
-}
+export const getDeleteBudgetApiV1BudgetsBudgetIdDeleteMutationOptions = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteBudgetApiV1BudgetsBudgetIdDelete>>,
+    TError,
+    { budgetId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteBudgetApiV1BudgetsBudgetIdDelete>>,
+  TError,
+  { budgetId: string },
+  TContext
+> => {
+  const mutationKey = ["deleteBudgetApiV1BudgetsBudgetIdDelete"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
 
-export const deleteBudgetApiV1BudgetsBudgetIdDelete = async (budgetId: string, options?: RequestInit): Promise<deleteBudgetApiV1BudgetsBudgetIdDeleteResponse> => {
-  
-  return customInstance<deleteBudgetApiV1BudgetsBudgetIdDeleteResponse>(getDeleteBudgetApiV1BudgetsBudgetIdDeleteUrl(budgetId),
-  {      
-    ...options,
-    method: 'DELETE'
-    
-    
-  }
-);}
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteBudgetApiV1BudgetsBudgetIdDelete>>,
+    { budgetId: string }
+  > = (props) => {
+    const { budgetId } = props ?? {};
 
+    return deleteBudgetApiV1BudgetsBudgetIdDelete(budgetId, requestOptions);
+  };
 
+  return { mutationFn, ...mutationOptions };
+};
 
+export type DeleteBudgetApiV1BudgetsBudgetIdDeleteMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteBudgetApiV1BudgetsBudgetIdDelete>>
+>;
 
-export const getDeleteBudgetApiV1BudgetsBudgetIdDeleteMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBudgetApiV1BudgetsBudgetIdDelete>>, TError,{budgetId: string}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof deleteBudgetApiV1BudgetsBudgetIdDelete>>, TError,{budgetId: string}, TContext> => {
+export type DeleteBudgetApiV1BudgetsBudgetIdDeleteMutationError =
+  HTTPValidationError;
 
-const mutationKey = ['deleteBudgetApiV1BudgetsBudgetIdDelete'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteBudgetApiV1BudgetsBudgetIdDelete>>, {budgetId: string}> = (props) => {
-          const {budgetId} = props ?? {};
-
-          return  deleteBudgetApiV1BudgetsBudgetIdDelete(budgetId,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type DeleteBudgetApiV1BudgetsBudgetIdDeleteMutationResult = NonNullable<Awaited<ReturnType<typeof deleteBudgetApiV1BudgetsBudgetIdDelete>>>
-    
-    export type DeleteBudgetApiV1BudgetsBudgetIdDeleteMutationError = HTTPValidationError
-
-    /**
+/**
  * @summary Delete budget
  */
-export const useDeleteBudgetApiV1BudgetsBudgetIdDelete = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBudgetApiV1BudgetsBudgetIdDelete>>, TError,{budgetId: string}, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof deleteBudgetApiV1BudgetsBudgetIdDelete>>,
-        TError,
-        {budgetId: string},
-        TContext
-      > => {
+export const useDeleteBudgetApiV1BudgetsBudgetIdDelete = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteBudgetApiV1BudgetsBudgetIdDelete>>,
+      TError,
+      { budgetId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteBudgetApiV1BudgetsBudgetIdDelete>>,
+  TError,
+  { budgetId: string },
+  TContext
+> => {
+  const mutationOptions =
+    getDeleteBudgetApiV1BudgetsBudgetIdDeleteMutationOptions(options);
 
-      const mutationOptions = getDeleteBudgetApiV1BudgetsBudgetIdDeleteMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
+  return useMutation(mutationOptions, queryClient);
+};
+/**
  * Get detailed usage statistics for a budget
  * @summary Get budget usage
  */
 export type getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponse200 = {
-  data: BudgetUsageResponse
-  status: 200
-}
+  data: BudgetUsageResponse;
+  status: 200;
+};
 
 export type getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponseSuccess = (getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponse200) & {
-  headers: Headers;
-};
-export type getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponseError = (getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponse422) & {
-  headers: Headers;
+  data: HTTPValidationError;
+  status: 422;
 };
 
-export type getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponse = (getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponseSuccess | getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponseError)
+export type getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponseSuccess =
+  getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponse200 & {
+    headers: Headers;
+  };
+export type getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponseError =
+  getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponse422 & {
+    headers: Headers;
+  };
 
-export const getGetBudgetUsageApiV1BudgetsBudgetIdUsageGetUrl = (budgetId: string,) => {
+export type getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponse =
+  | getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponseSuccess
+  | getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponseError;
 
-
-  
-
-  return `/api/v1/budgets/${budgetId}/usage`
-}
-
-export const getBudgetUsageApiV1BudgetsBudgetIdUsageGet = async (budgetId: string, options?: RequestInit): Promise<getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponse> => {
-  
-  return customInstance<getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponse>(getGetBudgetUsageApiV1BudgetsBudgetIdUsageGetUrl(budgetId),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
-
-
-
-
-
-export const getGetBudgetUsageApiV1BudgetsBudgetIdUsageGetQueryKey = (budgetId?: string,) => {
-    return [
-    `/api/v1/budgets/${budgetId}/usage`
-    ] as const;
-    }
-
-    
-export const getGetBudgetUsageApiV1BudgetsBudgetIdUsageGetQueryOptions = <TData = Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>, TError = HTTPValidationError>(budgetId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetBudgetUsageApiV1BudgetsBudgetIdUsageGetUrl = (
+  budgetId: string,
 ) => {
+  return `/api/v1/budgets/${budgetId}/usage`;
+};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+export const getBudgetUsageApiV1BudgetsBudgetIdUsageGet = async (
+  budgetId: string,
+  options?: RequestInit,
+): Promise<getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponse> => {
+  return customInstance<getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponse>(
+    getGetBudgetUsageApiV1BudgetsBudgetIdUsageGetUrl(budgetId),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetBudgetUsageApiV1BudgetsBudgetIdUsageGetQueryKey(budgetId);
+export const getGetBudgetUsageApiV1BudgetsBudgetIdUsageGetQueryKey = (
+  budgetId?: string,
+) => {
+  return [`/api/v1/budgets/${budgetId}/usage`] as const;
+};
 
-  
+export const getGetBudgetUsageApiV1BudgetsBudgetIdUsageGetQueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  budgetId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>> = ({ signal }) => getBudgetUsageApiV1BudgetsBudgetIdUsageGet(budgetId, { signal, ...requestOptions });
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetBudgetUsageApiV1BudgetsBudgetIdUsageGetQueryKey(budgetId);
 
-      
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>
+  > = ({ signal }) =>
+    getBudgetUsageApiV1BudgetsBudgetIdUsageGet(budgetId, {
+      signal,
+      ...requestOptions,
+    });
 
-      
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!budgetId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-   return  { queryKey, queryFn, enabled: !!(budgetId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
+export type GetBudgetUsageApiV1BudgetsBudgetIdUsageGetQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>
+>;
+export type GetBudgetUsageApiV1BudgetsBudgetIdUsageGetQueryError =
+  HTTPValidationError;
 
-export type GetBudgetUsageApiV1BudgetsBudgetIdUsageGetQueryResult = NonNullable<Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>>
-export type GetBudgetUsageApiV1BudgetsBudgetIdUsageGetQueryError = HTTPValidationError
-
-
-export function useGetBudgetUsageApiV1BudgetsBudgetIdUsageGet<TData = Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>, TError = HTTPValidationError>(
- budgetId: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>, TError, TData>> & Pick<
+export function useGetBudgetUsageApiV1BudgetsBudgetIdUsageGet<
+  TData = Awaited<
+    ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  budgetId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>,
+          Awaited<
+            ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>
+          >,
           TError,
           Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetBudgetUsageApiV1BudgetsBudgetIdUsageGet<TData = Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>, TError = HTTPValidationError>(
- budgetId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>, TError, TData>> & Pick<
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetBudgetUsageApiV1BudgetsBudgetIdUsageGet<
+  TData = Awaited<
+    ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  budgetId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>,
+          Awaited<
+            ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>
+          >,
           TError,
           Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetBudgetUsageApiV1BudgetsBudgetIdUsageGet<TData = Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>, TError = HTTPValidationError>(
- budgetId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetBudgetUsageApiV1BudgetsBudgetIdUsageGet<
+  TData = Awaited<
+    ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  budgetId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Get budget usage
  */
 
-export function useGetBudgetUsageApiV1BudgetsBudgetIdUsageGet<TData = Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>, TError = HTTPValidationError>(
- budgetId: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetBudgetUsageApiV1BudgetsBudgetIdUsageGet<
+  TData = Awaited<
+    ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  budgetId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getBudgetUsageApiV1BudgetsBudgetIdUsageGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getGetBudgetUsageApiV1BudgetsBudgetIdUsageGetQueryOptions(
+      budgetId,
+      options,
+    );
 
-  const queryOptions = getGetBudgetUsageApiV1BudgetsBudgetIdUsageGetQueryOptions(budgetId,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
 
 /**
  * Add a category allocation to a budget
  * @summary Add category to budget
  */
 export type addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostResponse201 = {
-  data: BudgetCategoryResponse
-  status: 201
-}
+  data: BudgetCategoryResponse;
+  status: 201;
+};
 
 export type addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostResponseSuccess = (addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostResponse201) & {
-  headers: Headers;
-};
-export type addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostResponseError = (addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostResponse422) & {
-  headers: Headers;
+  data: HTTPValidationError;
+  status: 422;
 };
 
-export type addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostResponse = (addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostResponseSuccess | addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostResponseError)
+export type addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostResponseSuccess =
+  addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostResponse201 & {
+    headers: Headers;
+  };
+export type addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostResponseError =
+  addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostResponse422 & {
+    headers: Headers;
+  };
 
-export const getAddCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostUrl = (budgetId: string,) => {
+export type addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostResponse =
+  | addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostResponseSuccess
+  | addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostResponseError;
 
+export const getAddCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostUrl = (
+  budgetId: string,
+) => {
+  return `/api/v1/budgets/${budgetId}/categories`;
+};
 
-  
+export const addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPost = async (
+  budgetId: string,
+  budgetCategoryCreate: BudgetCategoryCreate,
+  options?: RequestInit,
+): Promise<addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostResponse> => {
+  return customInstance<addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostResponse>(
+    getAddCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostUrl(budgetId),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(budgetCategoryCreate),
+    },
+  );
+};
 
-  return `/api/v1/budgets/${budgetId}/categories`
-}
+export const getAddCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostMutationOptions =
+  <TError = HTTPValidationError, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPost>
+      >,
+      TError,
+      { budgetId: string; data: BudgetCategoryCreate },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  }): UseMutationOptions<
+    Awaited<
+      ReturnType<typeof addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPost>
+    >,
+    TError,
+    { budgetId: string; data: BudgetCategoryCreate },
+    TContext
+  > => {
+    const mutationKey = [
+      "addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPost",
+    ];
+    const { mutation: mutationOptions, request: requestOptions } = options
+      ? options.mutation &&
+        "mutationKey" in options.mutation &&
+        options.mutation.mutationKey
+        ? options
+        : { ...options, mutation: { ...options.mutation, mutationKey } }
+      : { mutation: { mutationKey }, request: undefined };
 
-export const addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPost = async (budgetId: string,
-    budgetCategoryCreate: BudgetCategoryCreate, options?: RequestInit): Promise<addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostResponse> => {
-  
-  return customInstance<addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostResponse>(getAddCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostUrl(budgetId),
-  {      
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(
-      budgetCategoryCreate,)
-  }
-);}
+    const mutationFn: MutationFunction<
+      Awaited<
+        ReturnType<typeof addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPost>
+      >,
+      { budgetId: string; data: BudgetCategoryCreate }
+    > = (props) => {
+      const { budgetId, data } = props ?? {};
 
+      return addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPost(
+        budgetId,
+        data,
+        requestOptions,
+      );
+    };
 
+    return { mutationFn, ...mutationOptions };
+  };
 
+export type AddCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostMutationResult =
+  NonNullable<
+    Awaited<
+      ReturnType<typeof addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPost>
+    >
+  >;
+export type AddCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostMutationBody =
+  BudgetCategoryCreate;
+export type AddCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostMutationError =
+  HTTPValidationError;
 
-export const getAddCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPost>>, TError,{budgetId: string;data: BudgetCategoryCreate}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPost>>, TError,{budgetId: string;data: BudgetCategoryCreate}, TContext> => {
-
-const mutationKey = ['addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPost'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPost>>, {budgetId: string;data: BudgetCategoryCreate}> = (props) => {
-          const {budgetId,data} = props ?? {};
-
-          return  addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPost(budgetId,data,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type AddCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostMutationResult = NonNullable<Awaited<ReturnType<typeof addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPost>>>
-    export type AddCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostMutationBody = BudgetCategoryCreate
-    export type AddCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostMutationError = HTTPValidationError
-
-    /**
+/**
  * @summary Add category to budget
  */
-export const useAddCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPost = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPost>>, TError,{budgetId: string;data: BudgetCategoryCreate}, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPost>>,
-        TError,
-        {budgetId: string;data: BudgetCategoryCreate},
-        TContext
-      > => {
+export const useAddCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPost = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPost>
+      >,
+      TError,
+      { budgetId: string; data: BudgetCategoryCreate },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<
+    ReturnType<typeof addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPost>
+  >,
+  TError,
+  { budgetId: string; data: BudgetCategoryCreate },
+  TContext
+> => {
+  const mutationOptions =
+    getAddCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostMutationOptions(
+      options,
+    );
 
-      const mutationOptions = getAddCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    /**
+  return useMutation(mutationOptions, queryClient);
+};
+/**
  * Remove a category allocation from a budget
  * @summary Remove category from budget
  */
-export type removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteResponse204 = {
-  data: void
-  status: 204
-}
+export type removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteResponse204 =
+  {
+    data: void;
+    status: 204;
+  };
 
-export type removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteResponseSuccess = (removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteResponse204) & {
-  headers: Headers;
-};
-export type removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteResponseError = (removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteResponse422) & {
-  headers: Headers;
-};
+export type removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteResponse422 =
+  {
+    data: HTTPValidationError;
+    status: 422;
+  };
 
-export type removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteResponse = (removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteResponseSuccess | removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteResponseError)
+export type removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteResponseSuccess =
+  removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteResponse204 & {
+    headers: Headers;
+  };
+export type removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteResponseError =
+  removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteResponse422 & {
+    headers: Headers;
+  };
 
-export const getRemoveCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteUrl = (budgetId: string,
-    categoryId: string,) => {
+export type removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteResponse =
 
+    | removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteResponseSuccess
+    | removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteResponseError;
 
-  
+export const getRemoveCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteUrl =
+  (budgetId: string, categoryId: string) => {
+    return `/api/v1/budgets/${budgetId}/categories/${categoryId}`;
+  };
 
-  return `/api/v1/budgets/${budgetId}/categories/${categoryId}`
-}
+export const removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDelete =
+  async (
+    budgetId: string,
+    categoryId: string,
+    options?: RequestInit,
+  ): Promise<removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteResponse> => {
+    return customInstance<removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteResponse>(
+      getRemoveCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteUrl(
+        budgetId,
+        categoryId,
+      ),
+      {
+        ...options,
+        method: "DELETE",
+      },
+    );
+  };
 
-export const removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDelete = async (budgetId: string,
-    categoryId: string, options?: RequestInit): Promise<removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteResponse> => {
-  
-  return customInstance<removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteResponse>(getRemoveCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteUrl(budgetId,categoryId),
-  {      
-    ...options,
-    method: 'DELETE'
-    
-    
-  }
-);}
+export const getRemoveCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteMutationOptions =
+  <TError = HTTPValidationError, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<
+          typeof removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDelete
+        >
+      >,
+      TError,
+      { budgetId: string; categoryId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  }): UseMutationOptions<
+    Awaited<
+      ReturnType<
+        typeof removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDelete
+      >
+    >,
+    TError,
+    { budgetId: string; categoryId: string },
+    TContext
+  > => {
+    const mutationKey = [
+      "removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDelete",
+    ];
+    const { mutation: mutationOptions, request: requestOptions } = options
+      ? options.mutation &&
+        "mutationKey" in options.mutation &&
+        options.mutation.mutationKey
+        ? options
+        : { ...options, mutation: { ...options.mutation, mutationKey } }
+      : { mutation: { mutationKey }, request: undefined };
 
+    const mutationFn: MutationFunction<
+      Awaited<
+        ReturnType<
+          typeof removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDelete
+        >
+      >,
+      { budgetId: string; categoryId: string }
+    > = (props) => {
+      const { budgetId, categoryId } = props ?? {};
 
+      return removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDelete(
+        budgetId,
+        categoryId,
+        requestOptions,
+      );
+    };
 
+    return { mutationFn, ...mutationOptions };
+  };
 
-export const getRemoveCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteMutationOptions = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDelete>>, TError,{budgetId: string;categoryId: string}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDelete>>, TError,{budgetId: string;categoryId: string}, TContext> => {
+export type RemoveCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteMutationResult =
+  NonNullable<
+    Awaited<
+      ReturnType<
+        typeof removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDelete
+      >
+    >
+  >;
 
-const mutationKey = ['removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDelete'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
+export type RemoveCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteMutationError =
+  HTTPValidationError;
 
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDelete>>, {budgetId: string;categoryId: string}> = (props) => {
-          const {budgetId,categoryId} = props ?? {};
-
-          return  removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDelete(budgetId,categoryId,requestOptions)
-        }
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type RemoveCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteMutationResult = NonNullable<Awaited<ReturnType<typeof removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDelete>>>
-    
-    export type RemoveCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteMutationError = HTTPValidationError
-
-    /**
+/**
  * @summary Remove category from budget
  */
-export const useRemoveCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDelete = <TError = HTTPValidationError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDelete>>, TError,{budgetId: string;categoryId: string}, TContext>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDelete>>,
+export const useRemoveCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDelete =
+  <TError = HTTPValidationError, TContext = unknown>(
+    options?: {
+      mutation?: UseMutationOptions<
+        Awaited<
+          ReturnType<
+            typeof removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDelete
+          >
+        >,
         TError,
-        {budgetId: string;categoryId: string},
+        { budgetId: string; categoryId: string },
         TContext
-      > => {
+      >;
+      request?: SecondParameter<typeof customInstance>;
+    },
+    queryClient?: QueryClient,
+  ): UseMutationResult<
+    Awaited<
+      ReturnType<
+        typeof removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDelete
+      >
+    >,
+    TError,
+    { budgetId: string; categoryId: string },
+    TContext
+  > => {
+    const mutationOptions =
+      getRemoveCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteMutationOptions(
+        options,
+      );
 
-      const mutationOptions = getRemoveCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDeleteMutationOptions(options);
-
-      return useMutation(mutationOptions, queryClient);
-    }
-    
+    return useMutation(mutationOptions, queryClient);
+  };
