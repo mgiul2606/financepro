@@ -15,7 +15,7 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { ImportResultResponseErrorsItem } from './importResultResponseErrorsItem';
+import type { ImportResultResponseErrorsItem } from "./importResultResponseErrorsItem";
 
 export interface ImportResultResponse {
   total_rows: number;

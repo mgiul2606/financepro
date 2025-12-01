@@ -19,13 +19,13 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 /**
  * Optimization insight categories
  */
-export type OptimizationCategory = typeof OptimizationCategory[keyof typeof OptimizationCategory];
-
+export type OptimizationCategory =
+  (typeof OptimizationCategory)[keyof typeof OptimizationCategory];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const OptimizationCategory = {
-  waste: 'waste',
-  subscription: 'subscription',
-  cashflow: 'cashflow',
-  savings: 'savings',
+  waste: "waste",
+  subscription: "subscription",
+  cashflow: "cashflow",
+  savings: "savings",
 } as const;

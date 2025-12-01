@@ -17,20 +17,20 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 export type AnalyzeExpensesApiV1AnalysisExpensesGetParams = {
-/**
- * Start date
- */
-start_date: string;
-/**
- * End date
- */
-end_date: string;
-/**
- * Profile IDs to include
- */
-profile_ids?: string[] | null;
-/**
- * Target currency for conversion
- */
-currency?: string;
+  /**
+   * Start date
+   */
+  start_date: string;
+  /**
+   * End date
+   */
+  end_date: string;
+  /**
+   * Profile IDs to include
+   */
+  profile_ids?: string[] | null;
+  /**
+   * Target currency for conversion
+   */
+  currency?: string;
 };

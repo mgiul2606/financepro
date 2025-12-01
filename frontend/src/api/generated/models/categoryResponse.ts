@@ -15,12 +15,12 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { CategoryResponseDescription } from './categoryResponseDescription';
-import type { CategoryResponseIcon } from './categoryResponseIcon';
-import type { CategoryResponseColor } from './categoryResponseColor';
-import type { CategoryResponseParentCategoryId } from './categoryResponseParentCategoryId';
-import type { CategoryResponseFullPath } from './categoryResponseFullPath';
-import type { CategoryResponseSubcategories } from './categoryResponseSubcategories';
+import type { CategoryResponseDescription } from "./categoryResponseDescription";
+import type { CategoryResponseIcon } from "./categoryResponseIcon";
+import type { CategoryResponseColor } from "./categoryResponseColor";
+import type { CategoryResponseParentCategoryId } from "./categoryResponseParentCategoryId";
+import type { CategoryResponseFullPath } from "./categoryResponseFullPath";
+import type { CategoryResponseSubcategories } from "./categoryResponseSubcategories";
 
 /**
  * Complete category schema returned by API endpoints.
