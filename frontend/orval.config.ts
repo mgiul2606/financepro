@@ -3,7 +3,7 @@ import { defineConfig } from 'orval';
 export default defineConfig({
   financepro: {
     input: {
-      target: '../backend/openapi.json',
+      target: './openapi.json',
     },
     output: {
       mode: 'tags-split',

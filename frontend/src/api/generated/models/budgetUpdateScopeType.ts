@@ -15,6 +15,8 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { ScopeType } from './scopeType';
 
-export type BudgetUpdateScopeType = ScopeType | null;
+/**
+ * Updated scope type
+ */
+export type BudgetUpdateScopeType = string | null;

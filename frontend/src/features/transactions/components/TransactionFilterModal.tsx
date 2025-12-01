@@ -1,10 +1,10 @@
 // features/transactions/components/TransactionFilterModal.tsx
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Filter, X } from 'lucide-react';
+import { Filter } from 'lucide-react';
 import { Modal, ModalFooter } from '@/components/ui/Modal';
 import { Button } from '@/core/components/atomic/Button';
-import { FormField, SelectField } from '@/components/ui/FormField';
+import { FormField } from '@/components/ui/FormField';
 
 export interface TransactionFilters {
   dateFrom?: string;
@@ -14,7 +14,7 @@ export interface TransactionFilters {
   types?: string[];
   categories?: string[];
   merchantName?: string;
-  accountId?: number;
+  accountId?: string;
 }
 
 interface TransactionFilterModalProps {
@@ -66,7 +66,7 @@ export const TransactionFilterModal = ({
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== '' && value !== null) {
         if (Array.isArray(value) && value.length === 0) return;
-        cleanedFilters[key as keyof TransactionFilters] = value as any;
+        cleanedFilters[key as keyof TransactionFilters] = value;
       }
     });
     onApply(cleanedFilters);

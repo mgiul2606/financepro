@@ -16,4 +16,7 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * Total budget amount (must be positive)
+ */
 export type BudgetCreateTotalAmount = number | string;

@@ -17,6 +17,6 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 /**
- * Initial account balance
+ * Initial account balance (can be negative for debts)
  */
 export type AccountCreateInitialBalance = number | string;

@@ -18,7 +18,8 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 import type { AccountType } from './accountType';
 import type { AccountResponseInstitutionName } from './accountResponseInstitutionName';
 import type { AccountResponseNotes } from './accountResponseNotes';
-import type { AccountResponseAccountNumber } from './accountResponseAccountNumber';
+import type { AccountResponseAccountNumberLast4 } from './accountResponseAccountNumberLast4';
+import type { AccountResponseIban } from './accountResponseIban';
 
 /**
  * Complete account schema returned by API endpoints.
@@ -46,12 +47,14 @@ export interface AccountResponse {
   id: string;
   /** ID of the financial profile this account belongs to */
   financial_profile_id: string;
-  /** Initial balance when account was created */
+  /** Initial balance when account was created (can be negative) */
   initial_balance: string;
   /** Current balance (initial + transactions) */
   current_balance: string;
-  /** Account number (encrypted) */
-  account_number?: AccountResponseAccountNumber;
+  /** Last 4 digits of account number */
+  account_number_last4?: AccountResponseAccountNumberLast4;
+  /** Full IBAN (encrypted for high-security profiles) */
+  iban?: AccountResponseIban;
   /** Whether the account is currently active */
   is_active?: boolean;
   /** Account creation timestamp (UTC) */

@@ -17,4 +17,7 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 import type { PeriodType } from './periodType';
 
+/**
+ * Updated period type
+ */
 export type BudgetUpdatePeriodType = PeriodType | null;

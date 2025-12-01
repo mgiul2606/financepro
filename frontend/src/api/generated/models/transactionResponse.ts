@@ -39,7 +39,7 @@ export interface TransactionResponse {
   category_id?: TransactionResponseCategoryId;
   /** Type of transaction (bank_transfer, withdrawal, payment, etc.) */
   transaction_type: TransactionType;
-  /** Transaction amount (must be positive) */
+  /** Transaction amount */
   amount: string;
   /**
    * ISO 4217 currency code (3 uppercase letters)
@@ -75,7 +75,7 @@ export interface TransactionResponse {
   location?: TransactionResponseLocation;
   /** URL to receipt or document */
   receipt_url?: TransactionResponseReceiptUrl;
-  created_by: TransactionSource;
+  created_by?: TransactionSource;
   /** Transaction creation timestamp (UTC) */
   created_at: string;
   /** Last update timestamp (UTC) */

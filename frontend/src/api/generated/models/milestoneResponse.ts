@@ -15,14 +15,14 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { MilestoneResponseAchievedDate } from './milestoneResponseAchievedDate';
+import type { MilestoneResponseCompletedAt } from './milestoneResponseCompletedAt';
 
 export interface MilestoneResponse {
   id: string;
   goal_id: string;
   name: string;
   target_amount: number;
-  target_percentage: number;
-  is_achieved: boolean;
-  achieved_date?: MilestoneResponseAchievedDate;
+  target_date: string;
+  is_completed: boolean;
+  completed_at?: MilestoneResponseCompletedAt;
 }

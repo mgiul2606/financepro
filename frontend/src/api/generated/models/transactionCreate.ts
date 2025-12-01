@@ -36,7 +36,7 @@ export interface TransactionCreate {
   category_id?: TransactionCreateCategoryId;
   /** Type of transaction (bank_transfer, withdrawal, payment, etc.) */
   transaction_type: TransactionType;
-  /** Transaction amount (must be positive) */
+  /** Transaction amount */
   amount: TransactionCreateAmount;
   /**
    * ISO 4217 currency code (3 uppercase letters)

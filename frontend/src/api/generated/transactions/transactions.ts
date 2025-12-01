@@ -280,6 +280,133 @@ export const useCreateTransactionApiV1TransactionsPost = <TError = void | HTTPVa
       return useMutation(mutationOptions, queryClient);
     }
     /**
+ * Get spending statistics for transactions (total spent, total income, by category)
+ * @summary Get transaction statistics
+ */
+export type getTransactionStatsApiV1TransactionsStatsGetResponse200 = {
+  data: unknown
+  status: 200
+}
+
+export type getTransactionStatsApiV1TransactionsStatsGetResponse422 = {
+  data: HTTPValidationError
+  status: 422
+}
+    
+export type getTransactionStatsApiV1TransactionsStatsGetResponseSuccess = (getTransactionStatsApiV1TransactionsStatsGetResponse200) & {
+  headers: Headers;
+};
+export type getTransactionStatsApiV1TransactionsStatsGetResponseError = (getTransactionStatsApiV1TransactionsStatsGetResponse422) & {
+  headers: Headers;
+};
+
+export type getTransactionStatsApiV1TransactionsStatsGetResponse = (getTransactionStatsApiV1TransactionsStatsGetResponseSuccess | getTransactionStatsApiV1TransactionsStatsGetResponseError)
+
+export const getGetTransactionStatsApiV1TransactionsStatsGetUrl = (params?: GetTransactionStatsApiV1TransactionsStatsGetParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/transactions/stats?${stringifiedParams}` : `/api/v1/transactions/stats`
+}
+
+export const getTransactionStatsApiV1TransactionsStatsGet = async (params?: GetTransactionStatsApiV1TransactionsStatsGetParams, options?: RequestInit): Promise<getTransactionStatsApiV1TransactionsStatsGetResponse> => {
+  
+  return customInstance<getTransactionStatsApiV1TransactionsStatsGetResponse>(getGetTransactionStatsApiV1TransactionsStatsGetUrl(params),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+
+export const getGetTransactionStatsApiV1TransactionsStatsGetQueryKey = (params?: GetTransactionStatsApiV1TransactionsStatsGetParams,) => {
+    return [
+    `/api/v1/transactions/stats`, ...(params ? [params]: [])
+    ] as const;
+    }
+
+    
+export const getGetTransactionStatsApiV1TransactionsStatsGetQueryOptions = <TData = Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>, TError = HTTPValidationError>(params?: GetTransactionStatsApiV1TransactionsStatsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTransactionStatsApiV1TransactionsStatsGetQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>> = ({ signal }) => getTransactionStatsApiV1TransactionsStatsGet(params, { signal, ...requestOptions });
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetTransactionStatsApiV1TransactionsStatsGetQueryResult = NonNullable<Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>>
+export type GetTransactionStatsApiV1TransactionsStatsGetQueryError = HTTPValidationError
+
+
+export function useGetTransactionStatsApiV1TransactionsStatsGet<TData = Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>, TError = HTTPValidationError>(
+ params: undefined |  GetTransactionStatsApiV1TransactionsStatsGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>,
+          TError,
+          Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTransactionStatsApiV1TransactionsStatsGet<TData = Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>, TError = HTTPValidationError>(
+ params?: GetTransactionStatsApiV1TransactionsStatsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>,
+          TError,
+          Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetTransactionStatsApiV1TransactionsStatsGet<TData = Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>, TError = HTTPValidationError>(
+ params?: GetTransactionStatsApiV1TransactionsStatsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get transaction statistics
+ */
+
+export function useGetTransactionStatsApiV1TransactionsStatsGet<TData = Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>, TError = HTTPValidationError>(
+ params?: GetTransactionStatsApiV1TransactionsStatsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetTransactionStatsApiV1TransactionsStatsGetQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
  * Retrieve a specific transaction by its ID
  * @summary Get transaction by ID
  */
@@ -712,130 +839,4 @@ export const useBulkCreateTransactionsApiV1TransactionsBulkPost = <TError = void
 
       return useMutation(mutationOptions, queryClient);
     }
-    /**
- * Get spending statistics for transactions (total spent, total income, by category)
- * @summary Get transaction statistics
- */
-export type getTransactionStatsApiV1TransactionsStatsGetResponse200 = {
-  data: unknown
-  status: 200
-}
-
-export type getTransactionStatsApiV1TransactionsStatsGetResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
     
-export type getTransactionStatsApiV1TransactionsStatsGetResponseSuccess = (getTransactionStatsApiV1TransactionsStatsGetResponse200) & {
-  headers: Headers;
-};
-export type getTransactionStatsApiV1TransactionsStatsGetResponseError = (getTransactionStatsApiV1TransactionsStatsGetResponse422) & {
-  headers: Headers;
-};
-
-export type getTransactionStatsApiV1TransactionsStatsGetResponse = (getTransactionStatsApiV1TransactionsStatsGetResponseSuccess | getTransactionStatsApiV1TransactionsStatsGetResponseError)
-
-export const getGetTransactionStatsApiV1TransactionsStatsGetUrl = (params?: GetTransactionStatsApiV1TransactionsStatsGetParams,) => {
-  const normalizedParams = new URLSearchParams();
-
-  Object.entries(params || {}).forEach(([key, value]) => {
-    
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
-    }
-  });
-
-  const stringifiedParams = normalizedParams.toString();
-
-  return stringifiedParams.length > 0 ? `/api/v1/transactions/stats?${stringifiedParams}` : `/api/v1/transactions/stats`
-}
-
-export const getTransactionStatsApiV1TransactionsStatsGet = async (params?: GetTransactionStatsApiV1TransactionsStatsGetParams, options?: RequestInit): Promise<getTransactionStatsApiV1TransactionsStatsGetResponse> => {
-  
-  return customInstance<getTransactionStatsApiV1TransactionsStatsGetResponse>(getGetTransactionStatsApiV1TransactionsStatsGetUrl(params),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
-
-
-
-
-
-export const getGetTransactionStatsApiV1TransactionsStatsGetQueryKey = (params?: GetTransactionStatsApiV1TransactionsStatsGetParams,) => {
-    return [
-    `/api/v1/transactions/stats`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetTransactionStatsApiV1TransactionsStatsGetQueryOptions = <TData = Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>, TError = HTTPValidationError>(params?: GetTransactionStatsApiV1TransactionsStatsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetTransactionStatsApiV1TransactionsStatsGetQueryKey(params);
-
-  
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>> = ({ signal }) => getTransactionStatsApiV1TransactionsStatsGet(params, { signal, ...requestOptions });
-
-      
-
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetTransactionStatsApiV1TransactionsStatsGetQueryResult = NonNullable<Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>>
-export type GetTransactionStatsApiV1TransactionsStatsGetQueryError = HTTPValidationError
-
-
-export function useGetTransactionStatsApiV1TransactionsStatsGet<TData = Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>, TError = HTTPValidationError>(
- params: undefined |  GetTransactionStatsApiV1TransactionsStatsGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>, TError, TData>> & Pick<
-        DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>,
-          TError,
-          Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetTransactionStatsApiV1TransactionsStatsGet<TData = Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>, TError = HTTPValidationError>(
- params?: GetTransactionStatsApiV1TransactionsStatsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>, TError, TData>> & Pick<
-        UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>,
-          TError,
-          Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetTransactionStatsApiV1TransactionsStatsGet<TData = Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>, TError = HTTPValidationError>(
- params?: GetTransactionStatsApiV1TransactionsStatsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-/**
- * @summary Get transaction statistics
- */
-
-export function useGetTransactionStatsApiV1TransactionsStatsGet<TData = Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>, TError = HTTPValidationError>(
- params?: GetTransactionStatsApiV1TransactionsStatsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getTransactionStatsApiV1TransactionsStatsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-
-  const queryOptions = getGetTransactionStatsApiV1TransactionsStatsGetQueryOptions(params,options)
-
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
-
-  return query;
-}
-
-
-
-

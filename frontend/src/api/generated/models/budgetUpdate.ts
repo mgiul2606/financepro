@@ -21,27 +21,37 @@ import type { BudgetUpdateStartDate } from './budgetUpdateStartDate';
 import type { BudgetUpdateEndDate } from './budgetUpdateEndDate';
 import type { BudgetUpdateTotalAmount } from './budgetUpdateTotalAmount';
 import type { BudgetUpdateCurrency } from './budgetUpdateCurrency';
-import type { BudgetUpdateRolloverEnabled } from './budgetUpdateRolloverEnabled';
-import type { BudgetUpdateAlertThresholdPercent } from './budgetUpdateAlertThresholdPercent';
-import type { BudgetUpdateIsActive } from './budgetUpdateIsActive';
 import type { BudgetUpdateScopeType } from './budgetUpdateScopeType';
 import type { BudgetUpdateScopeProfileIds } from './budgetUpdateScopeProfileIds';
-import type { BudgetUpdateCategoryAllocations } from './budgetUpdateCategoryAllocations';
+import type { BudgetUpdateRolloverEnabled } from './budgetUpdateRolloverEnabled';
+import type { BudgetUpdateIsActive } from './budgetUpdateIsActive';
+import type { BudgetUpdateAlertThresholdPercent } from './budgetUpdateAlertThresholdPercent';
 
 /**
- * Schema for updating a budget
+ * Schema for updating an existing budget.
+All fields are optional (partial update).
  */
 export interface BudgetUpdate {
+  /** Updated budget name */
   name?: BudgetUpdateName;
+  /** Updated period type */
   period_type?: BudgetUpdatePeriodType;
+  /** Updated start date */
   start_date?: BudgetUpdateStartDate;
+  /** Updated end date */
   end_date?: BudgetUpdateEndDate;
+  /** Updated budget amount */
   total_amount?: BudgetUpdateTotalAmount;
+  /** Updated currency code */
   currency?: BudgetUpdateCurrency;
-  rollover_enabled?: BudgetUpdateRolloverEnabled;
-  alert_threshold_percent?: BudgetUpdateAlertThresholdPercent;
-  is_active?: BudgetUpdateIsActive;
+  /** Updated scope type */
   scope_type?: BudgetUpdateScopeType;
+  /** Updated profile IDs */
   scope_profile_ids?: BudgetUpdateScopeProfileIds;
-  category_allocations?: BudgetUpdateCategoryAllocations;
+  /** Updated rollover setting */
+  rollover_enabled?: BudgetUpdateRolloverEnabled;
+  /** Whether the budget is active */
+  is_active?: BudgetUpdateIsActive;
+  /** Updated alert threshold percentage */
+  alert_threshold_percent?: BudgetUpdateAlertThresholdPercent;
 }

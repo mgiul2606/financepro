@@ -10,7 +10,7 @@ import { Button } from '../../../core/components/atomic/Button';
 import { Card, CardHeader, CardBody } from '../../../core/components/atomic/Card';
 import { Badge } from '../../../core/components/atomic/Badge';
 import { CurrencyText } from '../../../core/components/atomic/CurrencyText';
-import { Modal, ModalFooter } from '../../../components/ui/Modal';
+import { Modal } from '../../../components/ui/Modal';
 import { EmptyState } from '../../../core/components/composite/EmptyState';
 import {
   useTransactions,
@@ -22,7 +22,7 @@ import {
 import { TransactionForm } from '../components/TransactionForm';
 import { TransactionFilterModal, type TransactionFilters } from '../components/TransactionFilterModal';
 import { TransactionExportModal } from '../components/TransactionExportModal';
-import { type Transaction, type TransactionCreate } from '../types';
+import { TransactionUpdate, type Transaction, type TransactionCreate } from '../types';
 import type { SupportedCurrency } from '@/utils/currency';
 
 export const TransactionsPage: React.FC = () => {
@@ -47,8 +47,8 @@ export const TransactionsPage: React.FC = () => {
   }, [searchParams]);
 
   // Data fetching
-  const { data: transactions, isLoading } = useTransactions();
-  const { data: stats } = useTransactionStats();
+  const { transactions: transactions, isLoading } = useTransactions();
+  const { stats: stats } = useTransactionStats();
   const createMutation = useCreateTransaction();
   const updateMutation = useUpdateTransaction();
   const deleteMutation = useDeleteTransaction();
@@ -59,23 +59,24 @@ export const TransactionsPage: React.FC = () => {
 
     return transactions.filter((txn) => {
       // Date range filter
-      if (filters.transaction_dateFrom && new Date(txn.transaction_date) < new Date(filters.transaction_dateFrom)) {
+      if (filters.dateFrom && new Date(txn.transaction_date) < new Date(filters.dateFrom)) {
         return false;
       }
-      if (filters.transaction_dateTo && new Date(txn.transaction_date) > new Date(filters.transaction_dateTo)) {
+      if (filters.dateTo && new Date(txn.transaction_date) > new Date(filters.dateTo)) {
         return false;
       }
 
+      const amountVal: number = +txn.amount; 
       // Amount range filter
-      if (filters.minAmount !== undefined && txn.amount < filters.minAmount) {
+      if (filters.minAmount !== undefined && amountVal < filters.minAmount) {
         return false;
       }
-      if (filters.maxAmount !== undefined && txn.amount > filters.maxAmount) {
+      if (filters.maxAmount !== undefined && amountVal > filters.maxAmount) {
         return false;
       }
 
       // Type filter
-      if (filters.transaction_types && filters.transaction_types.length > 0 && !filters.transaction_types.includes(txn.transaction_type)) {
+      if (filters.types && filters.types.length > 0 && !filters.types.includes(txn.transaction_type)) {
         return false;
       }
 
@@ -90,15 +91,15 @@ export const TransactionsPage: React.FC = () => {
 
       // Merchant name filter
       if (
-        filters.merchant_name &&
+        filters.merchantName &&
         (!txn.merchant_name ||
-          !txn.merchant_name.toLowerCase().includes(filters.merchant_name.toLowerCase()))
+          !txn.merchant_name.toLowerCase().includes(filters.merchantName.toLowerCase()))
       ) {
         return false;
       }
 
       // Account filter
-      if (filters.account_id && txn.account_id !== filters.account_id) {
+      if (filters.accountId && txn.account_id !== filters.accountId) {
         return false;
       }
 
@@ -109,21 +110,21 @@ export const TransactionsPage: React.FC = () => {
   // Handlers
   const handleCreate = async (data: TransactionCreate) => {
     try {
-      await createMutation.mutateAsync(data);
+      await createMutation.createTransaction(data);
       setIsCreateModalOpen(false);
     } catch (error) {
       console.error('Failed to create transaction:', error);
     }
   };
 
-  const handleUpdate = async (data: TransactionCreate) => {
+  const handleUpdate = async (data: TransactionUpdate) => {
     if (!editingTransaction) return;
 
     try {
-      await updateMutation.mutateAsync({
-        id: editingTransaction.id,
-        data: data as any,
-      });
+      await updateMutation.updateTransaction(
+        editingTransaction.id,
+        data
+      );
       setEditingTransaction(null);
     } catch (error) {
       console.error('Failed to update transaction:', error);
@@ -133,7 +134,7 @@ export const TransactionsPage: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (confirm(t('transactions.deleteConfirm'))) {
       try {
-        await deleteMutation.mutateAsync(id);
+        await deleteMutation.deleteTransaction(id);
       } catch (error) {
         console.error('Failed to delete transaction:', error);
       }
@@ -299,9 +300,9 @@ export const TransactionsPage: React.FC = () => {
               </Button>
             </div>
             <div className="text-sm text-blue-800 space-y-1">
-              {filters.account_id && (
+              {filters.accountId && (
                 <div>
-                  <strong>Account ID:</strong> {filters.account_id}
+                  <strong>Account ID:</strong> {filters.accountId}
                 </div>
               )}
               <div>
@@ -321,7 +322,7 @@ export const TransactionsPage: React.FC = () => {
                   <div>
                     <p className="text-sm text-neutral-600">{t('transactions.totalIncome')}</p>
                     <CurrencyText
-                      value={stats.totalIncome}
+                      value={stats.total_income}
                       className="text-2xl font-bold text-green-600 mt-1"
                     />
                   </div>
@@ -338,7 +339,7 @@ export const TransactionsPage: React.FC = () => {
                   <div>
                     <p className="text-sm text-neutral-600">{t('transactions.totalExpenses')}</p>
                     <CurrencyText
-                      value={stats.totalExpenses}
+                      value={stats.total_expenses}
                       className="text-2xl font-bold text-red-600 mt-1"
                     />
                   </div>
@@ -355,7 +356,7 @@ export const TransactionsPage: React.FC = () => {
                   <div>
                     <p className="text-sm text-neutral-600">{t('transactions.balance')}</p>
                     <CurrencyText
-                      value={stats.balance}
+                      value={stats.net_balance}
                       colorCoded
                       className="text-2xl font-bold mt-1"
                     />
@@ -435,7 +436,7 @@ export const TransactionsPage: React.FC = () => {
           <TransactionForm
             onSubmit={handleUpdate}
             onCancel={() => setEditingTransaction(null)}
-            isLoading={updateMutation.isCreating}
+            isLoading={updateMutation.isUpdating}
             initialData={{
               accountId: editingTransaction.account_id,
               type: editingTransaction.transaction_type,

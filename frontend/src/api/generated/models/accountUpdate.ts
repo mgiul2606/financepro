@@ -19,7 +19,8 @@ import type { AccountUpdateName } from './accountUpdateName';
 import type { AccountUpdateAccountType } from './accountUpdateAccountType';
 import type { AccountUpdateCurrency } from './accountUpdateCurrency';
 import type { AccountUpdateInstitutionName } from './accountUpdateInstitutionName';
-import type { AccountUpdateAccountNumber } from './accountUpdateAccountNumber';
+import type { AccountUpdateAccountNumberLast4 } from './accountUpdateAccountNumberLast4';
+import type { AccountUpdateIban } from './accountUpdateIban';
 import type { AccountUpdateNotes } from './accountUpdateNotes';
 import type { AccountUpdateIsActive } from './accountUpdateIsActive';
 
@@ -36,8 +37,10 @@ export interface AccountUpdate {
   currency?: AccountUpdateCurrency;
   /** Updated institution name */
   institution_name?: AccountUpdateInstitutionName;
-  /** Updated account number */
-  account_number?: AccountUpdateAccountNumber;
+  /** Updated last 4 digits of account number */
+  account_number_last4?: AccountUpdateAccountNumberLast4;
+  /** Updated IBAN */
+  iban?: AccountUpdateIban;
   /** Updated notes */
   notes?: AccountUpdateNotes;
   /** Whether the account is active */

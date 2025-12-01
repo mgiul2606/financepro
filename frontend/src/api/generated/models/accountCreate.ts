@@ -20,7 +20,8 @@ import type { AccountCreateInstitutionName } from './accountCreateInstitutionNam
 import type { AccountCreateNotes } from './accountCreateNotes';
 import type { AccountCreateFinancialProfileId } from './accountCreateFinancialProfileId';
 import type { AccountCreateInitialBalance } from './accountCreateInitialBalance';
-import type { AccountCreateAccountNumber } from './accountCreateAccountNumber';
+import type { AccountCreateAccountNumberLast4 } from './accountCreateAccountNumberLast4';
+import type { AccountCreateIban } from './accountCreateIban';
 
 /**
  * Schema for creating a new account.
@@ -46,8 +47,10 @@ export interface AccountCreate {
   notes?: AccountCreateNotes;
   /** ID of the financial profile this account belongs to (optional, defaults to user's default profile) */
   financial_profile_id?: AccountCreateFinancialProfileId;
-  /** Initial account balance */
+  /** Initial account balance (can be negative for debts) */
   initial_balance?: AccountCreateInitialBalance;
-  /** Account number (will be encrypted in production) */
-  account_number?: AccountCreateAccountNumber;
+  /** Last 4 digits of account number */
+  account_number_last4?: AccountCreateAccountNumberLast4;
+  /** Full IBAN (will be encrypted for high-security profiles) */
+  iban?: AccountCreateIban;
 }

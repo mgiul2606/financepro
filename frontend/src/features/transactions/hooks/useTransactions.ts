@@ -19,6 +19,7 @@ import type {
   TransactionUpdate,
   TransactionFilters,
 } from '../types';
+import { isStatsData } from '../types/custom';
 
 /**
  * Hook to list all transactions with optional filters
@@ -113,12 +114,12 @@ export const useTransactionStats = (params?: {
   const aggregatedStats = queries.reduce(
     (acc, query) => {
       const data = query.data?.data;
-      if (data && 'total_income' in data) {
+       if (isStatsData(data)) {
         return {
-          total_income: (acc.total_income || 0) + ((data as any).total_income || 0),
-          total_expenses: (acc.total_expenses || 0) + ((data as any).total_expenses || 0),
-          net_balance: (acc.net_balance || 0) + ((data as any).net_balance || 0),
-          transaction_count: (acc.transaction_count || 0) + ((data as any).transaction_count || 0),
+          total_income: acc.total_income + data.total_income,
+          total_expenses: acc.total_expenses + data.total_expenses,
+          net_balance: acc.net_balance + data.net_balance,
+          transaction_count: acc.transaction_count + data.transaction_count,
         };
       }
       return acc;

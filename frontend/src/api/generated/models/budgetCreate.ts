@@ -18,36 +18,45 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 import type { PeriodType } from './periodType';
 import type { BudgetCreateEndDate } from './budgetCreateEndDate';
 import type { BudgetCreateTotalAmount } from './budgetCreateTotalAmount';
-import type { ScopeType } from './scopeType';
 import type { BudgetCreateScopeProfileIds } from './budgetCreateScopeProfileIds';
 import type { BudgetCreateCategoryAllocations } from './budgetCreateCategoryAllocations';
 
 /**
- * Schema for creating a budget
+ * Schema for creating a new budget.
+User-level budget with scope support.
  */
 export interface BudgetCreate {
   /**
+   * Budget name
    * @minLength 1
    * @maxLength 255
    */
   name: string;
-  period_type?: PeriodType;
+  /** Type of budget period (monthly, quarterly, yearly, custom) */
+  period_type: PeriodType;
+  /** Start date of the budget period */
   start_date: string;
+  /** End date of the budget period (NULL for rolling budgets) */
   end_date?: BudgetCreateEndDate;
+  /** Total budget amount (must be positive) */
   total_amount: BudgetCreateTotalAmount;
   /**
-   * @minLength 3
-   * @maxLength 3
+   * ISO 4217 currency code (3 uppercase letters)
+   * @pattern ^[A-Z]{3}$
    */
   currency: string;
+  /** Scope type: USER, PROFILE, or MULTI_PROFILE */
+  scope_type?: string;
+  /** Profile IDs for PROFILE or MULTI_PROFILE scope */
+  scope_profile_ids?: BudgetCreateScopeProfileIds;
+  /** Enable rollover of unspent amounts to next period */
   rollover_enabled?: boolean;
   /**
+   * Percentage of budget to trigger alerts (0-100)
    * @minimum 0
    * @maximum 100
    */
   alert_threshold_percent?: number;
-  is_active?: boolean;
-  scope_type?: ScopeType;
-  scope_profile_ids?: BudgetCreateScopeProfileIds;
+  /** Optional category allocations for this budget */
   category_allocations?: BudgetCreateCategoryAllocations;
 }

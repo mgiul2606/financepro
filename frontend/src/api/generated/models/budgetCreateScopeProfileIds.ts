@@ -16,4 +16,7 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
 
+/**
+ * Profile IDs for PROFILE or MULTI_PROFILE scope
+ */
 export type BudgetCreateScopeProfileIds = string[] | null;

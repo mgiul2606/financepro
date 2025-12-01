@@ -17,6 +17,6 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 /**
- * Transaction amount (must be positive)
+ * Transaction amount
  */
 export type TransactionCreateAmount = number | string;
