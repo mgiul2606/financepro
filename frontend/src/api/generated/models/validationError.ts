@@ -15,7 +15,7 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { ValidationErrorLocItem } from './validationErrorLocItem';
+import type { ValidationErrorLocItem } from "./validationErrorLocItem";
 
 export interface ValidationError {
   loc: ValidationErrorLocItem[];

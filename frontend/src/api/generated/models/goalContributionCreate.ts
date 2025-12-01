@@ -15,9 +15,9 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { GoalContributionCreateAmount } from './goalContributionCreateAmount';
-import type { GoalContributionCreateTransactionId } from './goalContributionCreateTransactionId';
-import type { GoalContributionCreateNotes } from './goalContributionCreateNotes';
+import type { GoalContributionCreateAmount } from "./goalContributionCreateAmount";
+import type { GoalContributionCreateTransactionId } from "./goalContributionCreateTransactionId";
+import type { GoalContributionCreateNotes } from "./goalContributionCreateNotes";
 
 /**
  * Schema for creating a goal contribution

@@ -15,9 +15,9 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { TrainModelResponseMetrics } from './trainModelResponseMetrics';
-import type { TrainModelResponseTrainingSamples } from './trainModelResponseTrainingSamples';
-import type { TrainModelResponseModelVersion } from './trainModelResponseModelVersion';
+import type { TrainModelResponseMetrics } from "./trainModelResponseMetrics";
+import type { TrainModelResponseTrainingSamples } from "./trainModelResponseTrainingSamples";
+import type { TrainModelResponseModelVersion } from "./trainModelResponseModelVersion";
 
 /**
  * Response from model training

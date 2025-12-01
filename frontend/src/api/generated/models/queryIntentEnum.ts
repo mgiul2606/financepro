@@ -19,19 +19,19 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 /**
  * Query intent types
  */
-export type QueryIntentEnum = typeof QueryIntentEnum[keyof typeof QueryIntentEnum];
-
+export type QueryIntentEnum =
+  (typeof QueryIntentEnum)[keyof typeof QueryIntentEnum];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const QueryIntentEnum = {
-  balance_query: 'balance_query',
-  spending_analysis: 'spending_analysis',
-  budget_status: 'budget_status',
-  transaction_search: 'transaction_search',
-  category_breakdown: 'category_breakdown',
-  goal_status: 'goal_status',
-  forecast_request: 'forecast_request',
-  recommendation_request: 'recommendation_request',
-  comparison: 'comparison',
-  general_question: 'general_question',
+  balance_query: "balance_query",
+  spending_analysis: "spending_analysis",
+  budget_status: "budget_status",
+  transaction_search: "transaction_search",
+  category_breakdown: "category_breakdown",
+  goal_status: "goal_status",
+  forecast_request: "forecast_request",
+  recommendation_request: "recommendation_request",
+  comparison: "comparison",
+  general_question: "general_question",
 } as const;

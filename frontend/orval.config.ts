@@ -13,6 +13,7 @@ export default defineConfig({
       mock: false,
       clean: true,
       prettier: true,
+      tsconfig: './tsconfig.app.json',
       override: {
         mutator: {
           path: './src/api/client.ts',
@@ -38,6 +39,7 @@ export default defineConfig({
       clean: false,
       prettier: true,
       fileExtension: '.ts',
+      tsconfig: './tsconfig.app.json',
     },
   },
 });

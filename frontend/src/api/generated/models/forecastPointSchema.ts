@@ -15,7 +15,7 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { ScenarioTypeEnum } from './scenarioTypeEnum';
+import type { ScenarioTypeEnum } from "./scenarioTypeEnum";
 
 /**
  * A single forecast point

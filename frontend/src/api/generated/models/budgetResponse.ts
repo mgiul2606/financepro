@@ -15,11 +15,11 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { ScopeType } from './scopeType';
-import type { BudgetResponseScopeProfileIds } from './budgetResponseScopeProfileIds';
-import type { PeriodType } from './periodType';
-import type { BudgetResponseEndDate } from './budgetResponseEndDate';
-import type { BudgetCategoryResponse } from './budgetCategoryResponse';
+import type { ScopeType } from "./scopeType";
+import type { BudgetResponseScopeProfileIds } from "./budgetResponseScopeProfileIds";
+import type { PeriodType } from "./periodType";
+import type { BudgetResponseEndDate } from "./budgetResponseEndDate";
+import type { BudgetCategoryResponse } from "./budgetCategoryResponse";
 
 /**
  * Schema for budget response
