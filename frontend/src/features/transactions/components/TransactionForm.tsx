@@ -1,30 +1,20 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useForm, type FieldError } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../../core/components/atomic/Button';
 import { Input } from '../../../core/components/atomic/Input';
 import { Select } from '../../../core/components/atomic/Select';
-import { type TransactionCreate, type TransactionType } from '../types';
+import { TransactionCreate, TransactionType } from '@/api/generated/models';
 
-const transactionSchema = z.object({
-  accountId: z.number().int().positive('Please select an account'),
-  type: z.enum(['income', 'expense', 'transfer']),
-  amount: z.number().positive('Amount must be greater than 0'),
-  currency: z.string().default('EUR'),
-  category: z.string().optional(),
-  description: z.string().min(1, 'Description is required'),
-  date: z.string(),
-  merchantName: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-type TransactionFormData = z.infer<typeof transactionSchema>;
+/**
+ * Transaction Form Component
+ * Uses generated types from OpenAPI (Pydantic models)
+ * Validation: client-side + backend validation (422 errors)
+ */
 
 export interface TransactionFormProps {
   onSubmit: (data: TransactionCreate) => void;
   onCancel?: () => void;
-  initialData?: Partial<TransactionFormData>;
+  initialData?: Partial<TransactionCreate>;
   isLoading?: boolean;
 }
 
@@ -36,43 +26,43 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  const transactionTypes: { value: TransactionType; label: string }[] = [
+  // Use generated TransactionType enum from backend
+  const transactionTypes: { value: keyof typeof TransactionType; label: string }[] = [
     { value: 'income', label: t('transactions.types.income') },
-    { value: 'expense', label: t('transactions.types.expense') },
-    { value: 'transfer', label: t('transactions.types.transfer') },
+    { value: 'salary', label: t('transactions.types.salary') },
+    { value: 'dividend', label: t('transactions.types.dividend') },
+    { value: 'refund', label: t('transactions.types.refund') },
+    { value: 'purchase', label: t('transactions.types.purchase') },
+    { value: 'payment', label: t('transactions.types.payment') },
+    { value: 'withdrawal', label: t('transactions.types.withdrawal') },
+    { value: 'bank_transfer', label: t('transactions.types.bank_transfer') },
+    { value: 'internal_transfer', label: t('transactions.types.internal_transfer') },
+    { value: 'fee', label: t('transactions.types.fee') },
+    { value: 'tax', label: t('transactions.types.tax') },
+    { value: 'other', label: t('transactions.types.other') },
   ];
 
-  const categories = [
-    { value: 'Salary', label: t('transactions.categories.salary') },
-    { value: 'Groceries', label: t('transactions.categories.groceries') },
-    { value: 'Rent', label: t('transactions.categories.rent') },
-    { value: 'Transport', label: t('transactions.categories.transport') },
-    { value: 'Entertainment', label: t('transactions.categories.entertainment') },
-    { value: 'Healthcare', label: t('transactions.categories.healthcare') },
-    { value: 'Shopping', label: t('transactions.categories.shopping') },
-    { value: 'Utilities', label: t('transactions.categories.utilities') },
-    { value: 'Other', label: t('transactions.categories.other') },
-  ];
   const {
     register,
     handleSubmit,
     formState: { errors },
-    watch,
-  } = useForm<TransactionFormData>({
-    resolver: zodResolver(transactionSchema),
+  } = useForm<TransactionCreate>({
     defaultValues: {
-      type: 'expense',
+      transaction_type: TransactionType.purchase,
       currency: 'EUR',
-      date: new Date().toISOString().split('T')[0],
-      accountId: 1, // Default account
+      transaction_date: new Date().toISOString().split('T')[0],
       ...initialData,
     },
+    mode: 'onChange',
   });
 
-  const transactionType = watch('type');
+  const handleFormSubmit = (data: TransactionCreate) => {
+    onSubmit(data);
+  };
 
-  const handleFormSubmit = (data: TransactionFormData) => {
-    onSubmit(data as TransactionCreate);
+  // Helper to get error message
+  const getErrorMessage = (error?: FieldError): string | undefined => {
+    return error?.message;
   };
 
   return (
@@ -81,10 +71,12 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
         <Select
           label={t('transactions.type')}
           options={transactionTypes}
-          error={errors.type?.message}
+          error={getErrorMessage(errors.transaction_type)}
           fullWidth
           required
-          {...register('type')}
+          {...register('transaction_type', {
+            required: 'Transaction type is required',
+          })}
         />
 
         <Input
@@ -92,68 +84,98 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
           type="number"
           step="0.01"
           placeholder={t('transactions.amountPlaceholder')}
-          error={errors.amount?.message}
+          error={getErrorMessage(errors.amount)}
           fullWidth
           required
-          {...register('amount', { valueAsNumber: true })}
+          {...register('amount', {
+            required: 'Amount is required',
+            valueAsNumber: true,
+            min: { value: 0.01, message: 'Amount must be greater than 0' },
+          })}
         />
       </div>
 
       <Input
         label={t('transactions.description')}
         placeholder={t('transactions.descriptionPlaceholder')}
-        error={errors.description?.message}
+        error={getErrorMessage(errors.description)}
         fullWidth
         required
-        {...register('description')}
+        {...register('description', {
+          required: 'Description is required',
+          minLength: { value: 1, message: 'Description cannot be empty' },
+        })}
       />
 
       <div className="grid grid-cols-2 gap-4">
-        <Select
+        <Input
           label={t('transactions.category')}
           placeholder={t('transactions.categoryPlaceholder')}
-          options={categories}
-          error={errors.category?.message}
+          error={getErrorMessage(errors.category_id)}
           fullWidth
-          {...register('category')}
+          {...register('category_id')}
         />
 
         <Input
           label={t('transactions.date')}
           type="date"
-          error={errors.date?.message}
+          error={getErrorMessage(errors.transaction_date)}
           fullWidth
           required
-          {...register('date')}
+          {...register('transaction_date', {
+            required: 'Transaction date is required',
+          })}
         />
       </div>
 
       <Input
         label={t('transactions.merchant')}
         placeholder={t('transactions.merchantPlaceholder')}
-        error={errors.merchantName?.message}
+        error={getErrorMessage(errors.merchant_name)}
         fullWidth
-        {...register('merchantName')}
+        {...register('merchant_name', {
+          maxLength: { value: 255, message: 'Merchant name too long' },
+        })}
       />
 
       <div className="grid grid-cols-2 gap-4">
         <Input
           label={t('accounts.currency')}
           placeholder="EUR"
-          error={errors.currency?.message}
+          error={getErrorMessage(errors.currency)}
           fullWidth
-          {...register('currency')}
+          {...register('currency', {
+            required: 'Currency is required',
+            pattern: {
+              value: /^[A-Z]{3}$/,
+              message: 'Currency must be 3 uppercase letters (e.g., EUR, USD)',
+            },
+          })}
         />
 
         <Input
           label={t('transactions.accountId')}
-          type="number"
-          error={errors.accountId?.message}
+          placeholder="Account UUID"
+          error={getErrorMessage(errors.account_id)}
           fullWidth
           required
-          {...register('accountId', { valueAsNumber: true })}
+          {...register('account_id', {
+            required: 'Account ID is required',
+            pattern: {
+              value: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+              message: 'Invalid UUID format',
+            },
+          })}
         />
       </div>
+
+      <Input
+        label={t('transactions.notes')}
+        placeholder={t('transactions.notesPlaceholder')}
+        error={getErrorMessage(errors.notes)}
+        fullWidth
+        {...register('notes')}
+      />
 
       <div className="flex justify-end gap-3 pt-4 border-t border-neutral-200">
         {onCancel && (
