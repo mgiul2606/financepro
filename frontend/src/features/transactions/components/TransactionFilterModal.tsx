@@ -7,6 +7,8 @@ import { Button } from '@/core/components/atomic/Button';
 import { FormField } from '@/components/ui/FormField';
 import { toggleArrayField } from '@/utils/toggleArrayField';
 import { removeEmptyFilters } from '@/utils/filters';
+import { TransactionType } from '@/api/generated/models';
+import { useCategories } from '@/features/categories';
 
 export interface TransactionFilters {
   dateFrom?: string;
@@ -16,6 +18,7 @@ export interface TransactionFilters {
   types?: string[];
   categories?: string[];
   merchantName?: string;
+  accountId?: string;
   allowedAccounts?: string[];
 }
 
@@ -26,24 +29,6 @@ interface TransactionFilterModalProps {
   initialFilters?: TransactionFilters;
 }
 
-const TRANSACTION_TYPES = [
-  { value: 'income', label: 'Income' },
-  { value: 'expense', label: 'Expense' },
-  { value: 'transfer', label: 'Transfer' },
-];
-
-const CATEGORIES = [
-  { value: 'Salary', label: 'Salary' },
-  { value: 'Groceries', label: 'Groceries' },
-  { value: 'Rent', label: 'Rent / Housing' },
-  { value: 'Transport', label: 'Transport' },
-  { value: 'Entertainment', label: 'Entertainment' },
-  { value: 'Healthcare', label: 'Healthcare' },
-  { value: 'Shopping', label: 'Shopping' },
-  { value: 'Utilities', label: 'Utilities' },
-  { value: 'Other', label: 'Other' },
-];
-
 export const TransactionFilterModal = ({
   isOpen,
   onClose,
@@ -51,10 +36,17 @@ export const TransactionFilterModal = ({
   initialFilters,
 }: TransactionFilterModalProps) => {
   const { t } = useTranslation();
+  const { categories, isLoading: categoriesLoading } = useCategories();
 
   const [filters, setFilters] = useState<TransactionFilters>(
     initialFilters || {}
   );
+
+  // Generate transaction types from backend enum
+  const transactionTypes = Object.keys(TransactionType).map((key) => ({
+    value: TransactionType[key as keyof typeof TransactionType],
+    label: t(`transactions.types.${TransactionType[key as keyof typeof TransactionType]}`),
+  }));
 
   useEffect(() => {
     if (initialFilters) {
@@ -158,18 +150,18 @@ export const TransactionFilterModal = ({
             {t('transactions.filters.selectTypes')}
           </h4>
           <div className="flex flex-wrap gap-2">
-            {TRANSACTION_TYPES.map((type) => (
+            {transactionTypes.map((type) => (
               <button
                 key={type.value}
                 type="button"
-                onClick={() => toggleArrayField(filters, "types", type.value)}
+                onClick={() => setFilters(toggleArrayField(filters, "types", type.value))}
                 className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
                   filters.types?.includes(type.value)
                     ? 'bg-blue-100 border-blue-500 text-blue-700'
                     : 'bg-white border-neutral-300 text-neutral-700 hover:border-neutral-400'
                 }`}
               >
-                {t(`transactions.types.${type.value}`)}
+                {type.label}
               </button>
             ))}
           </div>
@@ -180,22 +172,28 @@ export const TransactionFilterModal = ({
           <h4 className="text-sm font-semibold text-neutral-700">
             {t('transactions.filters.selectCategories')}
           </h4>
-          <div className="flex flex-wrap gap-2">
-            {CATEGORIES.map((category) => (
-              <button
-                key={category.value}
-                type="button"
-                onClick={() => toggleArrayField(filters, "categories", category.value)}
-                className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
-                  filters.categories?.includes(category.value)
-                    ? 'bg-blue-100 border-blue-500 text-blue-700'
-                    : 'bg-white border-neutral-300 text-neutral-700 hover:border-neutral-400'
-                }`}
-              >
-                {t(`transactions.categories.${category.value.toLowerCase()}`)}
-              </button>
-            ))}
-          </div>
+          {categoriesLoading ? (
+            <div className="text-sm text-neutral-500">Loading categories...</div>
+          ) : categories && categories.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() => setFilters(toggleArrayField(filters, "categories", category.id))}
+                  className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                    filters.categories?.includes(category.id)
+                      ? 'bg-blue-100 border-blue-500 text-blue-700'
+                      : 'bg-white border-neutral-300 text-neutral-700 hover:border-neutral-400'
+                  }`}
+                >
+                  {category.name}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="text-sm text-neutral-500">{t('transactions.filters.noCategories')}</div>
+          )}
         </div>
 
         {/* Merchant Name */}

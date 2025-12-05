@@ -4,6 +4,8 @@ import { Button } from '../../../core/components/atomic/Button';
 import { Input } from '../../../core/components/atomic/Input';
 import { Select } from '../../../core/components/atomic/Select';
 import { TransactionCreate, TransactionType } from '@/api/generated/models';
+import { useCategories } from '@/features/categories';
+import { useAccounts } from '@/features/accounts';
 
 /**
  * Transaction Form Component
@@ -25,6 +27,8 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
   isLoading = false,
 }) => {
   const { t } = useTranslation();
+  const { categories, isLoading: categoriesLoading } = useCategories();
+  const { accounts, isLoading: accountsLoading } = useAccounts();
 
   // Use generated TransactionType enum from backend
   const transactionTypes: { value: keyof typeof TransactionType; label: string }[] = [
@@ -41,6 +45,18 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
     { value: 'tax', label: t('transactions.types.tax') },
     { value: 'other', label: t('transactions.types.other') },
   ];
+
+  // Prepare category options for Select
+  const categoryOptions = categories?.map((cat) => ({
+    value: cat.id,
+    label: cat.name,
+  })) || [];
+
+  // Prepare account options for Select
+  const accountOptions = accounts?.map((acc) => ({
+    value: acc.id,
+    label: `${acc.name} (${acc.account_type})`,
+  })) || [];
 
   const {
     register,
@@ -108,11 +124,13 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
       />
 
       <div className="grid grid-cols-2 gap-4">
-        <Input
+        <Select
           label={t('transactions.category')}
-          placeholder={t('transactions.categoryPlaceholder')}
+          options={categoryOptions}
+          placeholder={categoriesLoading ? 'Loading categories...' : t('transactions.categoryPlaceholder')}
           error={getErrorMessage(errors.category_id)}
           fullWidth
+          disabled={categoriesLoading}
           {...register('category_id')}
         />
 
@@ -139,6 +157,19 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
       />
 
       <div className="grid grid-cols-2 gap-4">
+        <Select
+          label={t('transactions.accountId')}
+          options={accountOptions}
+          placeholder={accountsLoading ? 'Loading accounts...' : 'Select an account'}
+          error={getErrorMessage(errors.account_id)}
+          fullWidth
+          required
+          disabled={accountsLoading}
+          {...register('account_id', {
+            required: 'Account is required',
+          })}
+        />
+
         <Input
           label={t('accounts.currency')}
           placeholder="EUR"
@@ -149,21 +180,6 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
             pattern: {
               value: /^[A-Z]{3}$/,
               message: 'Currency must be 3 uppercase letters (e.g., EUR, USD)',
-            },
-          })}
-        />
-
-        <Input
-          label={t('transactions.accountId')}
-          placeholder="Account UUID"
-          error={getErrorMessage(errors.account_id)}
-          fullWidth
-          required
-          {...register('account_id', {
-            required: 'Account ID is required',
-            pattern: {
-              value: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-              message: 'Invalid UUID format',
             },
           })}
         />
