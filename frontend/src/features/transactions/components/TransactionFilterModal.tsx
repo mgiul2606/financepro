@@ -5,6 +5,8 @@ import { Filter } from 'lucide-react';
 import { Modal, ModalFooter } from '@/components/ui/Modal';
 import { Button } from '@/core/components/atomic/Button';
 import { FormField } from '@/components/ui/FormField';
+import { toggleArrayField } from '@/utils/toggleArrayField';
+import { removeEmptyFilters } from '@/utils/filters';
 
 export interface TransactionFilters {
   dateFrom?: string;
@@ -14,7 +16,7 @@ export interface TransactionFilters {
   types?: string[];
   categories?: string[];
   merchantName?: string;
-  accountId?: string;
+  allowedAccounts?: string[];
 }
 
 interface TransactionFilterModalProps {
@@ -61,40 +63,12 @@ export const TransactionFilterModal = ({
   }, [initialFilters]);
 
   const handleApply = () => {
-    // Remove empty filters
-    const cleanedFilters: TransactionFilters = {};
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== '' && value !== null) {
-        if (Array.isArray(value) && value.length === 0) return;
-        cleanedFilters[key as keyof TransactionFilters] = value;
-      }
-    });
-    onApply(cleanedFilters);
+    onApply(removeEmptyFilters(filters));
     onClose();
   };
 
   const handleReset = () => {
     setFilters({});
-  };
-
-  const handleTypeToggle = (type: string) => {
-    setFilters((prev) => {
-      const types = prev.types || [];
-      const newTypes = types.includes(type)
-        ? types.filter((t) => t !== type)
-        : [...types, type];
-      return { ...prev, types: newTypes };
-    });
-  };
-
-  const handleCategoryToggle = (category: string) => {
-    setFilters((prev) => {
-      const categories = prev.categories || [];
-      const newCategories = categories.includes(category)
-        ? categories.filter((c) => c !== category)
-        : [...categories, category];
-      return { ...prev, categories: newCategories };
-    });
   };
 
   return (
@@ -188,7 +162,7 @@ export const TransactionFilterModal = ({
               <button
                 key={type.value}
                 type="button"
-                onClick={() => handleTypeToggle(type.value)}
+                onClick={() => toggleArrayField(filters, "types", type.value)}
                 className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
                   filters.types?.includes(type.value)
                     ? 'bg-blue-100 border-blue-500 text-blue-700'
@@ -211,7 +185,7 @@ export const TransactionFilterModal = ({
               <button
                 key={category.value}
                 type="button"
-                onClick={() => handleCategoryToggle(category.value)}
+                onClick={() => toggleArrayField(filters, "categories", category.value)}
                 className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
                   filters.categories?.includes(category.value)
                     ? 'bg-blue-100 border-blue-500 text-blue-700'
