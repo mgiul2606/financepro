@@ -438,14 +438,14 @@ export const TransactionsPage: React.FC = () => {
             onCancel={() => setEditingTransaction(null)}
             isLoading={updateMutation.isUpdating}
             initialData={{
-              accountId: editingTransaction.account_id,
-              type: editingTransaction.transaction_type,
+              account_id: editingTransaction.account_id,
+              transaction_type: editingTransaction.transaction_type,
               amount: editingTransaction.amount,
               currency: editingTransaction.currency,
-              category: editingTransaction.category_id,
+              category_id: editingTransaction.category_id,
               description: editingTransaction.description,
-              date: editingTransaction.transaction_date,
-              merchantName: editingTransaction.merchant_name,
+              transaction_date: editingTransaction.transaction_date,
+              merchant_name: editingTransaction.merchant_name,
               notes: editingTransaction.notes,
             }}
           />
