@@ -1368,8 +1368,9 @@ export type getConversationApiV1AiAiChatConversationsConversationIdGetResponseEr
   };
 
 export type getConversationApiV1AiAiChatConversationsConversationIdGetResponse =
-  | getConversationApiV1AiAiChatConversationsConversationIdGetResponseSuccess
-  | getConversationApiV1AiAiChatConversationsConversationIdGetResponseError;
+
+    | getConversationApiV1AiAiChatConversationsConversationIdGetResponseSuccess
+    | getConversationApiV1AiAiChatConversationsConversationIdGetResponseError;
 
 export const getGetConversationApiV1AiAiChatConversationsConversationIdGetUrl =
   (conversationId: string) => {
