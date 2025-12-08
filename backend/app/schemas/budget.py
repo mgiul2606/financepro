@@ -5,7 +5,7 @@ from datetime import datetime, date
 from typing import Optional
 from uuid import UUID
 from decimal import Decimal
-from app.models import PeriodType
+from app.models import PeriodType, ScopeType
 
 
 class BudgetBase(BaseModel):
@@ -60,8 +60,8 @@ class BudgetCreate(BudgetBase):
     Schema for creating a new budget.
     User-level budget with scope support.
     """
-    scope_type: str = Field(
-        default="USER",
+    scope_type: ScopeType = Field(
+        default=ScopeType.USER,
         description="Scope type: USER, PROFILE, or MULTI_PROFILE"
     )
     scope_profile_ids: Optional[list[UUID]] = Field(
@@ -92,7 +92,7 @@ class BudgetCreate(BudgetBase):
                 "end_date": "2025-01-31",
                 "total_amount": 2000.00,
                 "currency": "EUR",
-                "scope_type": "USER",
+                "scope_type": "user",
                 "rollover_enabled": False,
                 "alert_threshold_percent": 80
             }
@@ -134,7 +134,7 @@ class BudgetUpdate(BaseModel):
         pattern="^[A-Z]{3}$",
         description="Updated currency code"
     )
-    scope_type: Optional[str] = Field(
+    scope_type: Optional[ScopeType] = Field(
         None,
         description="Updated scope type"
     )
@@ -202,7 +202,7 @@ class BudgetResponse(BudgetBase):
         ...,
         description="ID of the user this budget belongs to"
     )
-    scope_type: str = Field(
+    scope_type: ScopeType = Field(
         ...,
         description="Scope type (user, profile, multi_profile)"
     )

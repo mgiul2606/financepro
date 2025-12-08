@@ -63,23 +63,22 @@ class TransactionCreate(TransactionBase):
     Schema for creating a new transaction.
     Includes optional fields for advanced features.
     """
-    value_date: Optional[date] = Field(
+    merchant_id: Optional[UUID] = Field(
         None,
-        description="Date when transaction was valued (for banking)"
-    )
-    location: Optional[str] = Field(
-        None,
-        max_length=255,
-        description="Transaction location"
+        description="ID of the merchant (if known)"
     )
     receipt_url: Optional[str] = Field(
         None,
         max_length=500,
         description="URL to receipt or document"
     )
-    created_by: TransactionSource = Field(
+    source: TransactionSource = Field(
         default=TransactionSource.MANUAL,
-        description="Source of transaction creation"
+        description="Source of transaction creation (manual, import, api, etc.)"
+    )
+    is_reconciled: bool = Field(
+        default=False,
+        description="Whether transaction has been reconciled"
     )
 
     model_config = ConfigDict(
@@ -94,7 +93,8 @@ class TransactionCreate(TransactionBase):
                 "merchant_name": "Local Supermarket",
                 "transaction_date": "2025-01-15",
                 "notes": "Weekly groceries",
-                "created_by": "manual"
+                "source": "manual",
+                "is_reconciled": False
             }
         }
     )
@@ -109,13 +109,16 @@ class TransactionUpdate(BaseModel):
         None,
         description="Updated category ID"
     )
+    merchant_id: Optional[UUID] = Field(
+        None,
+        description="Updated merchant ID"
+    )
     transaction_type: Optional[TransactionType] = Field(
         None,
         description="Updated transaction type"
     )
     amount: Optional[Decimal] = Field(
         None,
-        gt=0,
         decimal_places=2,
         description="Updated amount"
     )
@@ -138,10 +141,6 @@ class TransactionUpdate(BaseModel):
         None,
         description="Updated transaction date"
     )
-    value_date: Optional[date] = Field(
-        None,
-        description="Updated value date"
-    )
     notes: Optional[str] = Field(
         None,
         description="Updated notes"
@@ -149,11 +148,6 @@ class TransactionUpdate(BaseModel):
     is_reconciled: Optional[bool] = Field(
         None,
         description="Whether transaction has been reconciled"
-    )
-    location: Optional[str] = Field(
-        None,
-        max_length=255,
-        description="Updated location"
     )
     receipt_url: Optional[str] = Field(
         None,
@@ -165,7 +159,8 @@ class TransactionUpdate(BaseModel):
         json_schema_extra={
             "example": {
                 "category_id": "550e8400-e29b-41d4-a716-446655440003",
-                "notes": "Updated notes"
+                "notes": "Updated notes",
+                "is_reconciled": True
             }
         }
     )
@@ -177,41 +172,57 @@ class TransactionResponse(TransactionBase):
     Includes all fields including computed and metadata fields.
     """
     id: UUID = Field(..., description="Unique transaction identifier")
+    financial_profile_id: UUID = Field(
+        ...,
+        description="ID of the financial profile this transaction belongs to"
+    )
+    merchant_id: Optional[UUID] = Field(
+        None,
+        description="ID of the merchant (if known)"
+    )
     recurring_transaction_id: Optional[UUID] = Field(
         None,
         description="ID of parent recurring transaction (if applicable)"
     )
-    exchange_rate_id: Optional[UUID] = Field(
+    related_transaction_id: Optional[UUID] = Field(
         None,
-        description="ID of exchange rate used for conversion"
+        description="ID of related transaction (for transfers, splits)"
     )
-    amount_in_profile_currency: Optional[Decimal] = Field(
+    duplicate_of_id: Optional[UUID] = Field(
         None,
+        description="ID of original transaction if this is a duplicate"
+    )
+    exchange_rate: Optional[Decimal] = Field(
+        None,
+        description="Exchange rate used for currency conversion"
+    )
+    amount_in_profile_currency: Decimal = Field(
+        ...,
         description="Amount converted to profile's default currency"
-    )
-    merchant_normalized: Optional[str] = Field(
-        None,
-        description="ML-normalized merchant name for better categorization"
-    )
-    value_date: Optional[date] = Field(
-        None,
-        description="Date when transaction was valued"
     )
     is_reconciled: bool = Field(
         default=False,
         description="Whether transaction has been reconciled"
     )
-    location: Optional[str] = Field(
-        None,
-        description="Transaction location"
+    is_duplicate: bool = Field(
+        default=False,
+        description="Whether this transaction is marked as a duplicate"
     )
     receipt_url: Optional[str] = Field(
         None,
         description="URL to receipt or document"
     )
-    created_by: TransactionSource = Field(
+    import_job_id: Optional[UUID] = Field(
         None,
-        description="Source of transaction creation"
+        description="ID of the import job that created this transaction"
+    )
+    external_id: Optional[str] = Field(
+        None,
+        description="External ID from bank/import source"
+    )
+    source: TransactionSource = Field(
+        ...,
+        description="Source of transaction creation (manual, import, api, etc.)"
     )
     created_at: datetime = Field(..., description="Transaction creation timestamp (UTC)")
     updated_at: datetime = Field(..., description="Last update timestamp (UTC)")
@@ -221,24 +232,28 @@ class TransactionResponse(TransactionBase):
         json_schema_extra={
             "example": {
                 "id": "550e8400-e29b-41d4-a716-446655440010",
+                "financial_profile_id": "550e8400-e29b-41d4-a716-446655440001",
                 "account_id": "550e8400-e29b-41d4-a716-446655440000",
                 "category_id": "550e8400-e29b-41d4-a716-446655440002",
+                "merchant_id": None,
                 "recurring_transaction_id": None,
+                "related_transaction_id": None,
+                "duplicate_of_id": None,
                 "transaction_type": "purchase",
                 "amount": 85.50,
                 "currency": "EUR",
-                "exchange_rate_id": None,
+                "exchange_rate": None,
                 "amount_in_profile_currency": 85.50,
                 "description": "Grocery shopping at Supermarket",
                 "merchant_name": "Local Supermarket",
-                "merchant_normalized": "local_supermarket",
                 "transaction_date": "2025-01-15",
-                "value_date": None,
                 "notes": "Weekly groceries",
                 "is_reconciled": False,
-                "location": None,
+                "is_duplicate": False,
                 "receipt_url": None,
-                "created_by": "manual",
+                "import_job_id": None,
+                "external_id": None,
+                "source": "manual",
                 "created_at": "2025-01-15T10:30:00Z",
                 "updated_at": "2025-01-15T10:30:00Z"
             }
@@ -262,24 +277,28 @@ class TransactionListResponse(BaseModel):
                 "items": [
                     {
                         "id": "550e8400-e29b-41d4-a716-446655440010",
+                        "financial_profile_id": "550e8400-e29b-41d4-a716-446655440001",
                         "account_id": "550e8400-e29b-41d4-a716-446655440000",
                         "category_id": "550e8400-e29b-41d4-a716-446655440002",
+                        "merchant_id": None,
                         "recurring_transaction_id": None,
+                        "related_transaction_id": None,
+                        "duplicate_of_id": None,
                         "transaction_type": "purchase",
                         "amount": 85.50,
                         "currency": "EUR",
-                        "exchange_rate_id": None,
+                        "exchange_rate": None,
                         "amount_in_profile_currency": 85.50,
                         "description": "Grocery shopping",
                         "merchant_name": "Local Supermarket",
-                        "merchant_normalized": "local_supermarket",
                         "transaction_date": "2025-01-15",
-                        "value_date": None,
                         "notes": "Weekly groceries",
                         "is_reconciled": False,
-                        "location": None,
+                        "is_duplicate": False,
                         "receipt_url": None,
-                        "created_by": "manual",
+                        "import_job_id": None,
+                        "external_id": None,
+                        "source": "manual",
                         "created_at": "2025-01-15T10:30:00Z",
                         "updated_at": "2025-01-15T10:30:00Z"
                     }
