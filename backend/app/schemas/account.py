@@ -16,7 +16,7 @@ class AccountBase(BaseModel):
     name: str = Field(
         ...,
         min_length=1,
-        max_length=100,
+        max_length=255,
         description="Account name",
         examples=["Main Checking Account", "Savings", "Credit Card"]
     )
@@ -34,6 +34,18 @@ class AccountBase(BaseModel):
         None,
         max_length=255,
         description="Name of the financial institution"
+    )
+    credit_limit: Optional[Decimal] = Field(
+        None,
+        description="Credit limit (for credit cards)"
+    )
+    interest_rate: Optional[Decimal] = Field(
+        None,
+        description="Annual interest rate percentage (for loans/savings)"
+    )
+    is_included_in_totals: bool = Field(
+        default=True,
+        description="Include this account in net worth calculations"
     )
     notes: Optional[str] = Field(
         None,
@@ -93,7 +105,7 @@ class AccountUpdate(BaseModel):
     name: Optional[str] = Field(
         None,
         min_length=1,
-        max_length=100,
+        max_length=255,
         description="Updated account name"
     )
     account_type: Optional[AccountType] = Field(
@@ -109,6 +121,18 @@ class AccountUpdate(BaseModel):
         None,
         max_length=255,
         description="Updated institution name"
+    )
+    credit_limit: Optional[Decimal] = Field(
+        None,
+        description="Updated credit limit"
+    )
+    interest_rate: Optional[Decimal] = Field(
+        None,
+        description="Updated interest rate"
+    )
+    is_included_in_totals: Optional[bool] = Field(
+        None,
+        description="Updated inclusion in totals"
     )
     account_number_last4: Optional[str] = Field(
         None,
@@ -135,7 +159,8 @@ class AccountUpdate(BaseModel):
         json_schema_extra={
             "example": {
                 "name": "Updated Account Name",
-                "institution_name": "New Bank"
+                "institution_name": "New Bank",
+                "credit_limit": 5000.00
             }
         }
     )
@@ -180,7 +205,11 @@ class AccountResponse(AccountBase):
                 "initial_balance": 1000.00,
                 "current_balance": 1250.50,
                 "institution_name": "My Bank",
-                "account_number": None,
+                "credit_limit": None,
+                "interest_rate": None,
+                "is_included_in_totals": True,
+                "account_number_last4": None,
+                "iban": None,
                 "notes": "Primary checking account",
                 "is_active": True,
                 "created_at": "2025-01-15T10:30:00Z",
@@ -235,7 +264,11 @@ class AccountList(BaseModel):
                         "initial_balance": 1000.00,
                         "current_balance": 1250.50,
                         "institution_name": "My Bank",
-                        "account_number": None,
+                        "credit_limit": None,
+                        "interest_rate": None,
+                        "is_included_in_totals": True,
+                        "account_number_last4": None,
+                        "iban": None,
                         "notes": None,
                         "is_active": True,
                         "created_at": "2025-01-15T10:30:00Z",

@@ -7,95 +7,194 @@ from uuid import UUID
 from app.db.database import get_db
 from app.models.user import User
 from app.models.category import Category
-from app.models.financial_profile import FinancialProfile
-from app.schemas.category import CategoryResponse, CategoryListResponse
+from app.schemas.category import CategoryResponse, CategoryListResponse, CategoryCreate, CategoryUpdate
 from app.api.dependencies import get_current_user
 
 router = APIRouter()
-
-
-async def verify_profile_ownership(
-    profile_id: UUID,
-    db: Session,
-    current_user: User
-) -> FinancialProfile:
-    """
-    Helper function to verify that the current user owns the financial profile.
-
-    Args:
-        profile_id: ID of the profile to verify
-        db: Database session
-        current_user: Current authenticated user
-
-    Returns:
-        FinancialProfile object if authorized
-
-    Raises:
-        HTTPException 404: If profile doesn't exist
-        HTTPException 403: If user doesn't own the profile
-    """
-    profile = db.query(FinancialProfile).filter(
-        FinancialProfile.id == profile_id
-    ).first()
-
-    if not profile:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Financial profile with id {profile_id} not found"
-        )
-
-    if profile.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this financial profile"
-        )
-
-    return profile
 
 
 @router.get(
     "/",
     response_model=CategoryListResponse,
     summary="List categories",
-    description="Retrieve all categories for a financial profile"
+    description="Retrieve all categories for the current user (USER-level, shared across all profiles)"
 )
 async def list_categories(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
-    profile_id: UUID = Query(..., description="Financial profile ID"),
-    parent_id: Optional[UUID] = Query(None, description="Filter by parent category ID (null for root categories)"),
-    level: Optional[int] = Query(None, ge=1, le=3, description="Filter by hierarchy level (1, 2, or 3)"),
-    is_active: bool = Query(True, description="Filter by active status"),
+    is_active: Optional[bool] = Query(None, description="Filter by active status (None = all, True = active only, False = inactive only)"),
+    is_income: Optional[bool] = Query(None, description="Filter by category type (None = all, True = income, False = expense)"),
 ) -> CategoryListResponse:
     """
-    List all categories for a financial profile.
+    List all categories for the current user.
+
+    Categories are USER-level entities, shared across all user's profiles.
 
     Args:
-        profile_id: Financial profile ID to filter categories
-        parent_id: Optional filter by parent category ID
-        level: Optional filter by hierarchy level
-        is_active: Filter by active status (default: True)
+        is_active: Optional filter by active status
+        is_income: Optional filter by category type (income vs expense)
 
     Returns:
         CategoryListResponse with categories and total count
     """
-    # Verify profile ownership
-    await verify_profile_ownership(profile_id, db, current_user)
-
-    # Build query
+    # Build query - filter by user_id (categories are USER-level)
     query = db.query(Category).filter(
-        Category.financial_profile_id == profile_id,
-        Category.is_active == is_active
+        Category.user_id == current_user.id
     )
 
     # Apply optional filters
-    if parent_id is not None:
-        query = query.filter(Category.parent_category_id == parent_id)
+    if is_active is not None:
+        query = query.filter(Category.is_active == is_active)
 
-    if level is not None:
-        query = query.filter(Category.level == level)
+    if is_income is not None:
+        query = query.filter(Category.is_income == is_income)
 
-    # Order by name
-    categories = query.order_by(Category.name).all()
+    # Order by sort_order, then by name
+    categories = query.order_by(Category.sort_order, Category.name).all()
 
     return CategoryListResponse(items=categories, total=len(categories))
+
+
+@router.post(
+    "/",
+    response_model=CategoryResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create category",
+    description="Create a new category for the current user"
+)
+async def create_category(
+    category_data: CategoryCreate,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> CategoryResponse:
+    """
+    Create a new category for the current user.
+
+    Categories are USER-level entities, shared across all user's profiles.
+    """
+    # Create new category
+    new_category = Category(
+        user_id=current_user.id,
+        name=category_data.name,
+        description=category_data.description,
+        icon=category_data.icon,
+        color=category_data.color,
+        is_income=category_data.is_income,
+        sort_order=category_data.sort_order,
+    )
+
+    db.add(new_category)
+    db.commit()
+    db.refresh(new_category)
+
+    return new_category
+
+
+@router.get(
+    "/{category_id}",
+    response_model=CategoryResponse,
+    summary="Get category",
+    description="Get a specific category by ID"
+)
+async def get_category(
+    category_id: UUID,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> CategoryResponse:
+    """
+    Get a specific category by ID.
+
+    Only the category owner can access it.
+    """
+    category = db.query(Category).filter(
+        Category.id == category_id,
+        Category.user_id == current_user.id
+    ).first()
+
+    if not category:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Category with id {category_id} not found"
+        )
+
+    return category
+
+
+@router.put(
+    "/{category_id}",
+    response_model=CategoryResponse,
+    summary="Update category",
+    description="Update an existing category"
+)
+async def update_category(
+    category_id: UUID,
+    category_data: CategoryUpdate,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> CategoryResponse:
+    """
+    Update an existing category.
+
+    Only the category owner can update it.
+    System categories cannot be deleted but can be updated.
+    """
+    category = db.query(Category).filter(
+        Category.id == category_id,
+        Category.user_id == current_user.id
+    ).first()
+
+    if not category:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Category with id {category_id} not found"
+        )
+
+    # Update fields
+    update_data = category_data.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(category, field, value)
+
+    db.commit()
+    db.refresh(category)
+
+    return category
+
+
+@router.delete(
+    "/{category_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete category",
+    description="Delete a category"
+)
+async def delete_category(
+    category_id: UUID,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    """
+    Delete a category.
+
+    Only the category owner can delete it.
+    System categories cannot be deleted.
+    """
+    category = db.query(Category).filter(
+        Category.id == category_id,
+        Category.user_id == current_user.id
+    ).first()
+
+    if not category:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Category with id {category_id} not found"
+        )
+
+    if category.is_system:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="System categories cannot be deleted"
+        )
+
+    db.delete(category)
+    db.commit()
+
+    return None
