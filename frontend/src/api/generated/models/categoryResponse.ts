@@ -15,12 +15,12 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { CategoryResponseDescription } from "./categoryResponseDescription";
-import type { CategoryResponseIcon } from "./categoryResponseIcon";
-import type { CategoryResponseColor } from "./categoryResponseColor";
-import type { CategoryResponseParentCategoryId } from "./categoryResponseParentCategoryId";
-import type { CategoryResponseFullPath } from "./categoryResponseFullPath";
-import type { CategoryResponseSubcategories } from "./categoryResponseSubcategories";
+import type { CategoryResponseDescription } from './categoryResponseDescription';
+import type { CategoryResponseIcon } from './categoryResponseIcon';
+import type { CategoryResponseColor } from './categoryResponseColor';
+import type { CategoryResponseParentCategoryId } from './categoryResponseParentCategoryId';
+import type { CategoryResponseFullPath } from './categoryResponseFullPath';
+import type { CategoryResponseSubcategories } from './categoryResponseSubcategories';
 
 /**
  * Complete category schema returned by API endpoints.
@@ -40,7 +40,7 @@ export interface CategoryResponse {
   /** Hex color code for UI display */
   color?: CategoryResponseColor;
   /** ID of parent category (null for root categories) */
-  parent_category_id?: CategoryResponseParentCategoryId;
+  parentCategoryId?: CategoryResponseParentCategoryId;
   /**
    * Hierarchy level (1, 2, or 3)
    * @minimum 1
@@ -50,17 +50,17 @@ export interface CategoryResponse {
   /** Unique category identifier */
   id: string;
   /** ID of the financial profile this category belongs to */
-  financial_profile_id: string;
+  financialProfileId: string;
   /** Full hierarchical path (e.g., 'Groceries > Fresh Food > Fruits') */
-  full_path?: CategoryResponseFullPath;
+  fullPath?: CategoryResponseFullPath;
   /** System categories cannot be deleted by users */
-  is_system?: boolean;
+  isSystem?: boolean;
   /** Whether the category is currently active */
-  is_active?: boolean;
+  isActive?: boolean;
   /** Category creation timestamp (UTC) */
-  created_at: string;
+  createdAt: string;
   /** Last update timestamp (UTC) */
-  updated_at: string;
+  updatedAt: string;
   /** Child categories (for hierarchical display) */
   subcategories?: CategoryResponseSubcategories;
 }

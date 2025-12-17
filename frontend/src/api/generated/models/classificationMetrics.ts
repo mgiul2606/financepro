@@ -20,8 +20,8 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * Classification performance metrics
  */
 export interface ClassificationMetrics {
-  total_classifications: number;
-  acceptance_rate: number;
-  average_confidence: number;
-  model_version: string;
+  totalClassifications: number;
+  acceptanceRate: number;
+  averageConfidence: number;
+  modelVersion: string;
 }

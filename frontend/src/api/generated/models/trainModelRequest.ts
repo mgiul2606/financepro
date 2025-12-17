@@ -20,5 +20,5 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * Request to train user model
  */
 export interface TrainModelRequest {
-  financial_profile_id: string;
+  financialProfileId: string;
 }

@@ -22,9 +22,9 @@ Shows how budget amount is distributed across categories.
  */
 export interface BudgetCategoryAllocation {
   /** Category identifier */
-  category_id: string;
+  categoryId: string;
   /** Category name */
-  category_name: string;
+  categoryName: string;
   /** Amount allocated to this category */
-  allocated_amount: string;
+  allocatedAmount: string;
 }

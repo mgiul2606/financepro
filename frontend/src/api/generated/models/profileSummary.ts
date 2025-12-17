@@ -17,10 +17,10 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 export interface ProfileSummary {
-  profile_id: string;
-  profile_name: string;
-  total_income: number;
-  total_expenses: number;
-  net_worth: number;
+  profileId: string;
+  profileName: string;
+  totalIncome: number;
+  totalExpenses: number;
+  netWorth: number;
   currency: string;
 }

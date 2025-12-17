@@ -15,13 +15,13 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { PeriodType } from "./periodType";
-import type { BudgetResponseEndDate } from "./budgetResponseEndDate";
-import type { BudgetResponseScopeProfileIds } from "./budgetResponseScopeProfileIds";
-import type { BudgetResponseTotalSpent } from "./budgetResponseTotalSpent";
-import type { BudgetResponseRemaining } from "./budgetResponseRemaining";
-import type { BudgetResponseUsagePercentage } from "./budgetResponseUsagePercentage";
-import type { BudgetResponseCategoryAllocations } from "./budgetResponseCategoryAllocations";
+import type { PeriodType } from './periodType';
+import type { BudgetResponseEndDate } from './budgetResponseEndDate';
+import type { BudgetResponseScopeProfileIds } from './budgetResponseScopeProfileIds';
+import type { BudgetResponseTotalSpent } from './budgetResponseTotalSpent';
+import type { BudgetResponseRemaining } from './budgetResponseRemaining';
+import type { BudgetResponseUsagePercentage } from './budgetResponseUsagePercentage';
+import type { BudgetResponseCategoryAllocations } from './budgetResponseCategoryAllocations';
 
 /**
  * Complete budget schema returned by API endpoints.
@@ -35,13 +35,13 @@ export interface BudgetResponse {
    */
   name: string;
   /** Type of budget period (monthly, quarterly, yearly, custom) */
-  period_type: PeriodType;
+  periodType: PeriodType;
   /** Start date of the budget period */
-  start_date: string;
+  startDate: string;
   /** End date of the budget period (NULL for rolling budgets) */
-  end_date?: BudgetResponseEndDate;
+  endDate?: BudgetResponseEndDate;
   /** Total budget amount (must be positive) */
-  total_amount: string;
+  totalAmount: string;
   /**
    * ISO 4217 currency code (3 uppercase letters)
    * @pattern ^[A-Z]{3}$
@@ -50,27 +50,27 @@ export interface BudgetResponse {
   /** Unique budget identifier */
   id: string;
   /** ID of the user this budget belongs to */
-  user_id: string;
+  userId: string;
   /** Scope type (user, profile, multi_profile) */
-  scope_type: string;
+  scopeType: string;
   /** List of profile IDs when using profile or multi_profile scope */
-  scope_profile_ids?: BudgetResponseScopeProfileIds;
+  scopeProfileIds?: BudgetResponseScopeProfileIds;
   /** Whether unspent amounts rollover to next period */
-  rollover_enabled?: boolean;
+  rolloverEnabled?: boolean;
   /** Whether the budget is currently active */
-  is_active?: boolean;
+  isActive?: boolean;
   /** Percentage of budget to trigger alerts */
-  alert_threshold_percent: number;
+  alertThresholdPercent: number;
   /** Total spent against this budget (computed) */
-  total_spent?: BudgetResponseTotalSpent;
+  totalSpent?: BudgetResponseTotalSpent;
   /** Remaining budget amount (computed) */
   remaining?: BudgetResponseRemaining;
   /** Percentage of budget used (computed) */
-  usage_percentage?: BudgetResponseUsagePercentage;
+  usagePercentage?: BudgetResponseUsagePercentage;
   /** Category allocations for this budget */
-  category_allocations?: BudgetResponseCategoryAllocations;
+  categoryAllocations?: BudgetResponseCategoryAllocations;
   /** Budget creation timestamp (UTC) */
-  created_at: string;
+  createdAt: string;
   /** Last update timestamp (UTC) */
-  updated_at: string;
+  updatedAt: string;
 }

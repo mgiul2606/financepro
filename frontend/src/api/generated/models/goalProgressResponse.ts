@@ -17,18 +17,18 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 export interface GoalProgressResponse {
-  goal_id: string;
-  progress_percentage: number;
-  current_amount: number;
-  target_amount: number;
-  remaining_amount: number;
-  monthly_contribution_needed: number;
-  months_remaining: number;
-  days_remaining: number;
-  total_contributions: number;
-  average_contribution: number;
-  is_on_track: boolean;
-  expected_progress: number;
-  achievement_probability: number;
-  gamification_points: number;
+  goalId: string;
+  progressPercentage: number;
+  currentAmount: number;
+  targetAmount: number;
+  remainingAmount: number;
+  monthlyContributionNeeded: number;
+  monthsRemaining: number;
+  daysRemaining: number;
+  totalContributions: number;
+  averageContribution: number;
+  isOnTrack: boolean;
+  expectedProgress: number;
+  achievementProbability: number;
+  gamificationPoints: number;
 }

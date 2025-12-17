@@ -22,11 +22,11 @@ Returns current balance with metadata.
  */
 export interface AccountBalance {
   /** Account ID */
-  account_id: string;
+  accountId: string;
   /** Current account balance */
   balance: string;
   /** Account currency */
   currency: string;
   /** Last transaction timestamp */
-  last_updated: string;
+  lastUpdated: string;
 }

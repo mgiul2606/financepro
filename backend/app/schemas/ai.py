@@ -2,7 +2,8 @@
 """
 Pydantic schemas for AI services.
 """
-from pydantic import BaseModel, Field, field_validator
+from backend.app.schemas.base import CamelCaseModel
+from pydantic import Field, field_validator
 from typing import List, Optional, Dict, Any
 from uuid import UUID
 from datetime import date, datetime
@@ -13,7 +14,7 @@ from enum import Enum
 # Classification Schemas
 # ============================================================================
 
-class ClassificationRequest(BaseModel):
+class ClassificationRequest(CamelCaseModel):
     """Request to classify a transaction"""
     transaction_id: UUID
     auto_apply: bool = Field(
@@ -22,7 +23,7 @@ class ClassificationRequest(BaseModel):
     )
 
 
-class ClassificationResponse(BaseModel):
+class ClassificationResponse(CamelCaseModel):
     """Response from classification"""
     transaction_id: UUID
     predicted_category_id: Optional[UUID]
@@ -32,12 +33,12 @@ class ClassificationResponse(BaseModel):
     was_applied: bool
 
 
-class TrainModelRequest(BaseModel):
+class TrainModelRequest(CamelCaseModel):
     """Request to train user model"""
     financial_profile_id: UUID
 
 
-class TrainModelResponse(BaseModel):
+class TrainModelResponse(CamelCaseModel):
     """Response from model training"""
     success: bool
     message: str
@@ -46,7 +47,7 @@ class TrainModelResponse(BaseModel):
     model_version: Optional[str] = None
 
 
-class ClassificationMetrics(BaseModel):
+class ClassificationMetrics(CamelCaseModel):
     """Classification performance metrics"""
     total_classifications: int
     acceptance_rate: float
@@ -54,7 +55,7 @@ class ClassificationMetrics(BaseModel):
     model_version: str
 
 
-class SuggestedTag(BaseModel):
+class SuggestedTag(CamelCaseModel):
     """A suggested tag for a transaction"""
     tag_id: UUID
     tag_name: str
@@ -73,7 +74,7 @@ class ScenarioTypeEnum(str, Enum):
     PESSIMISTIC = "pessimistic"
 
 
-class ForecastPointSchema(BaseModel):
+class ForecastPointSchema(CamelCaseModel):
     """A single forecast point"""
     date: date
     value: float
@@ -82,7 +83,7 @@ class ForecastPointSchema(BaseModel):
     scenario: ScenarioTypeEnum
 
 
-class ForecastRequest(BaseModel):
+class ForecastRequest(CamelCaseModel):
     """Request for cash flow forecast"""
     financial_profile_id: UUID
     account_id: Optional[UUID] = None
@@ -102,7 +103,7 @@ class ForecastRequest(BaseModel):
     )
 
 
-class ForecastResponse(BaseModel):
+class ForecastResponse(CamelCaseModel):
     """Forecast response"""
     start_date: date
     end_date: date
@@ -133,14 +134,14 @@ class QueryIntentEnum(str, Enum):
     GENERAL_QUESTION = "general_question"
 
 
-class ChatMessageRequest(BaseModel):
+class ChatMessageRequest(CamelCaseModel):
     """Request to send a chat message"""
     message: str = Field(..., min_length=1, max_length=2000)
     financial_profile_id: Optional[UUID] = None
     conversation_id: Optional[UUID] = None
 
 
-class ChatMessageResponse(BaseModel):
+class ChatMessageResponse(CamelCaseModel):
     """Response from chat assistant"""
     conversation_id: UUID
     message_id: UUID
@@ -149,7 +150,7 @@ class ChatMessageResponse(BaseModel):
     intent: QueryIntentEnum
 
 
-class ConversationListItem(BaseModel):
+class ConversationListItem(CamelCaseModel):
     """A conversation in the list"""
     id: UUID
     title: Optional[str]
@@ -159,7 +160,7 @@ class ConversationListItem(BaseModel):
     financial_profile_id: Optional[UUID]
 
 
-class ConversationDetail(BaseModel):
+class ConversationDetail(CamelCaseModel):
     """Detailed conversation with messages"""
     id: UUID
     title: Optional[str]
@@ -188,7 +189,7 @@ class OptimizationPriority(str, Enum):
     LOW = "low"
 
 
-class OptimizationInsightSchema(BaseModel):
+class OptimizationInsightSchema(CamelCaseModel):
     """An optimization insight"""
     category: OptimizationCategory
     priority: OptimizationPriority
@@ -200,7 +201,7 @@ class OptimizationInsightSchema(BaseModel):
     impact_score: float
 
 
-class OptimizationRequest(BaseModel):
+class OptimizationRequest(CamelCaseModel):
     """Request for optimization insights"""
     financial_profile_id: UUID
     lookback_days: int = Field(
@@ -211,14 +212,14 @@ class OptimizationRequest(BaseModel):
     )
 
 
-class OptimizationResponse(BaseModel):
+class OptimizationResponse(CamelCaseModel):
     """Optimization insights response"""
     insights: List[OptimizationInsightSchema]
     total_potential_savings: float
     insights_by_priority: Dict[str, int]
 
 
-class SpendingPatternSchema(BaseModel):
+class SpendingPatternSchema(CamelCaseModel):
     """A detected spending pattern"""
     merchant: str
     category: str
@@ -229,13 +230,13 @@ class SpendingPatternSchema(BaseModel):
     last_occurrence: date
 
 
-class SpendingPatternsResponse(BaseModel):
+class SpendingPatternsResponse(CamelCaseModel):
     """Spending patterns response"""
     patterns: List[SpendingPatternSchema]
     total_patterns: int
 
 
-class SavingsSummary(BaseModel):
+class SavingsSummary(CamelCaseModel):
     """Summary of potential savings"""
     total_monthly_savings: float
     annual_savings: float
@@ -249,7 +250,7 @@ class SavingsSummary(BaseModel):
 # Common Response Schemas
 # ============================================================================
 
-class AIServiceStatus(BaseModel):
+class AIServiceStatus(CamelCaseModel):
     """Status of AI services"""
     classification_available: bool
     forecasting_available: bool
@@ -259,7 +260,7 @@ class AIServiceStatus(BaseModel):
     last_updated: Optional[datetime] = None
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(CamelCaseModel):
     """Error response"""
     detail: str
     error_code: Optional[str] = None

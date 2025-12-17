@@ -15,16 +15,16 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { AIServiceStatusLastUpdated } from "./aIServiceStatusLastUpdated";
+import type { AIServiceStatusLastUpdated } from './aIServiceStatusLastUpdated';
 
 /**
  * Status of AI services
  */
 export interface AIServiceStatus {
-  classification_available: boolean;
-  forecasting_available: boolean;
-  chat_available: boolean;
-  optimization_available: boolean;
-  model_version: string;
-  last_updated?: AIServiceStatusLastUpdated;
+  classificationAvailable: boolean;
+  forecastingAvailable: boolean;
+  chatAvailable: boolean;
+  optimizationAvailable: boolean;
+  modelVersion: string;
+  lastUpdated?: AIServiceStatusLastUpdated;
 }

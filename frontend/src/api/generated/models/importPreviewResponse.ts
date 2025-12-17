@@ -15,12 +15,12 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { ImportPreviewResponsePreviewRowsItem } from "./importPreviewResponsePreviewRowsItem";
-import type { ImportPreviewResponseSuggestedMapping } from "./importPreviewResponseSuggestedMapping";
+import type { ImportPreviewResponsePreviewRowsItem } from './importPreviewResponsePreviewRowsItem';
+import type { ImportPreviewResponseSuggestedMapping } from './importPreviewResponseSuggestedMapping';
 
 export interface ImportPreviewResponse {
   headers: string[];
-  total_rows: number;
-  preview_rows: ImportPreviewResponsePreviewRowsItem[];
-  suggested_mapping: ImportPreviewResponseSuggestedMapping;
+  totalRows: number;
+  previewRows: ImportPreviewResponsePreviewRowsItem[];
+  suggestedMapping: ImportPreviewResponseSuggestedMapping;
 }

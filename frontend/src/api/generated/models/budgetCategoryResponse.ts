@@ -21,9 +21,9 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 export interface BudgetCategoryResponse {
   id: string;
-  budget_id: string;
-  category_id: string;
-  allocated_amount: string;
-  spent_amount?: string;
-  percentage_used?: number;
+  budgetId: string;
+  categoryId: string;
+  allocatedAmount: string;
+  spentAmount?: string;
+  percentageUsed?: number;
 }

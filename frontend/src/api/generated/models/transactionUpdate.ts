@@ -15,18 +15,18 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { TransactionUpdateCategoryId } from "./transactionUpdateCategoryId";
-import type { TransactionUpdateTransactionType } from "./transactionUpdateTransactionType";
-import type { TransactionUpdateAmount } from "./transactionUpdateAmount";
-import type { TransactionUpdateCurrency } from "./transactionUpdateCurrency";
-import type { TransactionUpdateDescription } from "./transactionUpdateDescription";
-import type { TransactionUpdateMerchantName } from "./transactionUpdateMerchantName";
-import type { TransactionUpdateTransactionDate } from "./transactionUpdateTransactionDate";
-import type { TransactionUpdateValueDate } from "./transactionUpdateValueDate";
-import type { TransactionUpdateNotes } from "./transactionUpdateNotes";
-import type { TransactionUpdateIsReconciled } from "./transactionUpdateIsReconciled";
-import type { TransactionUpdateLocation } from "./transactionUpdateLocation";
-import type { TransactionUpdateReceiptUrl } from "./transactionUpdateReceiptUrl";
+import type { TransactionUpdateCategoryId } from './transactionUpdateCategoryId';
+import type { TransactionUpdateTransactionType } from './transactionUpdateTransactionType';
+import type { TransactionUpdateAmount } from './transactionUpdateAmount';
+import type { TransactionUpdateCurrency } from './transactionUpdateCurrency';
+import type { TransactionUpdateDescription } from './transactionUpdateDescription';
+import type { TransactionUpdateMerchantName } from './transactionUpdateMerchantName';
+import type { TransactionUpdateTransactionDate } from './transactionUpdateTransactionDate';
+import type { TransactionUpdateValueDate } from './transactionUpdateValueDate';
+import type { TransactionUpdateNotes } from './transactionUpdateNotes';
+import type { TransactionUpdateIsReconciled } from './transactionUpdateIsReconciled';
+import type { TransactionUpdateLocation } from './transactionUpdateLocation';
+import type { TransactionUpdateReceiptUrl } from './transactionUpdateReceiptUrl';
 
 /**
  * Schema for updating an existing transaction.
@@ -34,9 +34,9 @@ All fields are optional (partial update).
  */
 export interface TransactionUpdate {
   /** Updated category ID */
-  category_id?: TransactionUpdateCategoryId;
+  categoryId?: TransactionUpdateCategoryId;
   /** Updated transaction type */
-  transaction_type?: TransactionUpdateTransactionType;
+  transactionType?: TransactionUpdateTransactionType;
   /** Updated amount */
   amount?: TransactionUpdateAmount;
   /** Updated currency code */
@@ -44,17 +44,17 @@ export interface TransactionUpdate {
   /** Updated description */
   description?: TransactionUpdateDescription;
   /** Updated merchant name */
-  merchant_name?: TransactionUpdateMerchantName;
+  merchantName?: TransactionUpdateMerchantName;
   /** Updated transaction date */
-  transaction_date?: TransactionUpdateTransactionDate;
+  transactionDate?: TransactionUpdateTransactionDate;
   /** Updated value date */
-  value_date?: TransactionUpdateValueDate;
+  valueDate?: TransactionUpdateValueDate;
   /** Updated notes */
   notes?: TransactionUpdateNotes;
   /** Whether transaction has been reconciled */
-  is_reconciled?: TransactionUpdateIsReconciled;
+  isReconciled?: TransactionUpdateIsReconciled;
   /** Updated location */
   location?: TransactionUpdateLocation;
   /** Updated receipt URL */
-  receipt_url?: TransactionUpdateReceiptUrl;
+  receiptUrl?: TransactionUpdateReceiptUrl;
 }

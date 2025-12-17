@@ -17,11 +17,11 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 export interface BudgetVsActual {
-  budget_id: string;
-  budget_name: string;
-  budget_amount: number;
-  actual_spent: number;
+  budgetId: string;
+  budgetName: string;
+  budgetAmount: number;
+  actualSpent: number;
   variance: number;
-  variance_percentage: number;
-  is_over_budget: boolean;
+  variancePercentage: number;
+  isOverBudget: boolean;
 }

@@ -15,14 +15,14 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { FinancialGoalResponseDescription } from "./financialGoalResponseDescription";
-import type { GoalType } from "./goalType";
-import type { FinancialGoalResponseScopeProfileIds } from "./financialGoalResponseScopeProfileIds";
-import type { FinancialGoalResponseLinkedAccountId } from "./financialGoalResponseLinkedAccountId";
-import type { FinancialGoalResponseMonthlyContribution } from "./financialGoalResponseMonthlyContribution";
-import type { GoalStatus } from "./goalStatus";
-import type { FinancialGoalResponseAchievementProbability } from "./financialGoalResponseAchievementProbability";
-import type { FinancialGoalResponseMilestones } from "./financialGoalResponseMilestones";
+import type { FinancialGoalResponseDescription } from './financialGoalResponseDescription';
+import type { GoalType } from './goalType';
+import type { FinancialGoalResponseScopeProfileIds } from './financialGoalResponseScopeProfileIds';
+import type { FinancialGoalResponseLinkedAccountId } from './financialGoalResponseLinkedAccountId';
+import type { FinancialGoalResponseMonthlyContribution } from './financialGoalResponseMonthlyContribution';
+import type { GoalStatus } from './goalStatus';
+import type { FinancialGoalResponseAchievementProbability } from './financialGoalResponseAchievementProbability';
+import type { FinancialGoalResponseMilestones } from './financialGoalResponseMilestones';
 
 /**
  * Complete financial goal schema returned by API endpoints.
@@ -38,11 +38,11 @@ export interface FinancialGoalResponse {
   /** Detailed description of the goal */
   description?: FinancialGoalResponseDescription;
   /** Type of goal (house, car, vacation, retirement, etc.) */
-  goal_type: GoalType;
+  goalType: GoalType;
   /** Target amount to achieve (must be positive) */
-  target_amount: string;
+  targetAmount: string;
   /** Target date to achieve the goal */
-  target_date: string;
+  targetDate: string;
   /**
    * Priority level (1-10, where 10 is highest priority)
    * @minimum 1
@@ -52,37 +52,37 @@ export interface FinancialGoalResponse {
   /** Unique goal identifier */
   id: string;
   /** ID of the user this goal belongs to */
-  user_id: string;
+  userId: string;
   /** Scope type (user, profile, multi_profile) */
-  scope_type: string;
+  scopeType: string;
   /** List of profile IDs when using profile or multi_profile scope */
-  scope_profile_ids?: FinancialGoalResponseScopeProfileIds;
+  scopeProfileIds?: FinancialGoalResponseScopeProfileIds;
   /** Optional linked account ID for this goal */
-  linked_account_id?: FinancialGoalResponseLinkedAccountId;
+  linkedAccountId?: FinancialGoalResponseLinkedAccountId;
   /** Current amount saved towards this goal */
-  current_amount: string;
+  currentAmount: string;
   /** Currency code for the goal */
   currency: string;
   /** Goal start date */
-  start_date: string;
+  startDate: string;
   /** Whether to auto-allocate funds to this goal */
-  auto_allocate?: boolean;
+  autoAllocate?: boolean;
   /** Recommended monthly contribution to reach goal on time */
-  monthly_contribution?: FinancialGoalResponseMonthlyContribution;
+  monthlyContribution?: FinancialGoalResponseMonthlyContribution;
   /** Current goal status (active, paused, completed, cancelled) */
   status: GoalStatus;
   /** ML-predicted probability of achieving goal (0-100%) */
-  achievement_probability?: FinancialGoalResponseAchievementProbability;
+  achievementProbability?: FinancialGoalResponseAchievementProbability;
   /** Points earned for progress on this goal */
-  gamification_points?: number;
+  gamificationPoints?: number;
   /** Milestones for this goal */
   milestones?: FinancialGoalResponseMilestones;
   /** Goal creation timestamp (UTC) */
-  created_at: string;
+  createdAt: string;
   /** Last update timestamp (UTC) */
-  updated_at: string;
+  updatedAt: string;
   /** Progress towards goal as percentage */
-  progress_percentage: string;
+  progressPercentage: string;
   /** Whether the goal is on track to be achieved */
-  is_on_track: boolean;
+  isOnTrack: boolean;
 }

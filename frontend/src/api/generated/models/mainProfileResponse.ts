@@ -15,14 +15,14 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { MainProfileResponseMainProfileId } from "./mainProfileResponseMainProfileId";
+import type { MainProfileResponseMainProfileId } from './mainProfileResponseMainProfileId';
 
 /**
  * Schema for main profile response.
  */
 export interface MainProfileResponse {
   /** User ID */
-  user_id: string;
+  userId: string;
   /** Main profile ID */
-  main_profile_id?: MainProfileResponseMainProfileId;
+  mainProfileId?: MainProfileResponseMainProfileId;
 }

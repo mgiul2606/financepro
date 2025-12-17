@@ -19,17 +19,18 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 /**
  * Types of financial goals
  */
-export type GoalType = (typeof GoalType)[keyof typeof GoalType];
+export type GoalType = typeof GoalType[keyof typeof GoalType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const GoalType = {
-  house: "house",
-  car: "car",
-  vacation: "vacation",
-  retirement: "retirement",
-  emergency_fund: "emergency_fund",
-  education: "education",
-  investment: "investment",
-  debt_payoff: "debt_payoff",
-  custom: "custom",
+  House: 'house',
+  Car: 'car',
+  Vacation: 'vacation',
+  Retirement: 'retirement',
+  EmergencyFund: 'emergency_fund',
+  Education: 'education',
+  Investment: 'investment',
+  DebtPayoff: 'debt_payoff',
+  Custom: 'custom',
 } as const;

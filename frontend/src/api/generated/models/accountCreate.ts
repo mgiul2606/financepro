@@ -15,13 +15,13 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { AccountType } from "./accountType";
-import type { AccountCreateInstitutionName } from "./accountCreateInstitutionName";
-import type { AccountCreateNotes } from "./accountCreateNotes";
-import type { AccountCreateFinancialProfileId } from "./accountCreateFinancialProfileId";
-import type { AccountCreateInitialBalance } from "./accountCreateInitialBalance";
-import type { AccountCreateAccountNumberLast4 } from "./accountCreateAccountNumberLast4";
-import type { AccountCreateIban } from "./accountCreateIban";
+import type { AccountType } from './accountType';
+import type { AccountCreateInstitutionName } from './accountCreateInstitutionName';
+import type { AccountCreateNotes } from './accountCreateNotes';
+import type { AccountCreateFinancialProfileId } from './accountCreateFinancialProfileId';
+import type { AccountCreateInitialBalance } from './accountCreateInitialBalance';
+import type { AccountCreateAccountNumberLast4 } from './accountCreateAccountNumberLast4';
+import type { AccountCreateIban } from './accountCreateIban';
 
 /**
  * Schema for creating a new account.
@@ -35,22 +35,22 @@ export interface AccountCreate {
    */
   name: string;
   /** Type of account (checking, savings, credit_card, etc.) */
-  account_type?: AccountType;
+  accountType?: AccountType;
   /**
    * ISO 4217 currency code (3 uppercase letters)
    * @pattern ^[A-Z]{3}$
    */
   currency?: string;
   /** Name of the financial institution */
-  institution_name?: AccountCreateInstitutionName;
+  institutionName?: AccountCreateInstitutionName;
   /** Additional notes about the account */
   notes?: AccountCreateNotes;
   /** ID of the financial profile this account belongs to (optional, defaults to user's default profile) */
-  financial_profile_id?: AccountCreateFinancialProfileId;
+  financialProfileId?: AccountCreateFinancialProfileId;
   /** Initial account balance (can be negative for debts) */
-  initial_balance?: AccountCreateInitialBalance;
+  initialBalance?: AccountCreateInitialBalance;
   /** Last 4 digits of account number */
-  account_number_last4?: AccountCreateAccountNumberLast4;
+  accountNumberLast4?: AccountCreateAccountNumberLast4;
   /** Full IBAN (will be encrypted for high-security profiles) */
   iban?: AccountCreateIban;
 }

@@ -23,8 +23,8 @@ export interface SpendingPatternSchema {
   merchant: string;
   category: string;
   frequency: string;
-  average_amount: number;
-  total_amount: number;
-  transaction_count: number;
-  last_occurrence: string;
+  averageAmount: number;
+  totalAmount: number;
+  transactionCount: number;
+  lastOccurrence: string;
 }

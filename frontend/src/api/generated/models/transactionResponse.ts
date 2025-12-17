@@ -15,18 +15,18 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { TransactionResponseCategoryId } from "./transactionResponseCategoryId";
-import type { TransactionType } from "./transactionType";
-import type { TransactionResponseMerchantName } from "./transactionResponseMerchantName";
-import type { TransactionResponseNotes } from "./transactionResponseNotes";
-import type { TransactionResponseRecurringTransactionId } from "./transactionResponseRecurringTransactionId";
-import type { TransactionResponseExchangeRateId } from "./transactionResponseExchangeRateId";
-import type { TransactionResponseAmountInProfileCurrency } from "./transactionResponseAmountInProfileCurrency";
-import type { TransactionResponseMerchantNormalized } from "./transactionResponseMerchantNormalized";
-import type { TransactionResponseValueDate } from "./transactionResponseValueDate";
-import type { TransactionResponseLocation } from "./transactionResponseLocation";
-import type { TransactionResponseReceiptUrl } from "./transactionResponseReceiptUrl";
-import type { TransactionSource } from "./transactionSource";
+import type { TransactionResponseCategoryId } from './transactionResponseCategoryId';
+import type { TransactionType } from './transactionType';
+import type { TransactionResponseMerchantName } from './transactionResponseMerchantName';
+import type { TransactionResponseNotes } from './transactionResponseNotes';
+import type { TransactionResponseRecurringTransactionId } from './transactionResponseRecurringTransactionId';
+import type { TransactionResponseExchangeRateId } from './transactionResponseExchangeRateId';
+import type { TransactionResponseAmountInProfileCurrency } from './transactionResponseAmountInProfileCurrency';
+import type { TransactionResponseMerchantNormalized } from './transactionResponseMerchantNormalized';
+import type { TransactionResponseValueDate } from './transactionResponseValueDate';
+import type { TransactionResponseLocation } from './transactionResponseLocation';
+import type { TransactionResponseReceiptUrl } from './transactionResponseReceiptUrl';
+import type { TransactionSource } from './transactionSource';
 
 /**
  * Complete transaction schema returned by API endpoints.
@@ -34,11 +34,11 @@ Includes all fields including computed and metadata fields.
  */
 export interface TransactionResponse {
   /** ID of the account this transaction belongs to */
-  account_id: string;
+  accountId: string;
   /** ID of the category this transaction is assigned to */
-  category_id?: TransactionResponseCategoryId;
+  categoryId?: TransactionResponseCategoryId;
   /** Type of transaction (bank_transfer, withdrawal, payment, etc.) */
-  transaction_type: TransactionType;
+  transactionType: TransactionType;
   /** Transaction amount */
   amount: string;
   /**
@@ -52,32 +52,32 @@ export interface TransactionResponse {
    */
   description: string;
   /** Name of the merchant/vendor */
-  merchant_name?: TransactionResponseMerchantName;
+  merchantName?: TransactionResponseMerchantName;
   /** Date when the transaction occurred */
-  transaction_date: string;
+  transactionDate: string;
   /** Additional notes about the transaction */
   notes?: TransactionResponseNotes;
   /** Unique transaction identifier */
   id: string;
   /** ID of parent recurring transaction (if applicable) */
-  recurring_transaction_id?: TransactionResponseRecurringTransactionId;
+  recurringTransactionId?: TransactionResponseRecurringTransactionId;
   /** ID of exchange rate used for conversion */
-  exchange_rate_id?: TransactionResponseExchangeRateId;
+  exchangeRateId?: TransactionResponseExchangeRateId;
   /** Amount converted to profile's default currency */
-  amount_in_profile_currency?: TransactionResponseAmountInProfileCurrency;
+  amountInProfileCurrency?: TransactionResponseAmountInProfileCurrency;
   /** ML-normalized merchant name for better categorization */
-  merchant_normalized?: TransactionResponseMerchantNormalized;
+  merchantNormalized?: TransactionResponseMerchantNormalized;
   /** Date when transaction was valued */
-  value_date?: TransactionResponseValueDate;
+  valueDate?: TransactionResponseValueDate;
   /** Whether transaction has been reconciled */
-  is_reconciled?: boolean;
+  isReconciled?: boolean;
   /** Transaction location */
   location?: TransactionResponseLocation;
   /** URL to receipt or document */
-  receipt_url?: TransactionResponseReceiptUrl;
-  created_by?: TransactionSource;
+  receiptUrl?: TransactionResponseReceiptUrl;
+  createdBy?: TransactionSource;
   /** Transaction creation timestamp (UTC) */
-  created_at: string;
+  createdAt: string;
   /** Last update timestamp (UTC) */
-  updated_at: string;
+  updatedAt: string;
 }

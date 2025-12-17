@@ -21,5 +21,5 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 export interface MainProfileUpdate {
   /** Profile ID to set as main profile */
-  main_profile_id: string;
+  mainProfileId: string;
 }

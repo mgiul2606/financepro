@@ -1,25 +1,39 @@
 // features/accounts/pages/AccountsPage.tsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlusCircle, Wallet, TrendingUp } from 'lucide-react';
+import { PlusCircle, Wallet, TrendingUp, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { PageHeader } from '@/core/components/composite/PageHeader';
-import { EmptyState } from '@/core/components/composite/EmptyState';
-import { Button } from '@/core/components/atomic/Button';
-import { Spinner } from '@/core/components/atomic/Spinner';
+
+// shadcn/ui components
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
+
+// Custom components (kept minimal)
 import { CurrencyText, NumberText, PercentageText } from '@/core/components/atomic';
-import { Modal, ModalFooter } from '@/components/ui/Modal';
-import { EntityCard, EntityCardGrid } from '@/components/ui/EntityCard';
-import { Alert, BannerAlert } from '@/components/ui/Alert';
 import { useConfirm } from '@/hooks/useConfirm';
-import { AccountForm } from '../components/AccountForm';
+
 import {
   useAccounts,
   useCreateAccount,
   useUpdateAccount,
   useDeleteAccount,
 } from '../hooks/useAccounts';
-import type { AccountResponse, AccountCreate, AccountUpdate, AccountStatusInfo } from '../types';
+import type { AccountResponse, AccountCreate, AccountUpdate } from '../types';
+import { SupportedCurrency } from '@/utils/currency';
+import { AccountForm } from '..';
+
+// Types
+type BalanceStatus = {
+  status: 'overdrawn' | 'low' | 'high' | 'normal';
+  label: string;
+  variant: 'destructive' | 'secondary' | 'default' | 'outline' | null | undefined;
+};
 
 export const AccountsPage = () => {
   const { t } = useTranslation();
@@ -37,7 +51,7 @@ export const AccountsPage = () => {
   // Mutations
   const { createAccount, isCreating, error: createError, reset: resetCreate } = useCreateAccount();
   const { updateAccount, isUpdating, error: updateError, reset: resetUpdate } = useUpdateAccount();
-  const { deleteAccount, isDeleting } = useDeleteAccount();
+  const { deleteAccount } = useDeleteAccount();
 
   // Handlers
   const handleCreate = async (data: AccountCreate) => {
@@ -46,7 +60,6 @@ export const AccountsPage = () => {
       setShowCreateModal(false);
       resetCreate();
     } catch (error) {
-      // Error is already stored in createError
       console.error('Failed to create account:', error);
       throw error;
     }
@@ -60,7 +73,6 @@ export const AccountsPage = () => {
       setEditingAccount(null);
       resetUpdate();
     } catch (error) {
-      // Error is already stored in updateError
       console.error('Failed to update account:', error);
       throw error;
     }
@@ -72,7 +84,7 @@ export const AccountsPage = () => {
       message: t('accounts.deleteConfirm', { name: account.name }),
       confirmText: t('common.delete'),
       variant: 'danger',
-      confirmButtonVariant: 'danger',
+      confirmButtonVariant: 'destructive',
     });
 
     if (confirmed) {
@@ -88,199 +100,332 @@ export const AccountsPage = () => {
   };
 
   // Utilities
-  const getBalanceStatus = (account: AccountResponse): AccountStatusInfo | undefined => {
-    const balance = parseFloat(account.current_balance);
+  const getBalanceStatus = (account: AccountResponse): BalanceStatus | undefined => {
+    const balance = parseFloat(account.currentBalance);
 
     if (balance < 0) {
-      return { status: 'overdrawn', label: t('accounts.status.overdrawn'), variant: 'error' };
+      return { 
+        status: 'overdrawn', 
+        label: t('accounts.status.overdrawn'), 
+        variant: 'destructive' 
+      };
     } else if (balance < 100) {
-      return { status: 'low', label: t('accounts.status.lowBalance'), variant: 'warning' };
+      return { 
+        status: 'low', 
+        label: t('accounts.status.lowBalance'), 
+        variant: 'secondary' 
+      };
     } else if (balance > 10000) {
-      return { status: 'high', label: t('accounts.status.highBalance'), variant: 'success' };
+      return { 
+        status: 'high', 
+        label: t('accounts.status.highBalance'), 
+        variant: 'outline' 
+      };
     }
 
     return undefined;
   };
 
   const getBalanceColor = (balance: number) => {
-    if (balance < 0) return 'text-red-600';
+    if (balance < 0) return 'text-destructive';
     if (balance < 100) return 'text-yellow-600';
     return 'text-green-600';
   };
 
   const calculateTotalBalance = () => {
-    return accounts.reduce((sum, acc) => sum + parseFloat(acc.current_balance), 0);
+    return accounts.reduce((sum, acc) => sum + parseFloat(acc.currentBalance), 0);
   };
 
-  // Loading state
+  // Loading state with Skeleton
   if (isLoading) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <Spinner size="lg" />
-          <p className="mt-4 text-gray-600">{t('common.loadingEntity', { entity: t('nav.accounts').toLowerCase() })}</p>
+      <div className="p-8 space-y-6">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-4 w-96" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-8 w-24" />
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-6 w-40" />
+                <Skeleton className="h-4 w-24" />
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-8">
+    <div className="p-8 space-y-6">
       {/* Header */}
-      <PageHeader
-        title={t('accounts.title')}
-        subtitle={t('accounts.subtitle')}
-        actions={
-          <Button
-            variant="primary"
-            leftIcon={<PlusCircle />}
-            onClick={() => setShowCreateModal(true)}
-            isLoading={isCreating}
-          >
-            {t('accounts.newAccount')}
-          </Button>
-        }
-      />
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">{t('accounts.title')}</h1>
+          <p className="text-muted-foreground mt-2">{t('accounts.subtitle')}</p>
+        </div>
+        <Button
+          onClick={() => setShowCreateModal(true)}
+          disabled={isCreating}
+        >
+          <PlusCircle className="mr-2 h-4 w-4" />
+          {t('accounts.newAccount')}
+        </Button>
+      </div>
 
       {/* Error Alert */}
       {loadError && (
-        <Alert variant="error" closable className="mb-6">
-          {t('accounts.errors.loadFailed')}
+        <Alert variant="destructive">
+          <AlertTitle>{t('common.error')}</AlertTitle>
+          <AlertDescription>{t('accounts.errors.loadFailed')}</AlertDescription>
         </Alert>
       )}
 
-      {/* Summary Banner */}
+      {/* Summary Cards */}
       {accounts.length > 0 && (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-6 shadow-sm">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Total Accounts */}
-            <div className="flex items-center space-x-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <Wallet className="h-6 w-6 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">{t('accounts.totalAccounts')}</p>
-                <p className="text-2xl font-bold text-gray-900">{accounts.length}</p>
-              </div>
-            </div>
+        <div className="grid gap-6 md:grid-cols-3">
+          {/* Total Accounts */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {t('accounts.totalAccounts')}
+              </CardTitle>
+              <Wallet className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{accounts.length}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {t('accounts.activeAccounts')}: {accounts.filter((acc) => acc.isActive !== false).length}
+              </p>
+            </CardContent>
+          </Card>
 
-            {/* Total Balance */}
-            <div className="flex items-center space-x-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-green-600" />
+          {/* Total Balance */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {t('accounts.totalBalance')}
+              </CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                <CurrencyText value={calculateTotalBalance()} />
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">{t('accounts.totalBalance')}</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  <CurrencyText value={calculateTotalBalance()} />
-                </p>
-              </div>
-            </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {t('accounts.acrossAllAccounts', 'Across all accounts')}
+              </p>
+            </CardContent>
+          </Card>
 
-            {/* Active Accounts */}
-            <div className="flex items-center space-x-4">
-              <div className="flex-shrink-0 w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                <PlusCircle className="h-6 w-6 text-purple-600" />
+          {/* Average Balance */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {t('accounts.averageBalance', 'Average Balance')}
+              </CardTitle>
+              <PlusCircle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                <CurrencyText 
+                  value={accounts.length > 0 ? calculateTotalBalance() / accounts.length : 0} 
+                />
               </div>
-              <div>
-                <p className="text-sm font-medium text-gray-600">{t('accounts.activeAccounts')}</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {accounts.filter((acc) => acc.is_active !== false).length}
-                </p>
-              </div>
-            </div>
-          </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {t('accounts.perAccount', 'Per account')}
+              </p>
+            </CardContent>
+          </Card>
         </div>
       )}
 
       {/* Empty State */}
       {accounts.length === 0 ? (
-        <EmptyState
-          icon={<Wallet />}
-          title={t('accounts.noAccounts')}
-          description={t('accounts.noAccountsDesc')}
-          action={{
-            label: t('accounts.createAccount'),
-            onClick: () => setShowCreateModal(true),
-            icon: <PlusCircle />,
-          }}
-        />
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted">
+              <Wallet className="h-10 w-10 text-muted-foreground" />
+            </div>
+            <h3 className="mt-6 text-lg font-semibold">{t('accounts.noAccounts')}</h3>
+            <p className="mt-2 text-center text-sm text-muted-foreground max-w-sm">
+              {t('accounts.noAccountsDesc')}
+            </p>
+            <Button
+              onClick={() => setShowCreateModal(true)}
+              className="mt-6"
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              {t('accounts.createAccount')}
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
-        /* Account Cards */
-        <EntityCardGrid columns={3}>
+        /* Account Cards Grid */
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {accounts.map((account) => {
-            const balance = parseFloat(account.current_balance);
-            const initialBalance = parseFloat(account.initial_balance);
+            const balance = parseFloat(account.currentBalance);
+            const initialBalance = parseFloat(account.initialBalance);
             const change = balance - initialBalance;
             const changePercentage =
               initialBalance !== 0 ? (change / initialBalance) * 100 : 0;
+            const balanceStatus = getBalanceStatus(account);
 
             return (
-              <EntityCard
+              <Card
                 key={account.id}
-                title={account.name}
-                subtitle={`${account.currency} ${t('dashboard.account')}`}
-                headerIcon={<Wallet className="h-5 w-5" />}
-                status={getBalanceStatus(account)}
-                metadata={[
-                  {
-                    label: t('accounts.currentBalance'),
-                    value: (
-                      <span className={`font-bold ${getBalanceColor(balance)}`}>
-                        <CurrencyText value={balance} currency={account.currency as any} />
-                      </span>
-                    ),
-                    highlight: true,
-                  },
-                  {
-                    label: t('accounts.initialBalance'),
-                    value: <CurrencyText value={initialBalance} currency={account.currency as any} />,
-                  },
-                  {
-                    label: t('accounts.change'),
-                    value: (
-                      <span className={change >= 0 ? 'text-green-600' : 'text-red-600'}>
-                        <NumberText value={change} showSign /> (<PercentageText value={changePercentage} decimals={1} />)
-                      </span>
-                    ),
-                  },
-                ]}
-                actions={{
-                  onEdit: () => setEditingAccount(account),
-                  onDelete: () => handleDelete(account),
-                  customActions: [
-                    {
-                      label: t('accounts.viewTransactions'),
-                      icon: <TrendingUp size={16} />,
-                      onClick: () => {
-                        // Navigate to transactions page with account filter
-                        navigate(`/transactions?account_id=${account.id}`);
-                      },
-                    },
-                  ],
-                }}
-                className={deletingAccountId === account.id ? 'opacity-50 pointer-events-none' : ''}
-                isLoading={deletingAccountId === account.id}
-              />
+                className={`relative transition-all hover:shadow-lg ${
+                  deletingAccountId === account.id ? 'opacity-50 pointer-events-none' : ''
+                }`}
+              >
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                        <Wallet className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">{account.name}</CardTitle>
+                        <CardDescription>
+                          {account.currency} {t('dashboard.account')}
+                        </CardDescription>
+                      </div>
+                    </div>
+                    
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          disabled={deletingAccountId === account.id}
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                          <span className="sr-only">Open menu</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setEditingAccount(account)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          {t('common.edit')}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => navigate(`/transactions?account_id=${account.id}`)}
+                        >
+                          <TrendingUp className="mr-2 h-4 w-4" />
+                          {t('accounts.viewTransactions')}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => handleDelete(account)}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          {t('common.delete')}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  
+                  {balanceStatus && (
+                    <Badge variant={balanceStatus.variant} className="w-fit mt-2">
+                      {balanceStatus.label}
+                    </Badge>
+                  )}
+                </CardHeader>
+
+                <CardContent className="space-y-4">
+                  <Separator />
+                  
+                  {/* Current Balance */}
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {t('accounts.currentBalance')}
+                    </p>
+                    <p className={`text-2xl font-bold ${getBalanceColor(balance)}`}>
+                      <CurrencyText value={balance} currency={account.currency as SupportedCurrency} />
+                    </p>
+                  </div>
+
+                  {/* Initial Balance */}
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      {t('accounts.initialBalance')}
+                    </span>
+                    <span className="font-medium">
+                      <CurrencyText value={initialBalance} currency={account.currency as SupportedCurrency} />
+                    </span>
+                  </div>
+
+                  {/* Change */}
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      {t('accounts.change')}
+                    </span>
+                    <span className={`font-medium ${change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <NumberText value={change} showSign /> 
+                      {' '}(<PercentageText value={changePercentage} decimals={1} />)
+                    </span>
+                  </div>
+                </CardContent>
+
+                {deletingAccountId === account.id && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-background/50">
+                    <div className="flex items-center gap-2">
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                      <span className="text-sm font-medium">{t('common.deleting')}</span>
+                    </div>
+                  </div>
+                )}
+              </Card>
             );
           })}
-        </EntityCardGrid>
+        </div>
       )}
 
       {/* Create Modal */}
-      <Modal
-        isOpen={showCreateModal}
-        onClose={() => {
-          setShowCreateModal(false);
-          resetCreate();
-        }}
-        title={t('accounts.createAccount')}
-        size="md"
-        preventClose={isCreating}
-        footer={
-          <ModalFooter>
+      <Dialog open={showCreateModal} onOpenChange={(open) => {
+        if (!isCreating) {
+          setShowCreateModal(open);
+          if (!open) resetCreate();
+        }
+      }}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{t('accounts.createAccount')}</DialogTitle>
+            <DialogDescription>
+              {t('accounts.createAccountDesc', 'Create a new account to track your finances.')}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <AccountForm
+            onSubmit={handleCreate}
+            isLoading={isCreating}
+            error={createError ? t('accounts.errors.createFailed') : undefined}
+            onClearError={resetCreate}
+          />
+          
+          <DialogFooter>
             <Button
-              variant="secondary"
+              type="button"
+              variant="outline"
               onClick={() => {
                 setShowCreateModal(false);
                 resetCreate();
@@ -290,67 +435,79 @@ export const AccountsPage = () => {
               {t('common.cancel')}
             </Button>
             <Button
-              variant="primary"
               type="submit"
               form="account-form"
-              isLoading={isCreating}
+              disabled={isCreating}
             >
-              {t('accounts.createAccount')}
+              {isCreating ? (
+                <>
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                  {t('common.creating')}
+                </>
+              ) : (
+                t('accounts.createAccount')
+              )}
             </Button>
-          </ModalFooter>
-        }
-      >
-        <AccountForm
-          onSubmit={handleCreate}
-          isLoading={isCreating}
-          error={createError ? t('accounts.errors.createFailed') : undefined}
-          onClearError={resetCreate}
-        />
-      </Modal>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Modal */}
-      {editingAccount && (
-        <Modal
-          isOpen={true}
-          onClose={() => {
+      <Dialog open={!!editingAccount} onOpenChange={(open) => {
+        if (!isUpdating) {
+          if (!open) {
             setEditingAccount(null);
             resetUpdate();
-          }}
-          title={t('accounts.editAccount')}
-          size="md"
-          preventClose={isUpdating}
-          footer={
-            <ModalFooter>
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setEditingAccount(null);
-                  resetUpdate();
-                }}
-                disabled={isUpdating}
-              >
-                {t('common.cancel')}
-              </Button>
-              <Button
-                variant="primary"
-                type="submit"
-                form="account-form"
-                isLoading={isUpdating}
-              >
-                {t('common.saveChanges')}
-              </Button>
-            </ModalFooter>
           }
-        >
-          <AccountForm
-            account={editingAccount}
-            onSubmit={handleUpdate}
-            isLoading={isUpdating}
-            error={updateError ? t('accounts.errors.updateFailed') : undefined}
-            onClearError={resetUpdate}
-          />
-        </Modal>
-      )}
+        }
+      }}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>{t('accounts.editAccount')}</DialogTitle>
+            <DialogDescription>
+              {t('accounts.editAccountDesc', 'Update account information and settings.')}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {editingAccount && (
+            <AccountForm
+              account={editingAccount}
+              onSubmit={handleUpdate}
+              isLoading={isUpdating}
+              error={updateError ? t('accounts.errors.updateFailed') : undefined}
+              onClearError={resetUpdate}
+            />
+          )}
+          
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setEditingAccount(null);
+                resetUpdate();
+              }}
+              disabled={isUpdating}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              type="submit"
+              form="account-form"
+              disabled={isUpdating}
+            >
+              {isUpdating ? (
+                <>
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                  {t('common.saving')}
+                </>
+              ) : (
+                t('common.saveChanges')
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

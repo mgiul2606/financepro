@@ -15,11 +15,9 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { BudgetCategoryAllocation } from "./budgetCategoryAllocation";
+import type { BudgetCategoryAllocation } from './budgetCategoryAllocation';
 
 /**
  * Category allocations for this budget
  */
-export type BudgetResponseCategoryAllocations =
-  | BudgetCategoryAllocation[]
-  | null;
+export type BudgetResponseCategoryAllocations = BudgetCategoryAllocation[] | null;

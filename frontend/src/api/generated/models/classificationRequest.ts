@@ -20,7 +20,7 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * Request to classify a transaction
  */
 export interface ClassificationRequest {
-  transaction_id: string;
+  transactionId: string;
   /** Automatically apply classification if confidence is high */
-  auto_apply?: boolean;
+  autoApply?: boolean;
 }

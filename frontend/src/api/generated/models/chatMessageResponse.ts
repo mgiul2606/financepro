@@ -15,15 +15,15 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { ChatMessageResponseMetadata } from "./chatMessageResponseMetadata";
-import type { QueryIntentEnum } from "./queryIntentEnum";
+import type { ChatMessageResponseMetadata } from './chatMessageResponseMetadata';
+import type { QueryIntentEnum } from './queryIntentEnum';
 
 /**
  * Response from chat assistant
  */
 export interface ChatMessageResponse {
-  conversation_id: string;
-  message_id: string;
+  conversationId: string;
+  messageId: string;
   content: string;
   metadata?: ChatMessageResponseMetadata;
   intent: QueryIntentEnum;

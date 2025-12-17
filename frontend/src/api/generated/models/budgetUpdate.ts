@@ -15,17 +15,17 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { BudgetUpdateName } from "./budgetUpdateName";
-import type { BudgetUpdatePeriodType } from "./budgetUpdatePeriodType";
-import type { BudgetUpdateStartDate } from "./budgetUpdateStartDate";
-import type { BudgetUpdateEndDate } from "./budgetUpdateEndDate";
-import type { BudgetUpdateTotalAmount } from "./budgetUpdateTotalAmount";
-import type { BudgetUpdateCurrency } from "./budgetUpdateCurrency";
-import type { BudgetUpdateScopeType } from "./budgetUpdateScopeType";
-import type { BudgetUpdateScopeProfileIds } from "./budgetUpdateScopeProfileIds";
-import type { BudgetUpdateRolloverEnabled } from "./budgetUpdateRolloverEnabled";
-import type { BudgetUpdateIsActive } from "./budgetUpdateIsActive";
-import type { BudgetUpdateAlertThresholdPercent } from "./budgetUpdateAlertThresholdPercent";
+import type { BudgetUpdateName } from './budgetUpdateName';
+import type { BudgetUpdatePeriodType } from './budgetUpdatePeriodType';
+import type { BudgetUpdateStartDate } from './budgetUpdateStartDate';
+import type { BudgetUpdateEndDate } from './budgetUpdateEndDate';
+import type { BudgetUpdateTotalAmount } from './budgetUpdateTotalAmount';
+import type { BudgetUpdateCurrency } from './budgetUpdateCurrency';
+import type { BudgetUpdateScopeType } from './budgetUpdateScopeType';
+import type { BudgetUpdateScopeProfileIds } from './budgetUpdateScopeProfileIds';
+import type { BudgetUpdateRolloverEnabled } from './budgetUpdateRolloverEnabled';
+import type { BudgetUpdateIsActive } from './budgetUpdateIsActive';
+import type { BudgetUpdateAlertThresholdPercent } from './budgetUpdateAlertThresholdPercent';
 
 /**
  * Schema for updating an existing budget.
@@ -35,23 +35,23 @@ export interface BudgetUpdate {
   /** Updated budget name */
   name?: BudgetUpdateName;
   /** Updated period type */
-  period_type?: BudgetUpdatePeriodType;
+  periodType?: BudgetUpdatePeriodType;
   /** Updated start date */
-  start_date?: BudgetUpdateStartDate;
+  startDate?: BudgetUpdateStartDate;
   /** Updated end date */
-  end_date?: BudgetUpdateEndDate;
+  endDate?: BudgetUpdateEndDate;
   /** Updated budget amount */
-  total_amount?: BudgetUpdateTotalAmount;
+  totalAmount?: BudgetUpdateTotalAmount;
   /** Updated currency code */
   currency?: BudgetUpdateCurrency;
   /** Updated scope type */
-  scope_type?: BudgetUpdateScopeType;
+  scopeType?: BudgetUpdateScopeType;
   /** Updated profile IDs */
-  scope_profile_ids?: BudgetUpdateScopeProfileIds;
+  scopeProfileIds?: BudgetUpdateScopeProfileIds;
   /** Updated rollover setting */
-  rollover_enabled?: BudgetUpdateRolloverEnabled;
+  rolloverEnabled?: BudgetUpdateRolloverEnabled;
   /** Whether the budget is active */
-  is_active?: BudgetUpdateIsActive;
+  isActive?: BudgetUpdateIsActive;
   /** Updated alert threshold percentage */
-  alert_threshold_percent?: BudgetUpdateAlertThresholdPercent;
+  alertThresholdPercent?: BudgetUpdateAlertThresholdPercent;
 }

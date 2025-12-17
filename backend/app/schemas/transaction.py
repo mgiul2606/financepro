@@ -1,6 +1,7 @@
 # app/schemas/transaction.py
 
-from pydantic import BaseModel, Field, ConfigDict
+from backend.app.schemas.base import CamelCaseModel
+from pydantic import Field, ConfigDict
 from datetime import datetime, date
 from typing import Optional
 from uuid import UUID
@@ -8,7 +9,7 @@ from decimal import Decimal
 from app.models import TransactionType, TransactionSource
 
 
-class TransactionBase(BaseModel):
+class TransactionBase(CamelCaseModel):
     """
     Base schema for Transaction with common fields.
     Used as foundation for Create and Update schemas.
@@ -100,7 +101,7 @@ class TransactionCreate(TransactionBase):
     )
 
 
-class TransactionUpdate(BaseModel):
+class TransactionUpdate(CamelCaseModel):
     """
     Schema for updating an existing transaction.
     All fields are optional (partial update).
@@ -261,7 +262,7 @@ class TransactionResponse(TransactionBase):
     )
 
 
-class TransactionListResponse(BaseModel):
+class TransactionListResponse(CamelCaseModel):
     """
     Schema for list transactions response with pagination support.
     """

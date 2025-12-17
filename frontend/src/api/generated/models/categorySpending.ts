@@ -17,10 +17,10 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 export interface CategorySpending {
-  category_id: string;
-  category_name: string;
-  total_amount: number;
+  categoryId: string;
+  categoryName: string;
+  totalAmount: number;
   percentage: number;
-  transaction_count: number;
+  transactionCount: number;
   currency: string;
 }

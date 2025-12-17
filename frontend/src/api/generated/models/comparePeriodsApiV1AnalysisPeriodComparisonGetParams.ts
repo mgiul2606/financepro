@@ -17,28 +17,28 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 export type ComparePeriodsApiV1AnalysisPeriodComparisonGetParams = {
-  /**
-   * Period 1 start
-   */
-  period1_start: string;
-  /**
-   * Period 1 end
-   */
-  period1_end: string;
-  /**
-   * Period 2 start
-   */
-  period2_start: string;
-  /**
-   * Period 2 end
-   */
-  period2_end: string;
-  /**
-   * Profile IDs
-   */
-  profile_ids?: string[] | null;
-  /**
-   * Target currency
-   */
-  currency?: string;
+/**
+ * Period 1 start
+ */
+period1_start: string;
+/**
+ * Period 1 end
+ */
+period1_end: string;
+/**
+ * Period 2 start
+ */
+period2_start: string;
+/**
+ * Period 2 end
+ */
+period2_end: string;
+/**
+ * Profile IDs
+ */
+profile_ids?: string[] | null;
+/**
+ * Target currency
+ */
+currency?: string;
 };

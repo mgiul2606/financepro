@@ -15,11 +15,11 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { AccountType } from "./accountType";
-import type { AccountResponseInstitutionName } from "./accountResponseInstitutionName";
-import type { AccountResponseNotes } from "./accountResponseNotes";
-import type { AccountResponseAccountNumberLast4 } from "./accountResponseAccountNumberLast4";
-import type { AccountResponseIban } from "./accountResponseIban";
+import type { AccountType } from './accountType';
+import type { AccountResponseInstitutionName } from './accountResponseInstitutionName';
+import type { AccountResponseNotes } from './accountResponseNotes';
+import type { AccountResponseAccountNumberLast4 } from './accountResponseAccountNumberLast4';
+import type { AccountResponseIban } from './accountResponseIban';
 
 /**
  * Complete account schema returned by API endpoints.
@@ -33,32 +33,32 @@ export interface AccountResponse {
    */
   name: string;
   /** Type of account (checking, savings, credit_card, etc.) */
-  account_type?: AccountType;
+  accountType?: AccountType;
   /**
    * ISO 4217 currency code (3 uppercase letters)
    * @pattern ^[A-Z]{3}$
    */
   currency?: string;
   /** Name of the financial institution */
-  institution_name?: AccountResponseInstitutionName;
+  institutionName?: AccountResponseInstitutionName;
   /** Additional notes about the account */
   notes?: AccountResponseNotes;
   /** Unique account identifier */
   id: string;
   /** ID of the financial profile this account belongs to */
-  financial_profile_id: string;
+  financialProfileId: string;
   /** Initial balance when account was created (can be negative) */
-  initial_balance: string;
+  initialBalance: string;
   /** Current balance (initial + transactions) */
-  current_balance: string;
+  currentBalance: string;
   /** Last 4 digits of account number */
-  account_number_last4?: AccountResponseAccountNumberLast4;
+  accountNumberLast4?: AccountResponseAccountNumberLast4;
   /** Full IBAN (encrypted for high-security profiles) */
   iban?: AccountResponseIban;
   /** Whether the account is currently active */
-  is_active?: boolean;
+  isActive?: boolean;
   /** Account creation timestamp (UTC) */
-  created_at: string;
+  createdAt: string;
   /** Last update timestamp (UTC) */
-  updated_at: string;
+  updatedAt: string;
 }

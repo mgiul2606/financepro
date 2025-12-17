@@ -1,4 +1,7 @@
 // features/accounts/types/index.ts
+
+import { AccountResponse } from '@/api/generated/models';
+
 /**
  * Re-export types from generated models for convenience
  */

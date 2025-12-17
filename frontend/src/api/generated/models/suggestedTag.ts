@@ -20,8 +20,8 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * A suggested tag for a transaction
  */
 export interface SuggestedTag {
-  tag_id: string;
-  tag_name: string;
-  tag_type: string;
+  tagId: string;
+  tagName: string;
+  tagType: string;
   confidence: number;
 }

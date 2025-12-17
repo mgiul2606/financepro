@@ -8,7 +8,6 @@ export type {
   FinancialGoalResponse as Goal,
   FinancialGoalCreate as GoalCreate,
   FinancialGoalUpdate as GoalUpdate,
-  FinancialGoalListResponse,
   GoalType,
   GoalStatus,
   GoalMilestoneResponse,

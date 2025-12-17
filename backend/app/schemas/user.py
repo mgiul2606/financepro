@@ -1,16 +1,17 @@
 # app/schemas/user.py
-from pydantic import BaseModel, EmailStr
+from backend.app.schemas.base import CamelCaseModel
+from pydantic import EmailStr
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-class UserBase(BaseModel):
+class UserBase(CamelCaseModel):
     email: EmailStr
 
 class UserCreate(UserBase):
     password: str
 
-class UserUpdate(BaseModel):
+class UserUpdate(CamelCaseModel):
     """Schema for updating user information"""
     email: Optional[EmailStr] = None
     password: Optional[str] = None

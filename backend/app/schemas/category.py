@@ -1,12 +1,13 @@
 # app/schemas/category.py
 
-from pydantic import BaseModel, Field, ConfigDict
+from backend.app.schemas.base import CamelCaseModel
+from pydantic import Field, ConfigDict
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
 
-class CategoryBase(BaseModel):
+class CategoryBase(CamelCaseModel):
     """
     Base schema for Category with common fields.
     Used as foundation for Create and Update schemas.
@@ -66,7 +67,7 @@ class CategoryCreate(CategoryBase):
     )
 
 
-class CategoryUpdate(BaseModel):
+class CategoryUpdate(CamelCaseModel):
     """
     Schema for updating an existing category.
     All fields are optional (partial update).
@@ -157,7 +158,7 @@ class CategoryResponse(CategoryBase):
     )
 
 
-class CategoryListResponse(BaseModel):
+class CategoryListResponse(CamelCaseModel):
     """
     Schema for list categories response with pagination support.
     """

@@ -40,7 +40,6 @@ from app.schemas.category import (
     CategoryCreate,
     CategoryUpdate,
     CategoryResponse,
-    CategoryTreeResponse,
     CategoryListResponse,
 )
 
@@ -100,7 +99,6 @@ __all__ = [
     "CategoryCreate",
     "CategoryUpdate",
     "CategoryResponse",
-    "CategoryTreeResponse",
     "CategoryListResponse",
     # Budget
     "BudgetBase",

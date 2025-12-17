@@ -18,7 +18,7 @@ import { useProfileContext } from '@/contexts/ProfileContext';
 import type { AccountCreate, AccountUpdate } from '../types';
 
 export interface AccountFilters {
-  profile_id?: string;
+  profileId?: string;
   skip?: number;
   limit?: number;
 }
@@ -33,8 +33,8 @@ export const useAccounts = (filters?: AccountFilters) => {
   // Create queries for each active profile
   const queries = useQueries({
     queries: activeProfileIds.map((profileId) => ({
-      queryKey: getListAccountsApiV1AccountsGetQueryKey({ ...filters, profile_id: profileId }),
-      queryFn: () => listAccountsApiV1AccountsGet({ ...filters, profile_id: profileId }),
+      queryKey: getListAccountsApiV1AccountsGetQueryKey({ ...filters, profileId: profileId }),
+      queryFn: () => listAccountsApiV1AccountsGet({ ...filters, profileId: profileId }),
       enabled: !profileLoading && activeProfileIds.length > 0,
     })),
   });

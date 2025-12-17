@@ -15,7 +15,7 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { GoalMilestoneResponseCompletedAt } from "./goalMilestoneResponseCompletedAt";
+import type { GoalMilestoneResponseCompletedAt } from './goalMilestoneResponseCompletedAt';
 
 /**
  * Schema for goal milestone.
@@ -25,17 +25,17 @@ export interface GoalMilestoneResponse {
   /** Unique milestone identifier */
   id: string;
   /** ID of the parent goal */
-  goal_id: string;
+  goalId: string;
   /** Milestone name */
   name: string;
   /** Target amount for this milestone */
-  target_amount: string;
+  targetAmount: string;
   /** Target date for this milestone */
-  target_date: string;
+  targetDate: string;
   /** Whether the milestone has been completed */
-  is_completed?: boolean;
+  isCompleted?: boolean;
   /** When the milestone was completed */
-  completed_at?: GoalMilestoneResponseCompletedAt;
+  completedAt?: GoalMilestoneResponseCompletedAt;
   /** Milestone creation timestamp (UTC) */
-  created_at: string;
+  createdAt: string;
 }

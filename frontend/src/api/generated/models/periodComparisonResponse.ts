@@ -15,13 +15,13 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { PeriodSummary } from "./periodSummary";
+import type { PeriodSummary } from './periodSummary';
 
 export interface PeriodComparisonResponse {
   period1: PeriodSummary;
   period2: PeriodSummary;
-  income_change: number;
-  income_change_percentage: number;
-  expense_change: number;
-  expense_change_percentage: number;
+  incomeChange: number;
+  incomeChangePercentage: number;
+  expenseChange: number;
+  expenseChangePercentage: number;
 }

@@ -1,6 +1,7 @@
 # app/schemas/budget.py
 
-from pydantic import BaseModel, Field, ConfigDict, field_validator
+from backend.app.schemas.base import CamelCaseModel
+from pydantic import Field, ConfigDict, field_validator
 from datetime import datetime, date
 from typing import Optional
 from uuid import UUID
@@ -8,7 +9,7 @@ from decimal import Decimal
 from app.models import PeriodType, ScopeType
 
 
-class BudgetBase(BaseModel):
+class BudgetBase(CamelCaseModel):
     """
     Base schema for Budget with common fields.
     Used as foundation for Create and Update schemas.
@@ -100,7 +101,7 @@ class BudgetCreate(BudgetBase):
     )
 
 
-class BudgetUpdate(BaseModel):
+class BudgetUpdate(CamelCaseModel):
     """
     Schema for updating an existing budget.
     All fields are optional (partial update).
@@ -168,7 +169,7 @@ class BudgetUpdate(BaseModel):
     )
 
 
-class BudgetCategoryAllocation(BaseModel):
+class BudgetCategoryAllocation(CamelCaseModel):
     """
     Schema for category allocation within a budget.
     Shows how budget amount is distributed across categories.
@@ -275,7 +276,7 @@ class BudgetResponse(BudgetBase):
     )
 
 
-class BudgetListResponse(BaseModel):
+class BudgetListResponse(CamelCaseModel):
     """
     Schema for list budgets response with pagination support.
     """
@@ -317,7 +318,7 @@ class BudgetListResponse(BaseModel):
     )
 
 
-class BudgetSummary(BaseModel):
+class BudgetSummary(CamelCaseModel):
     """
     Schema for budget summary and analytics.
     Provides overview of all budgets for a financial profile.
@@ -360,7 +361,7 @@ class BudgetSummary(BaseModel):
         }
     )
 
-class BudgetCategoryCreate(BaseModel):
+class BudgetCategoryCreate(CamelCaseModel):
     """Schema for budget category allocation"""
     category_id: UUID
     allocated_amount: Decimal = Field(..., ge=0, decimal_places=2)
@@ -368,7 +369,7 @@ class BudgetCategoryCreate(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class BudgetCategoryResponse(BaseModel):
+class BudgetCategoryResponse(CamelCaseModel):
     """Schema for budget category response"""
     id: UUID
     budget_id: UUID

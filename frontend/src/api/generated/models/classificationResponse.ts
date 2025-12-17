@@ -15,17 +15,17 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { ClassificationResponsePredictedCategoryId } from "./classificationResponsePredictedCategoryId";
-import type { ClassificationResponsePredictedCategoryName } from "./classificationResponsePredictedCategoryName";
+import type { ClassificationResponsePredictedCategoryId } from './classificationResponsePredictedCategoryId';
+import type { ClassificationResponsePredictedCategoryName } from './classificationResponsePredictedCategoryName';
 
 /**
  * Response from classification
  */
 export interface ClassificationResponse {
-  transaction_id: string;
-  predicted_category_id: ClassificationResponsePredictedCategoryId;
-  predicted_category_name: ClassificationResponsePredictedCategoryName;
-  confidence_score: number;
+  transactionId: string;
+  predictedCategoryId: ClassificationResponsePredictedCategoryId;
+  predictedCategoryName: ClassificationResponsePredictedCategoryName;
+  confidenceScore: number;
   explanation: string;
-  was_applied: boolean;
+  wasApplied: boolean;
 }

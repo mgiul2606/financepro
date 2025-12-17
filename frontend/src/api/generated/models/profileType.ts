@@ -19,11 +19,12 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 /**
  * Types of financial profiles
  */
-export type ProfileType = (typeof ProfileType)[keyof typeof ProfileType];
+export type ProfileType = typeof ProfileType[keyof typeof ProfileType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ProfileType = {
-  personal: "personal",
-  family: "family",
-  business: "business",
+  Personal: 'personal',
+  Family: 'family',
+  Business: 'business',
 } as const;

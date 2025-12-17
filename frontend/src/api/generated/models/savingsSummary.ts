@@ -15,17 +15,17 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { SavingsSummaryByCategory } from "./savingsSummaryByCategory";
-import type { SavingsSummaryTopInsightsItem } from "./savingsSummaryTopInsightsItem";
+import type { SavingsSummaryByCategory } from './savingsSummaryByCategory';
+import type { SavingsSummaryTopInsightsItem } from './savingsSummaryTopInsightsItem';
 
 /**
  * Summary of potential savings
  */
 export interface SavingsSummary {
-  total_monthly_savings: number;
-  annual_savings: number;
-  by_category: SavingsSummaryByCategory;
-  insights_count: number;
-  high_priority_count: number;
-  top_insights: SavingsSummaryTopInsightsItem[];
+  totalMonthlySavings: number;
+  annualSavings: number;
+  byCategory: SavingsSummaryByCategory;
+  insightsCount: number;
+  highPriorityCount: number;
+  topInsights: SavingsSummaryTopInsightsItem[];
 }

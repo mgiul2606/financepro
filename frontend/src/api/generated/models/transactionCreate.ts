@@ -15,15 +15,15 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { TransactionCreateCategoryId } from "./transactionCreateCategoryId";
-import type { TransactionType } from "./transactionType";
-import type { TransactionCreateAmount } from "./transactionCreateAmount";
-import type { TransactionCreateMerchantName } from "./transactionCreateMerchantName";
-import type { TransactionCreateNotes } from "./transactionCreateNotes";
-import type { TransactionCreateValueDate } from "./transactionCreateValueDate";
-import type { TransactionCreateLocation } from "./transactionCreateLocation";
-import type { TransactionCreateReceiptUrl } from "./transactionCreateReceiptUrl";
-import type { TransactionSource } from "./transactionSource";
+import type { TransactionCreateCategoryId } from './transactionCreateCategoryId';
+import type { TransactionType } from './transactionType';
+import type { TransactionCreateAmount } from './transactionCreateAmount';
+import type { TransactionCreateMerchantName } from './transactionCreateMerchantName';
+import type { TransactionCreateNotes } from './transactionCreateNotes';
+import type { TransactionCreateValueDate } from './transactionCreateValueDate';
+import type { TransactionCreateLocation } from './transactionCreateLocation';
+import type { TransactionCreateReceiptUrl } from './transactionCreateReceiptUrl';
+import type { TransactionSource } from './transactionSource';
 
 /**
  * Schema for creating a new transaction.
@@ -31,11 +31,11 @@ Includes optional fields for advanced features.
  */
 export interface TransactionCreate {
   /** ID of the account this transaction belongs to */
-  account_id: string;
+  accountId: string;
   /** ID of the category this transaction is assigned to */
-  category_id?: TransactionCreateCategoryId;
+  categoryId?: TransactionCreateCategoryId;
   /** Type of transaction (bank_transfer, withdrawal, payment, etc.) */
-  transaction_type: TransactionType;
+  transactionType: TransactionType;
   /** Transaction amount */
   amount: TransactionCreateAmount;
   /**
@@ -49,17 +49,17 @@ export interface TransactionCreate {
    */
   description: string;
   /** Name of the merchant/vendor */
-  merchant_name?: TransactionCreateMerchantName;
+  merchantName?: TransactionCreateMerchantName;
   /** Date when the transaction occurred */
-  transaction_date: string;
+  transactionDate: string;
   /** Additional notes about the transaction */
   notes?: TransactionCreateNotes;
   /** Date when transaction was valued (for banking) */
-  value_date?: TransactionCreateValueDate;
+  valueDate?: TransactionCreateValueDate;
   /** Transaction location */
   location?: TransactionCreateLocation;
   /** URL to receipt or document */
-  receipt_url?: TransactionCreateReceiptUrl;
+  receiptUrl?: TransactionCreateReceiptUrl;
   /** Source of transaction creation */
-  created_by?: TransactionSource;
+  createdBy?: TransactionSource;
 }

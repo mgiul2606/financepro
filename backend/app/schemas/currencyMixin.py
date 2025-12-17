@@ -1,7 +1,8 @@
-from pydantic import BaseModel, Field, field_validator
+from backend.app.schemas.base import CamelCaseModel
+from pydantic import Field, field_validator
 from typing import Optional
 
-class CurrencyMixin(BaseModel):
+class CurrencyMixin(CamelCaseModel):
     currency: Optional[str] = Field(
         default="EUR",
         pattern="^[A-Z]{3}$",

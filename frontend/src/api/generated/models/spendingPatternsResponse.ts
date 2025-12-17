@@ -15,12 +15,12 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { SpendingPatternSchema } from "./spendingPatternSchema";
+import type { SpendingPatternSchema } from './spendingPatternSchema';
 
 /**
  * Spending patterns response
  */
 export interface SpendingPatternsResponse {
   patterns: SpendingPatternSchema[];
-  total_patterns: number;
+  totalPatterns: number;
 }

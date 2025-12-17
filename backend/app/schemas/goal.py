@@ -1,6 +1,7 @@
 # app/schemas/goal.py
 
-from pydantic import BaseModel, Field, ConfigDict, computed_field, field_validator
+from backend.app.schemas.base import CamelCaseModel
+from pydantic import Field, ConfigDict, computed_field, field_validator
 from datetime import datetime, date
 from typing import Optional
 from uuid import UUID
@@ -8,7 +9,7 @@ from decimal import Decimal
 from app.models import GoalType, GoalStatus
 
 
-class FinancialGoalBase(BaseModel):
+class FinancialGoalBase(CamelCaseModel):
     """
     Base schema for FinancialGoal with common fields.
     Used as foundation for Create and Update schemas.
@@ -113,7 +114,7 @@ class FinancialGoalCreate(FinancialGoalBase):
     )
 
 
-class FinancialGoalUpdate(BaseModel):
+class FinancialGoalUpdate(CamelCaseModel):
     """
     Schema for updating an existing financial goal.
     All fields are optional (partial update).
@@ -178,7 +179,7 @@ class FinancialGoalUpdate(BaseModel):
     )
 
 
-class GoalMilestoneResponse(BaseModel):
+class GoalMilestoneResponse(CamelCaseModel):
     """
     Schema for goal milestone.
     Represents a smaller achievable step towards the main goal.
@@ -331,7 +332,7 @@ class FinancialGoalResponse(FinancialGoalBase):
     )
 
 
-class FinancialGoalListResponse(BaseModel):
+class FinancialGoalListResponse(CamelCaseModel):
     """
     Schema for list financial goals response with pagination support.
     """
@@ -378,7 +379,7 @@ class FinancialGoalListResponse(BaseModel):
     )
 
 
-class GoalMilestoneCreate(BaseModel):
+class GoalMilestoneCreate(CamelCaseModel):
     """
     Schema for creating a new milestone for a goal.
     """
@@ -410,7 +411,7 @@ class GoalMilestoneCreate(BaseModel):
     )
 
 
-class GoalMilestoneUpdate(BaseModel):
+class GoalMilestoneUpdate(CamelCaseModel):
     """
     Schema for updating a milestone.
     All fields are optional (partial update).
@@ -445,7 +446,7 @@ class GoalMilestoneUpdate(BaseModel):
     )
 
 
-class GoalSummary(BaseModel):
+class GoalSummary(CamelCaseModel):
     """
     Schema for goals summary and analytics.
     Provides overview of all goals for a financial profile.

@@ -1,4 +1,5 @@
 import { defineConfig } from 'orval';
+import snakeToCamelTransformer from './orvalTransformer'
 
 /**
  * Orval Configuration for Finance Pro
@@ -15,6 +16,9 @@ export default defineConfig({
   financepro: {
     input: {
       target: './openapi.json',
+      override: {
+        transformer: snakeToCamelTransformer
+      }
     },
     output: {
       mode: 'tags-split',
@@ -34,6 +38,10 @@ export default defineConfig({
           useMutation: true,
           useInfinite: false,
           signal: true,
+        },
+        namingConvention: {
+          // Opzionalmente puoi specificare anche per enum
+          enum: 'PascalCase',
         },
       },
       bundler: {

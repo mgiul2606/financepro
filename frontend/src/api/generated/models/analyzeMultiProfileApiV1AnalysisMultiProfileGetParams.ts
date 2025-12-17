@@ -17,16 +17,16 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 export type AnalyzeMultiProfileApiV1AnalysisMultiProfileGetParams = {
-  /**
-   * Start date
-   */
-  start_date: string;
-  /**
-   * End date
-   */
-  end_date: string;
-  /**
-   * Target currency
-   */
-  currency?: string;
+/**
+ * Start date
+ */
+start_date: string;
+/**
+ * End date
+ */
+end_date: string;
+/**
+ * Target currency
+ */
+currency?: string;
 };

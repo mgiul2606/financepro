@@ -1,10 +1,27 @@
 // features/goals/components/GoalForm.tsx
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Target, Calendar } from 'lucide-react';
-import { FormField, SelectField, TextareaField } from '@/components/ui/FormField';
-import { Alert } from '@/components/ui/Alert';
-import type { Goal, GoalCreate, GoalUpdate, GoalPriority } from '../types';
+import { Target, Calendar, TrendingUp, DollarSign } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
+import type { Goal, GoalCreate, GoalUpdate } from '../types';
 
 interface GoalFormProps {
   goal?: Goal;
@@ -51,11 +68,11 @@ export const GoalForm = ({
     targetAmount: goal?.targetAmount || 0,
     currency: goal?.currency || 'EUR',
     targetDate: goal?.targetDate || '',
-    priority: (goal?.priority as GoalPriority) || 'medium',
+    priority: (goal?.priority) || 'medium',
     category: goal?.category || 'Savings',
   });
 
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (goal) {
@@ -71,11 +88,60 @@ export const GoalForm = ({
     }
   }, [goal]);
 
+  const validateField = (name: string, value: any): string => {
+    switch (name) {
+      case 'name':
+        if (!value || value.trim().length === 0) {
+          return t('goals.errors.nameRequired');
+        }
+        if (value.length > 100) {
+          return t('goals.errors.nameTooLong');
+        }
+        break;
+      case 'targetAmount':
+        if (!value || value <= 0) {
+          return t('goals.errors.targetAmountPositive');
+        }
+        break;
+      case 'targetDate':
+        if (!value) {
+          return t('goals.errors.targetDateRequired');
+        }
+        break;
+    }
+    return '';
+  };
+
+  const handleFieldChange = (name: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    const error = validateField(name, value);
+    setFieldErrors((prev) => {
+      const newErrors = { ...prev };
+      if (error) {
+        newErrors[name] = error;
+      } else {
+        delete newErrors[name];
+      }
+      return newErrors;
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const hasErrors = Object.values(fieldErrors).some((errors) => errors.length > 0);
-    if (hasErrors) {
+    // Validate all fields
+    const errors: Record<string, string> = {};
+    Object.keys(formData).forEach((key) => {
+      const error = validateField(key, formData[key as keyof GoalCreate]);
+      if (error) {
+        errors[key] = error;
+      }
+    });
+
+    setFieldErrors(errors);
+
+    if (Object.keys(errors).length > 0) {
       return;
     }
 
@@ -86,135 +152,228 @@ export const GoalForm = ({
     }
   };
 
+  const progressPercentage = goal
+    ? Math.min((goal.currentAmount / goal.targetAmount) * 100, 100)
+    : 0;
+
   return (
-    <form id="goal-form" onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <Alert variant="error" closable onClose={onClearError}>
-          {error}
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription className="flex items-center justify-between">
+            <span>{error}</span>
+            {onClearError && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={onClearError}
+                className="h-auto p-0 hover:bg-transparent"
+              >
+                ✕
+              </Button>
+            )}
+          </AlertDescription>
         </Alert>
       )}
 
-      <FormField
-        label={t('goals.name')}
-        required
-        value={formData.name}
-        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-        placeholder={t('goals.namePlaceholder')}
-        icon={<Target className="h-5 w-5 text-gray-400" />}
-        disabled={isLoading}
-        validation={{
-          required: { value: true, message: t('goals.errors.nameRequired') },
-          minLength: { value: 1, message: t('goals.errors.nameRequired') },
-          maxLength: { value: 100, message: t('goals.errors.nameTooLong') },
-        }}
-        onValidationChange={(isValid, errors) => {
-          setFieldErrors((prev) => ({ ...prev, name: errors }));
-        }}
-        showValidation
-      />
-
-      <TextareaField
-        label={t('goals.descriptionLabel')}
-        value={formData.description}
-        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-        placeholder={t('goals.descriptionPlaceholder')}
-        disabled={isLoading}
-        hint={t('goals.descriptionHint')}
-        rows={3}
-      />
-
-      <div className="grid grid-cols-2 gap-4">
-        <FormField
-          label={t('goals.targetAmount')}
-          type="number"
-          step="0.01"
-          required
-          value={formData.targetAmount}
-          onChange={(e) =>
-            setFormData({ ...formData, targetAmount: parseFloat(e.target.value) || 0 })
-          }
-          placeholder="0.00"
+      {/* Goal Name */}
+      <div className="space-y-2">
+        <Label htmlFor="name" className="flex items-center gap-2">
+          <Target className="h-4 w-4" />
+          {t('goals.name')}
+          <span className="text-destructive">*</span>
+        </Label>
+        <Input
+          id="name"
+          value={formData.name}
+          onChange={(e) => handleFieldChange('name', e.target.value)}
+          placeholder={t('goals.namePlaceholder')}
           disabled={isLoading}
-          validation={{
-            required: { value: true, message: t('goals.errors.targetAmountRequired') },
-            min: { value: 0.01, message: t('goals.errors.targetAmountPositive') },
-          }}
-          onValidationChange={(isValid, errors) => {
-            setFieldErrors((prev) => ({ ...prev, targetAmount: errors }));
-          }}
-          showValidation
+          className={fieldErrors.name ? 'border-destructive' : ''}
         />
-
-        <SelectField
-          label={t('accounts.currency')}
-          required
-          value={formData.currency}
-          onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-          options={CURRENCY_OPTIONS}
-          disabled={isLoading}
-        />
+        {fieldErrors.name && (
+          <p className="text-sm text-destructive">{fieldErrors.name}</p>
+        )}
       </div>
 
-      <FormField
-        label={t('goals.targetDate')}
-        type="date"
-        required
-        value={formData.targetDate}
-        onChange={(e) => setFormData({ ...formData, targetDate: e.target.value })}
-        icon={<Calendar className="h-5 w-5 text-gray-400" />}
-        disabled={isLoading}
-        hint={t('goals.targetDateHint')}
-        validation={{
-          required: { value: true, message: t('goals.errors.targetDateRequired') },
-        }}
-        onValidationChange={(isValid, errors) => {
-          setFieldErrors((prev) => ({ ...prev, targetDate: errors }));
-        }}
-        showValidation
-      />
-
-      <div className="grid grid-cols-2 gap-4">
-        <SelectField
-          label={t('goals.priority')}
-          required
-          value={formData.priority}
-          onChange={(e) => setFormData({ ...formData, priority: e.target.value as GoalPriority })}
-          options={PRIORITY_OPTIONS}
+      {/* Description */}
+      <div className="space-y-2">
+        <Label htmlFor="description">{t('goals.descriptionLabel')}</Label>
+        <Textarea
+          id="description"
+          value={formData.description}
+          onChange={(e) => handleFieldChange('description', e.target.value)}
+          placeholder={t('goals.descriptionPlaceholder')}
           disabled={isLoading}
-          hint={t('goals.priorityHint')}
+          rows={3}
+          className="resize-none"
         />
-
-        <SelectField
-          label={t('transactions.category')}
-          value={formData.category}
-          onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-          options={CATEGORY_OPTIONS}
-          disabled={isLoading}
-        />
+        <p className="text-sm text-muted-foreground">{t('goals.descriptionHint')}</p>
       </div>
 
-      {isEditMode && goal && (
-        <div className="rounded-lg bg-blue-50 p-4 border border-blue-200">
-          <h4 className="text-sm font-medium text-blue-900 mb-2">{t('goals.currentProgress')}</h4>
-          <div className="text-sm text-blue-700 space-y-1">
-            <p>
-              <span className="font-medium">{t('goals.saved')}:</span> {goal.currency}{' '}
-              {goal.currentAmount.toFixed(2)} / {goal.targetAmount.toFixed(2)}
-            </p>
-            <p>
-              <span className="font-medium">{t('budgets.remaining')}:</span> {goal.currency}{' '}
-              {(goal.targetAmount - goal.currentAmount).toFixed(2)}
-            </p>
-            <p>
-              <span className="font-medium">{t('goals.progress')}:</span>{' '}
-              {((goal.currentAmount / goal.targetAmount) * 100).toFixed(1)}%
-            </p>
-            <p>
-              <span className="font-medium">{t('budgets.status')}:</span>{' '}
-              <span className="capitalize">{goal.status.replace('_', ' ')}</span>
-            </p>
-          </div>
+      {/* Target Amount and Currency */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="targetAmount" className="flex items-center gap-2">
+            <DollarSign className="h-4 w-4" />
+            {t('goals.targetAmount')}
+            <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            id="targetAmount"
+            type="number"
+            step="0.01"
+            min="0.01"
+            value={formData.targetAmount || ''}
+            onChange={(e) =>
+              handleFieldChange('targetAmount', parseFloat(e.target.value) || 0)
+            }
+            placeholder="0.00"
+            disabled={isLoading}
+            className={fieldErrors.targetAmount ? 'border-destructive' : ''}
+          />
+          {fieldErrors.targetAmount && (
+            <p className="text-sm text-destructive">{fieldErrors.targetAmount}</p>
+          )}
         </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="currency">
+            {t('accounts.currency')}
+            <span className="text-destructive">*</span>
+          </Label>
+          <Select
+            value={formData.currency}
+            onValueChange={(value) => handleFieldChange('currency', value)}
+            disabled={isLoading}
+          >
+            <SelectTrigger id="currency">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {CURRENCY_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Target Date */}
+      <div className="space-y-2">
+        <Label htmlFor="targetDate" className="flex items-center gap-2">
+          <Calendar className="h-4 w-4" />
+          {t('goals.targetDate')}
+          <span className="text-destructive">*</span>
+        </Label>
+        <Input
+          id="targetDate"
+          type="date"
+          value={formData.targetDate}
+          onChange={(e) => handleFieldChange('targetDate', e.target.value)}
+          disabled={isLoading}
+          className={fieldErrors.targetDate ? 'border-destructive' : ''}
+        />
+        {fieldErrors.targetDate ? (
+          <p className="text-sm text-destructive">{fieldErrors.targetDate}</p>
+        ) : (
+          <p className="text-sm text-muted-foreground">{t('goals.targetDateHint')}</p>
+        )}
+      </div>
+
+      {/* Priority and Category */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="priority" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            {t('goals.priority')}
+            <span className="text-destructive">*</span>
+          </Label>
+          <Select
+            value={formData.priority}
+            onValueChange={(value) =>
+              handleFieldChange('priority', value as GoalPriority)
+            }
+            disabled={isLoading}
+          >
+            <SelectTrigger id="priority">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PRIORITY_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-sm text-muted-foreground">{t('goals.priorityHint')}</p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="category">{t('transactions.category')}</Label>
+          <Select
+            value={formData.category}
+            onValueChange={(value) => handleFieldChange('category', value)}
+            disabled={isLoading}
+          >
+            <SelectTrigger id="category">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {CATEGORY_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Progress Card (Edit Mode) */}
+      {isEditMode && goal && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardHeader>
+            <CardTitle className="text-base">
+              {t('goals.currentProgress')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{t('goals.saved')}</span>
+                <span className="font-medium">
+                  {goal.currency} {goal.currentAmount.toFixed(2)} / {goal.targetAmount.toFixed(2)}
+                </span>
+              </div>
+              <Progress value={progressPercentage} className="h-2" />
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>{progressPercentage.toFixed(1)}%</span>
+                <span>
+                  {t('budgets.remaining')}: {goal.currency}{' '}
+                  {(goal.targetAmount - goal.currentAmount).toFixed(2)}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+              <div>
+                <p className="text-xs text-muted-foreground">{t('budgets.status')}</p>
+                <p className="text-sm font-medium capitalize">
+                  {goal.status.replace('_', ' ')}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">{t('goals.priority')}</p>
+                <p className="text-sm font-medium capitalize">{goal.priority}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </form>
   );

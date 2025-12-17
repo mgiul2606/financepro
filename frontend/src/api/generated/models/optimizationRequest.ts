@@ -20,11 +20,11 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * Request for optimization insights
  */
 export interface OptimizationRequest {
-  financial_profile_id: string;
+  financialProfileId: string;
   /**
    * Days of history to analyze (30-365)
    * @minimum 30
    * @maximum 365
    */
-  lookback_days?: number;
+  lookbackDays?: number;
 }

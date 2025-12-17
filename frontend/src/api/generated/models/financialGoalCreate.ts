@@ -15,14 +15,14 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { FinancialGoalCreateDescription } from "./financialGoalCreateDescription";
-import type { GoalType } from "./goalType";
-import type { FinancialGoalCreateTargetAmount } from "./financialGoalCreateTargetAmount";
-import type { FinancialGoalCreateScopeProfileIds } from "./financialGoalCreateScopeProfileIds";
-import type { FinancialGoalCreateLinkedAccountId } from "./financialGoalCreateLinkedAccountId";
-import type { FinancialGoalCreateStartDate } from "./financialGoalCreateStartDate";
-import type { FinancialGoalCreateCurrentAmount } from "./financialGoalCreateCurrentAmount";
-import type { FinancialGoalCreateMilestones } from "./financialGoalCreateMilestones";
+import type { FinancialGoalCreateDescription } from './financialGoalCreateDescription';
+import type { GoalType } from './goalType';
+import type { FinancialGoalCreateTargetAmount } from './financialGoalCreateTargetAmount';
+import type { FinancialGoalCreateScopeProfileIds } from './financialGoalCreateScopeProfileIds';
+import type { FinancialGoalCreateLinkedAccountId } from './financialGoalCreateLinkedAccountId';
+import type { FinancialGoalCreateStartDate } from './financialGoalCreateStartDate';
+import type { FinancialGoalCreateCurrentAmount } from './financialGoalCreateCurrentAmount';
+import type { FinancialGoalCreateMilestones } from './financialGoalCreateMilestones';
 
 /**
  * Schema for creating a new financial goal.
@@ -38,11 +38,11 @@ export interface FinancialGoalCreate {
   /** Detailed description of the goal */
   description?: FinancialGoalCreateDescription;
   /** Type of goal (house, car, vacation, retirement, etc.) */
-  goal_type: GoalType;
+  goalType: GoalType;
   /** Target amount to achieve (must be positive) */
-  target_amount: FinancialGoalCreateTargetAmount;
+  targetAmount: FinancialGoalCreateTargetAmount;
   /** Target date to achieve the goal */
-  target_date: string;
+  targetDate: string;
   /**
    * Priority level (1-10, where 10 is highest priority)
    * @minimum 1
@@ -50,22 +50,22 @@ export interface FinancialGoalCreate {
    */
   priority?: number;
   /** Scope type: USER, PROFILE, or MULTI_PROFILE */
-  scope_type?: string;
+  scopeType?: string;
   /** Profile IDs for PROFILE or MULTI_PROFILE scope */
-  scope_profile_ids?: FinancialGoalCreateScopeProfileIds;
+  scopeProfileIds?: FinancialGoalCreateScopeProfileIds;
   /** Optional linked account for this goal */
-  linked_account_id?: FinancialGoalCreateLinkedAccountId;
+  linkedAccountId?: FinancialGoalCreateLinkedAccountId;
   /**
    * ISO 4217 currency code
    * @pattern ^[A-Z]{3}$
    */
   currency?: string;
   /** Goal start date (defaults to today) */
-  start_date?: FinancialGoalCreateStartDate;
+  startDate?: FinancialGoalCreateStartDate;
   /** Initial amount already saved towards this goal */
-  current_amount?: FinancialGoalCreateCurrentAmount;
+  currentAmount?: FinancialGoalCreateCurrentAmount;
   /** Enable automatic allocation */
-  auto_allocate?: boolean;
+  autoAllocate?: boolean;
   /** Optional milestones for this goal */
   milestones?: FinancialGoalCreateMilestones;
 }

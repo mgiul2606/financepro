@@ -1,13 +1,14 @@
 # app/schemas/financial_profile.py
 
-from pydantic import BaseModel, Field, ConfigDict, computed_field
+from backend.app.schemas.base import CamelCaseModel
+from pydantic import Field, ConfigDict, computed_field
 from datetime import datetime
 from typing import Optional, List
 from uuid import UUID
 from app.models import ProfileType, DatabaseType
 
 
-class FinancialProfileBase(BaseModel):
+class FinancialProfileBase(CamelCaseModel):
     """
     Base schema for FinancialProfile with common fields.
     Used as foundation for Create and Update schemas.
@@ -63,7 +64,7 @@ class FinancialProfileCreate(FinancialProfileBase):
     )
 
 
-class FinancialProfileUpdate(BaseModel):
+class FinancialProfileUpdate(CamelCaseModel):
     """
     Schema for updating an existing financial profile.
     All fields are optional (partial update).
@@ -162,7 +163,7 @@ class FinancialProfileResponse(FinancialProfileBase):
     )
 
 
-class FinancialProfileListResponse(BaseModel):
+class FinancialProfileListResponse(CamelCaseModel):
     """
     Schema for list financial profiles response with pagination support.
     """
@@ -197,7 +198,7 @@ class FinancialProfileListResponse(BaseModel):
     )
 
 
-class ProfileSelectionUpdate(BaseModel):
+class ProfileSelectionUpdate(CamelCaseModel):
     """
     Schema for updating user's active profile selection.
     """
@@ -219,7 +220,7 @@ class ProfileSelectionUpdate(BaseModel):
     )
 
 
-class ProfileSelectionResponse(BaseModel):
+class ProfileSelectionResponse(CamelCaseModel):
     """
     Schema for profile selection response.
     """
@@ -249,7 +250,7 @@ class ProfileSelectionResponse(BaseModel):
     )
 
 
-class MainProfileUpdate(BaseModel):
+class MainProfileUpdate(CamelCaseModel):
     """
     Schema for setting user's main profile.
     """
@@ -267,7 +268,7 @@ class MainProfileUpdate(BaseModel):
     )
 
 
-class MainProfileResponse(BaseModel):
+class MainProfileResponse(CamelCaseModel):
     """
     Schema for main profile response.
     """

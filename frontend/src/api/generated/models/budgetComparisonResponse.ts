@@ -15,12 +15,12 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { BudgetVsActual } from "./budgetVsActual";
+import type { BudgetVsActual } from './budgetVsActual';
 
 export interface BudgetComparisonResponse {
   comparisons: BudgetVsActual[];
-  total_budget: number;
-  total_actual: number;
-  overall_variance: number;
+  totalBudget: number;
+  totalActual: number;
+  overallVariance: number;
   currency: string;
 }

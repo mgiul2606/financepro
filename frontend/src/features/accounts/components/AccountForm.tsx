@@ -1,10 +1,86 @@
 // features/accounts/components/AccountForm.tsx
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Wallet } from 'lucide-react';
-import { FormField, SelectField } from '@/components/ui/FormField';
-import { Alert } from '@/components/ui/Alert';
-import type { AccountCreate, AccountUpdate, AccountResponse } from '../types';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Wallet, Building2, FileText, DollarSign } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import type { AccountResponse } from '../types';
+
+// Zod schemas
+const accountCreateSchema = z.object({
+  name: z
+    .string()
+    .min(1, 'accounts.errors.nameRequired')
+    .max(100, 'accounts.errors.nameTooLong'),
+  currency: z.string().min(1),
+  initial_balance: z.number(),
+  account_type: z.enum([
+    'checking',
+    'savings',
+    'credit_card',
+    'investment',
+    'cash',
+    'loan',
+    'mortgage',
+    'other',
+  ]),
+  institution_name: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+const accountUpdateSchema = z.object({
+  name: z
+    .string()
+    .min(1, 'accounts.errors.nameRequired')
+    .max(100, 'accounts.errors.nameTooLong')
+    .optional(),
+  currency: z.string().optional(),
+  account_type: z
+    .enum([
+      'checking',
+      'savings',
+      'credit_card',
+      'investment',
+      'cash',
+      'loan',
+      'mortgage',
+      'other',
+    ])
+    .optional(),
+  institution_name: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+// Infer types from schemas
+export type AccountCreate = z.infer<typeof accountCreateSchema>;
+export type AccountUpdate = z.infer<typeof accountUpdateSchema>;
 
 interface AccountFormProps {
   /** Account to edit (if undefined, form is in create mode) */
@@ -35,7 +111,7 @@ export const AccountForm = ({
     { value: 'GBP', label: t('settings.currencies.GBP') },
     { value: 'CHF', label: t('settings.currencies.CHF') },
     { value: 'JPY', label: t('settings.currencies.JPY') },
-  ];
+  ] as const;
 
   const ACCOUNT_TYPE_OPTIONS = [
     { value: 'checking', label: t('accounts.types.checking') },
@@ -46,167 +122,281 @@ export const AccountForm = ({
     { value: 'loan', label: t('accounts.types.loan') },
     { value: 'mortgage', label: t('accounts.types.mortgage') },
     { value: 'other', label: t('accounts.types.other') },
-  ];
+  ] as const;
 
-  const [formData, setFormData] = useState<AccountCreate | AccountUpdate>({
-    name: account?.name || '',
-    currency: account?.currency || 'EUR',
-    initial_balance: account ? parseFloat(account.initial_balance) : 0,
-    account_type: account?.account_type,
-    institution_name: account?.institution_name,
-    notes: account?.notes,
-  });
-
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
-
-  // Update form when account changes (edit mode)
-  useEffect(() => {
-    if (account) {
-      setFormData({
+  // Default values
+  const getDefaultValues = () => {
+    if (isEditMode && account) {
+      return {
         name: account.name,
         currency: account.currency || 'EUR',
-        initial_balance: parseFloat(account.initial_balance),
-        account_type: account.account_type,
-        institution_name: account.institution_name,
-        notes: account.notes,
-      });
+        account_type: account.accountType || 'checking',
+        institution_name: account.institutionName || '',
+        notes: account.notes || '',
+      };
     }
+    return {
+      name: '',
+      currency: 'EUR',
+      initial_balance: 0,
+      account_type: 'checking' as const,
+      institution_name: '',
+      notes: '',
+    };
+  };
+
+  // Initialize form with react-hook-form and zod
+  const form = useForm<AccountCreate | AccountUpdate>({
+    resolver: zodResolver(isEditMode ? accountUpdateSchema : accountCreateSchema),
+    defaultValues: getDefaultValues(),
+  });
+
+  // Reset form when account changes (edit mode)
+  useEffect(() => {
+    if (account) {
+      form.reset(getDefaultValues());
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [account]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validate all fields
-    const hasErrors = Object.values(fieldErrors).some((errors) => errors.length > 0);
-    if (hasErrors) {
-      return;
-    }
-
+  const handleSubmit = async (data: AccountCreate | AccountUpdate) => {
     try {
-      // In edit mode, exclude initial_balance and send only defined fields
       if (isEditMode) {
+        // In edit mode, send only defined fields excluding initial_balance
         const updateData: AccountUpdate = {};
-        if (formData.name) updateData.name = formData.name;
-        if (formData.account_type) updateData.account_type = formData.account_type;
-        if (formData.currency) updateData.currency = formData.currency;
-        if (formData.institution_name !== undefined) updateData.institution_name = formData.institution_name || undefined;
-        if (formData.notes !== undefined) updateData.notes = formData.notes || undefined;
+        if (data.name) updateData.name = data.name;
+        if (data.account_type) updateData.account_type = data.account_type;
+        if (data.currency) updateData.currency = data.currency;
+        if ('institution_name' in data) {
+          updateData.institution_name = data.institution_name || undefined;
+        }
+        if ('notes' in data) {
+          updateData.notes = data.notes || undefined;
+        }
 
         await onSubmit(updateData);
       } else {
-        // In create mode, send all fields including initial_balance
-        await onSubmit(formData as AccountCreate);
+        // In create mode, send all fields
+        await onSubmit(data as AccountCreate);
       }
     } catch (err) {
-      // Error handling is done by parent component
       console.error('Form submission error:', err);
     }
   };
 
   return (
-    <form id="account-form" onSubmit={handleSubmit} className="space-y-4">
-      {error && (
-        <Alert variant="error" closable onClose={onClearError}>
-          {error}
-        </Alert>
-      )}
+    <Form {...form}>
+      <form
+        id="account-form"
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="space-y-6"
+      >
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription className="flex items-center justify-between">
+              <span>{error}</span>
+              {onClearError && (
+                <button
+                  type="button"
+                  onClick={onClearError}
+                  className="text-sm underline hover:no-underline"
+                >
+                  {t('common.dismiss')}
+                </button>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
 
-      <FormField
-        label={t('accounts.accountName')}
-        required
-        value={formData.name}
-        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-        placeholder={t('accounts.accountNamePlaceholder')}
-        icon={<Wallet className="h-5 w-5 text-gray-400" />}
-        disabled={isLoading}
-        validation={{
-          required: { value: true, message: t('accounts.errors.nameRequired') },
-          minLength: { value: 1, message: t('accounts.errors.nameRequired') },
-          maxLength: { value: 100, message: t('accounts.errors.nameTooLong') },
-        }}
-        onValidationChange={(isValid, errors) => {
-          setFieldErrors((prev) => ({ ...prev, name: errors }));
-        }}
-        showValidation
-      />
-
-      <SelectField
-        label={t('accounts.accountType')}
-        value={formData.account_type || 'checking'}
-        onChange={(e) => setFormData({ ...formData, account_type: e.target.value as any })}
-        options={ACCOUNT_TYPE_OPTIONS}
-        disabled={isLoading}
-        hint={t('accounts.accountTypeHint')}
-      />
-
-      <SelectField
-        label={t('accounts.currency')}
-        required
-        value={formData.currency}
-        onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-        options={CURRENCY_OPTIONS}
-        disabled={isLoading}
-        hint={t('accounts.currencyHint')}
-      />
-
-      {!isEditMode && (
+        {/* Account Name */}
         <FormField
-          label={t('accounts.initialBalance')}
-          type="number"
-          step="0.01"
-          required
-          value={formData.initial_balance}
-          onChange={(e) =>
-            setFormData({ ...formData, initial_balance: parseFloat(e.target.value) || 0 })
-          }
-          placeholder="0.00"
-          disabled={isLoading}
-          hint={t('accounts.initialBalanceHint') + ' ' + t('accounts.negativeBalanceAllowed')}
-          validation={{
-            required: { value: true, message: t('accounts.errors.balanceRequired') },
-            // Allow negative balances for credit cards, loans, mortgages
-          }}
-          onValidationChange={(isValid, errors) => {
-            setFieldErrors((prev) => ({ ...prev, initial_balance: errors }));
-          }}
-          showValidation
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="flex items-center gap-2">
+                <Wallet className="h-4 w-4" />
+                {t('accounts.accountName')}
+                <span className="text-destructive">*</span>
+              </FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  placeholder={t('accounts.accountNamePlaceholder')}
+                  disabled={isLoading}
+                  maxLength={100}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      )}
 
-      <FormField
-        label={t('accounts.institutionName')}
-        value={formData.institution_name || ''}
-        onChange={(e) => setFormData({ ...formData, institution_name: e.target.value })}
-        placeholder={t('accounts.institutionNamePlaceholder')}
-        disabled={isLoading}
-        hint={t('accounts.institutionNameHint')}
-      />
+        {/* Account Type */}
+        <FormField
+          control={form.control}
+          name="account_type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('accounts.accountType')}</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+                disabled={isLoading}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {ACCOUNT_TYPE_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormDescription>{t('accounts.accountTypeHint')}</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <FormField
-        label={t('accounts.notes')}
-        value={formData.notes || ''}
-        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-        placeholder={t('accounts.notesPlaceholder')}
-        disabled={isLoading}
-        multiline
-        rows={3}
-      />
+        {/* Currency */}
+        <FormField
+          control={form.control}
+          name="currency"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                {t('accounts.currency')}
+                <span className="text-destructive ml-1">*</span>
+              </FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+                disabled={isLoading}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {CURRENCY_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormDescription>{t('accounts.currencyHint')}</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      {isEditMode && account && (
-        <div className="rounded-lg bg-blue-50 p-4 border border-blue-200">
-          <h4 className="text-sm font-medium text-blue-900 mb-2">{t('accounts.currentInfo')}</h4>
-          <div className="text-sm text-blue-700 space-y-1">
-            <p>
-              <span className="font-medium">{t('accounts.currentBalance')}:</span>{' '}
-              {account.currency} {parseFloat(account.current_balance).toFixed(2)}
-            </p>
-            <p>
-              <span className="font-medium">{t('accounts.created')}:</span>{' '}
-              {new Date(account.created_at).toLocaleDateString()}
-            </p>
-          </div>
-        </div>
-      )}
-    </form>
+        {/* Initial Balance - Only in Create Mode */}
+        {!isEditMode && (
+          <FormField
+            control={form.control}
+            name="initial_balance"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  {t('accounts.initialBalance')}
+                  <span className="text-destructive">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    {...field}
+                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                    placeholder="0.00"
+                    disabled={isLoading}
+                  />
+                </FormControl>
+                <FormDescription>
+                  {t('accounts.initialBalanceHint')} {t('accounts.negativeBalanceAllowed')}
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        {/* Institution Name */}
+        <FormField
+          control={form.control}
+          name="institution_name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                {t('accounts.institutionName')}
+              </FormLabel>
+              <FormControl>
+                <Input
+                  {...field}
+                  placeholder={t('accounts.institutionNamePlaceholder')}
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormDescription>{t('accounts.institutionNameHint')}</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Notes */}
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                {t('accounts.notes')}
+              </FormLabel>
+              <FormControl>
+                <Textarea
+                  {...field}
+                  placeholder={t('accounts.notesPlaceholder')}
+                  disabled={isLoading}
+                  rows={3}
+                  className="resize-none"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Current Account Info - Only in Edit Mode */}
+        {isEditMode && account && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{t('accounts.currentInfo')}</CardTitle>
+              <CardDescription>
+                {t('accounts.created')}: {new Date(account.createdAt).toLocaleDateString()}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">
+                  {t('accounts.currentBalance')}
+                </span>
+                <span className="text-lg font-semibold">
+                  {account.currency} {parseFloat(account.currentBalance).toFixed(2)}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </form>
+    </Form>
   );
 };

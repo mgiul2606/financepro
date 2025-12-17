@@ -1,6 +1,7 @@
 # app/schemas/account.py
 
-from pydantic import BaseModel, Field, ConfigDict
+from backend.app.schemas.base import CamelCaseModel
+from pydantic import Field, ConfigDict
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
@@ -8,7 +9,7 @@ from decimal import Decimal
 from app.models import AccountType
 
 
-class AccountBase(BaseModel):
+class AccountBase(CamelCaseModel):
     """
     Base schema for Account with common fields.
     Used as foundation for Create and Update schemas.
@@ -58,9 +59,9 @@ class AccountCreate(AccountBase):
     Schema for creating a new account.
     financial_profile_id is optional - if not provided, the user's default profile will be used.
     """
-    financial_profile_id: Optional[UUID] = Field(
-        None,
-        description="ID of the financial profile this account belongs to (optional, defaults to user's default profile)"
+    financial_profile_id: UUID = Field(
+        ...,
+        description="ID of the financial profile this account belongs to (that is current user's default profile)"
     )
     initial_balance: Decimal = Field(
         default=Decimal("0.00"),
@@ -97,7 +98,7 @@ class AccountCreate(AccountBase):
     )
 
 
-class AccountUpdate(BaseModel):
+class AccountUpdate(CamelCaseModel):
     """
     Schema for updating an existing account.
     All fields are optional (partial update).
@@ -116,6 +117,13 @@ class AccountUpdate(BaseModel):
         None,
         pattern="^[A-Z]{3}$",
         description="Updated currency code"
+    )
+    initial_balance: Optional[Decimal] = Field(
+        default=Decimal("0.00"),
+        decimal_places=2,
+        # No ge constraint - allow negative balances (e.g., for credit cards, loans)
+        description="Initial account balance (can be negative for debts)",
+        examples=[0, 1000.50, -5000, 5000]
     )
     institution_name: Optional[str] = Field(
         None,
@@ -219,7 +227,7 @@ class AccountResponse(AccountBase):
     )
 
 
-class AccountBalance(BaseModel):
+class AccountBalance(CamelCaseModel):
     """
     Schema for account balance endpoint response.
     Returns current balance with metadata.
@@ -241,7 +249,7 @@ class AccountBalance(BaseModel):
     )
 
 
-class AccountList(BaseModel):
+class AccountList(CamelCaseModel):
     """
     Schema for list accounts response with pagination.
     """

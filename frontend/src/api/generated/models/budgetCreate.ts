@@ -15,11 +15,11 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { PeriodType } from "./periodType";
-import type { BudgetCreateEndDate } from "./budgetCreateEndDate";
-import type { BudgetCreateTotalAmount } from "./budgetCreateTotalAmount";
-import type { BudgetCreateScopeProfileIds } from "./budgetCreateScopeProfileIds";
-import type { BudgetCreateCategoryAllocations } from "./budgetCreateCategoryAllocations";
+import type { PeriodType } from './periodType';
+import type { BudgetCreateEndDate } from './budgetCreateEndDate';
+import type { BudgetCreateTotalAmount } from './budgetCreateTotalAmount';
+import type { BudgetCreateScopeProfileIds } from './budgetCreateScopeProfileIds';
+import type { BudgetCreateCategoryAllocations } from './budgetCreateCategoryAllocations';
 
 /**
  * Schema for creating a new budget.
@@ -33,30 +33,30 @@ export interface BudgetCreate {
    */
   name: string;
   /** Type of budget period (monthly, quarterly, yearly, custom) */
-  period_type: PeriodType;
+  periodType: PeriodType;
   /** Start date of the budget period */
-  start_date: string;
+  startDate: string;
   /** End date of the budget period (NULL for rolling budgets) */
-  end_date?: BudgetCreateEndDate;
+  endDate?: BudgetCreateEndDate;
   /** Total budget amount (must be positive) */
-  total_amount: BudgetCreateTotalAmount;
+  totalAmount: BudgetCreateTotalAmount;
   /**
    * ISO 4217 currency code (3 uppercase letters)
    * @pattern ^[A-Z]{3}$
    */
   currency: string;
   /** Scope type: USER, PROFILE, or MULTI_PROFILE */
-  scope_type?: string;
+  scopeType?: string;
   /** Profile IDs for PROFILE or MULTI_PROFILE scope */
-  scope_profile_ids?: BudgetCreateScopeProfileIds;
+  scopeProfileIds?: BudgetCreateScopeProfileIds;
   /** Enable rollover of unspent amounts to next period */
-  rollover_enabled?: boolean;
+  rolloverEnabled?: boolean;
   /**
    * Percentage of budget to trigger alerts (0-100)
    * @minimum 0
    * @maximum 100
    */
-  alert_threshold_percent?: number;
+  alertThresholdPercent?: number;
   /** Optional category allocations for this budget */
-  category_allocations?: BudgetCreateCategoryAllocations;
+  categoryAllocations?: BudgetCreateCategoryAllocations;
 }

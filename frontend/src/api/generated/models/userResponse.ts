@@ -15,14 +15,14 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { UserResponseFullName } from "./userResponseFullName";
+import type { UserResponseFullName } from './userResponseFullName';
 
 export interface UserResponse {
   email: string;
   id: string;
-  full_name?: UserResponseFullName;
-  is_active: boolean;
-  is_verified: boolean;
-  created_at: string;
-  updated_at: string;
+  fullName?: UserResponseFullName;
+  isActive: boolean;
+  isVerified: boolean;
+  createdAt: string;
+  updatedAt: string;
 }

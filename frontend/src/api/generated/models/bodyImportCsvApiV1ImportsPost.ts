@@ -15,21 +15,21 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { BodyImportCsvApiV1ImportsPostAccountId } from "./bodyImportCsvApiV1ImportsPostAccountId";
-import type { BodyImportCsvApiV1ImportsPostMapping } from "./bodyImportCsvApiV1ImportsPostMapping";
-import type { BodyImportCsvApiV1ImportsPostUserPassword } from "./bodyImportCsvApiV1ImportsPostUserPassword";
+import type { BodyImportCsvApiV1ImportsPostAccountId } from './bodyImportCsvApiV1ImportsPostAccountId';
+import type { BodyImportCsvApiV1ImportsPostMapping } from './bodyImportCsvApiV1ImportsPostMapping';
+import type { BodyImportCsvApiV1ImportsPostUserPassword } from './bodyImportCsvApiV1ImportsPostUserPassword';
 
 export interface BodyImportCsvApiV1ImportsPost {
   /** CSV file to import */
   file: Blob;
   /** Target financial profile ID */
-  profile_id: string;
+  profileId: string;
   /** Target account ID */
-  account_id?: BodyImportCsvApiV1ImportsPostAccountId;
+  accountId?: BodyImportCsvApiV1ImportsPostAccountId;
   /** JSON mapping config */
   mapping?: BodyImportCsvApiV1ImportsPostMapping;
   /** Skip detected duplicates */
-  skip_duplicates?: boolean;
+  skipDuplicates?: boolean;
   /** Password for HS profiles */
-  user_password?: BodyImportCsvApiV1ImportsPostUserPassword;
+  userPassword?: BodyImportCsvApiV1ImportsPostUserPassword;
 }

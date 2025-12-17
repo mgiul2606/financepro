@@ -16,4 +16,4 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
 
-export type TrainModelResponseMetricsAnyOf = { [key: string]: number };
+export type TrainModelResponseMetricsAnyOf = {[key: string]: number};

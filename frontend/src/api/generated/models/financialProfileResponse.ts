@@ -15,10 +15,10 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { FinancialProfileResponseDescription } from "./financialProfileResponseDescription";
-import type { ProfileType } from "./profileType";
-import type { FinancialProfileResponseDatabaseConnectionString } from "./financialProfileResponseDatabaseConnectionString";
-import type { FinancialProfileResponseDatabaseType } from "./financialProfileResponseDatabaseType";
+import type { FinancialProfileResponseDescription } from './financialProfileResponseDescription';
+import type { ProfileType } from './profileType';
+import type { FinancialProfileResponseDatabaseConnectionString } from './financialProfileResponseDatabaseConnectionString';
+import type { FinancialProfileResponseDatabaseType } from './financialProfileResponseDatabaseType';
 
 /**
  * Complete financial profile schema returned by API endpoints.
@@ -34,27 +34,27 @@ export interface FinancialProfileResponse {
   /** Optional description of the financial profile */
   description?: FinancialProfileResponseDescription;
   /** Type of financial profile (personal, family, business) */
-  profile_type?: ProfileType;
+  profileType?: ProfileType;
   /**
    * ISO 4217 currency code (3 uppercase letters)
    * @pattern ^[A-Z]{3}$
    */
-  default_currency?: string;
+  defaultCurrency?: string;
   /** Unique financial profile identifier */
   id: string;
   /** Owner user ID */
-  user_id: string;
+  userId: string;
   /** Database connection string (encrypted) */
-  database_connection_string?: FinancialProfileResponseDatabaseConnectionString;
+  databaseConnectionString?: FinancialProfileResponseDatabaseConnectionString;
   /** Database type for distributed storage */
-  database_type?: FinancialProfileResponseDatabaseType;
+  databaseType?: FinancialProfileResponseDatabaseType;
   /** Whether the profile is currently active */
-  is_active: boolean;
+  isActive: boolean;
   /** Profile creation timestamp (UTC) */
-  created_at: string;
+  createdAt: string;
   /** Last update timestamp (UTC) */
-  updated_at: string;
+  updatedAt: string;
   /** Check if the profile's database is currently available.
 Profiles without custom database are always available. */
-  readonly is_available: boolean;
+  readonly isAvailable: boolean;
 }

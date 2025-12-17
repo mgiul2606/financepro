@@ -15,19 +15,19 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { ForecastPointSchema } from "./forecastPointSchema";
+import type { ForecastPointSchema } from './forecastPointSchema';
 
 /**
  * Forecast response
  */
 export interface ForecastResponse {
-  start_date: string;
-  end_date: string;
-  current_balance: number;
-  optimistic_scenario: ForecastPointSchema[];
-  likely_scenario: ForecastPointSchema[];
-  pessimistic_scenario: ForecastPointSchema[];
+  startDate: string;
+  endDate: string;
+  currentBalance: number;
+  optimisticScenario: ForecastPointSchema[];
+  likelyScenario: ForecastPointSchema[];
+  pessimisticScenario: ForecastPointSchema[];
   insights: string[];
   warnings: string[];
-  reliability_score: number;
+  reliabilityScore: number;
 }

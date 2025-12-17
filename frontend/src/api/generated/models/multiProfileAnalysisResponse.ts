@@ -15,12 +15,12 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { ProfileSummary } from "./profileSummary";
+import type { ProfileSummary } from './profileSummary';
 
 export interface MultiProfileAnalysisResponse {
   profiles: ProfileSummary[];
-  total_income: number;
-  total_expenses: number;
-  total_net_worth: number;
+  totalIncome: number;
+  totalExpenses: number;
+  totalNetWorth: number;
   currency: string;
 }

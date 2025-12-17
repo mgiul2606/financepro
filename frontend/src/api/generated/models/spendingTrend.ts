@@ -19,6 +19,6 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 export interface SpendingTrend {
   period: string;
   amount: number;
-  change_from_previous: number;
-  change_percentage: number;
+  changeFromPrevious: number;
+  changePercentage: number;
 }

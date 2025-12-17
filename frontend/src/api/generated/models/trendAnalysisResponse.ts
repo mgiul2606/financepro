@@ -15,13 +15,13 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { SpendingTrend } from "./spendingTrend";
+import type { SpendingTrend } from './spendingTrend';
 
 export interface TrendAnalysisResponse {
   trends: SpendingTrend[];
   average: number;
-  min_amount: number;
-  max_amount: number;
+  minAmount: number;
+  maxAmount: number;
   currency: string;
-  trend_direction: string;
+  trendDirection: string;
 }

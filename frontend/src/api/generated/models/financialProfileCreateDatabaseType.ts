@@ -15,7 +15,7 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { DatabaseType } from "./databaseType";
+import type { DatabaseType } from './databaseType';
 
 /**
  * Type of database for distributed storage (PostgreSQL, MSSQL)

@@ -15,8 +15,8 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { ConversationListItemTitle } from "./conversationListItemTitle";
-import type { ConversationListItemFinancialProfileId } from "./conversationListItemFinancialProfileId";
+import type { ConversationListItemTitle } from './conversationListItemTitle';
+import type { ConversationListItemFinancialProfileId } from './conversationListItemFinancialProfileId';
 
 /**
  * A conversation in the list
@@ -24,8 +24,8 @@ import type { ConversationListItemFinancialProfileId } from "./conversationListI
 export interface ConversationListItem {
   id: string;
   title: ConversationListItemTitle;
-  created_at: string;
-  updated_at: string;
-  message_count: number;
-  financial_profile_id: ConversationListItemFinancialProfileId;
+  createdAt: string;
+  updatedAt: string;
+  messageCount: number;
+  financialProfileId: ConversationListItemFinancialProfileId;
 }

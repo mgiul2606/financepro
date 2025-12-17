@@ -17,22 +17,22 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 export type GetSpendingTrendsApiV1AnalysisTrendsGetParams = {
-  /**
-   * Number of months to analyze
-   * @minimum 1
-   * @maximum 24
-   */
-  months?: number;
-  /**
-   * Profile IDs to include
-   */
-  profile_ids?: string[] | null;
-  /**
-   * Filter by category
-   */
-  category_id?: string | null;
-  /**
-   * Target currency
-   */
-  currency?: string;
+/**
+ * Number of months to analyze
+ * @minimum 1
+ * @maximum 24
+ */
+months?: number;
+/**
+ * Profile IDs to include
+ */
+profile_ids?: string[] | null;
+/**
+ * Filter by category
+ */
+category_id?: string | null;
+/**
+ * Target currency
+ */
+currency?: string;
 };

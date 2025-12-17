@@ -1,14 +1,15 @@
 # app/api/accounts.py
-from fastapi import APIRouter, Depends, HTTPException, status
+from backend.app.api.utils import get_by_id, get_children_from_list, get_children_ids
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
-from typing import Annotated, List
+from typing import Annotated
 from uuid import UUID
 from decimal import Decimal
 
 from app.db.database import get_db
 from app.models.user import User
 from app.models.account import Account
-from app.models.financial_profile import FinancialProfile, ProfileType
+from app.models.financial_profile import FinancialProfile
 from app.schemas.account import (
     AccountCreate,
     AccountUpdate,
@@ -18,14 +19,24 @@ from app.schemas.account import (
 )
 from app.api.dependencies import get_current_user
 
-router = APIRouter()
+def validate_profile_ids(db: Session, current_user: User, profile_ids: list[UUID]) -> list[UUID]:
+    return get_children_ids(db, User, FinancialProfile, current_user, profile_ids)
 
+def validate_profile_id(db: Session, current_user: User, profile_id: UUID) -> UUID:
+    ids: list[UUID] = get_children_ids(db, User, FinancialProfile, current_user, [profile_id])
+    return ids[0]
+
+def get_accounts(db: Session, current_user: User, profile_ids: list[FinancialProfile]) -> list[Account]:
+    valid_profile_ids: list[UUID] = validate_profile_ids(db, current_user, profile_ids)
+    return get_children_from_list(db, FinancialProfile, Account, valid_profile_ids)
+
+router = APIRouter()
 
 @router.get(
     "/",
     response_model=AccountList,
     summary="List all accounts",
-    description="Retrieve all accounts for the authenticated user",
+    description="Retrieve all accounts for the authenticated user, filtered by currently selected financial profiles",
     responses={
         200: {
             "description": "List of accounts retrieved successfully",
@@ -48,31 +59,28 @@ router = APIRouter()
                     }
                 }
             }
+        },
+        400: {
+            "description": "Invalid or unauthorized profile IDs"
         }
     }
 )
 async def list_accounts(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
+    profile_ids: Annotated[list[UUID], Query(description="List of currently active financial profile IDs")],
 ) -> AccountList:
     """
-    List all accounts for the current user.
-
+    List all accounts for the current user's **selected** profiles.
+    
+    Args:
+        profile_ids: List of currently active/selected financial profile IDs
+        
     Returns:
-        AccountList with all user's accounts and total count
+        AccountList with accounts from selected profiles and total count
     """
-    # Get all financial profiles for the user
-    profiles = db.query(FinancialProfile).filter(
-        FinancialProfile.user_id == current_user.id
-    ).all()
-
-    profile_ids = [p.id for p in profiles]
-
-    # Get all accounts from user's financial profiles
-    accounts = db.query(Account).filter(
-        Account.financial_profile_id.in_(profile_ids)
-    ).all()
-
+    # Verify that all profile_ids belong to the current user and returns the correspondent accounts
+    accounts: list[Account] = get_accounts(db, current_user, profile_ids)
     return AccountList(accounts=accounts, total=len(accounts))
 
 
@@ -86,7 +94,7 @@ async def list_accounts(
 async def create_account(
     account_in: AccountCreate,
     db: Annotated[Session, Depends(get_db)],
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(get_current_user)]
 ) -> AccountResponse:
     """
     Create a new account.
@@ -100,31 +108,16 @@ async def create_account(
     Raises:
         HTTPException 404: If user has no financial profile
     """
-    # Get or create the user's default financial profile
-    financial_profile = db.query(FinancialProfile).filter(
-        FinancialProfile.user_id == current_user.id
-    ).first()
-
-    if not financial_profile:
-        # Create a default financial profile if none exists
-        financial_profile = FinancialProfile(
-            user_id=current_user.id,
-            name="Personal Finance",
-            profile_type=ProfileType.PERSONAL,
-            default_currency="EUR",
-            is_active=True
-        )
-        db.add(financial_profile)
-        db.commit()
-        db.refresh(financial_profile)
-
+    # Checks if current_profile is a valid one and owned by current_user
+    financial_profile_id = validate_profile_id(db, current_user, account_in.financial_profile_id)
+    
     # Create account with the financial_profile_id
     account_data = account_in.model_dump(exclude={'financial_profile_id'})
 
     # Set current_balance to initial_balance on creation
     account = Account(
         **account_data,
-        financial_profile_id=financial_profile.id,
+        financial_profile_id=financial_profile_id,
         current_balance=account_data.get('initial_balance', Decimal("0.00"))
     )
     db.add(account)
@@ -161,25 +154,11 @@ async def get_account(
         HTTPException 404: If account doesn't exist
         HTTPException 403: If account doesn't belong to current user
     """
-    account = db.query(Account).filter(Account.id == account_id).first()
-
-    if not account:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Account with id {account_id} not found"
-        )
+    
+    account: Account = get_by_id(db, Account, account_id)
 
     # Check if account belongs to one of user's financial profiles
-    profile = db.query(FinancialProfile).filter(
-        FinancialProfile.id == account.financial_profile_id,
-        FinancialProfile.user_id == current_user.id
-    ).first()
-
-    if not profile:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this account"
-        )
+    validate_profile_id(db, current_user, account.financial_profile_id)
 
     return account
 
@@ -206,25 +185,10 @@ async def update_account(
     Returns:
         Updated account
     """
-    account = db.query(Account).filter(Account.id == account_id).first()
 
-    if not account:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Account with id {account_id} not found"
-        )
-
+    account: Account = get_by_id(db, Account, account_id)
     # Check if account belongs to one of user's financial profiles
-    profile = db.query(FinancialProfile).filter(
-        FinancialProfile.id == account.financial_profile_id,
-        FinancialProfile.user_id == current_user.id
-    ).first()
-
-    if not profile:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to update this account"
-        )
+    validate_profile_id(db, current_user, account.financial_profile_id)
 
     # Update only provided fields
     update_data = account_in.model_dump(exclude_unset=True)
@@ -259,26 +223,8 @@ async def delete_account(
     Note:
         This will also delete all transactions associated with the account (CASCADE)
     """
-    account = db.query(Account).filter(Account.id == account_id).first()
-
-    if not account:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Account with id {account_id} not found"
-        )
-
-    # Check if account belongs to one of user's financial profiles
-    profile = db.query(FinancialProfile).filter(
-        FinancialProfile.id == account.financial_profile_id,
-        FinancialProfile.user_id == current_user.id
-    ).first()
-
-    if not profile:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to delete this account"
-        )
-
+    account: Account = get_by_id(db, Account, account_id)
+    validate_profile_id(db, current_user, account.financial_profile_id)
     db.delete(account)
     db.commit()
 
@@ -303,26 +249,9 @@ async def get_account_balance(
     Returns:
         Current balance with currency and last update timestamp
     """
-    account = db.query(Account).filter(Account.id == account_id).first()
-
-    if not account:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Account with id {account_id} not found"
-        )
-
-    # Check if account belongs to one of user's financial profiles
-    profile = db.query(FinancialProfile).filter(
-        FinancialProfile.id == account.financial_profile_id,
-        FinancialProfile.user_id == current_user.id
-    ).first()
-
-    if not profile:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this account"
-        )
-    
+    account: Account = get_by_id(db, Account, account_id)
+    validate_profile_id(db, current_user, account.financial_profile_id)
+   
     return AccountBalance(
         account_id=account.id,
         balance=account.current_balance,

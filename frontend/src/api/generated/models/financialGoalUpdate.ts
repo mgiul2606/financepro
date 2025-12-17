@@ -15,14 +15,14 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { FinancialGoalUpdateName } from "./financialGoalUpdateName";
-import type { FinancialGoalUpdateDescription } from "./financialGoalUpdateDescription";
-import type { FinancialGoalUpdateGoalType } from "./financialGoalUpdateGoalType";
-import type { FinancialGoalUpdateTargetAmount } from "./financialGoalUpdateTargetAmount";
-import type { FinancialGoalUpdateCurrentAmount } from "./financialGoalUpdateCurrentAmount";
-import type { FinancialGoalUpdateTargetDate } from "./financialGoalUpdateTargetDate";
-import type { FinancialGoalUpdatePriority } from "./financialGoalUpdatePriority";
-import type { FinancialGoalUpdateStatus } from "./financialGoalUpdateStatus";
+import type { FinancialGoalUpdateName } from './financialGoalUpdateName';
+import type { FinancialGoalUpdateDescription } from './financialGoalUpdateDescription';
+import type { FinancialGoalUpdateGoalType } from './financialGoalUpdateGoalType';
+import type { FinancialGoalUpdateTargetAmount } from './financialGoalUpdateTargetAmount';
+import type { FinancialGoalUpdateCurrentAmount } from './financialGoalUpdateCurrentAmount';
+import type { FinancialGoalUpdateTargetDate } from './financialGoalUpdateTargetDate';
+import type { FinancialGoalUpdatePriority } from './financialGoalUpdatePriority';
+import type { FinancialGoalUpdateStatus } from './financialGoalUpdateStatus';
 
 /**
  * Schema for updating an existing financial goal.
@@ -34,13 +34,13 @@ export interface FinancialGoalUpdate {
   /** Updated description */
   description?: FinancialGoalUpdateDescription;
   /** Updated goal type */
-  goal_type?: FinancialGoalUpdateGoalType;
+  goalType?: FinancialGoalUpdateGoalType;
   /** Updated target amount */
-  target_amount?: FinancialGoalUpdateTargetAmount;
+  targetAmount?: FinancialGoalUpdateTargetAmount;
   /** Updated current saved amount (for manual updates) */
-  current_amount?: FinancialGoalUpdateCurrentAmount;
+  currentAmount?: FinancialGoalUpdateCurrentAmount;
   /** Updated target date */
-  target_date?: FinancialGoalUpdateTargetDate;
+  targetDate?: FinancialGoalUpdateTargetDate;
   /** Updated priority level */
   priority?: FinancialGoalUpdatePriority;
   /** Updated goal status */

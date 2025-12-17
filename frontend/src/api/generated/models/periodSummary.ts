@@ -18,9 +18,9 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 
 export interface PeriodSummary {
   period: string;
-  total_income: number;
-  total_expenses: number;
-  net_flow: number;
-  transaction_count: number;
+  totalIncome: number;
+  totalExpenses: number;
+  netFlow: number;
+  transactionCount: number;
   currency: string;
 }
