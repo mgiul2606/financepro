@@ -1,8 +1,13 @@
 # app/models/exchange_rate.py
-from sqlalchemy import Column, String, Numeric, Date, DateTime, Index, UniqueConstraint
-from sqlalchemy.dialects.postgresql import UUID
-from datetime import datetime, timezone
+"""Exchange Rate model for FinancePro v2.1 using SQLAlchemy 2.0 syntax."""
+from datetime import date, datetime, timezone
+from decimal import Decimal
 import uuid
+
+from sqlalchemy import Date, DateTime, Index, Numeric, String, UniqueConstraint
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column
+
 from app.db.database import Base
 
 
@@ -29,30 +34,54 @@ class ExchangeRate(Base):
     Indexes:
         - Composite index on (base_currency, target_currency, rate_date) for fast lookups
     """
+
     __tablename__ = "exchange_rates"
 
     # Primary key - UUID for security
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        index=True
+    )
 
     # Currency pair
-    base_currency = Column(String(3), nullable=False)  # ISO 4217 code
-    target_currency = Column(String(3), nullable=False)  # ISO 4217 code
+    base_currency: Mapped[str] = mapped_column(
+        String(3),
+        nullable=False
+    )  # ISO 4217 code
+    target_currency: Mapped[str] = mapped_column(
+        String(3),
+        nullable=False
+    )  # ISO 4217 code
 
     # Exchange rate with high precision
-    rate = Column(Numeric(precision=18, scale=8), nullable=False)
+    rate: Mapped[Decimal] = mapped_column(
+        Numeric(precision=18, scale=8),
+        nullable=False
+    )
 
     # Date for which this rate is valid
-    rate_date = Column(Date, nullable=False)
+    rate_date: Mapped[date] = mapped_column(Date, nullable=False)
 
     # Source of the rate
-    source = Column(String(50), nullable=False)
+    source: Mapped[str] = mapped_column(String(50), nullable=False)
 
     # Timestamp
-    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
 
     # Constraints and indexes
     __table_args__ = (
-        UniqueConstraint('base_currency', 'target_currency', 'rate_date', name='uq_exchange_rates_currencies_date'),
+        UniqueConstraint(
+            'base_currency',
+            'target_currency',
+            'rate_date',
+            name='uq_exchange_rates_currencies_date'
+        ),
         Index(
             "ix_exchange_rates_currency_date",
             "base_currency",

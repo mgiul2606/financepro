@@ -1,12 +1,20 @@
 # app/models/import_job.py
-from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, Text
-from sqlalchemy.dialects.postgresql import UUID, JSONB
-from sqlalchemy.orm import relationship
+"""Import Job model for FinancePro v2.1 using SQLAlchemy 2.0 syntax."""
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING, Any, Optional
 import uuid
+
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.database import Base
 from app.db.types import StringEnum
-from app.models.enums import ImportType, ImportStatus
+from app.models.enums import ImportStatus, ImportType
+
+if TYPE_CHECKING:
+    from app.models.account import Account
+    from app.models.financial_profile import FinancialProfile
 
 
 class ImportJob(Base):
@@ -42,19 +50,25 @@ class ImportJob(Base):
         financial_profile: Financial profile this import belongs to
         account: Account this import is for (if account-specific)
     """
+
     __tablename__ = "import_jobs"
 
     # Primary key - UUID for security
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        index=True
+    )
 
     # Foreign keys
-    financial_profile_id = Column(
+    financial_profile_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("financial_profiles.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
-    account_id = Column(
+    account_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("accounts.id", ondelete="SET NULL"),
         nullable=True,
@@ -62,32 +76,57 @@ class ImportJob(Base):
     )
 
     # Import information
-    file_name = Column(String(255), nullable=False)
-    file_path = Column(String(500), nullable=False)
-    import_type = Column(StringEnum(ImportType), nullable=False, index=True)
+    file_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    file_path: Mapped[str] = mapped_column(String(500), nullable=False)
+    import_type: Mapped[ImportType] = mapped_column(
+        StringEnum(ImportType),
+        nullable=False,
+        index=True
+    )
 
     # Status
-    status = Column(StringEnum(ImportStatus), default=ImportStatus.PENDING, nullable=False, index=True)
+    status: Mapped[ImportStatus] = mapped_column(
+        StringEnum(ImportStatus),
+        default=ImportStatus.PENDING,
+        nullable=False,
+        index=True
+    )
 
     # Progress tracking
-    total_rows = Column(Integer, nullable=True)
-    processed_rows = Column(Integer, nullable=True)
-    successful_imports = Column(Integer, nullable=True)
-    failed_imports = Column(Integer, nullable=True)
-    skipped_duplicates = Column(Integer, nullable=True)
+    total_rows: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    processed_rows: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    successful_imports: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    failed_imports: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    skipped_duplicates: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
 
     # Error tracking
-    error_message = Column(Text, nullable=True)
-    error_details = Column(JSONB, nullable=True)
+    error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    error_details: Mapped[Optional[dict[str, Any]]] = mapped_column(
+        JSONB,
+        nullable=True
+    )
 
     # Configuration
-    mapping_config = Column(JSONB, nullable=True)
+    mapping_config: Mapped[Optional[dict[str, Any]]] = mapped_column(
+        JSONB,
+        nullable=True
+    )
 
     # Timestamps
-    started_at = Column(DateTime(timezone=True), nullable=True)
-    completed_at = Column(DateTime(timezone=True), nullable=True)
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(
+    started_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True
+    )
+    completed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
@@ -95,8 +134,10 @@ class ImportJob(Base):
     )
 
     # Relationships
-    financial_profile = relationship("FinancialProfile", back_populates="import_jobs")
-    account = relationship("Account", back_populates="import_jobs")
+    financial_profile: Mapped["FinancialProfile"] = relationship(
+        back_populates="import_jobs"
+    )
+    account: Mapped[Optional["Account"]] = relationship(back_populates="import_jobs")
 
     @property
     def progress_percentage(self) -> float:

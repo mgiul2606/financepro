@@ -1,12 +1,30 @@
 # app/models/financial_profile.py
-from sqlalchemy import Column, String, Boolean, DateTime, Text, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+"""Financial Profile model for FinancePro v2.1 using SQLAlchemy 2.0 syntax."""
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING, List, Optional
 import uuid
+
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.database import Base
 from app.db.types import StringEnum
 from app.models.enums import ProfileType, SecurityLevel
+
+if TYPE_CHECKING:
+    from app.models.account import Account
+    from app.models.asset import Asset
+    from app.models.audit_log import AuditLog
+    from app.models.bank_condition import BankCondition
+    from app.models.chat import ChatConversation
+    from app.models.document import Document
+    from app.models.import_job import ImportJob
+    from app.models.ml_classification_log import MLClassificationLog
+    from app.models.prediction import Prediction
+    from app.models.recurring_transaction import RecurringTransaction
+    from app.models.transaction import Transaction
+    from app.models.user import User
 
 
 class FinancialProfile(Base):
@@ -46,39 +64,72 @@ class FinancialProfile(Base):
         audit_logs: Audit logs
         chat_conversations: Chat conversations (optional context)
     """
+
     __tablename__ = "financial_profiles"
 
     # Primary key - UUID for security
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        index=True
+    )
 
     # Foreign key to User
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
 
     # Profile information
-    name = Column(String(255), nullable=False)
-    profile_type = Column(StringEnum(ProfileType), default=ProfileType.PERSONAL, nullable=False)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    profile_type: Mapped[ProfileType] = mapped_column(
+        StringEnum(ProfileType),
+        default=ProfileType.PERSONAL,
+        nullable=False
+    )
 
     # Security settings for High-Security profiles
-    security_level = Column(StringEnum(SecurityLevel), default=SecurityLevel.STANDARD, nullable=False)
-    encryption_salt = Column(String(255), nullable=True)  # Base64(32 bytes), required if HS
+    security_level: Mapped[SecurityLevel] = mapped_column(
+        StringEnum(SecurityLevel),
+        default=SecurityLevel.STANDARD,
+        nullable=False
+    )
+    encryption_salt: Mapped[Optional[str]] = mapped_column(
+        String(255),
+        nullable=True
+    )  # Base64(32 bytes), required if HS
 
     # Currency settings
-    default_currency = Column(String(3), default="EUR", nullable=False)
+    default_currency: Mapped[str] = mapped_column(
+        String(3),
+        default="EUR",
+        nullable=False
+    )
 
     # Description
-    description = Column(Text, nullable=True)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Status flags
-    is_active = Column(Boolean, default=True, nullable=False)
-    is_default = Column(Boolean, default=False, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_default: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # UI customization
-    color_code = Column(String(7), nullable=True)  # HEX #RRGGBB
-    icon = Column(String(50), nullable=True)  # Icon name
+    color_code: Mapped[Optional[str]] = mapped_column(
+        String(7),
+        nullable=True
+    )  # HEX #RRGGBB
+    icon: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)  # Icon name
 
     # Timestamps
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
@@ -86,18 +137,54 @@ class FinancialProfile(Base):
     )
 
     # Relationships
-    user = relationship("User", back_populates="financial_profiles", foreign_keys=[user_id])
-    accounts = relationship("Account", back_populates="financial_profile", cascade="all, delete-orphan")
-    transactions = relationship("Transaction", back_populates="financial_profile", cascade="all, delete-orphan")
-    recurring_transactions = relationship("RecurringTransaction", back_populates="financial_profile", cascade="all, delete-orphan")
-    assets = relationship("Asset", back_populates="financial_profile", cascade="all, delete-orphan")
-    documents = relationship("Document", back_populates="financial_profile", cascade="all, delete-orphan")
-    import_jobs = relationship("ImportJob", back_populates="financial_profile", cascade="all, delete-orphan")
-    bank_conditions = relationship("BankCondition", back_populates="financial_profile", cascade="all, delete-orphan")
-    ml_classification_logs = relationship("MLClassificationLog", back_populates="financial_profile", cascade="all, delete-orphan")
-    predictions = relationship("Prediction", back_populates="financial_profile", cascade="all, delete-orphan")
-    audit_logs = relationship("AuditLog", back_populates="financial_profile", cascade="all, delete-orphan")
-    chat_conversations = relationship("ChatConversation", back_populates="financial_profile", cascade="all, delete-orphan")
+    user: Mapped["User"] = relationship(
+        back_populates="financial_profiles",
+        foreign_keys=[user_id]
+    )
+    accounts: Mapped[List["Account"]] = relationship(
+        back_populates="financial_profile",
+        cascade="all, delete-orphan"
+    )
+    transactions: Mapped[List["Transaction"]] = relationship(
+        back_populates="financial_profile",
+        cascade="all, delete-orphan"
+    )
+    recurring_transactions: Mapped[List["RecurringTransaction"]] = relationship(
+        back_populates="financial_profile",
+        cascade="all, delete-orphan"
+    )
+    assets: Mapped[List["Asset"]] = relationship(
+        back_populates="financial_profile",
+        cascade="all, delete-orphan"
+    )
+    documents: Mapped[List["Document"]] = relationship(
+        back_populates="financial_profile",
+        cascade="all, delete-orphan"
+    )
+    import_jobs: Mapped[List["ImportJob"]] = relationship(
+        back_populates="financial_profile",
+        cascade="all, delete-orphan"
+    )
+    bank_conditions: Mapped[List["BankCondition"]] = relationship(
+        back_populates="financial_profile",
+        cascade="all, delete-orphan"
+    )
+    ml_classification_logs: Mapped[List["MLClassificationLog"]] = relationship(
+        back_populates="financial_profile",
+        cascade="all, delete-orphan"
+    )
+    predictions: Mapped[List["Prediction"]] = relationship(
+        back_populates="financial_profile",
+        cascade="all, delete-orphan"
+    )
+    audit_logs: Mapped[List["AuditLog"]] = relationship(
+        back_populates="financial_profile",
+        cascade="all, delete-orphan"
+    )
+    chat_conversations: Mapped[List["ChatConversation"]] = relationship(
+        back_populates="financial_profile",
+        cascade="all, delete-orphan"
+    )
 
     @property
     def is_high_security(self) -> bool:

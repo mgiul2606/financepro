@@ -1,14 +1,21 @@
 # app/models/budget.py
-"""Budget model with scope pattern - USER-level for FinancePro v2.1"""
-from sqlalchemy import Column, String, Numeric, ForeignKey, DateTime, Boolean, Date, Integer
-from sqlalchemy.dialects.postgresql import UUID, ARRAY
-from sqlalchemy.orm import relationship
-from datetime import datetime, timezone
+"""Budget model with scope pattern - USER-level for FinancePro v2.1 using SQLAlchemy 2.0 syntax."""
+from datetime import date, datetime, timezone
 from decimal import Decimal
+from typing import TYPE_CHECKING, List, Optional
 import uuid
+
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, Numeric, String
+from sqlalchemy.dialects.postgresql import ARRAY, UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.database import Base
 from app.db.types import StringEnum
 from app.models.enums import PeriodType, ScopeType
+
+if TYPE_CHECKING:
+    from app.models.category import Category
+    from app.models.user import User
 
 
 class Budget(Base):
@@ -39,13 +46,19 @@ class Budget(Base):
         alert_threshold_percent: Alert threshold %
         is_active: Budget status
     """
+
     __tablename__ = "budgets"
 
     # Primary key
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        index=True
+    )
 
     # Foreign key - USER level
-    user_id = Column(
+    user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
@@ -53,33 +66,55 @@ class Budget(Base):
     )
 
     # Budget information
-    name = Column(String(255), nullable=False)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
 
     # Scope pattern
-    scope_type = Column(StringEnum(ScopeType), default=ScopeType.USER, nullable=False)
-    scope_profile_ids = Column(ARRAY(UUID(as_uuid=True)), nullable=True)
+    scope_type: Mapped[ScopeType] = mapped_column(
+        StringEnum(ScopeType),
+        default=ScopeType.USER,
+        nullable=False
+    )
+    scope_profile_ids: Mapped[Optional[list[uuid.UUID]]] = mapped_column(
+        ARRAY(UUID(as_uuid=True)),
+        nullable=True
+    )
 
     # Period
-    period_type = Column(StringEnum(PeriodType), default=PeriodType.MONTHLY, nullable=False)
-    start_date = Column(Date, nullable=False, index=True)
-    end_date = Column(Date, nullable=True)  # NULL for rolling budgets
+    period_type: Mapped[PeriodType] = mapped_column(
+        StringEnum(PeriodType),
+        default=PeriodType.MONTHLY,
+        nullable=False
+    )
+    start_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+    end_date: Mapped[Optional[date]] = mapped_column(
+        Date,
+        nullable=True
+    )  # NULL for rolling budgets
 
     # Amount
-    total_amount = Column(Numeric(15, 2), nullable=False)
-    currency = Column(String(3), nullable=False)
+    total_amount: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False)
 
     # Features
-    rollover_enabled = Column(Boolean, default=False, nullable=False)
+    rollover_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # Alerts
-    alert_threshold_percent = Column(Integer, default=80, nullable=False)
+    alert_threshold_percent: Mapped[int] = mapped_column(
+        Integer,
+        default=80,
+        nullable=False
+    )
 
     # Status
-    is_active = Column(Boolean, default=True, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     # Timestamps
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
@@ -87,8 +122,11 @@ class Budget(Base):
     )
 
     # Relationships
-    user = relationship("User", back_populates="budgets")
-    budget_categories = relationship("BudgetCategory", back_populates="budget", cascade="all, delete-orphan")
+    user: Mapped["User"] = relationship(back_populates="budgets")
+    budget_categories: Mapped[List["BudgetCategory"]] = relationship(
+        back_populates="budget",
+        cascade="all, delete-orphan"
+    )
 
     def __repr__(self) -> str:
         return f"<Budget(id={self.id}, name='{self.name}', scope={self.scope_type.value})>"
@@ -105,19 +143,25 @@ class BudgetCategory(Base):
         allocated_amount: Allocated amount
         spent_amount: Spent amount (calculated/denormalized)
     """
+
     __tablename__ = "budget_categories"
 
     # Primary key
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        index=True
+    )
 
     # Foreign keys
-    budget_id = Column(
+    budget_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("budgets.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
-    category_id = Column(
+    category_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("categories.id", ondelete="CASCADE"),
         nullable=False,
@@ -125,12 +169,20 @@ class BudgetCategory(Base):
     )
 
     # Amounts
-    allocated_amount = Column(Numeric(15, 2), nullable=False)
-    spent_amount = Column(Numeric(15, 2), default=Decimal("0.00"), nullable=False)
+    allocated_amount: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False)
+    spent_amount: Mapped[Decimal] = mapped_column(
+        Numeric(15, 2),
+        default=Decimal("0.00"),
+        nullable=False
+    )
 
     # Timestamps
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
@@ -138,8 +190,8 @@ class BudgetCategory(Base):
     )
 
     # Relationships
-    budget = relationship("Budget", back_populates="budget_categories")
-    category = relationship("Category", back_populates="budget_categories")
+    budget: Mapped["Budget"] = relationship(back_populates="budget_categories")
+    category: Mapped["Category"] = relationship(back_populates="budget_categories")
 
     @property
     def percentage_used(self) -> float:

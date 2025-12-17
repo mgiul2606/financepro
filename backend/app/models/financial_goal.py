@@ -1,14 +1,22 @@
 # app/models/financial_goal.py
-"""Financial Goal model with scope pattern - USER-level for FinancePro v2.1"""
-from sqlalchemy import Column, String, Numeric, ForeignKey, DateTime, Boolean, Text, Date, Integer
-from sqlalchemy.dialects.postgresql import UUID, ARRAY, JSONB
-from sqlalchemy.orm import relationship
-from datetime import datetime, timezone
+"""Financial Goal model with scope pattern - USER-level for FinancePro v2.1 using SQLAlchemy 2.0 syntax."""
+from datetime import date, datetime, timezone
 from decimal import Decimal
+from typing import TYPE_CHECKING, Any, List, Optional
 import uuid
+
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.database import Base
 from app.db.types import StringEnum
-from app.models.enums import GoalType, GoalStatus, ScopeType
+from app.models.enums import GoalStatus, GoalType, ScopeType
+
+if TYPE_CHECKING:
+    from app.models.account import Account
+    from app.models.goal_contribution import GoalContribution
+    from app.models.user import User
 
 
 class FinancialGoal(Base):
@@ -43,13 +51,19 @@ class FinancialGoal(Base):
         monthly_contribution: Calculated monthly need
         notes: Optional notes
     """
+
     __tablename__ = "financial_goals"
 
     # Primary key
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        index=True
+    )
 
     # Foreign key - USER level
-    user_id = Column(
+    user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
@@ -57,56 +71,81 @@ class FinancialGoal(Base):
     )
 
     # Linked account (optional dedicated account for goal)
-    linked_account_id = Column(
+    linked_account_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("accounts.id", ondelete="SET NULL"),
         nullable=True
     )
 
     # Goal information
-    name = Column(String(255), nullable=False)
-    goal_type = Column(StringEnum(GoalType), nullable=False)
-    description = Column(Text, nullable=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    goal_type: Mapped[GoalType] = mapped_column(StringEnum(GoalType), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Scope pattern
-    scope_type = Column(StringEnum(ScopeType), default=ScopeType.USER, nullable=False)
-    scope_profile_ids = Column(ARRAY(UUID(as_uuid=True)), nullable=True)
+    scope_type: Mapped[ScopeType] = mapped_column(
+        StringEnum(ScopeType),
+        default=ScopeType.USER,
+        nullable=False
+    )
+    scope_profile_ids: Mapped[Optional[list[uuid.UUID]]] = mapped_column(
+        ARRAY(UUID(as_uuid=True)),
+        nullable=True
+    )
 
     # Amounts
-    target_amount = Column(Numeric(15, 2), nullable=False)
-    current_amount = Column(Numeric(15, 2), default=Decimal("0.00"), nullable=False)
-    currency = Column(String(3), nullable=False)
+    target_amount: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False)
+    current_amount: Mapped[Decimal] = mapped_column(
+        Numeric(15, 2),
+        default=Decimal("0.00"),
+        nullable=False
+    )
+    currency: Mapped[str] = mapped_column(String(3), nullable=False)
 
     # Dates
-    start_date = Column(Date, nullable=False)
-    target_date = Column(Date, nullable=False, index=True)
+    start_date: Mapped[date] = mapped_column(Date, nullable=False)
+    target_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
 
     # Auto-allocation
-    auto_allocate = Column(Boolean, default=False, nullable=False)
+    auto_allocate: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # Priority and status
-    priority = Column(Integer, default=5, nullable=False)  # 1-10
-    status = Column(StringEnum(GoalStatus), default=GoalStatus.ACTIVE, nullable=False)
+    priority: Mapped[int] = mapped_column(Integer, default=5, nullable=False)  # 1-10
+    status: Mapped[GoalStatus] = mapped_column(
+        StringEnum(GoalStatus),
+        default=GoalStatus.ACTIVE,
+        nullable=False
+    )
 
     # Milestones as JSONB (simpler than separate table for v2.1)
-    milestones = Column(JSONB, nullable=True)
+    milestones: Mapped[Optional[list[dict[str, Any]]]] = mapped_column(JSONB, nullable=True)
     # Format: [{"name": "First 1000", "target_amount": 1000, "completed": false, "completed_at": null}]
 
     # Gamification
-    gamification_points = Column(Integer, default=0, nullable=False)
+    gamification_points: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
     # ML predictions
-    achievement_probability = Column(Numeric(5, 4), nullable=True)  # 0-1
+    achievement_probability: Mapped[Optional[Decimal]] = mapped_column(
+        Numeric(5, 4),
+        nullable=True
+    )  # 0-1
 
     # Calculated values
-    monthly_contribution = Column(Numeric(15, 2), nullable=True)
+    monthly_contribution: Mapped[Optional[Decimal]] = mapped_column(
+        Numeric(15, 2),
+        nullable=True
+    )
 
     # Notes
-    notes = Column(Text, nullable=True)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Timestamps
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
@@ -114,10 +153,11 @@ class FinancialGoal(Base):
     )
 
     # Relationships
-    user = relationship("User", back_populates="financial_goals")
-    linked_account = relationship("Account", back_populates="financial_goals")
-    contributions = relationship(
-        "GoalContribution",
+    user: Mapped["User"] = relationship(back_populates="financial_goals")
+    linked_account: Mapped[Optional["Account"]] = relationship(
+        back_populates="financial_goals"
+    )
+    contributions: Mapped[List["GoalContribution"]] = relationship(
         back_populates="goal",
         cascade="all, delete-orphan",
         order_by="GoalContribution.contribution_date.desc()"
@@ -144,13 +184,19 @@ class GoalMilestone(Base):
     Legacy milestone model - kept for backward compatibility.
     v2.1 uses JSONB milestones field in FinancialGoal.
     """
+
     __tablename__ = "goal_milestones"
 
     # Primary key
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        index=True
+    )
 
     # Foreign key
-    goal_id = Column(
+    goal_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("financial_goals.id", ondelete="CASCADE"),
         nullable=False,
@@ -158,16 +204,23 @@ class GoalMilestone(Base):
     )
 
     # Milestone information
-    name = Column(String(255), nullable=False)
-    target_amount = Column(Numeric(15, 2), nullable=False)
-    target_date = Column(Date, nullable=False)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    target_amount: Mapped[Decimal] = mapped_column(Numeric(15, 2), nullable=False)
+    target_date: Mapped[date] = mapped_column(Date, nullable=False)
 
     # Status
-    is_completed = Column(Boolean, default=False, nullable=False)
-    completed_at = Column(DateTime(timezone=True), nullable=True)
+    is_completed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    completed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True
+    )
 
     # Timestamp
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
 
     def __repr__(self) -> str:
         status = "completed" if self.is_completed else "pending"

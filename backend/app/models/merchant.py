@@ -1,11 +1,17 @@
 # app/models/merchant.py
-"""Global merchant database model for FinancePro v2.1"""
-from sqlalchemy import Column, String, Boolean, DateTime, Integer
-from sqlalchemy.dialects.postgresql import UUID, ARRAY
-from sqlalchemy.orm import relationship
+"""Global merchant database model for FinancePro v2.1 using SQLAlchemy 2.0 syntax."""
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING, List, Optional
 import uuid
+
+from sqlalchemy import Boolean, DateTime, Integer, String
+from sqlalchemy.dialects.postgresql import ARRAY, UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.database import Base
+
+if TYPE_CHECKING:
+    from app.models.transaction import Transaction
 
 
 class Merchant(Base):
@@ -24,27 +30,45 @@ class Merchant(Base):
         is_verified: Manually verified merchant
         usage_count: Usage counter for ranking
     """
+
     __tablename__ = "merchants"
 
     # Primary key
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        index=True
+    )
 
     # Merchant information
-    canonical_name = Column(String(255), unique=True, nullable=False, index=True)
-    aliases = Column(ARRAY(String(255)), nullable=True)  # Name variations
-    website = Column(String(255), nullable=True)
-    logo_url = Column(String(500), nullable=True)
-    vat_number = Column(String(50), nullable=True)
+    canonical_name: Mapped[str] = mapped_column(
+        String(255),
+        unique=True,
+        nullable=False,
+        index=True
+    )
+    aliases: Mapped[Optional[list[str]]] = mapped_column(
+        ARRAY(String(255)),
+        nullable=True
+    )  # Name variations
+    website: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    logo_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    vat_number: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
 
     # Verification status
-    is_verified = Column(Boolean, default=False, nullable=False)
+    is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # Usage statistics
-    usage_count = Column(Integer, default=0, nullable=False)
+    usage_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
     # Timestamps
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
@@ -52,7 +76,7 @@ class Merchant(Base):
     )
 
     # Relationships
-    transactions = relationship("Transaction", back_populates="merchant")
+    transactions: Mapped[List["Transaction"]] = relationship(back_populates="merchant")
 
     def __repr__(self) -> str:
         return f"<Merchant(id={self.id}, name='{self.canonical_name}')>"

@@ -1,12 +1,23 @@
 # app/models/recurring_transaction.py
-from sqlalchemy import Column, String, Numeric, ForeignKey, DateTime, Boolean, Text, Date, Integer
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
-from datetime import datetime, timezone
+"""Recurring Transaction model for FinancePro v2.1 using SQLAlchemy 2.0 syntax."""
+from datetime import date, datetime, timezone
+from decimal import Decimal
+from typing import TYPE_CHECKING, List, Optional
 import uuid
+
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.database import Base
 from app.db.types import StringEnum
 from app.models.enums import AmountModel, Frequency, OccurrenceStatus, TransactionType
+
+if TYPE_CHECKING:
+    from app.models.account import Account
+    from app.models.category import Category
+    from app.models.financial_profile import FinancialProfile
+    from app.models.transaction import Transaction
 
 
 class RecurringTransaction(Base):
@@ -56,68 +67,102 @@ class RecurringTransaction(Base):
         generated_transactions: Actual transactions generated
         occurrences: Scheduled and executed occurrences
     """
+
     __tablename__ = "recurring_transactions"
 
     # Primary key - UUID for security
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        index=True
+    )
 
     # Foreign keys
-    financial_profile_id = Column(
+    financial_profile_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("financial_profiles.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
-    account_id = Column(
+    account_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("accounts.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
-    category_id = Column(
+    category_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("categories.id", ondelete="SET NULL"),
         nullable=True
     )
 
     # Basic information
-    name = Column(String(255), nullable=False)
-    description = Column(Text, nullable=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Transaction type
-    transaction_type = Column(StringEnum(TransactionType), nullable=False)
+    transaction_type: Mapped[TransactionType] = mapped_column(
+        StringEnum(TransactionType),
+        nullable=False
+    )
 
     # Amount model
-    amount_model = Column(StringEnum(AmountModel), default=AmountModel.FIXED, nullable=False)
-    base_amount = Column(Numeric(precision=15, scale=2), nullable=False)
-    amount_min = Column(Numeric(precision=15, scale=2), nullable=True)
-    amount_max = Column(Numeric(precision=15, scale=2), nullable=True)
-    formula = Column(Text, nullable=True)
+    amount_model: Mapped[AmountModel] = mapped_column(
+        StringEnum(AmountModel),
+        default=AmountModel.FIXED,
+        nullable=False
+    )
+    base_amount: Mapped[Decimal] = mapped_column(
+        Numeric(precision=15, scale=2),
+        nullable=False
+    )
+    amount_min: Mapped[Optional[Decimal]] = mapped_column(
+        Numeric(precision=15, scale=2),
+        nullable=True
+    )
+    amount_max: Mapped[Optional[Decimal]] = mapped_column(
+        Numeric(precision=15, scale=2),
+        nullable=True
+    )
+    formula: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Currency
-    currency = Column(String(3), nullable=False)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False)
 
     # Frequency
-    frequency = Column(StringEnum(Frequency), nullable=False)
-    interval = Column(Integer, default=1, nullable=False)
+    frequency: Mapped[Frequency] = mapped_column(StringEnum(Frequency), nullable=False)
+    interval: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
 
     # Schedule
-    start_date = Column(Date, nullable=False)
-    end_date = Column(Date, nullable=True)
-    next_occurrence_date = Column(Date, nullable=True, index=True)
+    start_date: Mapped[date] = mapped_column(Date, nullable=False)
+    end_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    next_occurrence_date: Mapped[Optional[date]] = mapped_column(
+        Date,
+        nullable=True,
+        index=True
+    )
 
     # Automation
-    auto_create = Column(Boolean, default=False, nullable=False)
+    auto_create: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # Notifications
-    notification_days_before = Column(Integer, default=3, nullable=False)
+    notification_days_before: Mapped[int] = mapped_column(
+        Integer,
+        default=3,
+        nullable=False
+    )
 
     # Status
-    is_active = Column(Boolean, default=True, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     # Timestamps
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
@@ -125,16 +170,16 @@ class RecurringTransaction(Base):
     )
 
     # Relationships
-    financial_profile = relationship("FinancialProfile", back_populates="recurring_transactions")
-    account = relationship("Account", back_populates="recurring_transactions")
-    category = relationship("Category")
-    generated_transactions = relationship(
-        "Transaction",
+    financial_profile: Mapped["FinancialProfile"] = relationship(
+        back_populates="recurring_transactions"
+    )
+    account: Mapped["Account"] = relationship(back_populates="recurring_transactions")
+    category: Mapped[Optional["Category"]] = relationship()
+    generated_transactions: Mapped[List["Transaction"]] = relationship(
         back_populates="recurring_transaction",
         cascade="all, delete-orphan"
     )
-    occurrences = relationship(
-        "RecurringTransactionOccurrence",
+    occurrences: Mapped[List["RecurringTransactionOccurrence"]] = relationship(
         back_populates="recurring_transaction",
         cascade="all, delete-orphan"
     )
@@ -174,38 +219,58 @@ class RecurringTransactionOccurrence(Base):
         recurring_transaction: Parent recurring transaction
         transaction: Generated transaction (if executed)
     """
+
     __tablename__ = "recurring_transaction_occurrences"
 
     # Primary key - UUID for security
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        index=True
+    )
 
     # Foreign keys
-    recurring_transaction_id = Column(
+    recurring_transaction_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("recurring_transactions.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
-    transaction_id = Column(
+    transaction_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("transactions.id", ondelete="SET NULL"),
         nullable=True
     )
 
     # Occurrence details
-    scheduled_date = Column(Date, nullable=False, index=True)
-    expected_amount = Column(Numeric(precision=15, scale=2), nullable=False)
-    actual_amount = Column(Numeric(precision=15, scale=2), nullable=True)
+    scheduled_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+    expected_amount: Mapped[Decimal] = mapped_column(
+        Numeric(precision=15, scale=2),
+        nullable=False
+    )
+    actual_amount: Mapped[Optional[Decimal]] = mapped_column(
+        Numeric(precision=15, scale=2),
+        nullable=True
+    )
 
     # Status
-    status = Column(StringEnum(OccurrenceStatus), default=OccurrenceStatus.PENDING, nullable=False)
+    status: Mapped[OccurrenceStatus] = mapped_column(
+        StringEnum(OccurrenceStatus),
+        default=OccurrenceStatus.PENDING,
+        nullable=False
+    )
 
     # Notes
-    notes = Column(Text, nullable=True)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Timestamps
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
@@ -213,8 +278,10 @@ class RecurringTransactionOccurrence(Base):
     )
 
     # Relationships
-    recurring_transaction = relationship("RecurringTransaction", back_populates="occurrences")
-    transaction = relationship("Transaction")
+    recurring_transaction: Mapped["RecurringTransaction"] = relationship(
+        back_populates="occurrences"
+    )
+    transaction: Mapped[Optional["Transaction"]] = relationship()
 
     def __repr__(self) -> str:
         return (
