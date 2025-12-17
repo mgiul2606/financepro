@@ -1,12 +1,21 @@
 # app/models/asset.py
-from sqlalchemy import Column, String, Numeric, ForeignKey, DateTime, Boolean, Text, Date
-from sqlalchemy.dialects.postgresql import UUID, JSONB
-from sqlalchemy.orm import relationship
-from datetime import datetime, timezone
+"""Asset model for FinancePro v2.1 using SQLAlchemy 2.0 syntax."""
+from datetime import date, datetime, timezone
+from decimal import Decimal
+from typing import TYPE_CHECKING, Any, List, Optional
 import uuid
+
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Numeric, String, Text
+from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.database import Base
 from app.db.types import StringEnum
 from app.models.enums import AssetType, ValuationMethod
+
+if TYPE_CHECKING:
+    from app.models.financial_profile import FinancialProfile
+    from app.models.transaction import Transaction
 
 
 class Asset(Base):
@@ -51,59 +60,99 @@ class Asset(Base):
         purchase_transaction: Purchase transaction
         valuations: Historical valuations for this asset
     """
+
     __tablename__ = "assets"
 
     # Primary key - UUID for security
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        index=True
+    )
 
     # Foreign keys
-    financial_profile_id = Column(
+    financial_profile_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("financial_profiles.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
-    purchase_transaction_id = Column(
+    purchase_transaction_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("transactions.id", ondelete="SET NULL"),
         nullable=True
     )
 
     # Asset information
-    name = Column(String(255), nullable=False)
-    asset_type = Column(StringEnum(AssetType), nullable=False, index=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    asset_type: Mapped[AssetType] = mapped_column(
+        StringEnum(AssetType),
+        nullable=False,
+        index=True
+    )
 
     # Purchase information
-    purchase_date = Column(Date, nullable=True)
-    purchase_price = Column(Numeric(precision=15, scale=2), nullable=True)
+    purchase_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    purchase_price: Mapped[Optional[Decimal]] = mapped_column(
+        Numeric(precision=15, scale=2),
+        nullable=True
+    )
 
     # Current valuation
-    current_value = Column(Numeric(precision=15, scale=2), nullable=False)
-    current_value_min = Column(Numeric(precision=15, scale=2), nullable=True)
-    current_value_max = Column(Numeric(precision=15, scale=2), nullable=True)
+    current_value: Mapped[Decimal] = mapped_column(
+        Numeric(precision=15, scale=2),
+        nullable=False
+    )
+    current_value_min: Mapped[Optional[Decimal]] = mapped_column(
+        Numeric(precision=15, scale=2),
+        nullable=True
+    )
+    current_value_max: Mapped[Optional[Decimal]] = mapped_column(
+        Numeric(precision=15, scale=2),
+        nullable=True
+    )
 
     # Valuation method and date
-    valuation_method = Column(StringEnum(ValuationMethod), default=ValuationMethod.MANUAL, nullable=False)
-    last_valuation_date = Column(Date, nullable=True)
+    valuation_method: Mapped[ValuationMethod] = mapped_column(
+        StringEnum(ValuationMethod),
+        default=ValuationMethod.MANUAL,
+        nullable=False
+    )
+    last_valuation_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
 
     # Currency
-    currency = Column(String(3), nullable=False)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False)
 
     # Liquidity
-    is_liquid = Column(Boolean, default=False, nullable=False)
+    is_liquid: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # For fractional assets (stocks, crypto)
-    quantity = Column(Numeric(precision=18, scale=8), nullable=True)
-    ticker_symbol = Column(String(20), nullable=True, index=True)
+    quantity: Mapped[Optional[Decimal]] = mapped_column(
+        Numeric(precision=18, scale=8),
+        nullable=True
+    )
+    ticker_symbol: Mapped[Optional[str]] = mapped_column(
+        String(20),
+        nullable=True,
+        index=True
+    )
 
     # Additional information
-    notes = Column(Text, nullable=True)
-    asset_metadata = Column('metadata', JSONB, nullable=True)
-    # metadata = Column(JSONB, nullable=True)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    asset_metadata: Mapped[Optional[dict[str, Any]]] = mapped_column(
+        'metadata',
+        JSONB,
+        nullable=True
+    )
 
     # Timestamps
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
@@ -111,10 +160,9 @@ class Asset(Base):
     )
 
     # Relationships
-    financial_profile = relationship("FinancialProfile", back_populates="assets")
-    purchase_transaction = relationship("Transaction")
-    valuations = relationship(
-        "AssetValuation",
+    financial_profile: Mapped["FinancialProfile"] = relationship(back_populates="assets")
+    purchase_transaction: Mapped[Optional["Transaction"]] = relationship()
+    valuations: Mapped[List["AssetValuation"]] = relationship(
         back_populates="asset",
         cascade="all, delete-orphan",
         order_by="AssetValuation.valuation_date.desc()"
@@ -147,13 +195,19 @@ class AssetValuation(Base):
     Relationships:
         asset: Parent asset
     """
+
     __tablename__ = "asset_valuations"
 
     # Primary key - UUID for security
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        index=True
+    )
 
     # Foreign key
-    asset_id = Column(
+    asset_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("assets.id", ondelete="CASCADE"),
         nullable=False,
@@ -161,25 +215,41 @@ class AssetValuation(Base):
     )
 
     # Valuation information
-    valuation_date = Column(Date, nullable=False, index=True)
-    value = Column(Numeric(precision=15, scale=2), nullable=False)
-    value_min = Column(Numeric(precision=15, scale=2), nullable=True)
-    value_max = Column(Numeric(precision=15, scale=2), nullable=True)
+    valuation_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+    value: Mapped[Decimal] = mapped_column(
+        Numeric(precision=15, scale=2),
+        nullable=False
+    )
+    value_min: Mapped[Optional[Decimal]] = mapped_column(
+        Numeric(precision=15, scale=2),
+        nullable=True
+    )
+    value_max: Mapped[Optional[Decimal]] = mapped_column(
+        Numeric(precision=15, scale=2),
+        nullable=True
+    )
 
     # Valuation method
-    valuation_method = Column(StringEnum(ValuationMethod), nullable=False)
+    valuation_method: Mapped[ValuationMethod] = mapped_column(
+        StringEnum(ValuationMethod),
+        nullable=False
+    )
 
     # Source
-    source = Column(String(100), nullable=True)
+    source: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
 
     # Notes
-    notes = Column(Text, nullable=True)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Timestamp
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
 
     # Relationship
-    asset = relationship("Asset", back_populates="valuations")
+    asset: Mapped["Asset"] = relationship(back_populates="valuations")
 
     def __repr__(self) -> str:
         return f"<AssetValuation(asset_id={self.asset_id}, date={self.valuation_date}, value={self.value})>"

@@ -1,20 +1,25 @@
 # app/models/account.py
-from backend.app.models.bank_condition import BankCondition
-from backend.app.models.financial_goal import FinancialGoal
-from backend.app.models.financial_profile import FinancialProfile
-from backend.app.models.import_job import ImportJob
-from backend.app.models.recurring_transaction import RecurringTransaction
-from backend.app.models.transaction import Transaction
-from sqlalchemy import String, Numeric, ForeignKey, DateTime, Boolean, Text
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column, relationship, WriteOnlyMapped
+"""Account model for FinancePro v2.1 using SQLAlchemy 2.0 syntax."""
 from datetime import datetime, timezone
 from decimal import Decimal
+from typing import TYPE_CHECKING, List, Optional
 import uuid
-from typing import Optional, List
+
+from sqlalchemy import Boolean, DateTime, ForeignKey, Numeric, String, Text
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, WriteOnlyMapped, mapped_column, relationship
+
 from app.db.database import Base
 from app.db.types import StringEnum
 from app.models.enums import AccountType
+
+if TYPE_CHECKING:
+    from app.models.bank_condition import BankCondition
+    from app.models.financial_goal import FinancialGoal
+    from app.models.financial_profile import FinancialProfile
+    from app.models.import_job import ImportJob
+    from app.models.recurring_transaction import RecurringTransaction
+    from app.models.transaction import Transaction
 
 
 class Account(Base):
@@ -50,6 +55,7 @@ class Account(Base):
         bank_conditions: Bank conditions for this account
         financial_goals: Goals linked to this account
     """
+
     __tablename__ = "accounts"
 
     # Primary key - UUID for security
@@ -70,7 +76,10 @@ class Account(Base):
 
     # Account information
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    account_type: Mapped[AccountType] = mapped_column(StringEnum(AccountType), nullable=False)
+    account_type: Mapped[AccountType] = mapped_column(
+        StringEnum(AccountType),
+        nullable=False
+    )
 
     # Currency
     currency: Mapped[str] = mapped_column(String(3), nullable=False)
@@ -100,8 +109,14 @@ class Account(Base):
     )
 
     # Institution details
-    institution_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    account_number_last4: Mapped[Optional[str]] = mapped_column(String(4), nullable=True)
+    institution_name: Mapped[Optional[str]] = mapped_column(
+        String(255),
+        nullable=True
+    )
+    account_number_last4: Mapped[Optional[str]] = mapped_column(
+        String(4),
+        nullable=True
+    )
     # Full IBAN - encrypted for high-security profiles
     iban: Mapped[Optional[str]] = mapped_column(String(34), nullable=True)
 
@@ -110,7 +125,11 @@ class Account(Base):
 
     # Status
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    is_included_in_totals: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_included_in_totals: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True,
+        nullable=False
+    )
 
     # Timestamps
     created_at: Mapped[datetime] = mapped_column(
@@ -129,27 +148,27 @@ class Account(Base):
     financial_profile: Mapped["FinancialProfile"] = relationship(
         back_populates="accounts"
     )
-    
+
     transactions: WriteOnlyMapped["Transaction"] = relationship(
         back_populates="account",
         cascade="all, delete-orphan"
     )
-    
+
     recurring_transactions: Mapped[List["RecurringTransaction"]] = relationship(
         back_populates="account",
         cascade="all, delete-orphan"
     )
-    
+
     import_jobs: Mapped[List["ImportJob"]] = relationship(
         back_populates="account",
         cascade="all, delete-orphan"
     )
-    
+
     bank_conditions: Mapped[List["BankCondition"]] = relationship(
         back_populates="account",
         cascade="all, delete-orphan"
     )
-    
+
     financial_goals: Mapped[List["FinancialGoal"]] = relationship(
         back_populates="linked_account"
     )

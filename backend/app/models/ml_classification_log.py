@@ -1,10 +1,21 @@
 # app/models/ml_classification_log.py
-from sqlalchemy import Column, String, ForeignKey, DateTime, Boolean, Numeric, Text, Integer
-from sqlalchemy.dialects.postgresql import UUID, JSONB, ARRAY
-from sqlalchemy.orm import relationship
+"""ML Classification Log model for FinancePro v2.1 using SQLAlchemy 2.0 syntax."""
 from datetime import datetime, timezone
+from decimal import Decimal
+from typing import TYPE_CHECKING, Any, Optional
 import uuid
+
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.database import Base
+
+if TYPE_CHECKING:
+    from app.models.category import Category
+    from app.models.financial_profile import FinancialProfile
+    from app.models.merchant import Merchant
+    from app.models.transaction import Transaction
 
 
 class MLClassificationLog(Base):
@@ -41,82 +52,103 @@ class MLClassificationLog(Base):
         suggested_merchant: Merchant predicted by ML model
         actual_category: Actual category (if corrected)
     """
+
     __tablename__ = "ml_classification_logs"
 
     # Primary key - UUID for security
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        index=True
+    )
 
     # Foreign keys
-    transaction_id = Column(
+    transaction_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("transactions.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
-    financial_profile_id = Column(
+    financial_profile_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("financial_profiles.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
-    suggested_category_id = Column(
+    suggested_category_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("categories.id", ondelete="SET NULL"),
         nullable=True,
         index=True
     )
-    suggested_merchant_id = Column(
+    suggested_merchant_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("merchants.id", ondelete="SET NULL"),
         nullable=True
     )
-    actual_category_id = Column(
+    actual_category_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("categories.id", ondelete="SET NULL"),
         nullable=True
     )
 
     # Original input
-    original_description = Column(Text, nullable=False)
+    original_description: Mapped[str] = mapped_column(Text, nullable=False)
 
     # ML suggestions
-    suggested_tags = Column(ARRAY(String), nullable=True)
+    suggested_tags: Mapped[Optional[list[str]]] = mapped_column(
+        ARRAY(String),
+        nullable=True
+    )
 
     # Classification results
-    confidence_score = Column(Numeric(precision=5, scale=4), nullable=False)
+    confidence_score: Mapped[Decimal] = mapped_column(
+        Numeric(precision=5, scale=4),
+        nullable=False
+    )
 
     # Model information
-    model_name = Column(String(100), nullable=False)
-    model_version = Column(String(50), nullable=False)
+    model_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    model_version: Mapped[str] = mapped_column(String(50), nullable=False)
 
     # Features and explanation
-    features_used = Column(JSONB, nullable=True)
-    explanation = Column(Text, nullable=True)
+    features_used: Mapped[Optional[dict[str, Any]]] = mapped_column(
+        JSONB,
+        nullable=True
+    )
+    explanation: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # User feedback
-    was_accepted = Column(Boolean, nullable=True)
-    user_feedback = Column(Text, nullable=True)
+    was_accepted: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
+    user_feedback: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Performance
-    processing_time_ms = Column(Integer, nullable=True)
+    processing_time_ms: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
 
     # Timestamp
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+        index=True
+    )
 
     # Relationships
-    transaction = relationship("Transaction", back_populates="ml_classification_logs")
-    financial_profile = relationship("FinancialProfile", back_populates="ml_classification_logs")
-    suggested_category = relationship(
-        "Category",
+    transaction: Mapped["Transaction"] = relationship(
+        back_populates="ml_classification_logs"
+    )
+    financial_profile: Mapped["FinancialProfile"] = relationship(
+        back_populates="ml_classification_logs"
+    )
+    suggested_category: Mapped[Optional["Category"]] = relationship(
         foreign_keys=[suggested_category_id],
         back_populates="ml_classification_logs_suggested"
     )
-    suggested_merchant = relationship(
-        "Merchant",
+    suggested_merchant: Mapped[Optional["Merchant"]] = relationship(
         foreign_keys=[suggested_merchant_id]
     )
-    actual_category = relationship(
-        "Category",
+    actual_category: Mapped[Optional["Category"]] = relationship(
         foreign_keys=[actual_category_id],
         back_populates="ml_classification_logs_actual"
     )

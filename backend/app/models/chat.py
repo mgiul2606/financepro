@@ -1,12 +1,20 @@
 # app/models/chat.py
-from sqlalchemy import Column, String, ForeignKey, DateTime, Text, Boolean, Integer
-from sqlalchemy.dialects.postgresql import UUID, JSONB
-from sqlalchemy.orm import relationship
+"""Chat models for FinancePro v2.1 using SQLAlchemy 2.0 syntax."""
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING, Any, List, Optional
 import uuid
+
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.database import Base
 from app.db.types import StringEnum
 from app.models.enums import MessageRole
+
+if TYPE_CHECKING:
+    from app.models.financial_profile import FinancialProfile
+    from app.models.user import User
 
 
 class ChatConversation(Base):
@@ -32,19 +40,25 @@ class ChatConversation(Base):
         financial_profile: Financial profile context (if applicable)
         messages: All messages in this conversation
     """
+
     __tablename__ = "chat_conversations"
 
     # Primary key - UUID for security
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        index=True
+    )
 
     # Foreign keys
-    user_id = Column(
+    user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
-    financial_profile_id = Column(
+    financial_profile_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("financial_profiles.id", ondelete="SET NULL"),
         nullable=True,
@@ -52,15 +66,20 @@ class ChatConversation(Base):
     )
 
     # Conversation information
-    title = Column(String(255), nullable=True)
-    summary = Column(Text, nullable=True)
+    title: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Status
-    is_archived = Column(Boolean, default=False, nullable=False)
+    is_archived: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # Timestamps
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
-    updated_at = Column(
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+        index=True
+    )
+    updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
@@ -68,10 +87,11 @@ class ChatConversation(Base):
     )
 
     # Relationships
-    user = relationship("User", back_populates="chat_conversations")
-    financial_profile = relationship("FinancialProfile", back_populates="chat_conversations")
-    messages = relationship(
-        "ChatMessage",
+    user: Mapped["User"] = relationship(back_populates="chat_conversations")
+    financial_profile: Mapped[Optional["FinancialProfile"]] = relationship(
+        back_populates="chat_conversations"
+    )
+    messages: Mapped[List["ChatMessage"]] = relationship(
         back_populates="conversation",
         cascade="all, delete-orphan",
         order_by="ChatMessage.created_at"
@@ -107,13 +127,19 @@ class ChatMessage(Base):
     Relationships:
         conversation: Conversation this message belongs to
     """
+
     __tablename__ = "chat_messages"
 
     # Primary key - UUID for security
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        index=True
+    )
 
     # Foreign keys
-    conversation_id = Column(
+    conversation_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("chat_conversations.id", ondelete="CASCADE"),
         nullable=False,
@@ -121,23 +147,35 @@ class ChatMessage(Base):
     )
 
     # Message information
-    role = Column(StringEnum(MessageRole), nullable=False, index=True)
-    content = Column(Text, nullable=False)
+    role: Mapped[MessageRole] = mapped_column(
+        StringEnum(MessageRole),
+        nullable=False,
+        index=True
+    )
+    content: Mapped[str] = mapped_column(Text, nullable=False)
 
     # LLM tracking
-    tokens_used = Column(Integer, nullable=True)
-    model_name = Column(String(100), nullable=True)
-    processing_time_ms = Column(Integer, nullable=True)
+    tokens_used: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    model_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    processing_time_ms: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
 
     # Additional data (charts, query results, etc.)
-    asset_metadata = Column('metadata', JSONB, nullable=True)
-    # metadata = Column(JSONB, nullable=True)
+    message_metadata: Mapped[Optional[dict[str, Any]]] = mapped_column(
+        'metadata',
+        JSONB,
+        nullable=True
+    )
 
     # Timestamp
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+        index=True
+    )
 
     # Relationships
-    conversation = relationship("ChatConversation", back_populates="messages")
+    conversation: Mapped["ChatConversation"] = relationship(back_populates="messages")
 
     def __repr__(self) -> str:
         content_preview = self.content[:50] + "..." if len(self.content) > 50 else self.content

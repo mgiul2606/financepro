@@ -1,12 +1,20 @@
 # app/models/audit_log.py
-from sqlalchemy import Column, String, ForeignKey, DateTime, Text
-from sqlalchemy.dialects.postgresql import UUID, JSONB
-from sqlalchemy.orm import relationship
+"""Audit Log model for FinancePro v2.1 using SQLAlchemy 2.0 syntax."""
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING, Any, Optional
 import uuid
+
+from sqlalchemy import DateTime, ForeignKey, String, Text
+from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.database import Base
 from app.db.types import StringEnum
 from app.models.enums import EventType, SeverityLevel
+
+if TYPE_CHECKING:
+    from app.models.financial_profile import FinancialProfile
+    from app.models.user import User
 
 
 class AuditLog(Base):
@@ -47,19 +55,25 @@ class AuditLog(Base):
         user: User who triggered the event (if applicable)
         financial_profile: Financial profile context (if applicable)
     """
+
     __tablename__ = "audit_logs"
 
     # Primary key - UUID for security
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        index=True
+    )
 
     # Foreign keys
-    user_id = Column(
+    user_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="SET NULL"),
         nullable=True,
         index=True
     )
-    financial_profile_id = Column(
+    financial_profile_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("financial_profiles.id", ondelete="SET NULL"),
         nullable=True,
@@ -67,32 +81,68 @@ class AuditLog(Base):
     )
 
     # Event information
-    event_type = Column(StringEnum(EventType), nullable=False, index=True)
-    severity = Column(StringEnum(SeverityLevel), default=SeverityLevel.INFO, nullable=False, index=True)
-    action = Column(String(100), nullable=False, index=True)
-    entity_type = Column(String(50), nullable=True, index=True)
-    entity_id = Column(UUID(as_uuid=True), nullable=True)
+    event_type: Mapped[EventType] = mapped_column(
+        StringEnum(EventType),
+        nullable=False,
+        index=True
+    )
+    severity: Mapped[SeverityLevel] = mapped_column(
+        StringEnum(SeverityLevel),
+        default=SeverityLevel.INFO,
+        nullable=False,
+        index=True
+    )
+    action: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    entity_type: Mapped[Optional[str]] = mapped_column(
+        String(50),
+        nullable=True,
+        index=True
+    )
+    entity_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        nullable=True
+    )
 
     # State tracking
-    old_values = Column(JSONB, nullable=True)
-    new_values = Column(JSONB, nullable=True)
+    old_values: Mapped[Optional[dict[str, Any]]] = mapped_column(JSONB, nullable=True)
+    new_values: Mapped[Optional[dict[str, Any]]] = mapped_column(JSONB, nullable=True)
 
     # Request context
-    ip_address = Column(String(45), nullable=True)  # IPv6 max length is 45
-    user_agent = Column(Text, nullable=True)
-    device_info = Column(JSONB, nullable=True)  # Parsed device info as JSON
-    geolocation = Column(String(100), nullable=True)
+    ip_address: Mapped[Optional[str]] = mapped_column(
+        String(45),
+        nullable=True
+    )  # IPv6 max length is 45
+    user_agent: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    device_info: Mapped[Optional[dict[str, Any]]] = mapped_column(
+        JSONB,
+        nullable=True
+    )  # Parsed device info as JSON
+    geolocation: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
 
     # Correlation IDs
-    session_id = Column(UUID(as_uuid=True), nullable=True, index=True)
-    request_id = Column(UUID(as_uuid=True), nullable=True)
+    session_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        nullable=True,
+        index=True
+    )
+    request_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        nullable=True
+    )
 
     # Timestamp
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+        index=True
+    )
 
     # Relationships
-    user = relationship("User", back_populates="audit_logs")
-    financial_profile = relationship("FinancialProfile", back_populates="audit_logs")
+    user: Mapped[Optional["User"]] = relationship(back_populates="audit_logs")
+    financial_profile: Mapped[Optional["FinancialProfile"]] = relationship(
+        back_populates="audit_logs"
+    )
 
     def __repr__(self) -> str:
         return (

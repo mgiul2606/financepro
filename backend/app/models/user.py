@@ -1,10 +1,26 @@
 # app/models/user.py
-from sqlalchemy import Column, String, DateTime, Boolean
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+"""User model - core entity for FinancePro v2.1 using SQLAlchemy 2.0 syntax."""
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING, List, Optional
 import uuid
+
+from sqlalchemy import Boolean, DateTime, String
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.database import Base
+
+if TYPE_CHECKING:
+    from app.models.ai_recommendation import AIRecommendation
+    from app.models.audit_log import AuditLog
+    from app.models.budget import Budget
+    from app.models.category import Category
+    from app.models.chat import ChatConversation
+    from app.models.financial_goal import FinancialGoal
+    from app.models.financial_profile import FinancialProfile
+    from app.models.notification import Notification
+    from app.models.tag import Tag
+    from app.models.user_preferences import UserPreferences
 
 
 class User(Base):
@@ -41,101 +57,127 @@ class User(Base):
         notifications: User notifications
         audit_logs: Audit logs
     """
+
     __tablename__ = "users"
 
     # Primary key - UUID for security
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        index=True
+    )
 
     # Authentication
-    email = Column(String(255), unique=True, index=True, nullable=False)
-    hashed_password = Column(String(255), nullable=False)
+    email: Mapped[str] = mapped_column(
+        String(255),
+        unique=True,
+        index=True,
+        nullable=False
+    )
+    hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
 
     # User information
-    full_name = Column(String(255), nullable=True)
+    full_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
     # Status flags
-    is_active = Column(Boolean, default=True, nullable=False)
-    is_verified = Column(Boolean, default=False, nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # Two-Factor Authentication
-    two_factor_enabled = Column(Boolean, default=False, nullable=False)
-    two_factor_secret = Column(String(255), nullable=True)  # Encrypted at app level
+    two_factor_enabled: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False
+    )
+    two_factor_secret: Mapped[Optional[str]] = mapped_column(
+        String(255),
+        nullable=True
+    )  # Encrypted at app level
 
     # Localization
-    preferred_language = Column(String(10), default='it', nullable=False)  # ISO 639-1
-    timezone = Column(String(50), default='Europe/Rome', nullable=False)  # IANA timezone
+    preferred_language: Mapped[str] = mapped_column(
+        String(10),
+        default='it',
+        nullable=False
+    )  # ISO 639-1
+    timezone: Mapped[str] = mapped_column(
+        String(50),
+        default='Europe/Rome',
+        nullable=False
+    )  # IANA timezone
 
     # Timestamps
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
         nullable=False
     )
-    last_login_at = Column(DateTime(timezone=True), nullable=True)
-    last_login_ip = Column(String(45), nullable=True)  # IPv4/IPv6
+    last_login_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True
+    )
+    last_login_ip: Mapped[Optional[str]] = mapped_column(
+        String(45),
+        nullable=True
+    )  # IPv4/IPv6
 
     # Relationships
-    financial_profiles = relationship(
-        "FinancialProfile",
+    financial_profiles: Mapped[List["FinancialProfile"]] = relationship(
         back_populates="user",
         foreign_keys="FinancialProfile.user_id",
         cascade="all, delete-orphan",
         lazy="noload"
     )
-    preferences = relationship(
-        "UserPreferences",
+    preferences: Mapped[Optional["UserPreferences"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
         uselist=False,
         lazy="noload"
     )
     # USER-level entities (shared across profiles)
-    categories = relationship(
-        "Category",
+    categories: Mapped[List["Category"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
         lazy="noload"
     )
-    tags = relationship(
-        "Tag",
+    tags: Mapped[List["Tag"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
         lazy="noload"
     )
-    budgets = relationship(
-        "Budget",
+    budgets: Mapped[List["Budget"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
         lazy="noload"
     )
-    financial_goals = relationship(
-        "FinancialGoal",
+    financial_goals: Mapped[List["FinancialGoal"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
         lazy="noload"
     )
-    ai_recommendations = relationship(
-        "AIRecommendation",
+    ai_recommendations: Mapped[List["AIRecommendation"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
         lazy="noload"
     )
-    notifications = relationship(
-        "Notification",
+    notifications: Mapped[List["Notification"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
         lazy="noload"
     )
-    audit_logs = relationship(
-        "AuditLog",
+    audit_logs: Mapped[List["AuditLog"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
         lazy="noload"
     )
-    chat_conversations = relationship(
-        "ChatConversation",
+    chat_conversations: Mapped[List["ChatConversation"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
         lazy="noload"

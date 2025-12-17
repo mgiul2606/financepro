@@ -1,22 +1,44 @@
 # app/models/tag.py
-"""Tag model - USER-level for FinancePro v2.1"""
-from sqlalchemy import Column, String, ForeignKey, DateTime, Text, Table
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import relationship
+"""Tag model - USER-level for FinancePro v2.1 using SQLAlchemy 2.0 syntax."""
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING, List, Optional
 import uuid
+
+from sqlalchemy import Column, DateTime, ForeignKey, String, Table, Text
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.database import Base
 from app.db.types import StringEnum
 from app.models.enums import TagType
+
+if TYPE_CHECKING:
+    from app.models.transaction import Transaction
+    from app.models.user import User
 
 
 # Association table for many-to-many relationship between Transaction and Tag
 transaction_tags = Table(
     "transaction_tags",
     Base.metadata,
-    Column("transaction_id", UUID(as_uuid=True), ForeignKey("transactions.id", ondelete="CASCADE"), primary_key=True),
-    Column("tag_id", UUID(as_uuid=True), ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True),
-    Column("created_at", DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    Column(
+        "transaction_id",
+        UUID(as_uuid=True),
+        ForeignKey("transactions.id", ondelete="CASCADE"),
+        primary_key=True
+    ),
+    Column(
+        "tag_id",
+        UUID(as_uuid=True),
+        ForeignKey("tags.id", ondelete="CASCADE"),
+        primary_key=True
+    ),
+    Column(
+        "created_at",
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
 )
 
 
@@ -43,13 +65,19 @@ class Tag(Base):
         color: HEX color for UI
         description: Optional description
     """
+
     __tablename__ = "tags"
 
     # Primary key
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4,
+        index=True
+    )
 
     # Foreign key - USER level (shared across profiles)
-    user_id = Column(
+    user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
@@ -57,14 +85,22 @@ class Tag(Base):
     )
 
     # Tag information
-    name = Column(String(50), nullable=False)  # Must start with #
-    tag_type = Column(StringEnum(TagType), default=TagType.CUSTOM, nullable=False)
-    color = Column(String(7), nullable=True)  # HEX #RRGGBB
-    description = Column(Text, nullable=True)
+    name: Mapped[str] = mapped_column(String(50), nullable=False)  # Must start with #
+    tag_type: Mapped[TagType] = mapped_column(
+        StringEnum(TagType),
+        default=TagType.CUSTOM,
+        nullable=False
+    )
+    color: Mapped[Optional[str]] = mapped_column(String(7), nullable=True)  # HEX #RRGGBB
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Timestamps
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
-    updated_at = Column(
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
@@ -72,9 +108,8 @@ class Tag(Base):
     )
 
     # Relationships
-    user = relationship("User", back_populates="tags")
-    transactions = relationship(
-        "Transaction",
+    user: Mapped["User"] = relationship(back_populates="tags")
+    transactions: Mapped[List["Transaction"]] = relationship(
         secondary=transaction_tags,
         back_populates="tags"
     )
