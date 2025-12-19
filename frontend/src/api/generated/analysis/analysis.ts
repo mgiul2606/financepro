@@ -102,7 +102,6 @@ export const analyzeExpensesApiV1AnalysisExpensesGet = async (
   return customInstance<analyzeExpensesApiV1AnalysisExpensesGetResponse>(
     getAnalyzeExpensesApiV1AnalysisExpensesGetUrl(params),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -321,7 +320,6 @@ export const analyzeIncomeApiV1AnalysisIncomeGet = async (
   return customInstance<analyzeIncomeApiV1AnalysisIncomeGetResponse>(
     getAnalyzeIncomeApiV1AnalysisIncomeGetUrl(params),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -536,7 +534,6 @@ export const getSpendingTrendsApiV1AnalysisTrendsGet = async (
   return customInstance<getSpendingTrendsApiV1AnalysisTrendsGetResponse>(
     getGetSpendingTrendsApiV1AnalysisTrendsGetUrl(params),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -755,7 +752,6 @@ export const compareBudgetVsActualApiV1AnalysisBudgetComparisonGet = async (
   return customInstance<compareBudgetVsActualApiV1AnalysisBudgetComparisonGetResponse>(
     getCompareBudgetVsActualApiV1AnalysisBudgetComparisonGetUrl(params),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -1033,7 +1029,6 @@ export const getCashFlowApiV1AnalysisCashFlowGet = async (
   return customInstance<getCashFlowApiV1AnalysisCashFlowGetResponse>(
     getGetCashFlowApiV1AnalysisCashFlowGetUrl(params),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -1248,7 +1243,6 @@ export const analyzeMultiProfileApiV1AnalysisMultiProfileGet = async (
   return customInstance<analyzeMultiProfileApiV1AnalysisMultiProfileGetResponse>(
     getAnalyzeMultiProfileApiV1AnalysisMultiProfileGetUrl(params),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -1500,7 +1494,6 @@ export const comparePeriodsApiV1AnalysisPeriodComparisonGet = async (
   return customInstance<comparePeriodsApiV1AnalysisPeriodComparisonGetResponse>(
     getComparePeriodsApiV1AnalysisPeriodComparisonGetUrl(params),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },

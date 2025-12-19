@@ -99,7 +99,6 @@ export const listBudgetsApiV1BudgetsGet = async (
   return customInstance<listBudgetsApiV1BudgetsGetResponse>(
     getListBudgetsApiV1BudgetsGetUrl(params),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -299,7 +298,6 @@ export const createBudgetApiV1BudgetsPost = async (
   return customInstance<createBudgetApiV1BudgetsPostResponse>(
     getCreateBudgetApiV1BudgetsPostUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
@@ -418,7 +416,6 @@ export const getBudgetApiV1BudgetsBudgetIdGet = async (
   return customInstance<getBudgetApiV1BudgetsBudgetIdGetResponse>(
     getGetBudgetApiV1BudgetsBudgetIdGetUrl(budgetId),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -627,7 +624,6 @@ export const updateBudgetApiV1BudgetsBudgetIdPatch = async (
   return customInstance<updateBudgetApiV1BudgetsBudgetIdPatchResponse>(
     getUpdateBudgetApiV1BudgetsBudgetIdPatchUrl(budgetId),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "PATCH",
       headers: { "Content-Type": "application/json", ...options?.headers },
@@ -753,7 +749,6 @@ export const deleteBudgetApiV1BudgetsBudgetIdDelete = async (
   return customInstance<deleteBudgetApiV1BudgetsBudgetIdDeleteResponse>(
     getDeleteBudgetApiV1BudgetsBudgetIdDeleteUrl(budgetId),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "DELETE",
     },
@@ -873,7 +868,6 @@ export const getBudgetUsageApiV1BudgetsBudgetIdUsageGet = async (
   return customInstance<getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponse>(
     getGetBudgetUsageApiV1BudgetsBudgetIdUsageGetUrl(budgetId),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -1101,7 +1095,6 @@ export const addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPost = async (
   return customInstance<addCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostResponse>(
     getAddCategoryToBudgetApiV1BudgetsBudgetIdCategoriesPostUrl(budgetId),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
@@ -1250,7 +1243,6 @@ export const removeCategoryFromBudgetApiV1BudgetsBudgetIdCategoriesCategoryIdDel
         categoryId,
       ),
       {
-        type: "AxiosRequestConfig",
         ...options,
         method: "DELETE",
       },

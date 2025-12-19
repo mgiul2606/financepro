@@ -70,7 +70,6 @@ export const listAccountsApiV1AccountsGet = async (
   return customInstance<listAccountsApiV1AccountsGetResponse>(
     getListAccountsApiV1AccountsGetUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -258,7 +257,6 @@ export const createAccountApiV1AccountsPost = async (
   return customInstance<createAccountApiV1AccountsPostResponse>(
     getCreateAccountApiV1AccountsPostUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
@@ -392,7 +390,6 @@ export const getAccountApiV1AccountsAccountIdGet = async (
   return customInstance<getAccountApiV1AccountsAccountIdGetResponse>(
     getGetAccountApiV1AccountsAccountIdGetUrl(accountId),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -605,7 +602,6 @@ export const updateAccountApiV1AccountsAccountIdPut = async (
   return customInstance<updateAccountApiV1AccountsAccountIdPutResponse>(
     getUpdateAccountApiV1AccountsAccountIdPutUrl(accountId),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "PUT",
       headers: { "Content-Type": "application/json", ...options?.headers },
@@ -731,7 +727,6 @@ export const deleteAccountApiV1AccountsAccountIdDelete = async (
   return customInstance<deleteAccountApiV1AccountsAccountIdDeleteResponse>(
     getDeleteAccountApiV1AccountsAccountIdDeleteUrl(accountId),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "DELETE",
     },
@@ -852,7 +847,6 @@ export const getAccountBalanceApiV1AccountsAccountIdBalanceGet = async (
   return customInstance<getAccountBalanceApiV1AccountsAccountIdBalanceGetResponse>(
     getGetAccountBalanceApiV1AccountsAccountIdBalanceGetUrl(accountId),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },

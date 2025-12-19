@@ -81,7 +81,6 @@ export const registerApiV1AuthRegisterPost = async (
   return customInstance<registerApiV1AuthRegisterPostResponse>(
     getRegisterApiV1AuthRegisterPostUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
@@ -200,7 +199,6 @@ export const loginApiV1AuthLoginPost = async (
   return customInstance<loginApiV1AuthLoginPostResponse>(
     getLoginApiV1AuthLoginPostUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
@@ -305,7 +303,6 @@ export const getMeApiV1AuthMeGet = async (
   return customInstance<getMeApiV1AuthMeGetResponse>(
     getGetMeApiV1AuthMeGetUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
