@@ -4,28 +4,45 @@ import { api } from '../services/api';
 /**
  * Custom Axios instance for Orval
  * This mutator uses the configured axios instance with interceptors
- * Handles both URL strings and config objects from orval-generated code
+ * Handles both URL strings and RequestInit objects from orval-generated code
  *
  * Returns response in the format expected by Orval-generated types:
  * { data: ResponseBody, status: number, headers: Headers }
  */
 export const customInstance = <T>(
-  config: AxiosRequestConfig | string,
-  options?: AxiosRequestConfig
+  config: string,
+  options?: RequestInit
 ): Promise<T> => {
-  // If config is a string (URL), convert to proper config object
-  let requestConfig: AxiosRequestConfig = typeof config === 'string'
-    ? { url: config, ...options }
-    : { ...config, ...options };
+  // Convert RequestInit to AxiosRequestConfig
+  const requestConfig: AxiosRequestConfig = {
+    url: config,
+    method: options?.method as AxiosRequestConfig['method'],
+    signal: options?.signal as any,
+  };
 
-  // Orval generates fetch-style 'body' but Axios uses 'data'
-  // Convert body to data if present
-  if ('body' in requestConfig && requestConfig.body !== undefined) {
-    requestConfig = {
-      ...requestConfig,
-      data: requestConfig.body,
-    };
-    delete (requestConfig as any).body;
+  // Convert headers from HeadersInit to plain object
+  if (options?.headers) {
+    const headers = options.headers;
+    if (headers instanceof Headers) {
+      const headersObj: Record<string, string> = {};
+      headers.forEach((value, key) => {
+        headersObj[key] = value;
+      });
+      requestConfig.headers = headersObj;
+    } else if (Array.isArray(headers)) {
+      const headersObj: Record<string, string> = {};
+      headers.forEach(([key, value]) => {
+        headersObj[key] = value;
+      });
+      requestConfig.headers = headersObj;
+    } else {
+      requestConfig.headers = headers as Record<string, string>;
+    }
+  }
+
+  // Convert body to data (Orval generates fetch-style 'body' but Axios uses 'data')
+  if ('body' in (options || {}) && options?.body !== undefined) {
+    requestConfig.data = options.body;
   }
 
   // Return response in Orval-expected format: { data, status, headers }
