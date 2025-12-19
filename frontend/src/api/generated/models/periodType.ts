@@ -19,15 +19,14 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 /**
  * Budget period types
  */
-export type PeriodType = typeof PeriodType[keyof typeof PeriodType];
-
+export type PeriodType = (typeof PeriodType)[keyof typeof PeriodType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const PeriodType = {
-  Daily: 'daily',
-  Weekly: 'weekly',
-  Monthly: 'monthly',
-  Quarterly: 'quarterly',
-  Yearly: 'yearly',
-  Custom: 'custom',
+  Daily: "daily",
+  Weekly: "weekly",
+  Monthly: "monthly",
+  Quarterly: "quarterly",
+  Yearly: "yearly",
+  Custom: "custom",
 } as const;

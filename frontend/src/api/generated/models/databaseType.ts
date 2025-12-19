@@ -19,11 +19,10 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 /**
  * Deprecated: Supported database types for distributed storage
  */
-export type DatabaseType = typeof DatabaseType[keyof typeof DatabaseType];
-
+export type DatabaseType = (typeof DatabaseType)[keyof typeof DatabaseType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DatabaseType = {
-  Postgresql: 'postgresql',
-  Mssql: 'mssql',
+  Postgresql: "postgresql",
+  Mssql: "mssql",
 } as const;

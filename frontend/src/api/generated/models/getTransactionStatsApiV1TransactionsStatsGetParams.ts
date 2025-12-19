@@ -17,20 +17,20 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 export type GetTransactionStatsApiV1TransactionsStatsGetParams = {
-/**
- * Filter by financial profile ID
- */
-profile_id?: string | null;
-/**
- * Filter by account ID
- */
-account_id?: string | null;
-/**
- * Statistics from this date (inclusive)
- */
-date_from?: string | null;
-/**
- * Statistics to this date (inclusive)
- */
-date_to?: string | null;
+  /**
+   * Filter by financial profile ID
+   */
+  profile_id?: string | null;
+  /**
+   * Filter by account ID
+   */
+  account_id?: string | null;
+  /**
+   * Statistics from this date (inclusive)
+   */
+  date_from?: string | null;
+  /**
+   * Statistics to this date (inclusive)
+   */
+  date_to?: string | null;
 };

@@ -19,14 +19,13 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 /**
  * Status of financial goals
  */
-export type GoalStatus = typeof GoalStatus[keyof typeof GoalStatus];
-
+export type GoalStatus = (typeof GoalStatus)[keyof typeof GoalStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const GoalStatus = {
-  Active: 'active',
-  Completed: 'completed',
-  Paused: 'paused',
-  Cancelled: 'cancelled',
-  Failed: 'failed',
+  Active: "active",
+  Completed: "completed",
+  Paused: "paused",
+  Cancelled: "cancelled",
+  Failed: "failed",
 } as const;

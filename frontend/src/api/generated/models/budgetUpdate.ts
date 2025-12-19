@@ -15,17 +15,17 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { BudgetUpdateName } from './budgetUpdateName';
-import type { BudgetUpdatePeriodType } from './budgetUpdatePeriodType';
-import type { BudgetUpdateStartDate } from './budgetUpdateStartDate';
-import type { BudgetUpdateEndDate } from './budgetUpdateEndDate';
-import type { BudgetUpdateTotalAmount } from './budgetUpdateTotalAmount';
-import type { BudgetUpdateCurrency } from './budgetUpdateCurrency';
-import type { BudgetUpdateScopeType } from './budgetUpdateScopeType';
-import type { BudgetUpdateScopeProfileIds } from './budgetUpdateScopeProfileIds';
-import type { BudgetUpdateRolloverEnabled } from './budgetUpdateRolloverEnabled';
-import type { BudgetUpdateIsActive } from './budgetUpdateIsActive';
-import type { BudgetUpdateAlertThresholdPercent } from './budgetUpdateAlertThresholdPercent';
+import type { BudgetUpdateName } from "./budgetUpdateName";
+import type { BudgetUpdatePeriodType } from "./budgetUpdatePeriodType";
+import type { BudgetUpdateStartDate } from "./budgetUpdateStartDate";
+import type { BudgetUpdateEndDate } from "./budgetUpdateEndDate";
+import type { BudgetUpdateTotalAmount } from "./budgetUpdateTotalAmount";
+import type { BudgetUpdateCurrency } from "./budgetUpdateCurrency";
+import type { BudgetUpdateScopeType } from "./budgetUpdateScopeType";
+import type { BudgetUpdateScopeProfileIds } from "./budgetUpdateScopeProfileIds";
+import type { BudgetUpdateRolloverEnabled } from "./budgetUpdateRolloverEnabled";
+import type { BudgetUpdateIsActive } from "./budgetUpdateIsActive";
+import type { BudgetUpdateAlertThresholdPercent } from "./budgetUpdateAlertThresholdPercent";
 
 /**
  * Schema for updating an existing budget.

@@ -15,14 +15,14 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { FinancialGoalResponseDescription } from './financialGoalResponseDescription';
-import type { GoalType } from './goalType';
-import type { FinancialGoalResponseScopeProfileIds } from './financialGoalResponseScopeProfileIds';
-import type { FinancialGoalResponseLinkedAccountId } from './financialGoalResponseLinkedAccountId';
-import type { FinancialGoalResponseMonthlyContribution } from './financialGoalResponseMonthlyContribution';
-import type { GoalStatus } from './goalStatus';
-import type { FinancialGoalResponseAchievementProbability } from './financialGoalResponseAchievementProbability';
-import type { FinancialGoalResponseMilestones } from './financialGoalResponseMilestones';
+import type { FinancialGoalResponseDescription } from "./financialGoalResponseDescription";
+import type { GoalType } from "./goalType";
+import type { FinancialGoalResponseScopeProfileIds } from "./financialGoalResponseScopeProfileIds";
+import type { FinancialGoalResponseLinkedAccountId } from "./financialGoalResponseLinkedAccountId";
+import type { FinancialGoalResponseMonthlyContribution } from "./financialGoalResponseMonthlyContribution";
+import type { GoalStatus } from "./goalStatus";
+import type { FinancialGoalResponseAchievementProbability } from "./financialGoalResponseAchievementProbability";
+import type { FinancialGoalResponseMilestones } from "./financialGoalResponseMilestones";
 
 /**
  * Complete financial goal schema returned by API endpoints.

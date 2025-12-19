@@ -15,14 +15,14 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { ImportJobResponseAccountId } from './importJobResponseAccountId';
-import type { ImportJobResponseTotalRows } from './importJobResponseTotalRows';
-import type { ImportJobResponseProcessedRows } from './importJobResponseProcessedRows';
-import type { ImportJobResponseSuccessfulImports } from './importJobResponseSuccessfulImports';
-import type { ImportJobResponseFailedImports } from './importJobResponseFailedImports';
-import type { ImportJobResponseSkippedDuplicates } from './importJobResponseSkippedDuplicates';
-import type { ImportJobResponseErrorMessage } from './importJobResponseErrorMessage';
-import type { ImportJobResponseCompletedAt } from './importJobResponseCompletedAt';
+import type { ImportJobResponseAccountId } from "./importJobResponseAccountId";
+import type { ImportJobResponseTotalRows } from "./importJobResponseTotalRows";
+import type { ImportJobResponseProcessedRows } from "./importJobResponseProcessedRows";
+import type { ImportJobResponseSuccessfulImports } from "./importJobResponseSuccessfulImports";
+import type { ImportJobResponseFailedImports } from "./importJobResponseFailedImports";
+import type { ImportJobResponseSkippedDuplicates } from "./importJobResponseSkippedDuplicates";
+import type { ImportJobResponseErrorMessage } from "./importJobResponseErrorMessage";
+import type { ImportJobResponseCompletedAt } from "./importJobResponseCompletedAt";
 
 export interface ImportJobResponse {
   id: string;

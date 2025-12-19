@@ -17,15 +17,15 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 export type ListContributionsApiV1GoalsGoalIdContributionsGetParams = {
-start_date?: string | null;
-end_date?: string | null;
-/**
- * @minimum 1
- * @maximum 500
- */
-limit?: number;
-/**
- * @minimum 0
- */
-offset?: number;
+  start_date?: string | null;
+  end_date?: string | null;
+  /**
+   * @minimum 1
+   * @maximum 500
+   */
+  limit?: number;
+  /**
+   * @minimum 0
+   */
+  offset?: number;
 };

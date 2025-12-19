@@ -15,9 +15,7 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import {
-  useQuery
-} from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 import type {
   DataTag,
   DefinedInitialDataOptions,
@@ -27,239 +25,356 @@ import type {
   QueryKey,
   UndefinedInitialDataOptions,
   UseQueryOptions,
-  UseQueryResult
-} from '@tanstack/react-query';
+  UseQueryResult,
+} from "@tanstack/react-query";
 
-import { customInstance } from '../../client';
-
+import { customInstance } from "../../client";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
-
-
 
 /**
  * Health check endpoint
  * @summary Health Check
  */
 export type healthCheckHealthGetResponse200 = {
-  data: unknown
-  status: 200
-}
-    
-export type healthCheckHealthGetResponseSuccess = (healthCheckHealthGetResponse200) & {
-  headers: Headers;
+  data: unknown;
+  status: 200;
 };
-;
 
-export type healthCheckHealthGetResponse = (healthCheckHealthGetResponseSuccess)
+export type healthCheckHealthGetResponseSuccess =
+  healthCheckHealthGetResponse200 & {
+    headers: Headers;
+  };
+export type healthCheckHealthGetResponse = healthCheckHealthGetResponseSuccess;
 
 export const getHealthCheckHealthGetUrl = () => {
+  return `/health`;
+};
 
-
-  
-
-  return `/health`
-}
-
-export const healthCheckHealthGet = async ( options?: RequestInit): Promise<healthCheckHealthGetResponse> => {
-  
-  return customInstance<healthCheckHealthGetResponse>(getHealthCheckHealthGetUrl(),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
-
-
-
-
+export const healthCheckHealthGet = async (
+  options?: RequestInit,
+): Promise<healthCheckHealthGetResponse> => {
+  return customInstance<healthCheckHealthGetResponse>(
+    getHealthCheckHealthGetUrl(),
+    {
+      type: "AxiosRequestConfig",
+      ...options,
+      method: "GET",
+    },
+  );
+};
 
 export const getHealthCheckHealthGetQueryKey = () => {
-    return [
-    `/health`
-    ] as const;
-    }
+  return [`/health`] as const;
+};
 
-    
-export const getHealthCheckHealthGetQueryOptions = <TData = Awaited<ReturnType<typeof healthCheckHealthGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthCheckHealthGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
+export const getHealthCheckHealthGetQueryOptions = <
+  TData = Awaited<ReturnType<typeof healthCheckHealthGet>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof healthCheckHealthGet>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getHealthCheckHealthGetQueryKey();
 
-  const queryKey =  queryOptions?.queryKey ?? getHealthCheckHealthGetQueryKey();
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof healthCheckHealthGet>>
+  > = ({ signal }) => healthCheckHealthGet({ signal, ...requestOptions });
 
-  
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof healthCheckHealthGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof healthCheckHealthGet>>> = ({ signal }) => healthCheckHealthGet({ signal, ...requestOptions });
+export type HealthCheckHealthGetQueryResult = NonNullable<
+  Awaited<ReturnType<typeof healthCheckHealthGet>>
+>;
+export type HealthCheckHealthGetQueryError = unknown;
 
-      
-
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof healthCheckHealthGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type HealthCheckHealthGetQueryResult = NonNullable<Awaited<ReturnType<typeof healthCheckHealthGet>>>
-export type HealthCheckHealthGetQueryError = unknown
-
-
-export function useHealthCheckHealthGet<TData = Awaited<ReturnType<typeof healthCheckHealthGet>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthCheckHealthGet>>, TError, TData>> & Pick<
+export function useHealthCheckHealthGet<
+  TData = Awaited<ReturnType<typeof healthCheckHealthGet>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof healthCheckHealthGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof healthCheckHealthGet>>,
           TError,
           Awaited<ReturnType<typeof healthCheckHealthGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useHealthCheckHealthGet<TData = Awaited<ReturnType<typeof healthCheckHealthGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthCheckHealthGet>>, TError, TData>> & Pick<
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useHealthCheckHealthGet<
+  TData = Awaited<ReturnType<typeof healthCheckHealthGet>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof healthCheckHealthGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof healthCheckHealthGet>>,
           TError,
           Awaited<ReturnType<typeof healthCheckHealthGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useHealthCheckHealthGet<TData = Awaited<ReturnType<typeof healthCheckHealthGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthCheckHealthGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useHealthCheckHealthGet<
+  TData = Awaited<ReturnType<typeof healthCheckHealthGet>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof healthCheckHealthGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Health Check
  */
 
-export function useHealthCheckHealthGet<TData = Awaited<ReturnType<typeof healthCheckHealthGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthCheckHealthGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useHealthCheckHealthGet<
+  TData = Awaited<ReturnType<typeof healthCheckHealthGet>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof healthCheckHealthGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getHealthCheckHealthGetQueryOptions(options);
 
-  const queryOptions = getHealthCheckHealthGetQueryOptions(options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
 
 /**
  * Version information
  * @summary Version Info
  */
 export type versionInfoVersionGetResponse200 = {
-  data: unknown
-  status: 200
-}
-    
-export type versionInfoVersionGetResponseSuccess = (versionInfoVersionGetResponse200) & {
-  headers: Headers;
+  data: unknown;
+  status: 200;
 };
-;
 
-export type versionInfoVersionGetResponse = (versionInfoVersionGetResponseSuccess)
+export type versionInfoVersionGetResponseSuccess =
+  versionInfoVersionGetResponse200 & {
+    headers: Headers;
+  };
+export type versionInfoVersionGetResponse =
+  versionInfoVersionGetResponseSuccess;
 
 export const getVersionInfoVersionGetUrl = () => {
+  return `/version`;
+};
 
-
-  
-
-  return `/version`
-}
-
-export const versionInfoVersionGet = async ( options?: RequestInit): Promise<versionInfoVersionGetResponse> => {
-  
-  return customInstance<versionInfoVersionGetResponse>(getVersionInfoVersionGetUrl(),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
-
-
-
-
+export const versionInfoVersionGet = async (
+  options?: RequestInit,
+): Promise<versionInfoVersionGetResponse> => {
+  return customInstance<versionInfoVersionGetResponse>(
+    getVersionInfoVersionGetUrl(),
+    {
+      type: "AxiosRequestConfig",
+      ...options,
+      method: "GET",
+    },
+  );
+};
 
 export const getVersionInfoVersionGetQueryKey = () => {
-    return [
-    `/version`
-    ] as const;
-    }
+  return [`/version`] as const;
+};
 
-    
-export const getVersionInfoVersionGetQueryOptions = <TData = Awaited<ReturnType<typeof versionInfoVersionGet>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof versionInfoVersionGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
+export const getVersionInfoVersionGetQueryOptions = <
+  TData = Awaited<ReturnType<typeof versionInfoVersionGet>>,
+  TError = unknown,
+>(options?: {
+  query?: Partial<
+    UseQueryOptions<
+      Awaited<ReturnType<typeof versionInfoVersionGet>>,
+      TError,
+      TData
+    >
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+  const queryKey = queryOptions?.queryKey ?? getVersionInfoVersionGetQueryKey();
 
-  const queryKey =  queryOptions?.queryKey ?? getVersionInfoVersionGetQueryKey();
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof versionInfoVersionGet>>
+  > = ({ signal }) => versionInfoVersionGet({ signal, ...requestOptions });
 
-  
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof versionInfoVersionGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof versionInfoVersionGet>>> = ({ signal }) => versionInfoVersionGet({ signal, ...requestOptions });
+export type VersionInfoVersionGetQueryResult = NonNullable<
+  Awaited<ReturnType<typeof versionInfoVersionGet>>
+>;
+export type VersionInfoVersionGetQueryError = unknown;
 
-      
-
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof versionInfoVersionGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type VersionInfoVersionGetQueryResult = NonNullable<Awaited<ReturnType<typeof versionInfoVersionGet>>>
-export type VersionInfoVersionGetQueryError = unknown
-
-
-export function useVersionInfoVersionGet<TData = Awaited<ReturnType<typeof versionInfoVersionGet>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof versionInfoVersionGet>>, TError, TData>> & Pick<
+export function useVersionInfoVersionGet<
+  TData = Awaited<ReturnType<typeof versionInfoVersionGet>>,
+  TError = unknown,
+>(
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof versionInfoVersionGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof versionInfoVersionGet>>,
           TError,
           Awaited<ReturnType<typeof versionInfoVersionGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useVersionInfoVersionGet<TData = Awaited<ReturnType<typeof versionInfoVersionGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof versionInfoVersionGet>>, TError, TData>> & Pick<
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useVersionInfoVersionGet<
+  TData = Awaited<ReturnType<typeof versionInfoVersionGet>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof versionInfoVersionGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof versionInfoVersionGet>>,
           TError,
           Awaited<ReturnType<typeof versionInfoVersionGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useVersionInfoVersionGet<TData = Awaited<ReturnType<typeof versionInfoVersionGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof versionInfoVersionGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useVersionInfoVersionGet<
+  TData = Awaited<ReturnType<typeof versionInfoVersionGet>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof versionInfoVersionGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Version Info
  */
 
-export function useVersionInfoVersionGet<TData = Awaited<ReturnType<typeof versionInfoVersionGet>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof versionInfoVersionGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useVersionInfoVersionGet<
+  TData = Awaited<ReturnType<typeof versionInfoVersionGet>>,
+  TError = unknown,
+>(
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof versionInfoVersionGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getVersionInfoVersionGetQueryOptions(options);
 
-  const queryOptions = getVersionInfoVersionGetQueryOptions(options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
-

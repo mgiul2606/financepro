@@ -19,12 +19,12 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 /**
  * Optimization priority levels
  */
-export type OptimizationPriority = typeof OptimizationPriority[keyof typeof OptimizationPriority];
-
+export type OptimizationPriority =
+  (typeof OptimizationPriority)[keyof typeof OptimizationPriority];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const OptimizationPriority = {
-  High: 'high',
-  Medium: 'medium',
-  Low: 'low',
+  High: "high",
+  Medium: "medium",
+  Low: "low",
 } as const;

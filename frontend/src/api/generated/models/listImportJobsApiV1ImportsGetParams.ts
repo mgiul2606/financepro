@@ -15,24 +15,24 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { ImportStatus } from './importStatus';
+import type { ImportStatus } from "./importStatus";
 
 export type ListImportJobsApiV1ImportsGetParams = {
-/**
- * Filter by profile
- */
-profile_id?: string | null;
-/**
- * Filter by status
- */
-status?: ImportStatus | null;
-/**
- * @minimum 1
- * @maximum 200
- */
-limit?: number;
-/**
- * @minimum 0
- */
-offset?: number;
+  /**
+   * Filter by profile
+   */
+  profile_id?: string | null;
+  /**
+   * Filter by status
+   */
+  status?: ImportStatus | null;
+  /**
+   * @minimum 1
+   * @maximum 200
+   */
+  limit?: number;
+  /**
+   * @minimum 0
+   */
+  offset?: number;
 };

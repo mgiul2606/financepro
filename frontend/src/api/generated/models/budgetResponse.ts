@@ -15,13 +15,13 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { PeriodType } from './periodType';
-import type { BudgetResponseEndDate } from './budgetResponseEndDate';
-import type { BudgetResponseScopeProfileIds } from './budgetResponseScopeProfileIds';
-import type { BudgetResponseTotalSpent } from './budgetResponseTotalSpent';
-import type { BudgetResponseRemaining } from './budgetResponseRemaining';
-import type { BudgetResponseUsagePercentage } from './budgetResponseUsagePercentage';
-import type { BudgetResponseCategoryAllocations } from './budgetResponseCategoryAllocations';
+import type { PeriodType } from "./periodType";
+import type { BudgetResponseEndDate } from "./budgetResponseEndDate";
+import type { BudgetResponseScopeProfileIds } from "./budgetResponseScopeProfileIds";
+import type { BudgetResponseTotalSpent } from "./budgetResponseTotalSpent";
+import type { BudgetResponseRemaining } from "./budgetResponseRemaining";
+import type { BudgetResponseUsagePercentage } from "./budgetResponseUsagePercentage";
+import type { BudgetResponseCategoryAllocations } from "./budgetResponseCategoryAllocations";
 
 /**
  * Complete budget schema returned by API endpoints.

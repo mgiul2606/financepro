@@ -15,8 +15,8 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { SavingsSummaryByCategory } from './savingsSummaryByCategory';
-import type { SavingsSummaryTopInsightsItem } from './savingsSummaryTopInsightsItem';
+import type { SavingsSummaryByCategory } from "./savingsSummaryByCategory";
+import type { SavingsSummaryTopInsightsItem } from "./savingsSummaryTopInsightsItem";
 
 /**
  * Summary of potential savings

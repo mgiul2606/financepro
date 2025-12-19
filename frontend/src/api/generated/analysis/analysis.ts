@@ -15,9 +15,7 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import {
-  useQuery
-} from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 import type {
   DataTag,
   DefinedInitialDataOptions,
@@ -27,8 +25,8 @@ import type {
   QueryKey,
   UndefinedInitialDataOptions,
   UseQueryOptions,
-  UseQueryResult
-} from '@tanstack/react-query';
+  UseQueryResult,
+} from "@tanstack/react-query";
 
 import type {
   AnalyzeExpensesApiV1AnalysisExpensesGetParams,
@@ -45,902 +43,1659 @@ import type {
   IncomeAnalysisResponse,
   MultiProfileAnalysisResponse,
   PeriodComparisonResponse,
-  TrendAnalysisResponse
-} from '.././models';
+  TrendAnalysisResponse,
+} from ".././models";
 
-import { customInstance } from '../../client';
-
+import { customInstance } from "../../client";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
-
-
 
 /**
  * Get expense analysis by category for a period
  * @summary Analyze expenses
  */
 export type analyzeExpensesApiV1AnalysisExpensesGetResponse200 = {
-  data: ExpenseAnalysisResponse
-  status: 200
-}
+  data: ExpenseAnalysisResponse;
+  status: 200;
+};
 
 export type analyzeExpensesApiV1AnalysisExpensesGetResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type analyzeExpensesApiV1AnalysisExpensesGetResponseSuccess = (analyzeExpensesApiV1AnalysisExpensesGetResponse200) & {
-  headers: Headers;
-};
-export type analyzeExpensesApiV1AnalysisExpensesGetResponseError = (analyzeExpensesApiV1AnalysisExpensesGetResponse422) & {
-  headers: Headers;
+  data: HTTPValidationError;
+  status: 422;
 };
 
-export type analyzeExpensesApiV1AnalysisExpensesGetResponse = (analyzeExpensesApiV1AnalysisExpensesGetResponseSuccess | analyzeExpensesApiV1AnalysisExpensesGetResponseError)
+export type analyzeExpensesApiV1AnalysisExpensesGetResponseSuccess =
+  analyzeExpensesApiV1AnalysisExpensesGetResponse200 & {
+    headers: Headers;
+  };
+export type analyzeExpensesApiV1AnalysisExpensesGetResponseError =
+  analyzeExpensesApiV1AnalysisExpensesGetResponse422 & {
+    headers: Headers;
+  };
 
-export const getAnalyzeExpensesApiV1AnalysisExpensesGetUrl = (params: AnalyzeExpensesApiV1AnalysisExpensesGetParams,) => {
+export type analyzeExpensesApiV1AnalysisExpensesGetResponse =
+  | analyzeExpensesApiV1AnalysisExpensesGetResponseSuccess
+  | analyzeExpensesApiV1AnalysisExpensesGetResponseError;
+
+export const getAnalyzeExpensesApiV1AnalysisExpensesGetUrl = (
+  params: AnalyzeExpensesApiV1AnalysisExpensesGetParams,
+) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
-    
     if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
+      normalizedParams.append(key, value === null ? "null" : value.toString());
     }
   });
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/analysis/expenses?${stringifiedParams}` : `/api/v1/analysis/expenses`
-}
+  return stringifiedParams.length > 0
+    ? `/api/v1/analysis/expenses?${stringifiedParams}`
+    : `/api/v1/analysis/expenses`;
+};
 
-export const analyzeExpensesApiV1AnalysisExpensesGet = async (params: AnalyzeExpensesApiV1AnalysisExpensesGetParams, options?: RequestInit): Promise<analyzeExpensesApiV1AnalysisExpensesGetResponse> => {
-  
-  return customInstance<analyzeExpensesApiV1AnalysisExpensesGetResponse>(getAnalyzeExpensesApiV1AnalysisExpensesGetUrl(params),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
+export const analyzeExpensesApiV1AnalysisExpensesGet = async (
+  params: AnalyzeExpensesApiV1AnalysisExpensesGetParams,
+  options?: RequestInit,
+): Promise<analyzeExpensesApiV1AnalysisExpensesGetResponse> => {
+  return customInstance<analyzeExpensesApiV1AnalysisExpensesGetResponse>(
+    getAnalyzeExpensesApiV1AnalysisExpensesGetUrl(params),
+    {
+      type: "AxiosRequestConfig",
+      ...options,
+      method: "GET",
+    },
+  );
+};
 
-
-
-
-
-export const getAnalyzeExpensesApiV1AnalysisExpensesGetQueryKey = (params?: AnalyzeExpensesApiV1AnalysisExpensesGetParams,) => {
-    return [
-    `/api/v1/analysis/expenses`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getAnalyzeExpensesApiV1AnalysisExpensesGetQueryOptions = <TData = Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>, TError = HTTPValidationError>(params: AnalyzeExpensesApiV1AnalysisExpensesGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getAnalyzeExpensesApiV1AnalysisExpensesGetQueryKey = (
+  params?: AnalyzeExpensesApiV1AnalysisExpensesGetParams,
 ) => {
+  return [`/api/v1/analysis/expenses`, ...(params ? [params] : [])] as const;
+};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+export const getAnalyzeExpensesApiV1AnalysisExpensesGetQueryOptions = <
+  TData = Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>,
+  TError = HTTPValidationError,
+>(
+  params: AnalyzeExpensesApiV1AnalysisExpensesGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getAnalyzeExpensesApiV1AnalysisExpensesGetQueryKey(params);
+  const queryKey =
+    queryOptions?.queryKey ??
+    getAnalyzeExpensesApiV1AnalysisExpensesGetQueryKey(params);
 
-  
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>
+  > = ({ signal }) =>
+    analyzeExpensesApiV1AnalysisExpensesGet(params, {
+      signal,
+      ...requestOptions,
+    });
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>> = ({ signal }) => analyzeExpensesApiV1AnalysisExpensesGet(params, { signal, ...requestOptions });
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-      
+export type AnalyzeExpensesApiV1AnalysisExpensesGetQueryResult = NonNullable<
+  Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>
+>;
+export type AnalyzeExpensesApiV1AnalysisExpensesGetQueryError =
+  HTTPValidationError;
 
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AnalyzeExpensesApiV1AnalysisExpensesGetQueryResult = NonNullable<Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>>
-export type AnalyzeExpensesApiV1AnalysisExpensesGetQueryError = HTTPValidationError
-
-
-export function useAnalyzeExpensesApiV1AnalysisExpensesGet<TData = Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>, TError = HTTPValidationError>(
- params: AnalyzeExpensesApiV1AnalysisExpensesGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>, TError, TData>> & Pick<
+export function useAnalyzeExpensesApiV1AnalysisExpensesGet<
+  TData = Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>,
+  TError = HTTPValidationError,
+>(
+  params: AnalyzeExpensesApiV1AnalysisExpensesGetParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>,
           TError,
           Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAnalyzeExpensesApiV1AnalysisExpensesGet<TData = Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>, TError = HTTPValidationError>(
- params: AnalyzeExpensesApiV1AnalysisExpensesGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>, TError, TData>> & Pick<
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAnalyzeExpensesApiV1AnalysisExpensesGet<
+  TData = Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>,
+  TError = HTTPValidationError,
+>(
+  params: AnalyzeExpensesApiV1AnalysisExpensesGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>,
           TError,
           Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAnalyzeExpensesApiV1AnalysisExpensesGet<TData = Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>, TError = HTTPValidationError>(
- params: AnalyzeExpensesApiV1AnalysisExpensesGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAnalyzeExpensesApiV1AnalysisExpensesGet<
+  TData = Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>,
+  TError = HTTPValidationError,
+>(
+  params: AnalyzeExpensesApiV1AnalysisExpensesGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Analyze expenses
  */
 
-export function useAnalyzeExpensesApiV1AnalysisExpensesGet<TData = Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>, TError = HTTPValidationError>(
- params: AnalyzeExpensesApiV1AnalysisExpensesGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useAnalyzeExpensesApiV1AnalysisExpensesGet<
+  TData = Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>,
+  TError = HTTPValidationError,
+>(
+  params: AnalyzeExpensesApiV1AnalysisExpensesGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof analyzeExpensesApiV1AnalysisExpensesGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getAnalyzeExpensesApiV1AnalysisExpensesGetQueryOptions(
+    params,
+    options,
+  );
 
-  const queryOptions = getAnalyzeExpensesApiV1AnalysisExpensesGetQueryOptions(params,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
 
 /**
  * Get income analysis by category for a period
  * @summary Analyze income
  */
 export type analyzeIncomeApiV1AnalysisIncomeGetResponse200 = {
-  data: IncomeAnalysisResponse
-  status: 200
-}
+  data: IncomeAnalysisResponse;
+  status: 200;
+};
 
 export type analyzeIncomeApiV1AnalysisIncomeGetResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type analyzeIncomeApiV1AnalysisIncomeGetResponseSuccess = (analyzeIncomeApiV1AnalysisIncomeGetResponse200) & {
-  headers: Headers;
-};
-export type analyzeIncomeApiV1AnalysisIncomeGetResponseError = (analyzeIncomeApiV1AnalysisIncomeGetResponse422) & {
-  headers: Headers;
+  data: HTTPValidationError;
+  status: 422;
 };
 
-export type analyzeIncomeApiV1AnalysisIncomeGetResponse = (analyzeIncomeApiV1AnalysisIncomeGetResponseSuccess | analyzeIncomeApiV1AnalysisIncomeGetResponseError)
+export type analyzeIncomeApiV1AnalysisIncomeGetResponseSuccess =
+  analyzeIncomeApiV1AnalysisIncomeGetResponse200 & {
+    headers: Headers;
+  };
+export type analyzeIncomeApiV1AnalysisIncomeGetResponseError =
+  analyzeIncomeApiV1AnalysisIncomeGetResponse422 & {
+    headers: Headers;
+  };
 
-export const getAnalyzeIncomeApiV1AnalysisIncomeGetUrl = (params: AnalyzeIncomeApiV1AnalysisIncomeGetParams,) => {
+export type analyzeIncomeApiV1AnalysisIncomeGetResponse =
+  | analyzeIncomeApiV1AnalysisIncomeGetResponseSuccess
+  | analyzeIncomeApiV1AnalysisIncomeGetResponseError;
+
+export const getAnalyzeIncomeApiV1AnalysisIncomeGetUrl = (
+  params: AnalyzeIncomeApiV1AnalysisIncomeGetParams,
+) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
-    
     if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
+      normalizedParams.append(key, value === null ? "null" : value.toString());
     }
   });
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/analysis/income?${stringifiedParams}` : `/api/v1/analysis/income`
-}
+  return stringifiedParams.length > 0
+    ? `/api/v1/analysis/income?${stringifiedParams}`
+    : `/api/v1/analysis/income`;
+};
 
-export const analyzeIncomeApiV1AnalysisIncomeGet = async (params: AnalyzeIncomeApiV1AnalysisIncomeGetParams, options?: RequestInit): Promise<analyzeIncomeApiV1AnalysisIncomeGetResponse> => {
-  
-  return customInstance<analyzeIncomeApiV1AnalysisIncomeGetResponse>(getAnalyzeIncomeApiV1AnalysisIncomeGetUrl(params),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
+export const analyzeIncomeApiV1AnalysisIncomeGet = async (
+  params: AnalyzeIncomeApiV1AnalysisIncomeGetParams,
+  options?: RequestInit,
+): Promise<analyzeIncomeApiV1AnalysisIncomeGetResponse> => {
+  return customInstance<analyzeIncomeApiV1AnalysisIncomeGetResponse>(
+    getAnalyzeIncomeApiV1AnalysisIncomeGetUrl(params),
+    {
+      type: "AxiosRequestConfig",
+      ...options,
+      method: "GET",
+    },
+  );
+};
 
-
-
-
-
-export const getAnalyzeIncomeApiV1AnalysisIncomeGetQueryKey = (params?: AnalyzeIncomeApiV1AnalysisIncomeGetParams,) => {
-    return [
-    `/api/v1/analysis/income`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getAnalyzeIncomeApiV1AnalysisIncomeGetQueryOptions = <TData = Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>, TError = HTTPValidationError>(params: AnalyzeIncomeApiV1AnalysisIncomeGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getAnalyzeIncomeApiV1AnalysisIncomeGetQueryKey = (
+  params?: AnalyzeIncomeApiV1AnalysisIncomeGetParams,
 ) => {
+  return [`/api/v1/analysis/income`, ...(params ? [params] : [])] as const;
+};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+export const getAnalyzeIncomeApiV1AnalysisIncomeGetQueryOptions = <
+  TData = Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>,
+  TError = HTTPValidationError,
+>(
+  params: AnalyzeIncomeApiV1AnalysisIncomeGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getAnalyzeIncomeApiV1AnalysisIncomeGetQueryKey(params);
+  const queryKey =
+    queryOptions?.queryKey ??
+    getAnalyzeIncomeApiV1AnalysisIncomeGetQueryKey(params);
 
-  
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>
+  > = ({ signal }) =>
+    analyzeIncomeApiV1AnalysisIncomeGet(params, { signal, ...requestOptions });
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>> = ({ signal }) => analyzeIncomeApiV1AnalysisIncomeGet(params, { signal, ...requestOptions });
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-      
+export type AnalyzeIncomeApiV1AnalysisIncomeGetQueryResult = NonNullable<
+  Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>
+>;
+export type AnalyzeIncomeApiV1AnalysisIncomeGetQueryError = HTTPValidationError;
 
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AnalyzeIncomeApiV1AnalysisIncomeGetQueryResult = NonNullable<Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>>
-export type AnalyzeIncomeApiV1AnalysisIncomeGetQueryError = HTTPValidationError
-
-
-export function useAnalyzeIncomeApiV1AnalysisIncomeGet<TData = Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>, TError = HTTPValidationError>(
- params: AnalyzeIncomeApiV1AnalysisIncomeGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>, TError, TData>> & Pick<
+export function useAnalyzeIncomeApiV1AnalysisIncomeGet<
+  TData = Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>,
+  TError = HTTPValidationError,
+>(
+  params: AnalyzeIncomeApiV1AnalysisIncomeGetParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>,
           TError,
           Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAnalyzeIncomeApiV1AnalysisIncomeGet<TData = Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>, TError = HTTPValidationError>(
- params: AnalyzeIncomeApiV1AnalysisIncomeGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>, TError, TData>> & Pick<
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAnalyzeIncomeApiV1AnalysisIncomeGet<
+  TData = Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>,
+  TError = HTTPValidationError,
+>(
+  params: AnalyzeIncomeApiV1AnalysisIncomeGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>,
           TError,
           Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAnalyzeIncomeApiV1AnalysisIncomeGet<TData = Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>, TError = HTTPValidationError>(
- params: AnalyzeIncomeApiV1AnalysisIncomeGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAnalyzeIncomeApiV1AnalysisIncomeGet<
+  TData = Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>,
+  TError = HTTPValidationError,
+>(
+  params: AnalyzeIncomeApiV1AnalysisIncomeGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Analyze income
  */
 
-export function useAnalyzeIncomeApiV1AnalysisIncomeGet<TData = Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>, TError = HTTPValidationError>(
- params: AnalyzeIncomeApiV1AnalysisIncomeGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useAnalyzeIncomeApiV1AnalysisIncomeGet<
+  TData = Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>,
+  TError = HTTPValidationError,
+>(
+  params: AnalyzeIncomeApiV1AnalysisIncomeGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof analyzeIncomeApiV1AnalysisIncomeGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getAnalyzeIncomeApiV1AnalysisIncomeGetQueryOptions(
+    params,
+    options,
+  );
 
-  const queryOptions = getAnalyzeIncomeApiV1AnalysisIncomeGetQueryOptions(params,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
 
 /**
  * Get monthly spending trends over time
  * @summary Get spending trends
  */
 export type getSpendingTrendsApiV1AnalysisTrendsGetResponse200 = {
-  data: TrendAnalysisResponse
-  status: 200
-}
+  data: TrendAnalysisResponse;
+  status: 200;
+};
 
 export type getSpendingTrendsApiV1AnalysisTrendsGetResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type getSpendingTrendsApiV1AnalysisTrendsGetResponseSuccess = (getSpendingTrendsApiV1AnalysisTrendsGetResponse200) & {
-  headers: Headers;
-};
-export type getSpendingTrendsApiV1AnalysisTrendsGetResponseError = (getSpendingTrendsApiV1AnalysisTrendsGetResponse422) & {
-  headers: Headers;
+  data: HTTPValidationError;
+  status: 422;
 };
 
-export type getSpendingTrendsApiV1AnalysisTrendsGetResponse = (getSpendingTrendsApiV1AnalysisTrendsGetResponseSuccess | getSpendingTrendsApiV1AnalysisTrendsGetResponseError)
+export type getSpendingTrendsApiV1AnalysisTrendsGetResponseSuccess =
+  getSpendingTrendsApiV1AnalysisTrendsGetResponse200 & {
+    headers: Headers;
+  };
+export type getSpendingTrendsApiV1AnalysisTrendsGetResponseError =
+  getSpendingTrendsApiV1AnalysisTrendsGetResponse422 & {
+    headers: Headers;
+  };
 
-export const getGetSpendingTrendsApiV1AnalysisTrendsGetUrl = (params?: GetSpendingTrendsApiV1AnalysisTrendsGetParams,) => {
+export type getSpendingTrendsApiV1AnalysisTrendsGetResponse =
+  | getSpendingTrendsApiV1AnalysisTrendsGetResponseSuccess
+  | getSpendingTrendsApiV1AnalysisTrendsGetResponseError;
+
+export const getGetSpendingTrendsApiV1AnalysisTrendsGetUrl = (
+  params?: GetSpendingTrendsApiV1AnalysisTrendsGetParams,
+) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
-    
     if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
+      normalizedParams.append(key, value === null ? "null" : value.toString());
     }
   });
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/analysis/trends?${stringifiedParams}` : `/api/v1/analysis/trends`
-}
+  return stringifiedParams.length > 0
+    ? `/api/v1/analysis/trends?${stringifiedParams}`
+    : `/api/v1/analysis/trends`;
+};
 
-export const getSpendingTrendsApiV1AnalysisTrendsGet = async (params?: GetSpendingTrendsApiV1AnalysisTrendsGetParams, options?: RequestInit): Promise<getSpendingTrendsApiV1AnalysisTrendsGetResponse> => {
-  
-  return customInstance<getSpendingTrendsApiV1AnalysisTrendsGetResponse>(getGetSpendingTrendsApiV1AnalysisTrendsGetUrl(params),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
+export const getSpendingTrendsApiV1AnalysisTrendsGet = async (
+  params?: GetSpendingTrendsApiV1AnalysisTrendsGetParams,
+  options?: RequestInit,
+): Promise<getSpendingTrendsApiV1AnalysisTrendsGetResponse> => {
+  return customInstance<getSpendingTrendsApiV1AnalysisTrendsGetResponse>(
+    getGetSpendingTrendsApiV1AnalysisTrendsGetUrl(params),
+    {
+      type: "AxiosRequestConfig",
+      ...options,
+      method: "GET",
+    },
+  );
+};
 
-
-
-
-
-export const getGetSpendingTrendsApiV1AnalysisTrendsGetQueryKey = (params?: GetSpendingTrendsApiV1AnalysisTrendsGetParams,) => {
-    return [
-    `/api/v1/analysis/trends`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetSpendingTrendsApiV1AnalysisTrendsGetQueryOptions = <TData = Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>, TError = HTTPValidationError>(params?: GetSpendingTrendsApiV1AnalysisTrendsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetSpendingTrendsApiV1AnalysisTrendsGetQueryKey = (
+  params?: GetSpendingTrendsApiV1AnalysisTrendsGetParams,
 ) => {
+  return [`/api/v1/analysis/trends`, ...(params ? [params] : [])] as const;
+};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+export const getGetSpendingTrendsApiV1AnalysisTrendsGetQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>,
+  TError = HTTPValidationError,
+>(
+  params?: GetSpendingTrendsApiV1AnalysisTrendsGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetSpendingTrendsApiV1AnalysisTrendsGetQueryKey(params);
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetSpendingTrendsApiV1AnalysisTrendsGetQueryKey(params);
 
-  
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>
+  > = ({ signal }) =>
+    getSpendingTrendsApiV1AnalysisTrendsGet(params, {
+      signal,
+      ...requestOptions,
+    });
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>> = ({ signal }) => getSpendingTrendsApiV1AnalysisTrendsGet(params, { signal, ...requestOptions });
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-      
+export type GetSpendingTrendsApiV1AnalysisTrendsGetQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>
+>;
+export type GetSpendingTrendsApiV1AnalysisTrendsGetQueryError =
+  HTTPValidationError;
 
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetSpendingTrendsApiV1AnalysisTrendsGetQueryResult = NonNullable<Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>>
-export type GetSpendingTrendsApiV1AnalysisTrendsGetQueryError = HTTPValidationError
-
-
-export function useGetSpendingTrendsApiV1AnalysisTrendsGet<TData = Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>, TError = HTTPValidationError>(
- params: undefined |  GetSpendingTrendsApiV1AnalysisTrendsGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>, TError, TData>> & Pick<
+export function useGetSpendingTrendsApiV1AnalysisTrendsGet<
+  TData = Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>,
+  TError = HTTPValidationError,
+>(
+  params: undefined | GetSpendingTrendsApiV1AnalysisTrendsGetParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>,
           TError,
           Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSpendingTrendsApiV1AnalysisTrendsGet<TData = Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>, TError = HTTPValidationError>(
- params?: GetSpendingTrendsApiV1AnalysisTrendsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>, TError, TData>> & Pick<
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetSpendingTrendsApiV1AnalysisTrendsGet<
+  TData = Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>,
+  TError = HTTPValidationError,
+>(
+  params?: GetSpendingTrendsApiV1AnalysisTrendsGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>,
           TError,
           Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetSpendingTrendsApiV1AnalysisTrendsGet<TData = Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>, TError = HTTPValidationError>(
- params?: GetSpendingTrendsApiV1AnalysisTrendsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetSpendingTrendsApiV1AnalysisTrendsGet<
+  TData = Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>,
+  TError = HTTPValidationError,
+>(
+  params?: GetSpendingTrendsApiV1AnalysisTrendsGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Get spending trends
  */
 
-export function useGetSpendingTrendsApiV1AnalysisTrendsGet<TData = Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>, TError = HTTPValidationError>(
- params?: GetSpendingTrendsApiV1AnalysisTrendsGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetSpendingTrendsApiV1AnalysisTrendsGet<
+  TData = Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>,
+  TError = HTTPValidationError,
+>(
+  params?: GetSpendingTrendsApiV1AnalysisTrendsGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getSpendingTrendsApiV1AnalysisTrendsGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetSpendingTrendsApiV1AnalysisTrendsGetQueryOptions(
+    params,
+    options,
+  );
 
-  const queryOptions = getGetSpendingTrendsApiV1AnalysisTrendsGetQueryOptions(params,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
 
 /**
  * Compare budget allocations with actual spending
  * @summary Compare budget vs actual
  */
 export type compareBudgetVsActualApiV1AnalysisBudgetComparisonGetResponse200 = {
-  data: BudgetComparisonResponse
-  status: 200
-}
+  data: BudgetComparisonResponse;
+  status: 200;
+};
 
 export type compareBudgetVsActualApiV1AnalysisBudgetComparisonGetResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type compareBudgetVsActualApiV1AnalysisBudgetComparisonGetResponseSuccess = (compareBudgetVsActualApiV1AnalysisBudgetComparisonGetResponse200) & {
-  headers: Headers;
-};
-export type compareBudgetVsActualApiV1AnalysisBudgetComparisonGetResponseError = (compareBudgetVsActualApiV1AnalysisBudgetComparisonGetResponse422) & {
-  headers: Headers;
+  data: HTTPValidationError;
+  status: 422;
 };
 
-export type compareBudgetVsActualApiV1AnalysisBudgetComparisonGetResponse = (compareBudgetVsActualApiV1AnalysisBudgetComparisonGetResponseSuccess | compareBudgetVsActualApiV1AnalysisBudgetComparisonGetResponseError)
+export type compareBudgetVsActualApiV1AnalysisBudgetComparisonGetResponseSuccess =
+  compareBudgetVsActualApiV1AnalysisBudgetComparisonGetResponse200 & {
+    headers: Headers;
+  };
+export type compareBudgetVsActualApiV1AnalysisBudgetComparisonGetResponseError =
+  compareBudgetVsActualApiV1AnalysisBudgetComparisonGetResponse422 & {
+    headers: Headers;
+  };
 
-export const getCompareBudgetVsActualApiV1AnalysisBudgetComparisonGetUrl = (params?: CompareBudgetVsActualApiV1AnalysisBudgetComparisonGetParams,) => {
+export type compareBudgetVsActualApiV1AnalysisBudgetComparisonGetResponse =
+  | compareBudgetVsActualApiV1AnalysisBudgetComparisonGetResponseSuccess
+  | compareBudgetVsActualApiV1AnalysisBudgetComparisonGetResponseError;
+
+export const getCompareBudgetVsActualApiV1AnalysisBudgetComparisonGetUrl = (
+  params?: CompareBudgetVsActualApiV1AnalysisBudgetComparisonGetParams,
+) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
-    
     if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
+      normalizedParams.append(key, value === null ? "null" : value.toString());
     }
   });
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/analysis/budget-comparison?${stringifiedParams}` : `/api/v1/analysis/budget-comparison`
-}
+  return stringifiedParams.length > 0
+    ? `/api/v1/analysis/budget-comparison?${stringifiedParams}`
+    : `/api/v1/analysis/budget-comparison`;
+};
 
-export const compareBudgetVsActualApiV1AnalysisBudgetComparisonGet = async (params?: CompareBudgetVsActualApiV1AnalysisBudgetComparisonGetParams, options?: RequestInit): Promise<compareBudgetVsActualApiV1AnalysisBudgetComparisonGetResponse> => {
-  
-  return customInstance<compareBudgetVsActualApiV1AnalysisBudgetComparisonGetResponse>(getCompareBudgetVsActualApiV1AnalysisBudgetComparisonGetUrl(params),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
+export const compareBudgetVsActualApiV1AnalysisBudgetComparisonGet = async (
+  params?: CompareBudgetVsActualApiV1AnalysisBudgetComparisonGetParams,
+  options?: RequestInit,
+): Promise<compareBudgetVsActualApiV1AnalysisBudgetComparisonGetResponse> => {
+  return customInstance<compareBudgetVsActualApiV1AnalysisBudgetComparisonGetResponse>(
+    getCompareBudgetVsActualApiV1AnalysisBudgetComparisonGetUrl(params),
+    {
+      type: "AxiosRequestConfig",
+      ...options,
+      method: "GET",
+    },
+  );
+};
 
-
-
-
-
-export const getCompareBudgetVsActualApiV1AnalysisBudgetComparisonGetQueryKey = (params?: CompareBudgetVsActualApiV1AnalysisBudgetComparisonGetParams,) => {
+export const getCompareBudgetVsActualApiV1AnalysisBudgetComparisonGetQueryKey =
+  (params?: CompareBudgetVsActualApiV1AnalysisBudgetComparisonGetParams) => {
     return [
-    `/api/v1/analysis/budget-comparison`, ...(params ? [params]: [])
+      `/api/v1/analysis/budget-comparison`,
+      ...(params ? [params] : []),
     ] as const;
-    }
+  };
 
-    
-export const getCompareBudgetVsActualApiV1AnalysisBudgetComparisonGetQueryOptions = <TData = Awaited<ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>>, TError = HTTPValidationError>(params?: CompareBudgetVsActualApiV1AnalysisBudgetComparisonGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
-) => {
+export const getCompareBudgetVsActualApiV1AnalysisBudgetComparisonGetQueryOptions =
+  <
+    TData = Awaited<
+      ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>
+    >,
+    TError = HTTPValidationError,
+  >(
+    params?: CompareBudgetVsActualApiV1AnalysisBudgetComparisonGetParams,
+    options?: {
+      query?: Partial<
+        UseQueryOptions<
+          Awaited<
+            ReturnType<
+              typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet
+            >
+          >,
+          TError,
+          TData
+        >
+      >;
+      request?: SecondParameter<typeof customInstance>;
+    },
+  ) => {
+    const { query: queryOptions, request: requestOptions } = options ?? {};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+    const queryKey =
+      queryOptions?.queryKey ??
+      getCompareBudgetVsActualApiV1AnalysisBudgetComparisonGetQueryKey(params);
 
-  const queryKey =  queryOptions?.queryKey ?? getCompareBudgetVsActualApiV1AnalysisBudgetComparisonGetQueryKey(params);
+    const queryFn: QueryFunction<
+      Awaited<
+        ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>
+      >
+    > = ({ signal }) =>
+      compareBudgetVsActualApiV1AnalysisBudgetComparisonGet(params, {
+        signal,
+        ...requestOptions,
+      });
 
-  
+    return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+      Awaited<
+        ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>
+      >,
+      TError,
+      TData
+    > & { queryKey: DataTag<QueryKey, TData, TError> };
+  };
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>>> = ({ signal }) => compareBudgetVsActualApiV1AnalysisBudgetComparisonGet(params, { signal, ...requestOptions });
+export type CompareBudgetVsActualApiV1AnalysisBudgetComparisonGetQueryResult =
+  NonNullable<
+    Awaited<
+      ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>
+    >
+  >;
+export type CompareBudgetVsActualApiV1AnalysisBudgetComparisonGetQueryError =
+  HTTPValidationError;
 
-      
-
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type CompareBudgetVsActualApiV1AnalysisBudgetComparisonGetQueryResult = NonNullable<Awaited<ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>>>
-export type CompareBudgetVsActualApiV1AnalysisBudgetComparisonGetQueryError = HTTPValidationError
-
-
-export function useCompareBudgetVsActualApiV1AnalysisBudgetComparisonGet<TData = Awaited<ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>>, TError = HTTPValidationError>(
- params: undefined |  CompareBudgetVsActualApiV1AnalysisBudgetComparisonGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>>, TError, TData>> & Pick<
+export function useCompareBudgetVsActualApiV1AnalysisBudgetComparisonGet<
+  TData = Awaited<
+    ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  params:
+    | undefined
+    | CompareBudgetVsActualApiV1AnalysisBudgetComparisonGetParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet
+          >
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>>,
+          Awaited<
+            ReturnType<
+              typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet
+            >
+          >,
           TError,
-          Awaited<ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCompareBudgetVsActualApiV1AnalysisBudgetComparisonGet<TData = Awaited<ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>>, TError = HTTPValidationError>(
- params?: CompareBudgetVsActualApiV1AnalysisBudgetComparisonGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>>, TError, TData>> & Pick<
+          Awaited<
+            ReturnType<
+              typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet
+            >
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useCompareBudgetVsActualApiV1AnalysisBudgetComparisonGet<
+  TData = Awaited<
+    ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  params?: CompareBudgetVsActualApiV1AnalysisBudgetComparisonGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet
+          >
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>>,
+          Awaited<
+            ReturnType<
+              typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet
+            >
+          >,
           TError,
-          Awaited<ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useCompareBudgetVsActualApiV1AnalysisBudgetComparisonGet<TData = Awaited<ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>>, TError = HTTPValidationError>(
- params?: CompareBudgetVsActualApiV1AnalysisBudgetComparisonGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+          Awaited<
+            ReturnType<
+              typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet
+            >
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useCompareBudgetVsActualApiV1AnalysisBudgetComparisonGet<
+  TData = Awaited<
+    ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  params?: CompareBudgetVsActualApiV1AnalysisBudgetComparisonGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet
+          >
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Compare budget vs actual
  */
 
-export function useCompareBudgetVsActualApiV1AnalysisBudgetComparisonGet<TData = Awaited<ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>>, TError = HTTPValidationError>(
- params?: CompareBudgetVsActualApiV1AnalysisBudgetComparisonGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useCompareBudgetVsActualApiV1AnalysisBudgetComparisonGet<
+  TData = Awaited<
+    ReturnType<typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  params?: CompareBudgetVsActualApiV1AnalysisBudgetComparisonGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof compareBudgetVsActualApiV1AnalysisBudgetComparisonGet
+          >
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getCompareBudgetVsActualApiV1AnalysisBudgetComparisonGetQueryOptions(
+      params,
+      options,
+    );
 
-  const queryOptions = getCompareBudgetVsActualApiV1AnalysisBudgetComparisonGetQueryOptions(params,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
 
 /**
  * Get monthly cash flow analysis
  * @summary Get cash flow analysis
  */
 export type getCashFlowApiV1AnalysisCashFlowGetResponse200 = {
-  data: CashFlowResponse
-  status: 200
-}
+  data: CashFlowResponse;
+  status: 200;
+};
 
 export type getCashFlowApiV1AnalysisCashFlowGetResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type getCashFlowApiV1AnalysisCashFlowGetResponseSuccess = (getCashFlowApiV1AnalysisCashFlowGetResponse200) & {
-  headers: Headers;
-};
-export type getCashFlowApiV1AnalysisCashFlowGetResponseError = (getCashFlowApiV1AnalysisCashFlowGetResponse422) & {
-  headers: Headers;
+  data: HTTPValidationError;
+  status: 422;
 };
 
-export type getCashFlowApiV1AnalysisCashFlowGetResponse = (getCashFlowApiV1AnalysisCashFlowGetResponseSuccess | getCashFlowApiV1AnalysisCashFlowGetResponseError)
+export type getCashFlowApiV1AnalysisCashFlowGetResponseSuccess =
+  getCashFlowApiV1AnalysisCashFlowGetResponse200 & {
+    headers: Headers;
+  };
+export type getCashFlowApiV1AnalysisCashFlowGetResponseError =
+  getCashFlowApiV1AnalysisCashFlowGetResponse422 & {
+    headers: Headers;
+  };
 
-export const getGetCashFlowApiV1AnalysisCashFlowGetUrl = (params?: GetCashFlowApiV1AnalysisCashFlowGetParams,) => {
+export type getCashFlowApiV1AnalysisCashFlowGetResponse =
+  | getCashFlowApiV1AnalysisCashFlowGetResponseSuccess
+  | getCashFlowApiV1AnalysisCashFlowGetResponseError;
+
+export const getGetCashFlowApiV1AnalysisCashFlowGetUrl = (
+  params?: GetCashFlowApiV1AnalysisCashFlowGetParams,
+) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
-    
     if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
+      normalizedParams.append(key, value === null ? "null" : value.toString());
     }
   });
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/analysis/cash-flow?${stringifiedParams}` : `/api/v1/analysis/cash-flow`
-}
+  return stringifiedParams.length > 0
+    ? `/api/v1/analysis/cash-flow?${stringifiedParams}`
+    : `/api/v1/analysis/cash-flow`;
+};
 
-export const getCashFlowApiV1AnalysisCashFlowGet = async (params?: GetCashFlowApiV1AnalysisCashFlowGetParams, options?: RequestInit): Promise<getCashFlowApiV1AnalysisCashFlowGetResponse> => {
-  
-  return customInstance<getCashFlowApiV1AnalysisCashFlowGetResponse>(getGetCashFlowApiV1AnalysisCashFlowGetUrl(params),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
+export const getCashFlowApiV1AnalysisCashFlowGet = async (
+  params?: GetCashFlowApiV1AnalysisCashFlowGetParams,
+  options?: RequestInit,
+): Promise<getCashFlowApiV1AnalysisCashFlowGetResponse> => {
+  return customInstance<getCashFlowApiV1AnalysisCashFlowGetResponse>(
+    getGetCashFlowApiV1AnalysisCashFlowGetUrl(params),
+    {
+      type: "AxiosRequestConfig",
+      ...options,
+      method: "GET",
+    },
+  );
+};
 
-
-
-
-
-export const getGetCashFlowApiV1AnalysisCashFlowGetQueryKey = (params?: GetCashFlowApiV1AnalysisCashFlowGetParams,) => {
-    return [
-    `/api/v1/analysis/cash-flow`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getGetCashFlowApiV1AnalysisCashFlowGetQueryOptions = <TData = Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>, TError = HTTPValidationError>(params?: GetCashFlowApiV1AnalysisCashFlowGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getGetCashFlowApiV1AnalysisCashFlowGetQueryKey = (
+  params?: GetCashFlowApiV1AnalysisCashFlowGetParams,
 ) => {
+  return [`/api/v1/analysis/cash-flow`, ...(params ? [params] : [])] as const;
+};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+export const getGetCashFlowApiV1AnalysisCashFlowGetQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>,
+  TError = HTTPValidationError,
+>(
+  params?: GetCashFlowApiV1AnalysisCashFlowGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetCashFlowApiV1AnalysisCashFlowGetQueryKey(params);
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetCashFlowApiV1AnalysisCashFlowGetQueryKey(params);
 
-  
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>
+  > = ({ signal }) =>
+    getCashFlowApiV1AnalysisCashFlowGet(params, { signal, ...requestOptions });
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>> = ({ signal }) => getCashFlowApiV1AnalysisCashFlowGet(params, { signal, ...requestOptions });
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-      
+export type GetCashFlowApiV1AnalysisCashFlowGetQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>
+>;
+export type GetCashFlowApiV1AnalysisCashFlowGetQueryError = HTTPValidationError;
 
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type GetCashFlowApiV1AnalysisCashFlowGetQueryResult = NonNullable<Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>>
-export type GetCashFlowApiV1AnalysisCashFlowGetQueryError = HTTPValidationError
-
-
-export function useGetCashFlowApiV1AnalysisCashFlowGet<TData = Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>, TError = HTTPValidationError>(
- params: undefined |  GetCashFlowApiV1AnalysisCashFlowGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>, TError, TData>> & Pick<
+export function useGetCashFlowApiV1AnalysisCashFlowGet<
+  TData = Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>,
+  TError = HTTPValidationError,
+>(
+  params: undefined | GetCashFlowApiV1AnalysisCashFlowGetParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>,
           TError,
           Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCashFlowApiV1AnalysisCashFlowGet<TData = Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>, TError = HTTPValidationError>(
- params?: GetCashFlowApiV1AnalysisCashFlowGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>, TError, TData>> & Pick<
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetCashFlowApiV1AnalysisCashFlowGet<
+  TData = Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>,
+  TError = HTTPValidationError,
+>(
+  params?: GetCashFlowApiV1AnalysisCashFlowGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>,
           TError,
           Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useGetCashFlowApiV1AnalysisCashFlowGet<TData = Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>, TError = HTTPValidationError>(
- params?: GetCashFlowApiV1AnalysisCashFlowGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetCashFlowApiV1AnalysisCashFlowGet<
+  TData = Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>,
+  TError = HTTPValidationError,
+>(
+  params?: GetCashFlowApiV1AnalysisCashFlowGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Get cash flow analysis
  */
 
-export function useGetCashFlowApiV1AnalysisCashFlowGet<TData = Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>, TError = HTTPValidationError>(
- params?: GetCashFlowApiV1AnalysisCashFlowGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useGetCashFlowApiV1AnalysisCashFlowGet<
+  TData = Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>,
+  TError = HTTPValidationError,
+>(
+  params?: GetCashFlowApiV1AnalysisCashFlowGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getCashFlowApiV1AnalysisCashFlowGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetCashFlowApiV1AnalysisCashFlowGetQueryOptions(
+    params,
+    options,
+  );
 
-  const queryOptions = getGetCashFlowApiV1AnalysisCashFlowGetQueryOptions(params,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
 
 /**
  * Get aggregated analysis across multiple profiles
  * @summary Multi-profile analysis
  */
 export type analyzeMultiProfileApiV1AnalysisMultiProfileGetResponse200 = {
-  data: MultiProfileAnalysisResponse
-  status: 200
-}
+  data: MultiProfileAnalysisResponse;
+  status: 200;
+};
 
 export type analyzeMultiProfileApiV1AnalysisMultiProfileGetResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type analyzeMultiProfileApiV1AnalysisMultiProfileGetResponseSuccess = (analyzeMultiProfileApiV1AnalysisMultiProfileGetResponse200) & {
-  headers: Headers;
-};
-export type analyzeMultiProfileApiV1AnalysisMultiProfileGetResponseError = (analyzeMultiProfileApiV1AnalysisMultiProfileGetResponse422) & {
-  headers: Headers;
+  data: HTTPValidationError;
+  status: 422;
 };
 
-export type analyzeMultiProfileApiV1AnalysisMultiProfileGetResponse = (analyzeMultiProfileApiV1AnalysisMultiProfileGetResponseSuccess | analyzeMultiProfileApiV1AnalysisMultiProfileGetResponseError)
+export type analyzeMultiProfileApiV1AnalysisMultiProfileGetResponseSuccess =
+  analyzeMultiProfileApiV1AnalysisMultiProfileGetResponse200 & {
+    headers: Headers;
+  };
+export type analyzeMultiProfileApiV1AnalysisMultiProfileGetResponseError =
+  analyzeMultiProfileApiV1AnalysisMultiProfileGetResponse422 & {
+    headers: Headers;
+  };
 
-export const getAnalyzeMultiProfileApiV1AnalysisMultiProfileGetUrl = (params: AnalyzeMultiProfileApiV1AnalysisMultiProfileGetParams,) => {
+export type analyzeMultiProfileApiV1AnalysisMultiProfileGetResponse =
+  | analyzeMultiProfileApiV1AnalysisMultiProfileGetResponseSuccess
+  | analyzeMultiProfileApiV1AnalysisMultiProfileGetResponseError;
+
+export const getAnalyzeMultiProfileApiV1AnalysisMultiProfileGetUrl = (
+  params: AnalyzeMultiProfileApiV1AnalysisMultiProfileGetParams,
+) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
-    
     if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
+      normalizedParams.append(key, value === null ? "null" : value.toString());
     }
   });
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/analysis/multi-profile?${stringifiedParams}` : `/api/v1/analysis/multi-profile`
-}
+  return stringifiedParams.length > 0
+    ? `/api/v1/analysis/multi-profile?${stringifiedParams}`
+    : `/api/v1/analysis/multi-profile`;
+};
 
-export const analyzeMultiProfileApiV1AnalysisMultiProfileGet = async (params: AnalyzeMultiProfileApiV1AnalysisMultiProfileGetParams, options?: RequestInit): Promise<analyzeMultiProfileApiV1AnalysisMultiProfileGetResponse> => {
-  
-  return customInstance<analyzeMultiProfileApiV1AnalysisMultiProfileGetResponse>(getAnalyzeMultiProfileApiV1AnalysisMultiProfileGetUrl(params),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
+export const analyzeMultiProfileApiV1AnalysisMultiProfileGet = async (
+  params: AnalyzeMultiProfileApiV1AnalysisMultiProfileGetParams,
+  options?: RequestInit,
+): Promise<analyzeMultiProfileApiV1AnalysisMultiProfileGetResponse> => {
+  return customInstance<analyzeMultiProfileApiV1AnalysisMultiProfileGetResponse>(
+    getAnalyzeMultiProfileApiV1AnalysisMultiProfileGetUrl(params),
+    {
+      type: "AxiosRequestConfig",
+      ...options,
+      method: "GET",
+    },
+  );
+};
 
-
-
-
-
-export const getAnalyzeMultiProfileApiV1AnalysisMultiProfileGetQueryKey = (params?: AnalyzeMultiProfileApiV1AnalysisMultiProfileGetParams,) => {
-    return [
-    `/api/v1/analysis/multi-profile`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getAnalyzeMultiProfileApiV1AnalysisMultiProfileGetQueryOptions = <TData = Awaited<ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>>, TError = HTTPValidationError>(params: AnalyzeMultiProfileApiV1AnalysisMultiProfileGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getAnalyzeMultiProfileApiV1AnalysisMultiProfileGetQueryKey = (
+  params?: AnalyzeMultiProfileApiV1AnalysisMultiProfileGetParams,
 ) => {
+  return [
+    `/api/v1/analysis/multi-profile`,
+    ...(params ? [params] : []),
+  ] as const;
+};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+export const getAnalyzeMultiProfileApiV1AnalysisMultiProfileGetQueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  params: AnalyzeMultiProfileApiV1AnalysisMultiProfileGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getAnalyzeMultiProfileApiV1AnalysisMultiProfileGetQueryKey(params);
+  const queryKey =
+    queryOptions?.queryKey ??
+    getAnalyzeMultiProfileApiV1AnalysisMultiProfileGetQueryKey(params);
 
-  
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>>
+  > = ({ signal }) =>
+    analyzeMultiProfileApiV1AnalysisMultiProfileGet(params, {
+      signal,
+      ...requestOptions,
+    });
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>>> = ({ signal }) => analyzeMultiProfileApiV1AnalysisMultiProfileGet(params, { signal, ...requestOptions });
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-      
+export type AnalyzeMultiProfileApiV1AnalysisMultiProfileGetQueryResult =
+  NonNullable<
+    Awaited<ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>>
+  >;
+export type AnalyzeMultiProfileApiV1AnalysisMultiProfileGetQueryError =
+  HTTPValidationError;
 
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type AnalyzeMultiProfileApiV1AnalysisMultiProfileGetQueryResult = NonNullable<Awaited<ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>>>
-export type AnalyzeMultiProfileApiV1AnalysisMultiProfileGetQueryError = HTTPValidationError
-
-
-export function useAnalyzeMultiProfileApiV1AnalysisMultiProfileGet<TData = Awaited<ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>>, TError = HTTPValidationError>(
- params: AnalyzeMultiProfileApiV1AnalysisMultiProfileGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>>, TError, TData>> & Pick<
+export function useAnalyzeMultiProfileApiV1AnalysisMultiProfileGet<
+  TData = Awaited<
+    ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  params: AnalyzeMultiProfileApiV1AnalysisMultiProfileGetParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>>,
+          Awaited<
+            ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>
+          >,
           TError,
-          Awaited<ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAnalyzeMultiProfileApiV1AnalysisMultiProfileGet<TData = Awaited<ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>>, TError = HTTPValidationError>(
- params: AnalyzeMultiProfileApiV1AnalysisMultiProfileGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>>, TError, TData>> & Pick<
+          Awaited<
+            ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAnalyzeMultiProfileApiV1AnalysisMultiProfileGet<
+  TData = Awaited<
+    ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  params: AnalyzeMultiProfileApiV1AnalysisMultiProfileGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>>,
+          Awaited<
+            ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>
+          >,
           TError,
-          Awaited<ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAnalyzeMultiProfileApiV1AnalysisMultiProfileGet<TData = Awaited<ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>>, TError = HTTPValidationError>(
- params: AnalyzeMultiProfileApiV1AnalysisMultiProfileGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+          Awaited<
+            ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useAnalyzeMultiProfileApiV1AnalysisMultiProfileGet<
+  TData = Awaited<
+    ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  params: AnalyzeMultiProfileApiV1AnalysisMultiProfileGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Multi-profile analysis
  */
 
-export function useAnalyzeMultiProfileApiV1AnalysisMultiProfileGet<TData = Awaited<ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>>, TError = HTTPValidationError>(
- params: AnalyzeMultiProfileApiV1AnalysisMultiProfileGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useAnalyzeMultiProfileApiV1AnalysisMultiProfileGet<
+  TData = Awaited<
+    ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  params: AnalyzeMultiProfileApiV1AnalysisMultiProfileGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof analyzeMultiProfileApiV1AnalysisMultiProfileGet>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getAnalyzeMultiProfileApiV1AnalysisMultiProfileGetQueryOptions(
+      params,
+      options,
+    );
 
-  const queryOptions = getAnalyzeMultiProfileApiV1AnalysisMultiProfileGetQueryOptions(params,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
 
 /**
  * Compare financial performance between two periods
  * @summary Compare periods
  */
 export type comparePeriodsApiV1AnalysisPeriodComparisonGetResponse200 = {
-  data: PeriodComparisonResponse
-  status: 200
-}
+  data: PeriodComparisonResponse;
+  status: 200;
+};
 
 export type comparePeriodsApiV1AnalysisPeriodComparisonGetResponse422 = {
-  data: HTTPValidationError
-  status: 422
-}
-    
-export type comparePeriodsApiV1AnalysisPeriodComparisonGetResponseSuccess = (comparePeriodsApiV1AnalysisPeriodComparisonGetResponse200) & {
-  headers: Headers;
-};
-export type comparePeriodsApiV1AnalysisPeriodComparisonGetResponseError = (comparePeriodsApiV1AnalysisPeriodComparisonGetResponse422) & {
-  headers: Headers;
+  data: HTTPValidationError;
+  status: 422;
 };
 
-export type comparePeriodsApiV1AnalysisPeriodComparisonGetResponse = (comparePeriodsApiV1AnalysisPeriodComparisonGetResponseSuccess | comparePeriodsApiV1AnalysisPeriodComparisonGetResponseError)
+export type comparePeriodsApiV1AnalysisPeriodComparisonGetResponseSuccess =
+  comparePeriodsApiV1AnalysisPeriodComparisonGetResponse200 & {
+    headers: Headers;
+  };
+export type comparePeriodsApiV1AnalysisPeriodComparisonGetResponseError =
+  comparePeriodsApiV1AnalysisPeriodComparisonGetResponse422 & {
+    headers: Headers;
+  };
 
-export const getComparePeriodsApiV1AnalysisPeriodComparisonGetUrl = (params: ComparePeriodsApiV1AnalysisPeriodComparisonGetParams,) => {
+export type comparePeriodsApiV1AnalysisPeriodComparisonGetResponse =
+  | comparePeriodsApiV1AnalysisPeriodComparisonGetResponseSuccess
+  | comparePeriodsApiV1AnalysisPeriodComparisonGetResponseError;
+
+export const getComparePeriodsApiV1AnalysisPeriodComparisonGetUrl = (
+  params: ComparePeriodsApiV1AnalysisPeriodComparisonGetParams,
+) => {
   const normalizedParams = new URLSearchParams();
 
   Object.entries(params || {}).forEach(([key, value]) => {
-    
     if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
+      normalizedParams.append(key, value === null ? "null" : value.toString());
     }
   });
 
   const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/v1/analysis/period-comparison?${stringifiedParams}` : `/api/v1/analysis/period-comparison`
-}
+  return stringifiedParams.length > 0
+    ? `/api/v1/analysis/period-comparison?${stringifiedParams}`
+    : `/api/v1/analysis/period-comparison`;
+};
 
-export const comparePeriodsApiV1AnalysisPeriodComparisonGet = async (params: ComparePeriodsApiV1AnalysisPeriodComparisonGetParams, options?: RequestInit): Promise<comparePeriodsApiV1AnalysisPeriodComparisonGetResponse> => {
-  
-  return customInstance<comparePeriodsApiV1AnalysisPeriodComparisonGetResponse>(getComparePeriodsApiV1AnalysisPeriodComparisonGetUrl(params),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
-  }
-);}
+export const comparePeriodsApiV1AnalysisPeriodComparisonGet = async (
+  params: ComparePeriodsApiV1AnalysisPeriodComparisonGetParams,
+  options?: RequestInit,
+): Promise<comparePeriodsApiV1AnalysisPeriodComparisonGetResponse> => {
+  return customInstance<comparePeriodsApiV1AnalysisPeriodComparisonGetResponse>(
+    getComparePeriodsApiV1AnalysisPeriodComparisonGetUrl(params),
+    {
+      type: "AxiosRequestConfig",
+      ...options,
+      method: "GET",
+    },
+  );
+};
 
-
-
-
-
-export const getComparePeriodsApiV1AnalysisPeriodComparisonGetQueryKey = (params?: ComparePeriodsApiV1AnalysisPeriodComparisonGetParams,) => {
-    return [
-    `/api/v1/analysis/period-comparison`, ...(params ? [params]: [])
-    ] as const;
-    }
-
-    
-export const getComparePeriodsApiV1AnalysisPeriodComparisonGetQueryOptions = <TData = Awaited<ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>>, TError = HTTPValidationError>(params: ComparePeriodsApiV1AnalysisPeriodComparisonGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getComparePeriodsApiV1AnalysisPeriodComparisonGetQueryKey = (
+  params?: ComparePeriodsApiV1AnalysisPeriodComparisonGetParams,
 ) => {
+  return [
+    `/api/v1/analysis/period-comparison`,
+    ...(params ? [params] : []),
+  ] as const;
+};
 
-const {query: queryOptions, request: requestOptions} = options ?? {};
+export const getComparePeriodsApiV1AnalysisPeriodComparisonGetQueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  params: ComparePeriodsApiV1AnalysisPeriodComparisonGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getComparePeriodsApiV1AnalysisPeriodComparisonGetQueryKey(params);
+  const queryKey =
+    queryOptions?.queryKey ??
+    getComparePeriodsApiV1AnalysisPeriodComparisonGetQueryKey(params);
 
-  
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>>
+  > = ({ signal }) =>
+    comparePeriodsApiV1AnalysisPeriodComparisonGet(params, {
+      signal,
+      ...requestOptions,
+    });
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>>> = ({ signal }) => comparePeriodsApiV1AnalysisPeriodComparisonGet(params, { signal, ...requestOptions });
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
 
-      
+export type ComparePeriodsApiV1AnalysisPeriodComparisonGetQueryResult =
+  NonNullable<
+    Awaited<ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>>
+  >;
+export type ComparePeriodsApiV1AnalysisPeriodComparisonGetQueryError =
+  HTTPValidationError;
 
-      
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
-}
-
-export type ComparePeriodsApiV1AnalysisPeriodComparisonGetQueryResult = NonNullable<Awaited<ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>>>
-export type ComparePeriodsApiV1AnalysisPeriodComparisonGetQueryError = HTTPValidationError
-
-
-export function useComparePeriodsApiV1AnalysisPeriodComparisonGet<TData = Awaited<ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>>, TError = HTTPValidationError>(
- params: ComparePeriodsApiV1AnalysisPeriodComparisonGetParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>>, TError, TData>> & Pick<
+export function useComparePeriodsApiV1AnalysisPeriodComparisonGet<
+  TData = Awaited<
+    ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  params: ComparePeriodsApiV1AnalysisPeriodComparisonGetParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         DefinedInitialDataOptions<
-          Awaited<ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>>,
+          Awaited<
+            ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>
+          >,
           TError,
-          Awaited<ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useComparePeriodsApiV1AnalysisPeriodComparisonGet<TData = Awaited<ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>>, TError = HTTPValidationError>(
- params: ComparePeriodsApiV1AnalysisPeriodComparisonGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>>, TError, TData>> & Pick<
+          Awaited<
+            ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useComparePeriodsApiV1AnalysisPeriodComparisonGet<
+  TData = Awaited<
+    ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  params: ComparePeriodsApiV1AnalysisPeriodComparisonGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
         UndefinedInitialDataOptions<
-          Awaited<ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>>,
+          Awaited<
+            ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>
+          >,
           TError,
-          Awaited<ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>>
-        > , 'initialData'
-      >, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useComparePeriodsApiV1AnalysisPeriodComparisonGet<TData = Awaited<ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>>, TError = HTTPValidationError>(
- params: ComparePeriodsApiV1AnalysisPeriodComparisonGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient
-  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+          Awaited<
+            ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useComparePeriodsApiV1AnalysisPeriodComparisonGet<
+  TData = Awaited<
+    ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  params: ComparePeriodsApiV1AnalysisPeriodComparisonGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
 /**
  * @summary Compare periods
  */
 
-export function useComparePeriodsApiV1AnalysisPeriodComparisonGet<TData = Awaited<ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>>, TError = HTTPValidationError>(
- params: ComparePeriodsApiV1AnalysisPeriodComparisonGetParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
- , queryClient?: QueryClient 
- ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+export function useComparePeriodsApiV1AnalysisPeriodComparisonGet<
+  TData = Awaited<
+    ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  params: ComparePeriodsApiV1AnalysisPeriodComparisonGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof comparePeriodsApiV1AnalysisPeriodComparisonGet>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getComparePeriodsApiV1AnalysisPeriodComparisonGetQueryOptions(
+      params,
+      options,
+    );
 
-  const queryOptions = getComparePeriodsApiV1AnalysisPeriodComparisonGetQueryOptions(params,options)
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
 
-  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
-
-  query.queryKey = queryOptions.queryKey ;
+  query.queryKey = queryOptions.queryKey;
 
   return query;
 }
-
-
-
-

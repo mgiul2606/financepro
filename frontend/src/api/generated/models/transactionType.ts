@@ -19,26 +19,26 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 /**
  * Types of financial transactions
  */
-export type TransactionType = typeof TransactionType[keyof typeof TransactionType];
-
+export type TransactionType =
+  (typeof TransactionType)[keyof typeof TransactionType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const TransactionType = {
-  BankTransfer: 'bank_transfer',
-  Withdrawal: 'withdrawal',
-  Payment: 'payment',
-  Purchase: 'purchase',
-  InternalTransfer: 'internal_transfer',
-  Income: 'income',
-  Salary: 'salary',
-  Invoice: 'invoice',
-  AssetPurchase: 'asset_purchase',
-  AssetSale: 'asset_sale',
-  Dividend: 'dividend',
-  Interest: 'interest',
-  LoanPayment: 'loan_payment',
-  Refund: 'refund',
-  Fee: 'fee',
-  Tax: 'tax',
-  Other: 'other',
+  BankTransfer: "bank_transfer",
+  Withdrawal: "withdrawal",
+  Payment: "payment",
+  Purchase: "purchase",
+  InternalTransfer: "internal_transfer",
+  Income: "income",
+  Salary: "salary",
+  Invoice: "invoice",
+  AssetPurchase: "asset_purchase",
+  AssetSale: "asset_sale",
+  Dividend: "dividend",
+  Interest: "interest",
+  LoanPayment: "loan_payment",
+  Refund: "refund",
+  Fee: "fee",
+  Tax: "tax",
+  Other: "other",
 } as const;
