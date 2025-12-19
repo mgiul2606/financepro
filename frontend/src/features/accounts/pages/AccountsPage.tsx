@@ -23,8 +23,8 @@ import {
   useCreateAccount,
   useUpdateAccount,
   useDeleteAccount,
-} from '../hooks/useAccounts';
-import type { AccountResponse, AccountCreate, AccountUpdate } from '../types';
+} from '../accounts.hooks';
+import type { AccountResponse, AccountCreate, AccountUpdate } from '../accounts.types';
 import { SupportedCurrency } from '@/utils/currency';
 import { AccountForm } from '..';
 

@@ -1,7 +1,6 @@
-// features/accounts/hooks/useAccounts.ts
 /**
  * React Query hooks for Account operations
- * Wraps the generated orval hooks for better usability
+ * Provides optimistic updates and cache management
  */
 import { useQueryClient, useQueries } from '@tanstack/react-query';
 import {
@@ -15,13 +14,14 @@ import {
   listAccountsApiV1AccountsGet,
 } from '@/api/generated/accounts/accounts';
 import { useProfileContext } from '@/contexts/ProfileContext';
-import type { AccountCreate, AccountUpdate } from '../types';
 
-export interface AccountFilters {
-  profileId?: string;
-  skip?: number;
-  limit?: number;
-}
+import type {
+  AccountCreate,
+  AccountUpdate,
+  AccountFilters,
+  AccountResponse,
+  AccountBalance,
+} from './accounts.types';
 
 /**
  * Hook to list all accounts
@@ -33,15 +33,24 @@ export const useAccounts = (filters?: AccountFilters) => {
   // Create queries for each active profile
   const queries = useQueries({
     queries: activeProfileIds.map((profileId) => ({
-      queryKey: getListAccountsApiV1AccountsGetQueryKey({ ...filters, profileId: profileId }),
-      queryFn: () => listAccountsApiV1AccountsGet({ ...filters, profileId: profileId }),
+      queryKey: getListAccountsApiV1AccountsGetQueryKey({
+        ...filters,
+        profileId: profileId,
+      }),
+      queryFn: () =>
+        listAccountsApiV1AccountsGet({ ...filters, profileId: profileId }),
       enabled: !profileLoading && activeProfileIds.length > 0,
     })),
   });
 
   // Aggregate results from all profiles
-  const allAccounts = queries.flatMap((query) => query.data?.data?.accounts || []);
-  const totalCount = queries.reduce((sum, query) => sum + (query.data?.data?.total || 0), 0);
+  const allAccounts = queries.flatMap(
+    (query) => query.data?.data?.accounts || []
+  );
+  const totalCount = queries.reduce(
+    (sum, query) => sum + (query.data?.data?.total || 0),
+    0
+  );
   const isLoading = profileLoading || queries.some((query) => query.isLoading);
   const error = queries.find((query) => query.error)?.error || null;
 
@@ -50,7 +59,7 @@ export const useAccounts = (filters?: AccountFilters) => {
   };
 
   return {
-    accounts: allAccounts,
+    accounts: allAccounts as AccountResponse[],
     total: totalCount,
     isLoading,
     error,
@@ -69,7 +78,7 @@ export const useAccount = (accountId: string) => {
   });
 
   return {
-    account: query.data?.data,
+    account: query.data?.data as AccountResponse | undefined,
     isLoading: query.isLoading,
     error: query.error,
     refetch: query.refetch,
@@ -80,14 +89,17 @@ export const useAccount = (accountId: string) => {
  * Hook to get account balance
  */
 export const useAccountBalance = (accountId: string) => {
-  const query = useGetAccountBalanceApiV1AccountsAccountIdBalanceGet(accountId, {
-    query: {
-      enabled: !!accountId && accountId.length > 0,
-    },
-  });
+  const query = useGetAccountBalanceApiV1AccountsAccountIdBalanceGet(
+    accountId,
+    {
+      query: {
+        enabled: !!accountId && accountId.length > 0,
+      },
+    }
+  );
 
   return {
-    balance: query.data?.data,
+    balance: query.data?.data as AccountBalance | undefined,
     isLoading: query.isLoading,
     error: query.error,
     refetch: query.refetch,

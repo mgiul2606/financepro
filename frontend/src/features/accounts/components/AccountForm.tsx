@@ -3,7 +3,6 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { Wallet, Building2, FileText, DollarSign } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import {
@@ -31,56 +30,10 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import type { AccountResponse } from '../types';
 
-// Zod schemas
-const accountCreateSchema = z.object({
-  name: z
-    .string()
-    .min(1, 'accounts.errors.nameRequired')
-    .max(100, 'accounts.errors.nameTooLong'),
-  currency: z.string().min(1),
-  initial_balance: z.number(),
-  account_type: z.enum([
-    'checking',
-    'savings',
-    'credit_card',
-    'investment',
-    'cash',
-    'loan',
-    'mortgage',
-    'other',
-  ]),
-  institution_name: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-const accountUpdateSchema = z.object({
-  name: z
-    .string()
-    .min(1, 'accounts.errors.nameRequired')
-    .max(100, 'accounts.errors.nameTooLong')
-    .optional(),
-  currency: z.string().optional(),
-  account_type: z
-    .enum([
-      'checking',
-      'savings',
-      'credit_card',
-      'investment',
-      'cash',
-      'loan',
-      'mortgage',
-      'other',
-    ])
-    .optional(),
-  institution_name: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-// Infer types from schemas
-export type AccountCreate = z.infer<typeof accountCreateSchema>;
-export type AccountUpdate = z.infer<typeof accountUpdateSchema>;
+// Import schemas and types from the new structure
+import { accountCreateSchema, accountUpdateSchema } from '../accounts.schemas';
+import type { AccountCreate, AccountUpdate, AccountResponse } from '../accounts.types';
 
 interface AccountFormProps {
   /** Account to edit (if undefined, form is in create mode) */
@@ -130,17 +83,17 @@ export const AccountForm = ({
       return {
         name: account.name,
         currency: account.currency || 'EUR',
-        account_type: account.accountType || 'checking',
-        institution_name: account.institutionName || '',
+        accountType: account.accountType || 'checking',
+        institutionName: account.institutionName || '',
         notes: account.notes || '',
       };
     }
     return {
       name: '',
       currency: 'EUR',
-      initial_balance: 0,
-      account_type: 'checking' as const,
-      institution_name: '',
+      initialBalance: 0,
+      accountType: 'checking' as const,
+      institutionName: '',
       notes: '',
     };
   };
@@ -162,13 +115,13 @@ export const AccountForm = ({
   const handleSubmit = async (data: AccountCreate | AccountUpdate) => {
     try {
       if (isEditMode) {
-        // In edit mode, send only defined fields excluding initial_balance
+        // In edit mode, send only defined fields excluding initialBalance
         const updateData: AccountUpdate = {};
         if (data.name) updateData.name = data.name;
-        if (data.account_type) updateData.account_type = data.account_type;
+        if ('accountType' in data && data.accountType) updateData.accountType = data.accountType;
         if (data.currency) updateData.currency = data.currency;
-        if ('institution_name' in data) {
-          updateData.institution_name = data.institution_name || undefined;
+        if ('institutionName' in data) {
+          updateData.institutionName = data.institutionName || undefined;
         }
         if ('notes' in data) {
           updateData.notes = data.notes || undefined;
@@ -235,7 +188,7 @@ export const AccountForm = ({
         {/* Account Type */}
         <FormField
           control={form.control}
-          name="account_type"
+          name="accountType"
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('accounts.accountType')}</FormLabel>
@@ -301,7 +254,7 @@ export const AccountForm = ({
         {!isEditMode && (
           <FormField
             control={form.control}
-            name="initial_balance"
+            name="initialBalance"
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="flex items-center gap-2">
@@ -331,7 +284,7 @@ export const AccountForm = ({
         {/* Institution Name */}
         <FormField
           control={form.control}
-          name="institution_name"
+          name="institutionName"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="flex items-center gap-2">
@@ -341,6 +294,7 @@ export const AccountForm = ({
               <FormControl>
                 <Input
                   {...field}
+                  value={field.value || ''}
                   placeholder={t('accounts.institutionNamePlaceholder')}
                   disabled={isLoading}
                 />
@@ -364,6 +318,7 @@ export const AccountForm = ({
               <FormControl>
                 <Textarea
                   {...field}
+                  value={field.value || ''}
                   placeholder={t('accounts.notesPlaceholder')}
                   disabled={isLoading}
                   rows={3}
