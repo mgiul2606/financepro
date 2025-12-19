@@ -1,5 +1,5 @@
 # app/api/accounts.py
-from backend.app.api.utils import get_by_id, get_children_from_list, get_children_ids
+from backend.app.api.utils import children_for, get_by_id
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 from typing import Annotated
@@ -20,15 +20,14 @@ from app.schemas.account import (
 from app.api.dependencies import get_current_user
 
 def validate_profile_ids(db: Session, current_user: User, profile_ids: list[UUID]) -> list[UUID]:
-    return get_children_ids(db, User, FinancialProfile, current_user, profile_ids)
+    return children_for(db, User, FinancialProfile, current_user, profile_ids, transform=lambda o: o.id)
 
 def validate_profile_id(db: Session, current_user: User, profile_id: UUID) -> UUID:
-    ids: list[UUID] = get_children_ids(db, User, FinancialProfile, current_user, [profile_id])
-    return ids[0]
+    return children_for(db, User, FinancialProfile, current_user, profile_id, transform=lambda o: o.id)
 
 def get_accounts(db: Session, current_user: User, profile_ids: list[FinancialProfile]) -> list[Account]:
     valid_profile_ids: list[UUID] = validate_profile_ids(db, current_user, profile_ids)
-    return get_children_from_list(db, FinancialProfile, Account, valid_profile_ids)
+    return children_for(db, FinancialProfile, Account, valid_profile_ids)
 
 router = APIRouter()
 

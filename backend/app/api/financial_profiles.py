@@ -1,4 +1,6 @@
 # app/api/financial_profiles.py
+from sqlalchemy import select, update
+from backend.app.api.utils import children_for, get_by_id
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Annotated
@@ -18,7 +20,6 @@ from app.schemas.financial_profile import (
 from app.api.dependencies import get_current_user
 
 router = APIRouter()
-
 
 @router.get(
     "/",
@@ -64,10 +65,8 @@ async def list_profiles(
 
     Returns:
         FinancialProfileListResponse with all user's profiles and total count
-    """
-    profiles = db.query(FinancialProfile).filter(
-        FinancialProfile.user_id == current_user.id
-    ).all()
+    """  
+    profiles: list[FinancialProfile] = children_for(db, User, FinancialProfile, current_user.id)
     return FinancialProfileListResponse(profiles=profiles, total=len(profiles))
 
 
@@ -111,10 +110,9 @@ async def create_profile(
 @router.get(
     "/main",
     response_model=MainProfileResponse,
-    summary="Get main financial profile",
-    description="Get the main financial profile for the authenticated user",
     responses={
-        200: {"description": "Main profile retrieved successfully"}
+        200: {"description": "Main profile retrieved successfully"},
+        404: {"description": "Default profile not found (data integrity issue)"}
     },
     tags=["Financial Profiles"]
 )
@@ -122,21 +120,23 @@ async def get_main_profile(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> MainProfileResponse:
-    """
-    Get the user's main financial profile.
-
-    Returns:
-        Main profile information
-    """
-    # Find the default profile using is_default field
-    default_profile = db.query(FinancialProfile).filter(
-        FinancialProfile.user_id == current_user.id,
-        FinancialProfile.is_default == True
+    
+    default_profile = db.scalars(
+        select(FinancialProfile).where(
+            FinancialProfile.user_id == current_user.id,
+            FinancialProfile.is_default == True
+        )
     ).first()
-
+    
+    if not default_profile:
+        raise HTTPException(
+            status_code=500,
+            detail="Default profile not found for user"
+        )
+    
     return MainProfileResponse(
         user_id=current_user.id,
-        main_profile_id=default_profile.id if default_profile else None
+        main_profile_id=default_profile.id
     )
 
 
@@ -174,15 +174,7 @@ async def set_main_profile(
         HTTPException 403: If profile doesn't belong to current user
     """
     # Verify profile exists and belongs to user
-    profile = db.query(FinancialProfile).filter(
-        FinancialProfile.id == profile_data.main_profile_id
-    ).first()
-
-    if not profile:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Financial profile with id {profile_data.main_profile_id} not found"
-        )
+    profile = get_by_id(db, FinancialProfile, profile_data.main_profile_id)
 
     if profile.user_id != current_user.id:
         raise HTTPException(
@@ -191,9 +183,9 @@ async def set_main_profile(
         )
 
     # Reset is_default on all user's profiles
-    db.query(FinancialProfile).filter(
+    db.execute(update(FinancialProfile).where(
         FinancialProfile.user_id == current_user.id
-    ).update({"is_default": False})
+        ).values(is_default=False))
 
     # Set is_default=True on the selected profile
     profile.is_default = True
