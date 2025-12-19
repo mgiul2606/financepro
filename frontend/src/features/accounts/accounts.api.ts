@@ -30,18 +30,12 @@ import type {
 } from './accounts.types';
 
 /**
- * Fetch all accounts with optional filters
+ * Fetch all accounts
+ * Note: Filters are not currently supported by the API
  */
-export const fetchAccounts = async (
-  filters?: AccountFilters
-): Promise<AccountList> => {
-  // Validate input
-  const validatedFilters = filters
-    ? accountFiltersSchema.parse(filters)
-    : undefined;
-
+export const fetchAccounts = async (): Promise<AccountList> => {
   // Make API call
-  const response = await listAccountsApiV1AccountsGet(validatedFilters);
+  const response = await listAccountsApiV1AccountsGet();
 
   // Validate and return response
   return accountListSchema.parse(response.data);
@@ -79,9 +73,7 @@ export const createAccount = async (
   const validatedData = accountCreateSchema.parse(data);
 
   // Make API call
-  const response = await createAccountApiV1AccountsPost({
-    data: validatedData,
-  });
+  const response = await createAccountApiV1AccountsPost(validatedData);
 
   // Validate and return response
   return accountResponseSchema.parse(response.data);
@@ -98,10 +90,10 @@ export const updateAccount = async (
   const validatedData = accountUpdateSchema.parse(data);
 
   // Make API call
-  const response = await updateAccountApiV1AccountsAccountIdPut({
+  const response = await updateAccountApiV1AccountsAccountIdPut(
     accountId,
-    data: validatedData,
-  });
+    validatedData
+  );
 
   // Validate and return response
   return accountResponseSchema.parse(response.data);
@@ -111,5 +103,5 @@ export const updateAccount = async (
  * Delete an account
  */
 export const deleteAccount = async (accountId: string): Promise<void> => {
-  await deleteAccountApiV1AccountsAccountIdDelete({ accountId });
+  await deleteAccountApiV1AccountsAccountIdDelete(accountId);
 };
