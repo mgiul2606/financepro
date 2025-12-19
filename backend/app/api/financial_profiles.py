@@ -228,25 +228,9 @@ async def get_profile(
 
     Raises:
         HTTPException 404: If profile doesn't exist
-        HTTPException 403: If profile doesn't belong to current user
+        HTTPException 400: If profile doesn't belong to current user
     """
-    profile = db.query(FinancialProfile).filter(
-        FinancialProfile.id == profile_id
-    ).first()
-
-    if not profile:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Financial profile with id {profile_id} not found"
-        )
-
-    if profile.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this financial profile"
-        )
-
-    return profile
+    return children_for(db, User, FinancialProfile, current_user.id, profile_id)
 
 
 @router.patch(
@@ -279,23 +263,9 @@ async def update_profile(
 
     Raises:
         HTTPException 404: If profile doesn't exist
-        HTTPException 403: If profile doesn't belong to current user
+        HTTPException 400: If profile doesn't belong to current user
     """
-    profile = db.query(FinancialProfile).filter(
-        FinancialProfile.id == profile_id
-    ).first()
-
-    if not profile:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Financial profile with id {profile_id} not found"
-        )
-
-    if profile.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to update this financial profile"
-        )
+    profile = children_for(db, User, FinancialProfile, current_user.id, profile_id)
 
     # Update only provided fields
     update_data = profile_in.model_dump(exclude_unset=True)
@@ -341,23 +311,9 @@ async def delete_profile(
 
     Raises:
         HTTPException 404: If profile doesn't exist
-        HTTPException 403: If profile doesn't belong to current user
+        HTTPException 400: If profile doesn't belong to current user
     """
-    profile = db.query(FinancialProfile).filter(
-        FinancialProfile.id == profile_id
-    ).first()
-
-    if not profile:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Financial profile with id {profile_id} not found"
-        )
-
-    if profile.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to delete this financial profile"
-        )
+    profile = children_for(db, User, FinancialProfile, current_user.id, profile_id)
 
     was_default = profile.is_default
 
@@ -367,11 +323,12 @@ async def delete_profile(
 
     # If deleted profile was default, set another active profile as default
     if was_default:
-        new_default = db.query(FinancialProfile).filter(
-            FinancialProfile.user_id == current_user.id,
-            FinancialProfile.is_active == True,
-            FinancialProfile.id != profile_id
-        ).first()
+        # Get another active profile for this user
+        other_profiles = children_for(db, User, FinancialProfile, current_user.id)
+        new_default = next(
+            (p for p in other_profiles if p.is_active and p.id != profile_id),
+            None
+        )
 
         if new_default:
             new_default.is_default = True

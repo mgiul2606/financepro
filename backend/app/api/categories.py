@@ -1,4 +1,5 @@
 # app/api/categories.py
+from backend.app.api.utils import get_by_id, children_for
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import Annotated, Optional
@@ -37,20 +38,18 @@ async def list_categories(
     Returns:
         CategoryListResponse with categories and total count
     """
-    # Build query - filter by user_id (categories are USER-level)
-    query = db.query(Category).filter(
-        Category.user_id == current_user.id
-    )
+    # Get all categories for the user
+    categories = children_for(db, User, Category, current_user.id)
 
     # Apply optional filters
     if is_active is not None:
-        query = query.filter(Category.is_active == is_active)
+        categories = [c for c in categories if c.is_active == is_active]
 
     if is_income is not None:
-        query = query.filter(Category.is_income == is_income)
+        categories = [c for c in categories if c.is_income == is_income]
 
-    # Order by sort_order, then by name
-    categories = query.order_by(Category.sort_order, Category.name).all()
+    # Sort by sort_order, then by name
+    categories = sorted(categories, key=lambda c: (c.sort_order, c.name))
 
     return CategoryListResponse(items=categories, total=len(categories))
 
@@ -106,18 +105,7 @@ async def get_category(
 
     Only the category owner can access it.
     """
-    category = db.query(Category).filter(
-        Category.id == category_id,
-        Category.user_id == current_user.id
-    ).first()
-
-    if not category:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Category with id {category_id} not found"
-        )
-
-    return category
+    return children_for(db, User, Category, current_user.id, category_id)
 
 
 @router.put(
@@ -138,16 +126,7 @@ async def update_category(
     Only the category owner can update it.
     System categories cannot be deleted but can be updated.
     """
-    category = db.query(Category).filter(
-        Category.id == category_id,
-        Category.user_id == current_user.id
-    ).first()
-
-    if not category:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Category with id {category_id} not found"
-        )
+    category = children_for(db, User, Category, current_user.id, category_id)
 
     # Update fields
     update_data = category_data.model_dump(exclude_unset=True)
@@ -177,16 +156,7 @@ async def delete_category(
     Only the category owner can delete it.
     System categories cannot be deleted.
     """
-    category = db.query(Category).filter(
-        Category.id == category_id,
-        Category.user_id == current_user.id
-    ).first()
-
-    if not category:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Category with id {category_id} not found"
-        )
+    category = children_for(db, User, Category, current_user.id, category_id)
 
     if category.is_system:
         raise HTTPException(
