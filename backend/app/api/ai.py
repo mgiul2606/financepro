@@ -2,6 +2,7 @@
 """
 API endpoints for AI services (classification, forecasting, chat, optimization).
 """
+from backend.app.api.utils import get_by_id, children_for
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -71,25 +72,16 @@ async def classify_transaction(
     - **auto_apply**: If True, automatically apply classification if confidence is high
     """
     from app.models.transaction import Transaction
+    from app.models.account import Account
+    from app.models.financial_profile import FinancialProfile
 
     # Get transaction
-    transaction = db.query(Transaction).filter(
-        Transaction.id == request.transaction_id
-    ).first()
-
-    if not transaction:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Transaction not found"
-        )
+    transaction = get_by_id(db, Transaction, request.transaction_id)
 
     # Verify user has access to this transaction
     # (through account -> financial_profile -> user)
-    if transaction.account.financial_profile.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have access to this transaction"
-        )
+    account = get_by_id(db, Account, transaction.account_id)
+    children_for(db, User, FinancialProfile, current_user.id, account.financial_profile_id)
 
     # Classify
     service = MLClassificationService(db)
@@ -134,16 +126,7 @@ async def train_classification_model(
     from app.models.financial_profile import FinancialProfile
 
     # Verify user has access to this profile
-    profile = db.query(FinancialProfile).filter(
-        FinancialProfile.id == request.financial_profile_id,
-        FinancialProfile.user_id == current_user.id
-    ).first()
-
-    if not profile:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Financial profile not found"
-        )
+    children_for(db, User, FinancialProfile, current_user.id, request.financial_profile_id)
 
     # Train model
     service = MLClassificationService(db)
@@ -170,16 +153,7 @@ async def get_classification_metrics(
     from app.models.financial_profile import FinancialProfile
 
     # Verify access
-    profile = db.query(FinancialProfile).filter(
-        FinancialProfile.id == financial_profile_id,
-        FinancialProfile.user_id == current_user.id
-    ).first()
-
-    if not profile:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Financial profile not found"
-        )
+    children_for(db, User, FinancialProfile, current_user.id, financial_profile_id)
 
     service = MLClassificationService(db)
     metrics = await service.get_classification_metrics(financial_profile_id)
@@ -200,24 +174,15 @@ async def suggest_tags(
 ):
     """Get suggested tags for a transaction."""
     from app.models.transaction import Transaction
+    from app.models.account import Account
+    from app.models.financial_profile import FinancialProfile
 
     # Get transaction
-    transaction = db.query(Transaction).filter(
-        Transaction.id == transaction_id
-    ).first()
-
-    if not transaction:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Transaction not found"
-        )
+    transaction = get_by_id(db, Transaction, transaction_id)
 
     # Verify access
-    if transaction.account.financial_profile.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied"
-        )
+    account = get_by_id(db, Account, transaction.account_id)
+    children_for(db, User, FinancialProfile, current_user.id, account.financial_profile_id)
 
     service = MLClassificationService(db)
     tags = await service.suggest_tags(
@@ -263,16 +228,7 @@ async def forecast_cashflow(
     from app.models.financial_profile import FinancialProfile
 
     # Verify access
-    profile = db.query(FinancialProfile).filter(
-        FinancialProfile.id == request.financial_profile_id,
-        FinancialProfile.user_id == current_user.id
-    ).first()
-
-    if not profile:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Financial profile not found"
-        )
+    children_for(db, User, FinancialProfile, current_user.id, request.financial_profile_id)
 
     # Generate forecast
     service = ForecastingService(db)
@@ -350,30 +306,11 @@ async def send_chat_message(
     # If financial_profile_id provided, verify access
     if request.financial_profile_id:
         from app.models.financial_profile import FinancialProfile
-
-        profile = db.query(FinancialProfile).filter(
-            FinancialProfile.id == request.financial_profile_id,
-            FinancialProfile.user_id == current_user.id
-        ).first()
-
-        if not profile:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Financial profile not found"
-            )
+        children_for(db, User, FinancialProfile, current_user.id, request.financial_profile_id)
 
     # If conversation_id provided, verify access
     if request.conversation_id:
-        conversation = db.query(ChatConversation).filter(
-            ChatConversation.id == request.conversation_id,
-            ChatConversation.user_id == current_user.id
-        ).first()
-
-        if not conversation:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Conversation not found"
-            )
+        children_for(db, User, ChatConversation, current_user.id, request.conversation_id)
 
     # Process message
     service = ChatAssistantService(db)
@@ -433,16 +370,7 @@ async def get_conversation(
     db: Session = Depends(get_db)
 ):
     """Get detailed conversation with messages."""
-    conversation = db.query(ChatConversation).filter(
-        ChatConversation.id == conversation_id,
-        ChatConversation.user_id == current_user.id
-    ).first()
-
-    if not conversation:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Conversation not found"
-        )
+    conversation = children_for(db, User, ChatConversation, current_user.id, conversation_id)
 
     return ConversationDetail(
         id=conversation.id,
@@ -475,16 +403,7 @@ async def delete_conversation(
     db: Session = Depends(get_db)
 ):
     """Delete a chat conversation."""
-    conversation = db.query(ChatConversation).filter(
-        ChatConversation.id == conversation_id,
-        ChatConversation.user_id == current_user.id
-    ).first()
-
-    if not conversation:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Conversation not found"
-        )
+    conversation = children_for(db, User, ChatConversation, current_user.id, conversation_id)
 
     db.delete(conversation)
     db.commit()
@@ -514,16 +433,7 @@ async def get_optimization_insights(
     from app.models.financial_profile import FinancialProfile
 
     # Verify access
-    profile = db.query(FinancialProfile).filter(
-        FinancialProfile.id == request.financial_profile_id,
-        FinancialProfile.user_id == current_user.id
-    ).first()
-
-    if not profile:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Financial profile not found"
-        )
+    children_for(db, User, FinancialProfile, current_user.id, request.financial_profile_id)
 
     # Get insights
     service = OptimizationService(db)
@@ -577,16 +487,7 @@ async def get_spending_patterns(
     from app.models.financial_profile import FinancialProfile
 
     # Verify access
-    profile = db.query(FinancialProfile).filter(
-        FinancialProfile.id == financial_profile_id,
-        FinancialProfile.user_id == current_user.id
-    ).first()
-
-    if not profile:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Financial profile not found"
-        )
+    children_for(db, User, FinancialProfile, current_user.id, financial_profile_id)
 
     service = OptimizationService(db)
     patterns = await service.get_spending_patterns(
@@ -630,16 +531,7 @@ async def get_savings_summary(
     from app.models.financial_profile import FinancialProfile
 
     # Verify access
-    profile = db.query(FinancialProfile).filter(
-        FinancialProfile.id == financial_profile_id,
-        FinancialProfile.user_id == current_user.id
-    ).first()
-
-    if not profile:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Financial profile not found"
-        )
+    children_for(db, User, FinancialProfile, current_user.id, financial_profile_id)
 
     service = OptimizationService(db)
     summary = await service.calculate_potential_savings(financial_profile_id)

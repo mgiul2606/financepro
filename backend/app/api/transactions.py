@@ -1,4 +1,5 @@
 # app/api/transactions.py
+from backend.app.api.utils import get_by_id, children_for
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_
@@ -23,7 +24,7 @@ from app.api.dependencies import get_current_user
 router = APIRouter()
 
 
-async def verify_account_ownership(
+def verify_account_ownership(
     account_id: UUID,
     db: Session,
     current_user: User
@@ -41,26 +42,13 @@ async def verify_account_ownership(
         Account object if authorized
 
     Raises:
+        HTTPException 400: If user doesn't own the account
         HTTPException 404: If account doesn't exist
-        HTTPException 403: If user doesn't own the account
     """
-    account = db.query(Account).filter(Account.id == account_id).first()
-    if not account:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Account with id {account_id} not found"
-        )
+    account = get_by_id(db, Account, account_id)
 
-    # Check if user owns the financial profile that owns the account
-    profile = db.query(FinancialProfile).filter(
-        FinancialProfile.id == account.financial_profile_id
-    ).first()
-
-    if not profile or profile.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this account"
-        )
+    # Verify account belongs to one of user's financial profiles
+    children_for(db, User, FinancialProfile, current_user.id, account.financial_profile_id)
 
     return account
 
@@ -172,10 +160,10 @@ async def create_transaction(
 
     Raises:
         HTTPException 404: If account doesn't exist
-        HTTPException 403: If user doesn't own the account
+        HTTPException 400: If user doesn't own the account
     """
     # Verify account ownership
-    await verify_account_ownership(transaction_in.account_id, db, current_user)
+    verify_account_ownership(transaction_in.account_id, db, current_user)
 
     # Create transaction
     transaction = Transaction(**transaction_in.model_dump())
@@ -326,34 +314,13 @@ async def get_transaction(
 
     Raises:
         HTTPException 404: If transaction doesn't exist
-        HTTPException 403: If user doesn't own the transaction
+        HTTPException 400: If user doesn't own the transaction
     """
-    transaction = db.query(Transaction).filter(
-        Transaction.id == transaction_id
-    ).first()
-
-    if not transaction:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Transaction with id {transaction_id} not found"
-        )
+    transaction = get_by_id(db, Transaction, transaction_id)
 
     # Verify ownership through account -> profile
-    account = db.query(Account).filter(Account.id == transaction.account_id).first()
-    if account:
-        profile = db.query(FinancialProfile).filter(
-            FinancialProfile.id == account.financial_profile_id
-        ).first()
-        if not profile or profile.user_id != current_user.id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Not authorized to access this transaction"
-            )
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Associated account not found"
-        )
+    account = get_by_id(db, Account, transaction.account_id)
+    children_for(db, User, FinancialProfile, current_user.id, account.financial_profile_id)
 
     return transaction
 
@@ -388,34 +355,13 @@ async def update_transaction(
 
     Raises:
         HTTPException 404: If transaction doesn't exist
-        HTTPException 403: If user doesn't own the transaction
+        HTTPException 400: If user doesn't own the transaction
     """
-    transaction = db.query(Transaction).filter(
-        Transaction.id == transaction_id
-    ).first()
-
-    if not transaction:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Transaction with id {transaction_id} not found"
-        )
+    transaction = get_by_id(db, Transaction, transaction_id)
 
     # Verify ownership
-    account = db.query(Account).filter(Account.id == transaction.account_id).first()
-    if account:
-        profile = db.query(FinancialProfile).filter(
-            FinancialProfile.id == account.financial_profile_id
-        ).first()
-        if not profile or profile.user_id != current_user.id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Not authorized to update this transaction"
-            )
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Associated account not found"
-        )
+    account = get_by_id(db, Account, transaction.account_id)
+    children_for(db, User, FinancialProfile, current_user.id, account.financial_profile_id)
 
     # Update only provided fields
     update_data = transaction_in.model_dump(exclude_unset=True)
@@ -455,34 +401,13 @@ async def delete_transaction(
 
     Raises:
         HTTPException 404: If transaction doesn't exist
-        HTTPException 403: If user doesn't own the transaction
+        HTTPException 400: If user doesn't own the transaction
     """
-    transaction = db.query(Transaction).filter(
-        Transaction.id == transaction_id
-    ).first()
-
-    if not transaction:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Transaction with id {transaction_id} not found"
-        )
+    transaction = get_by_id(db, Transaction, transaction_id)
 
     # Verify ownership
-    account = db.query(Account).filter(Account.id == transaction.account_id).first()
-    if account:
-        profile = db.query(FinancialProfile).filter(
-            FinancialProfile.id == account.financial_profile_id
-        ).first()
-        if not profile or profile.user_id != current_user.id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Not authorized to delete this transaction"
-            )
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Associated account not found"
-        )
+    account = get_by_id(db, Account, transaction.account_id)
+    children_for(db, User, FinancialProfile, current_user.id, account.financial_profile_id)
 
     db.delete(transaction)
     db.commit()
@@ -528,7 +453,7 @@ async def bulk_create_transactions(
     # Verify ownership of all accounts
     unique_account_ids = set(t.account_id for t in transactions_in)
     for account_id in unique_account_ids:
-        await verify_account_ownership(account_id, db, current_user)
+        verify_account_ownership(account_id, db, current_user)
 
     # Create all transactions
     transactions = []
