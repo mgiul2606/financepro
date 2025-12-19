@@ -57,7 +57,6 @@ export const healthCheckHealthGet = async (
   return customInstance<healthCheckHealthGetResponse>(
     getHealthCheckHealthGetUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -231,7 +230,6 @@ export const versionInfoVersionGet = async (
   return customInstance<versionInfoVersionGetResponse>(
     getVersionInfoVersionGetUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },

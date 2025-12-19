@@ -71,7 +71,6 @@ export const listProfilesApiV1ProfilesGet = async (
   return customInstance<listProfilesApiV1ProfilesGetResponse>(
     getListProfilesApiV1ProfilesGetUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -259,7 +258,6 @@ export const createProfileApiV1ProfilesPost = async (
   return customInstance<createProfileApiV1ProfilesPostResponse>(
     getCreateProfileApiV1ProfilesPostUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
@@ -366,7 +364,6 @@ export const getMainProfileApiV1ProfilesMainGet = async (
   return customInstance<getMainProfileApiV1ProfilesMainGetResponse>(
     getGetMainProfileApiV1ProfilesMainGetUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -568,7 +565,6 @@ export const setMainProfileApiV1ProfilesMainPatch = async (
   return customInstance<setMainProfileApiV1ProfilesMainPatchResponse>(
     getSetMainProfileApiV1ProfilesMainPatchUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "PATCH",
       headers: { "Content-Type": "application/json", ...options?.headers },
@@ -704,7 +700,6 @@ export const getProfileApiV1ProfilesProfileIdGet = async (
   return customInstance<getProfileApiV1ProfilesProfileIdGetResponse>(
     getGetProfileApiV1ProfilesProfileIdGetUrl(profileId),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -930,7 +925,6 @@ export const updateProfileApiV1ProfilesProfileIdPatch = async (
   return customInstance<updateProfileApiV1ProfilesProfileIdPatchResponse>(
     getUpdateProfileApiV1ProfilesProfileIdPatchUrl(profileId),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "PATCH",
       headers: { "Content-Type": "application/json", ...options?.headers },
@@ -1071,7 +1065,6 @@ export const deleteProfileApiV1ProfilesProfileIdDelete = async (
   return customInstance<deleteProfileApiV1ProfilesProfileIdDeleteResponse>(
     getDeleteProfileApiV1ProfilesProfileIdDeleteUrl(profileId),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "DELETE",
     },

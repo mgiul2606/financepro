@@ -99,7 +99,6 @@ export const listImportJobsApiV1ImportsGet = async (
   return customInstance<listImportJobsApiV1ImportsGetResponse>(
     getListImportJobsApiV1ImportsGetUrl(params),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -327,7 +326,6 @@ export const importCsvApiV1ImportsPost = async (
   return customInstance<importCsvApiV1ImportsPostResponse>(
     getImportCsvApiV1ImportsPostUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "POST",
       body: formData,
@@ -457,7 +455,6 @@ export const previewImportApiV1ImportsPreviewPost = async (
   return customInstance<previewImportApiV1ImportsPreviewPostResponse>(
     getPreviewImportApiV1ImportsPreviewPostUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "POST",
       body: formData,
@@ -577,7 +574,6 @@ export const getImportJobApiV1ImportsJobIdGet = async (
   return customInstance<getImportJobApiV1ImportsJobIdGetResponse>(
     getGetImportJobApiV1ImportsJobIdGetUrl(jobId),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -797,7 +793,6 @@ export const deleteImportJobApiV1ImportsJobIdDelete = async (
   return customInstance<deleteImportJobApiV1ImportsJobIdDeleteResponse>(
     getDeleteImportJobApiV1ImportsJobIdDeleteUrl(jobId, params),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "DELETE",
     },

@@ -95,7 +95,6 @@ export const classifyTransactionApiV1AiAiClassifyTransactionPost = async (
   return customInstance<classifyTransactionApiV1AiAiClassifyTransactionPostResponse>(
     getClassifyTransactionApiV1AiAiClassifyTransactionPostUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
@@ -232,7 +231,6 @@ export const trainClassificationModelApiV1AiAiClassifyTrainPost = async (
   return customInstance<trainClassificationModelApiV1AiAiClassifyTrainPostResponse>(
     getTrainClassificationModelApiV1AiAiClassifyTrainPostUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
@@ -376,7 +374,6 @@ export const getClassificationMetricsApiV1AiAiClassifyMetricsFinancialProfileIdG
         financialProfileId,
       ),
       {
-        type: "AxiosRequestConfig",
         ...options,
         method: "GET",
       },
@@ -664,7 +661,6 @@ export const suggestTagsApiV1AiAiClassifySuggestTagsTransactionIdGet = async (
       transactionId,
     ),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -934,7 +930,6 @@ export const forecastCashflowApiV1AiAiForecastCashflowPost = async (
   return customInstance<forecastCashflowApiV1AiAiForecastCashflowPostResponse>(
     getForecastCashflowApiV1AiAiForecastCashflowPostUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
@@ -1056,7 +1051,6 @@ export const sendChatMessageApiV1AiAiChatMessagePost = async (
   return customInstance<sendChatMessageApiV1AiAiChatMessagePostResponse>(
     getSendChatMessageApiV1AiAiChatMessagePostUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
@@ -1165,7 +1159,6 @@ export const listConversationsApiV1AiAiChatConversationsGet = async (
   return customInstance<listConversationsApiV1AiAiChatConversationsGetResponse>(
     getListConversationsApiV1AiAiChatConversationsGetUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -1393,7 +1386,6 @@ export const getConversationApiV1AiAiChatConversationsConversationIdGet =
         conversationId,
       ),
       {
-        type: "AxiosRequestConfig",
         ...options,
         method: "GET",
       },
@@ -1682,7 +1674,6 @@ export const deleteConversationApiV1AiAiChatConversationsConversationIdDelete =
         conversationId,
       ),
       {
-        type: "AxiosRequestConfig",
         ...options,
         method: "DELETE",
       },
@@ -1829,7 +1820,6 @@ export const getOptimizationInsightsApiV1AiAiOptimizeInsightsPost = async (
   return customInstance<getOptimizationInsightsApiV1AiAiOptimizeInsightsPostResponse>(
     getGetOptimizationInsightsApiV1AiAiOptimizeInsightsPostUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
@@ -1995,7 +1985,6 @@ export const getSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet =
         params,
       ),
       {
-        type: "AxiosRequestConfig",
         ...options,
         method: "GET",
       },
@@ -2300,7 +2289,6 @@ export const getSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdG
         financialProfileId,
       ),
       {
-        type: "AxiosRequestConfig",
         ...options,
         method: "GET",
       },
@@ -2572,7 +2560,6 @@ export const getAiStatusApiV1AiAiStatusGet = async (
   return customInstance<getAiStatusApiV1AiAiStatusGetResponse>(
     getGetAiStatusApiV1AiAiStatusGetUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },

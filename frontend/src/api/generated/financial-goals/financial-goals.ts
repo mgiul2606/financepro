@@ -101,7 +101,6 @@ export const listGoalsApiV1GoalsGet = async (
   return customInstance<listGoalsApiV1GoalsGetResponse>(
     getListGoalsApiV1GoalsGetUrl(params),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -298,7 +297,6 @@ export const createGoalApiV1GoalsPost = async (
   return customInstance<createGoalApiV1GoalsPostResponse>(
     getCreateGoalApiV1GoalsPostUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
@@ -416,7 +414,6 @@ export const getGoalApiV1GoalsGoalIdGet = async (
   return customInstance<getGoalApiV1GoalsGoalIdGetResponse>(
     getGetGoalApiV1GoalsGoalIdGetUrl(goalId),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -620,7 +617,6 @@ export const updateGoalApiV1GoalsGoalIdPatch = async (
   return customInstance<updateGoalApiV1GoalsGoalIdPatchResponse>(
     getUpdateGoalApiV1GoalsGoalIdPatchUrl(goalId),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "PATCH",
       headers: { "Content-Type": "application/json", ...options?.headers },
@@ -739,7 +735,6 @@ export const deleteGoalApiV1GoalsGoalIdDelete = async (
   return customInstance<deleteGoalApiV1GoalsGoalIdDeleteResponse>(
     getDeleteGoalApiV1GoalsGoalIdDeleteUrl(goalId),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "DELETE",
     },
@@ -858,7 +853,6 @@ export const getGoalProgressApiV1GoalsGoalIdProgressGet = async (
   return customInstance<getGoalProgressApiV1GoalsGoalIdProgressGetResponse>(
     getGetGoalProgressApiV1GoalsGoalIdProgressGetUrl(goalId),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -1083,7 +1077,6 @@ export const addContributionApiV1GoalsGoalIdContributionsPost = async (
   return customInstance<addContributionApiV1GoalsGoalIdContributionsPostResponse>(
     getAddContributionApiV1GoalsGoalIdContributionsPostUrl(goalId),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
@@ -1231,7 +1224,6 @@ export const listContributionsApiV1GoalsGoalIdContributionsGet = async (
   return customInstance<listContributionsApiV1GoalsGoalIdContributionsGetResponse>(
     getListContributionsApiV1GoalsGoalIdContributionsGetUrl(goalId, params),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -1493,7 +1485,6 @@ export const listMilestonesApiV1GoalsGoalIdMilestonesGet = async (
   return customInstance<listMilestonesApiV1GoalsGoalIdMilestonesGetResponse>(
     getListMilestonesApiV1GoalsGoalIdMilestonesGetUrl(goalId),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },

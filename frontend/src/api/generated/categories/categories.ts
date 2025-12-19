@@ -90,7 +90,6 @@ export const listCategoriesApiV1CategoriesGet = async (
   return customInstance<listCategoriesApiV1CategoriesGetResponse>(
     getListCategoriesApiV1CategoriesGetUrl(params),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },

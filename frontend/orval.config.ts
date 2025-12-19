@@ -29,9 +29,6 @@ export default defineConfig({
       clean: true,
       prettier: true,
       override: {
-        requestOptions: {
-          type: 'AxiosRequestConfig'
-        }, 
         mutator: {
           path: './src/api/client.ts',
           name: 'customInstance',

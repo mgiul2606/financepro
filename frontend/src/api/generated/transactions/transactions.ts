@@ -97,7 +97,6 @@ export const listTransactionsApiV1TransactionsGet = async (
   return customInstance<listTransactionsApiV1TransactionsGetResponse>(
     getListTransactionsApiV1TransactionsGetUrl(params),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -312,7 +311,6 @@ export const createTransactionApiV1TransactionsPost = async (
   return customInstance<createTransactionApiV1TransactionsPostResponse>(
     getCreateTransactionApiV1TransactionsPostUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
@@ -447,7 +445,6 @@ export const getTransactionStatsApiV1TransactionsStatsGet = async (
   return customInstance<getTransactionStatsApiV1TransactionsStatsGetResponse>(
     getGetTransactionStatsApiV1TransactionsStatsGetUrl(params),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -697,7 +694,6 @@ export const getTransactionApiV1TransactionsTransactionIdGet = async (
   return customInstance<getTransactionApiV1TransactionsTransactionIdGetResponse>(
     getGetTransactionApiV1TransactionsTransactionIdGetUrl(transactionId),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "GET",
     },
@@ -954,7 +950,6 @@ export const updateTransactionApiV1TransactionsTransactionIdPatch = async (
   return customInstance<updateTransactionApiV1TransactionsTransactionIdPatchResponse>(
     getUpdateTransactionApiV1TransactionsTransactionIdPatchUrl(transactionId),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "PATCH",
       headers: { "Content-Type": "application/json", ...options?.headers },
@@ -1110,7 +1105,6 @@ export const deleteTransactionApiV1TransactionsTransactionIdDelete = async (
   return customInstance<deleteTransactionApiV1TransactionsTransactionIdDeleteResponse>(
     getDeleteTransactionApiV1TransactionsTransactionIdDeleteUrl(transactionId),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "DELETE",
     },
@@ -1259,7 +1253,6 @@ export const bulkCreateTransactionsApiV1TransactionsBulkPost = async (
   return customInstance<bulkCreateTransactionsApiV1TransactionsBulkPostResponse>(
     getBulkCreateTransactionsApiV1TransactionsBulkPostUrl(),
     {
-      type: "AxiosRequestConfig",
       ...options,
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
