@@ -1,6 +1,6 @@
 /**
  * React Query hooks for Financial Profile operations
- * Wraps the generated orval hooks for better usability
+ * Provides optimistic updates and cache management
  */
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -14,21 +14,32 @@ import {
   getListProfilesApiV1ProfilesGetQueryKey,
   getGetMainProfileApiV1ProfilesMainGetQueryKey,
 } from '@/api/generated/financial-profiles/financial-profiles';
+
 import type {
-  FinancialProfileCreate,
-  FinancialProfileUpdate,
+  ProfileCreate,
+  ProfileUpdate,
+  ProfileResponse,
   MainProfileUpdate,
   ProfileFilters,
-} from '../types';
+} from './profiles.types';
 
 /**
  * Hook to list all financial profiles
  */
 export const useProfiles = (filters?: ProfileFilters) => {
-  const query = useListProfilesApiV1ProfilesGet(filters);
+  // Convert camelCase to snake_case for API
+  const apiFilters = filters
+    ? {
+        skip: filters.skip,
+        limit: filters.limit,
+        is_active: filters.isActive,
+      }
+    : undefined;
+
+  const query = useListProfilesApiV1ProfilesGet(apiFilters);
 
   return {
-    profiles: query.data?.data?.profiles || [],
+    profiles: (query.data?.data?.profiles || []) as ProfileResponse[],
     total: query.data?.data?.total || 0,
     isLoading: query.isLoading,
     error: query.error,
@@ -47,7 +58,7 @@ export const useProfile = (profileId: string, enabled = true) => {
   });
 
   return {
-    profile: query.data?.data,
+    profile: query.data?.data as ProfileResponse | undefined,
     isLoading: query.isLoading,
     error: query.error,
     refetch: query.refetch,
@@ -72,7 +83,7 @@ export const useCreateProfile = () => {
   });
 
   return {
-    createProfile: (data: FinancialProfileCreate) => mutation.mutateAsync({ data }),
+    createProfile: (data: ProfileCreate) => mutation.mutateAsync({ data }),
     isCreating: mutation.isPending,
     error: mutation.error,
     reset: mutation.reset,
@@ -97,7 +108,7 @@ export const useUpdateProfile = () => {
   });
 
   return {
-    updateProfile: (profileId: string, data: FinancialProfileUpdate) =>
+    updateProfile: (profileId: string, data: ProfileUpdate) =>
       mutation.mutateAsync({ profileId, data }),
     isUpdating: mutation.isPending,
     error: mutation.error,
@@ -137,7 +148,7 @@ export const useMainProfile = () => {
   const query = useGetMainProfileApiV1ProfilesMainGet();
 
   return {
-    mainProfile: query.data?.data,
+    mainProfile: query.data?.data as ProfileResponse | undefined,
     isLoading: query.isLoading,
     error: query.error,
     refetch: query.refetch,
@@ -153,9 +164,12 @@ export const useSetMainProfile = () => {
   const mutation = useSetMainProfileApiV1ProfilesMainPatch({
     mutation: {
       onSuccess: () => {
-        // Invalidate main profile to refetch
+        // Invalidate both main profile and profiles list
         queryClient.invalidateQueries({
           queryKey: getGetMainProfileApiV1ProfilesMainGetQueryKey(),
+        });
+        queryClient.invalidateQueries({
+          queryKey: getListProfilesApiV1ProfilesGetQueryKey(),
         });
       },
     },
@@ -163,9 +177,8 @@ export const useSetMainProfile = () => {
 
   return {
     setMainProfile: (data: MainProfileUpdate) => mutation.mutateAsync({ data }),
-    isSetting: mutation.isPending,
+    isUpdating: mutation.isPending,
     error: mutation.error,
     reset: mutation.reset,
   };
 };
-

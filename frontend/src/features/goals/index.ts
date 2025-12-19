@@ -16,13 +16,39 @@ export {
   useCreateGoal,
   useUpdateGoal,
   useDeleteGoal,
-} from './hooks/useGoals';
+} from './goals.hooks';
+
+// API
+export {
+  fetchGoals,
+  fetchGoal,
+  createGoal,
+  updateGoal,
+  deleteGoal,
+} from './goals.api';
+
+// Schemas
+export {
+  goalCreateSchema,
+  goalUpdateSchema,
+  goalResponseSchema,
+  goalListSchema,
+  goalFiltersSchema,
+  goalTypeSchema,
+  goalStatusSchema,
+} from './goals.schemas';
 
 // Types
 export type {
-  Goal,
   GoalCreate,
   GoalUpdate,
+  GoalResponse,
+  Goal,
+  GoalList,
+  GoalFilters,
+  GoalType,
   GoalStatus,
-  GoalPriority,
-} from './types';
+} from './goals.types';
+
+// Constants
+export { GOAL_TYPE_OPTIONS, GOAL_STATUS_OPTIONS } from './goals.types';

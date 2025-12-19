@@ -1,6 +1,6 @@
 /**
  * React Query hooks for Transaction operations
- * Wraps the generated orval hooks for better usability
+ * Provides optimistic updates and cache management
  */
 import { useQueryClient, useQueries } from '@tanstack/react-query';
 import {
@@ -14,12 +14,15 @@ import {
   getGetTransactionStatsApiV1TransactionsStatsGetQueryKey,
 } from '@/api/generated/transactions/transactions';
 import { useProfileContext } from '@/contexts/ProfileContext';
+
 import type {
   TransactionCreate,
   TransactionUpdate,
   TransactionFilters,
-} from '../types';
-import { isStatsData } from '../types/custom';
+  TransactionResponse,
+  TransactionStats,
+} from './transactions.types';
+import { isTransactionStats } from './transactions.types';
 
 /**
  * Hook to list all transactions with optional filters
@@ -28,11 +31,34 @@ import { isStatsData } from '../types/custom';
 export const useTransactions = (filters?: TransactionFilters) => {
   const { activeProfileIds, isLoading: profileLoading } = useProfileContext();
 
+  // Convert camelCase filters to snake_case for API
+  const apiFilters = filters
+    ? {
+        account_id: filters.accountId,
+        category_id: filters.categoryId,
+        transaction_type: filters.transactionType,
+        date_from: filters.dateFrom,
+        date_to: filters.dateTo,
+        min_amount: filters.minAmount,
+        max_amount: filters.maxAmount,
+        search: filters.search,
+        skip: filters.skip,
+        limit: filters.limit,
+      }
+    : undefined;
+
   // Create queries for each active profile
   const queries = useQueries({
     queries: activeProfileIds.map((profileId) => ({
-      queryKey: getListTransactionsApiV1TransactionsGetQueryKey({ ...filters, profile_id: profileId }),
-      queryFn: () => listTransactionsApiV1TransactionsGet({ ...filters, profile_id: profileId }),
+      queryKey: getListTransactionsApiV1TransactionsGetQueryKey({
+        ...apiFilters,
+        profile_id: profileId,
+      }),
+      queryFn: () =>
+        listTransactionsApiV1TransactionsGet({
+          ...apiFilters,
+          profile_id: profileId,
+        }),
       enabled: !profileLoading && activeProfileIds.length > 0,
     })),
   });
@@ -45,6 +71,7 @@ export const useTransactions = (filters?: TransactionFilters) => {
     }
     return [];
   });
+
   const totalCount = queries.reduce((sum, query) => {
     const data = query.data?.data;
     if (data && 'total' in data) {
@@ -52,6 +79,7 @@ export const useTransactions = (filters?: TransactionFilters) => {
     }
     return sum;
   }, 0);
+
   const isLoading = profileLoading || queries.some((query) => query.isLoading);
   const error = queries.find((query) => query.error)?.error || null;
 
@@ -60,7 +88,7 @@ export const useTransactions = (filters?: TransactionFilters) => {
   };
 
   return {
-    transactions: allTransactions,
+    transactions: allTransactions as TransactionResponse[],
     total: totalCount,
     isLoading,
     error,
@@ -82,7 +110,7 @@ export const useTransaction = (transactionId: string) => {
   );
 
   return {
-    transaction: query.data?.data,
+    transaction: query.data?.data as TransactionResponse | undefined,
     isLoading: query.isLoading,
     error: query.error,
     refetch: query.refetch,
@@ -94,18 +122,34 @@ export const useTransaction = (transactionId: string) => {
  * Fetches stats from all active profiles and aggregates the results
  */
 export const useTransactionStats = (params?: {
-  profile_id?: string;
-  account_id?: string;
-  date_from?: string;
-  date_to?: string;
+  profileId?: string;
+  accountId?: string;
+  dateFrom?: string;
+  dateTo?: string;
 }) => {
   const { activeProfileIds, isLoading: profileLoading } = useProfileContext();
+
+  // Convert camelCase to snake_case for API
+  const apiParams = params
+    ? {
+        account_id: params.accountId,
+        date_from: params.dateFrom,
+        date_to: params.dateTo,
+      }
+    : undefined;
 
   // Create queries for each active profile
   const queries = useQueries({
     queries: activeProfileIds.map((profileId) => ({
-      queryKey: getGetTransactionStatsApiV1TransactionsStatsGetQueryKey({ ...params, profile_id: profileId }),
-      queryFn: () => getTransactionStatsApiV1TransactionsStatsGet({ ...params, profile_id: profileId }),
+      queryKey: getGetTransactionStatsApiV1TransactionsStatsGetQueryKey({
+        ...apiParams,
+        profile_id: profileId,
+      }),
+      queryFn: () =>
+        getTransactionStatsApiV1TransactionsStatsGet({
+          ...apiParams,
+          profile_id: profileId,
+        }),
       enabled: !profileLoading && activeProfileIds.length > 0,
     })),
   });
@@ -114,17 +158,27 @@ export const useTransactionStats = (params?: {
   const aggregatedStats = queries.reduce(
     (acc, query) => {
       const data = query.data?.data;
-       if (isStatsData(data)) {
+      if (isTransactionStats(data)) {
         return {
-          total_income: acc.total_income + data.total_income,
-          total_expenses: acc.total_expenses + data.total_expenses,
-          net_balance: acc.net_balance + data.net_balance,
-          transaction_count: acc.transaction_count + data.transaction_count,
+          totalIncome:
+            (parseFloat(acc.totalIncome) + parseFloat(data.totalIncome)).toString(),
+          totalExpenses:
+            (parseFloat(acc.totalExpenses) + parseFloat(data.totalExpenses)).toString(),
+          netBalance:
+            (parseFloat(acc.netBalance) + parseFloat(data.netBalance)).toString(),
+          transactionCount: acc.transactionCount + data.transactionCount,
+          currency: data.currency || 'EUR',
         };
       }
       return acc;
     },
-    { total_income: 0, total_expenses: 0, net_balance: 0, transaction_count: 0 }
+    {
+      totalIncome: '0',
+      totalExpenses: '0',
+      netBalance: '0',
+      transactionCount: 0,
+      currency: 'EUR',
+    }
   );
 
   const isLoading = profileLoading || queries.some((query) => query.isLoading);
@@ -136,7 +190,7 @@ export const useTransactionStats = (params?: {
   };
 
   return {
-    stats: hasData ? aggregatedStats : undefined,
+    stats: hasData ? (aggregatedStats as TransactionStats) : undefined,
     isLoading,
     error,
     refetch,
@@ -161,7 +215,8 @@ export const useCreateTransaction = () => {
   });
 
   return {
-    createTransaction: (data: TransactionCreate) => mutation.mutateAsync({ data }),
+    createTransaction: (data: TransactionCreate) =>
+      mutation.mutateAsync({ data }),
     isCreating: mutation.isPending,
     error: mutation.error,
     reset: mutation.reset,

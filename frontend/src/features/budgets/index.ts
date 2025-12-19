@@ -8,6 +8,7 @@ export { BudgetsPage } from './pages/BudgetsPage';
 
 // Components
 export { BudgetForm } from './components/BudgetForm';
+export { BudgetDetailsModal } from './components/BudgetDetailsModal';
 
 // Hooks
 export {
@@ -16,13 +17,39 @@ export {
   useCreateBudget,
   useUpdateBudget,
   useDeleteBudget,
-} from './hooks/useBudgets';
+} from './budgets.hooks';
+
+// API
+export {
+  fetchBudgets,
+  fetchBudget,
+  createBudget,
+  updateBudget,
+  deleteBudget,
+} from './budgets.api';
+
+// Schemas
+export {
+  budgetCreateSchema,
+  budgetUpdateSchema,
+  budgetResponseSchema,
+  budgetListSchema,
+  budgetFiltersSchema,
+  periodTypeSchema,
+  budgetCategoryAllocationSchema,
+} from './budgets.schemas';
 
 // Types
 export type {
-  Budget,
   BudgetCreate,
   BudgetUpdate,
-  BudgetPeriod,
-  BudgetStatus,
-} from './types';
+  BudgetResponse,
+  Budget,
+  BudgetList,
+  BudgetFilters,
+  PeriodType,
+  BudgetCategoryAllocation,
+} from './budgets.types';
+
+// Constants
+export { PERIOD_TYPE_OPTIONS } from './budgets.types';
