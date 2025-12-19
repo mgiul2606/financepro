@@ -9,6 +9,7 @@ Provides comprehensive financial analysis endpoints:
 - Multi-currency aggregations with automatic conversion
 - Advanced reporting (period comparison, cross-profile aggregates)
 """
+from backend.app.api.utils import get_by_id, children_for
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_, extract
@@ -192,12 +193,15 @@ async def analyze_expenses(
     currency: str = Query("EUR", description="Target currency for conversion")
 ) -> ExpenseAnalysisResponse:
     """Analyze expenses by category."""
-    # Get user's profiles
-    profiles = get_user_profiles(db, current_user.id)
-    profile_id_list = [p.id for p in profiles]
-
+    # Get and validate profile IDs
     if profile_ids:
-        profile_id_list = [pid for pid in profile_ids if pid in profile_id_list]
+        # Validate that all profile_ids belong to the user
+        children_for(db, User, FinancialProfile, current_user.id, profile_ids)
+        profile_id_list = profile_ids
+    else:
+        # Get all user's profiles
+        profiles = get_user_profiles(db, current_user.id)
+        profile_id_list = [p.id for p in profiles]
 
     # Query transactions
     transactions = db.query(Transaction).join(Account).filter(
@@ -272,12 +276,15 @@ async def analyze_income(
     currency: str = Query("EUR", description="Target currency for conversion")
 ) -> IncomeAnalysisResponse:
     """Analyze income by category."""
-    # Get user's profiles
-    profiles = get_user_profiles(db, current_user.id)
-    profile_id_list = [p.id for p in profiles]
-
+    # Get and validate profile IDs
     if profile_ids:
-        profile_id_list = [pid for pid in profile_ids if pid in profile_id_list]
+        # Validate that all profile_ids belong to the user
+        children_for(db, User, FinancialProfile, current_user.id, profile_ids)
+        profile_id_list = profile_ids
+    else:
+        # Get all user's profiles
+        profiles = get_user_profiles(db, current_user.id)
+        profile_id_list = [p.id for p in profiles]
 
     # Query transactions
     transactions = db.query(Transaction).join(Account).filter(
@@ -350,12 +357,15 @@ async def get_spending_trends(
     currency: str = Query("EUR", description="Target currency")
 ) -> TrendAnalysisResponse:
     """Get spending trends by month."""
-    # Get user's profiles
-    profiles = get_user_profiles(db, current_user.id)
-    profile_id_list = [p.id for p in profiles]
-
+    # Get and validate profile IDs
     if profile_ids:
-        profile_id_list = [pid for pid in profile_ids if pid in profile_id_list]
+        # Validate that all profile_ids belong to the user
+        children_for(db, User, FinancialProfile, current_user.id, profile_ids)
+        profile_id_list = profile_ids
+    else:
+        # Get all user's profiles
+        profiles = get_user_profiles(db, current_user.id)
+        profile_id_list = [p.id for p in profiles]
 
     # Calculate date range
     end_date = date.today()
@@ -516,11 +526,15 @@ async def get_cash_flow(
     currency: str = Query("EUR", description="Target currency")
 ) -> CashFlowResponse:
     """Get cash flow by month."""
-    profiles = get_user_profiles(db, current_user.id)
-    profile_id_list = [p.id for p in profiles]
-
+    # Get and validate profile IDs
     if profile_ids:
-        profile_id_list = [pid for pid in profile_ids if pid in profile_id_list]
+        # Validate that all profile_ids belong to the user
+        children_for(db, User, FinancialProfile, current_user.id, profile_ids)
+        profile_id_list = profile_ids
+    else:
+        # Get all user's profiles
+        profiles = get_user_profiles(db, current_user.id)
+        profile_id_list = [p.id for p in profiles]
 
     end_date = date.today()
     start_date = end_date - timedelta(days=months * 30)
@@ -675,11 +689,15 @@ async def compare_periods(
     currency: str = Query("EUR", description="Target currency")
 ) -> PeriodComparisonResponse:
     """Compare two time periods."""
-    profiles = get_user_profiles(db, current_user.id)
-    profile_id_list = [p.id for p in profiles]
-
+    # Get and validate profile IDs
     if profile_ids:
-        profile_id_list = [pid for pid in profile_ids if pid in profile_id_list]
+        # Validate that all profile_ids belong to the user
+        children_for(db, User, FinancialProfile, current_user.id, profile_ids)
+        profile_id_list = profile_ids
+    else:
+        # Get all user's profiles
+        profiles = get_user_profiles(db, current_user.id)
+        profile_id_list = [p.id for p in profiles]
 
     def get_period_summary(start: date, end: date) -> PeriodSummary:
         transactions = db.query(Transaction).join(Account).filter(
