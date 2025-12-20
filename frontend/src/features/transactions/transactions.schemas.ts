@@ -1,5 +1,19 @@
+/**
+ * Transaction schemas with runtime validation using Zod
+ *
+ * Bridges Orval-generated schemas with application-specific needs
+ */
 import { z } from 'zod';
 import { TransactionType, TransactionSource } from '@/api/generated/models';
+
+// Import auto-generated Zod schemas from Orval
+import {
+  createTransactionApiV1TransactionsPostBody,
+  updateTransactionApiV1TransactionsTransactionIdPatchBody,
+  getTransactionApiV1TransactionsTransactionIdGetResponse,
+  listTransactionsApiV1TransactionsGetResponse,
+  getTransactionStatsApiV1TransactionsStatsGetResponse,
+} from '@/api/generated/zod/transactions/transactions.zod';
 
 /**
  * Transaction Type Enum Schema
@@ -45,136 +59,33 @@ export const currencySchema = z
 
 /**
  * Transaction Create Schema
+ * Base schema from Orval
  */
-export const transactionCreateSchema = z.object({
-  accountId: z.string().uuid('Invalid account ID'),
-
-  categoryId: z.string().uuid('Invalid category ID').optional().nullable(),
-
-  transactionType: transactionTypeSchema,
-
-  amount: z
-    .number()
-    .positive('Amount must be greater than 0')
-    .min(0.01, 'Amount must be at least 0.01'),
-
-  currency: currencySchema,
-
-  description: z
-    .string()
-    .min(1, 'Description cannot be empty')
-    .max(500, 'Description is too long (max 500 characters)'),
-
-  merchantName: z
-    .string()
-    .max(255, 'Merchant name is too long')
-    .optional()
-    .nullable(),
-
-  transactionDate: z.string().min(1, 'Transaction date is required'),
-
-  notes: z
-    .string()
-    .max(1000, 'Notes are too long (max 1000 characters)')
-    .optional()
-    .nullable(),
-
-  valueDate: z.string().optional().nullable(),
-
-  location: z.string().max(255, 'Location is too long').optional().nullable(),
-
-  receiptUrl: z.string().url('Must be a valid URL').optional().nullable(),
-
-  tags: z.array(z.string()).optional(),
-
-  source: transactionSourceSchema.default(TransactionSource.manual).optional(),
-});
+export const transactionCreateSchema = createTransactionApiV1TransactionsPostBody;
 
 /**
  * Transaction Update Schema
- * All fields are optional for partial updates
+ * Base schema from Orval for partial updates
  */
-export const transactionUpdateSchema = z.object({
-  accountId: z.string().uuid().optional(),
-
-  categoryId: z.string().uuid().optional().nullable(),
-
-  transactionType: transactionTypeSchema.optional(),
-
-  amount: z.number().positive().min(0.01).optional(),
-
-  currency: currencySchema.optional(),
-
-  description: z.string().min(1).max(500).optional(),
-
-  merchantName: z.string().max(255).optional().nullable(),
-
-  transactionDate: z.string().optional(),
-
-  notes: z.string().max(1000).optional().nullable(),
-
-  valueDate: z.string().optional().nullable(),
-
-  location: z.string().max(255).optional().nullable(),
-
-  receiptUrl: z.string().url().optional().nullable(),
-
-  tags: z.array(z.string()).optional(),
-});
+export const transactionUpdateSchema = updateTransactionApiV1TransactionsTransactionIdPatchBody;
 
 /**
  * Transaction Response Schema
  */
-export const transactionResponseSchema = z.object({
-  id: z.string().uuid(),
-
-  accountId: z.string().uuid(),
-
-  categoryId: z.string().uuid().nullable(),
-
-  transactionType: transactionTypeSchema,
-
-  amount: z.string(), // API returns as string
-
-  currency: z.string().length(3),
-
-  description: z.string(),
-
-  merchantName: z.string().nullable(),
-
-  transactionDate: z.string(),
-
-  valueDate: z.string().nullable(),
-
-  notes: z.string().nullable(),
-
-  location: z.string().nullable(),
-
-  receiptUrl: z.string().nullable(),
-
-  tags: z.array(z.string()).optional(),
-
-  source: transactionSourceSchema,
-
-  isReconciled: z.boolean().optional().default(false),
-
-  createdAt: z.string().datetime(),
-
-  updatedAt: z.string().datetime(),
-});
+export const transactionResponseSchema = getTransactionApiV1TransactionsTransactionIdGetResponse;
 
 /**
  * Transaction List Response Schema
  */
-export const transactionListSchema = z.object({
-  items: z.array(transactionResponseSchema),
-  total: z.number().int().min(0),
-  skip: z.number().int().min(0).optional(),
-  limit: z.number().int().min(1).optional(),
-});
+export const transactionListSchema = listTransactionsApiV1TransactionsGetResponse;
 
 /**
- * Transaction Filters Schema
+ * Transaction Stats Schema
+ */
+export const transactionStatsSchema = getTransactionStatsApiV1TransactionsStatsGetResponse;
+
+/**
+ * Transaction Filters Schema (UI-specific)
  */
 export const transactionFiltersSchema = z.object({
   profileId: z.string().uuid().optional(),
@@ -188,17 +99,4 @@ export const transactionFiltersSchema = z.object({
   search: z.string().optional(),
   skip: z.number().int().min(0).default(0).optional(),
   limit: z.number().int().min(1).max(100).default(20).optional(),
-});
-
-/**
- * Transaction Stats Schema
- */
-export const transactionStatsSchema = z.object({
-  totalIncome: z.string(),
-  totalExpenses: z.string(),
-  netBalance: z.string(),
-  transactionCount: z.number().int(),
-  currency: z.string().length(3),
-  periodStart: z.string().optional(),
-  periodEnd: z.string().optional(),
 });

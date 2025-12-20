@@ -1,9 +1,11 @@
+/**
+ * Analytic feature schemas with runtime validation using Zod
+ *
+ * Mix of Orval-generated schemas and frontend-only UI schemas
+ */
 import { z } from 'zod';
 
-/**
- * Analytic feature schemas
- * These are frontend-only since analytics might not have dedicated backend endpoints yet
- */
+// Note: Most analytics schemas are frontend-only for now
 
 export const anomalySchema = z.object({
   id: z.string(),

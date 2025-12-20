@@ -1,5 +1,18 @@
+/**
+ * Budget schemas with runtime validation using Zod
+ *
+ * Bridges Orval-generated schemas with application-specific needs
+ */
 import { z } from 'zod';
 import { PeriodType } from '@/api/generated/models';
+
+// Import auto-generated Zod schemas from Orval
+import {
+  createBudgetApiV1BudgetsPostBody,
+  updateBudgetApiV1BudgetsBudgetIdPatchBody,
+  getBudgetApiV1BudgetsBudgetIdGetResponse,
+  listBudgetsApiV1BudgetsGetResponse,
+} from '@/api/generated/zod/budgets/budgets.zod';
 
 export const periodTypeSchema = z.enum([
   PeriodType.monthly,
@@ -13,61 +26,31 @@ export const budgetCategoryAllocationSchema = z.object({
   allocatedAmount: z.number().positive(),
 });
 
-export const budgetCreateSchema = z.object({
-  name: z.string().min(1).max(100),
-  periodType: periodTypeSchema,
-  startDate: z.string(),
-  endDate: z.string().optional().nullable(),
-  totalAmount: z.number().positive().optional(),
-  currency: z.string().length(3).default('EUR'),
-  scopeType: z.enum(['user', 'profile']).default('user').optional(),
-  scopeProfileIds: z.array(z.string().uuid()).optional(),
-  categoryAllocations: z.array(budgetCategoryAllocationSchema).optional(),
-  rolloverEnabled: z.boolean().default(false).optional(),
-  alertThresholdPercent: z.number().min(0).max(100).default(80).optional(),
-});
+/**
+ * Budget Create Schema
+ * Base schema from Orval
+ */
+export const budgetCreateSchema = createBudgetApiV1BudgetsPostBody;
 
-export const budgetUpdateSchema = z.object({
-  name: z.string().min(1).max(100).optional(),
-  periodType: periodTypeSchema.optional(),
-  startDate: z.string().optional(),
-  endDate: z.string().optional().nullable(),
-  totalAmount: z.number().positive().optional(),
-  currency: z.string().length(3).optional(),
-  scopeType: z.enum(['user', 'profile']).optional(),
-  scopeProfileIds: z.array(z.string().uuid()).optional(),
-  rolloverEnabled: z.boolean().optional(),
-  alertThresholdPercent: z.number().min(0).max(100).optional(),
-  isActive: z.boolean().optional(),
-});
+/**
+ * Budget Update Schema
+ * Base schema from Orval for partial updates
+ */
+export const budgetUpdateSchema = updateBudgetApiV1BudgetsBudgetIdPatchBody;
 
-export const budgetResponseSchema = z.object({
-  id: z.string().uuid(),
-  userId: z.string().uuid(),
-  name: z.string(),
-  periodType: periodTypeSchema,
-  startDate: z.string(),
-  endDate: z.string().nullable(),
-  totalAmount: z.string(),
-  totalSpent: z.string(),
-  remaining: z.string(),
-  usagePercentage: z.number(),
-  currency: z.string().length(3),
-  scopeType: z.enum(['user', 'profile']),
-  scopeProfileIds: z.array(z.string().uuid()).optional(),
-  categoryAllocations: z.array(budgetCategoryAllocationSchema).optional(),
-  rolloverEnabled: z.boolean(),
-  alertThresholdPercent: z.number(),
-  isActive: z.boolean(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
-});
+/**
+ * Budget Response Schema
+ */
+export const budgetResponseSchema = getBudgetApiV1BudgetsBudgetIdGetResponse;
 
-export const budgetListSchema = z.object({
-  items: z.array(budgetResponseSchema),
-  total: z.number().int().min(0),
-});
+/**
+ * Budget List Response Schema
+ */
+export const budgetListSchema = listBudgetsApiV1BudgetsGetResponse;
 
+/**
+ * Budget Filters Schema (UI-specific)
+ */
 export const budgetFiltersSchema = z.object({
   profileId: z.string().uuid().optional(),
   isActive: z.boolean().optional(),

@@ -22,15 +22,8 @@ export {
   useDeleteTransaction,
 } from './transactions.hooks';
 
-// API functions
-export {
-  fetchTransactions,
-  fetchTransaction,
-  fetchTransactionStats,
-  createTransaction,
-  updateTransaction,
-  deleteTransaction,
-} from './transactions.api';
+// API functions - Now using Orval-generated hooks directly
+// To use API functions directly, import from '@/api/generated/transactions/transactions'
 
 // Schemas
 export {
