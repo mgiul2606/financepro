@@ -2,7 +2,7 @@
  * React Query hooks for Account operations
  * Provides optimistic updates and cache management
  */
-import { useQueryClient, useQueries } from '@tanstack/react-query';
+import { useQueries } from '@tanstack/react-query';
 import {
   useListAccountsApiV1AccountsGet,
   useGetAccountApiV1AccountsAccountIdGet,
@@ -14,6 +14,11 @@ import {
   listAccountsApiV1AccountsGet,
 } from '@/api/generated/accounts/accounts';
 import { useProfileContext } from '@/contexts/ProfileContext';
+import {
+  useGenericCreate,
+  useGenericUpdate,
+  useGenericDelete,
+} from '@/hooks/useGenericMutations';
 
 import type {
   AccountCreate,
@@ -108,76 +113,59 @@ export const useAccountBalance = (accountId: string) => {
 
 /**
  * Hook to create a new account
+ * Uses generic mutation factory for consistency
  */
 export const useCreateAccount = () => {
-  const queryClient = useQueryClient();
-
-  const mutation = useCreateAccountApiV1AccountsPost({
-    mutation: {
-      onSuccess: () => {
-        // Invalidate accounts list to refetch
-        queryClient.invalidateQueries({
-          queryKey: getListAccountsApiV1AccountsGetQueryKey(),
-        });
-      },
-    },
+  const result = useGenericCreate<AccountCreate, AccountResponse>({
+    useMutation: useCreateAccountApiV1AccountsPost,
+    invalidateQueryKey: getListAccountsApiV1AccountsGetQueryKey,
+    mutationName: 'createAccount',
   });
 
   return {
-    createAccount: (data: AccountCreate) => mutation.mutateAsync({ data }),
-    isCreating: mutation.isPending,
-    error: mutation.error,
-    reset: mutation.reset,
+    createAccount: result.createAccount,
+    isCreating: result.isPending,
+    error: result.error,
+    reset: result.reset,
   };
 };
 
 /**
  * Hook to update an existing account
+ * Uses generic mutation factory for consistency
  */
 export const useUpdateAccount = () => {
-  const queryClient = useQueryClient();
-
-  const mutation = useUpdateAccountApiV1AccountsAccountIdPut({
-    mutation: {
-      onSuccess: () => {
-        // Invalidate accounts list to refetch
-        queryClient.invalidateQueries({
-          queryKey: getListAccountsApiV1AccountsGetQueryKey(),
-        });
-      },
-    },
+  const result = useGenericUpdate<AccountUpdate, AccountResponse>({
+    useMutation: useUpdateAccountApiV1AccountsAccountIdPut,
+    invalidateQueryKey: getListAccountsApiV1AccountsGetQueryKey,
+    mutationName: 'updateAccount',
+    idParamName: 'accountId',
   });
 
   return {
-    updateAccount: (accountId: string, data: AccountUpdate) =>
-      mutation.mutateAsync({ accountId, data }),
-    isUpdating: mutation.isPending,
-    error: mutation.error,
-    reset: mutation.reset,
+    updateAccount: result.updateAccount,
+    isUpdating: result.isPending,
+    error: result.error,
+    reset: result.reset,
   };
 };
 
 /**
  * Hook to delete an account
+ * Uses generic mutation factory for consistency
  */
 export const useDeleteAccount = () => {
-  const queryClient = useQueryClient();
-
-  const mutation = useDeleteAccountApiV1AccountsAccountIdDelete({
-    mutation: {
-      onSuccess: () => {
-        // Invalidate accounts list to refetch
-        queryClient.invalidateQueries({
-          queryKey: getListAccountsApiV1AccountsGetQueryKey(),
-        });
-      },
-    },
+  const result = useGenericDelete({
+    useMutation: useDeleteAccountApiV1AccountsAccountIdDelete,
+    invalidateQueryKey: getListAccountsApiV1AccountsGetQueryKey,
+    mutationName: 'deleteAccount',
+    idParamName: 'accountId',
   });
 
   return {
-    deleteAccount: (accountId: string) => mutation.mutateAsync({ accountId }),
-    isDeleting: mutation.isPending,
-    error: mutation.error,
-    reset: mutation.reset,
+    deleteAccount: result.deleteAccount,
+    isDeleting: result.isPending,
+    error: result.error,
+    reset: result.reset,
   };
 };
