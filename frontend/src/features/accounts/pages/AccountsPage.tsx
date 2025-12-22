@@ -17,6 +17,7 @@ import { Separator } from '@/components/ui/separator';
 // Custom components (kept minimal)
 import { CurrencyText, NumberText, PercentageText } from '@/core/components/atomic';
 import { useConfirm } from '@/hooks/useConfirm';
+import { useCrudModal } from '@/hooks/useCrudModal';
 
 import {
   useAccounts,
@@ -40,9 +41,7 @@ export const AccountsPage = () => {
   const navigate = useNavigate();
   const confirm = useConfirm();
 
-  // State
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [editingAccount, setEditingAccount] = useState<AccountResponse | null>(null);
+  // State for deleting indicator (temporary, could be moved to useCrudModal if needed)
   const [deletingAccountId, setDeletingAccountId] = useState<string | null>(null);
 
   // Data fetching
@@ -51,53 +50,33 @@ export const AccountsPage = () => {
   // Mutations
   const { createAccount, isCreating, error: createError, reset: resetCreate } = useCreateAccount();
   const { updateAccount, isUpdating, error: updateError, reset: resetUpdate } = useUpdateAccount();
-  const { deleteAccount } = useDeleteAccount();
+  const { deleteAccount, isDeleting } = useDeleteAccount();
 
-  // Handlers
-  const handleCreate = async (data: AccountCreate) => {
-    try {
-      await createAccount(data);
-      setShowCreateModal(false);
-      resetCreate();
-    } catch (error) {
-      console.error('Failed to create account:', error);
-      throw error;
-    }
-  };
-
-  const handleUpdate = async (data: AccountUpdate) => {
-    if (!editingAccount) return;
-
-    try {
-      await updateAccount(editingAccount.id, data);
-      setEditingAccount(null);
-      resetUpdate();
-    } catch (error) {
-      console.error('Failed to update account:', error);
-      throw error;
-    }
-  };
-
-  const handleDelete = async (account: AccountResponse) => {
-    const confirmed = await confirm({
-      title: t('accounts.deleteAccount'),
-      message: t('accounts.deleteConfirm', { name: account.name }),
-      confirmText: t('common.delete'),
-      variant: 'danger',
-      confirmButtonVariant: 'destructive',
-    });
-
-    if (confirmed) {
-      setDeletingAccountId(account.id);
+  // CRUD Modal management
+  const crud = useCrudModal<AccountResponse, AccountCreate, AccountUpdate>({
+    useCreate: () => ({ isCreating, error: createError, reset: resetCreate }),
+    useUpdate: () => ({ isUpdating, error: updateError, reset: resetUpdate }),
+    useDelete: () => ({ isDeleting, error: null, reset: () => {} }),
+    createFn: createAccount,
+    updateFn: updateAccount,
+    deleteFn: async (id: string) => {
+      setDeletingAccountId(id);
       try {
-        await deleteAccount(account.id);
-      } catch (error) {
-        console.error('Failed to delete account:', error);
+        await deleteAccount(id);
       } finally {
         setDeletingAccountId(null);
       }
-    }
-  };
+    },
+    confirmDelete: async (account) => {
+      return await confirm({
+        title: t('accounts.deleteAccount'),
+        message: t('accounts.deleteConfirm', { name: account.name }),
+        confirmText: t('common.delete'),
+        variant: 'danger',
+        confirmButtonVariant: 'destructive',
+      });
+    },
+  });
 
   // Utilities
   const getBalanceStatus = (account: AccountResponse): BalanceStatus | undefined => {
@@ -182,8 +161,8 @@ export const AccountsPage = () => {
           <p className="text-muted-foreground mt-2">{t('accounts.subtitle')}</p>
         </div>
         <Button
-          onClick={() => setShowCreateModal(true)}
-          disabled={isCreating}
+          onClick={() => crud.openCreateModal()}
+          disabled={crud.isCreating}
         >
           <PlusCircle className="mr-2 h-4 w-4" />
           {t('accounts.newAccount')}
@@ -269,7 +248,7 @@ export const AccountsPage = () => {
               {t('accounts.noAccountsDesc')}
             </p>
             <Button
-              onClick={() => setShowCreateModal(true)}
+              onClick={() => crud.openCreateModal()}
               className="mt-6"
             >
               <PlusCircle className="mr-2 h-4 w-4" />
@@ -322,7 +301,7 @@ export const AccountsPage = () => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setEditingAccount(account)}>
+                        <DropdownMenuItem onClick={() => crud.openEditModal(account)}>
                           <Edit className="mr-2 h-4 w-4" />
                           {t('common.edit')}
                         </DropdownMenuItem>
@@ -334,7 +313,7 @@ export const AccountsPage = () => {
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                          onClick={() => handleDelete(account)}
+                          onClick={() => crud.handleDelete(account)}
                           className="text-destructive focus:text-destructive"
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
@@ -401,10 +380,13 @@ export const AccountsPage = () => {
       )}
 
       {/* Create Modal */}
-      <Dialog open={showCreateModal} onOpenChange={(open) => {
-        if (!isCreating) {
-          setShowCreateModal(open);
-          if (!open) resetCreate();
+      <Dialog open={crud.showCreateModal} onOpenChange={(open) => {
+        if (!crud.isCreating) {
+          if (!open) {
+            crud.closeCreateModal();
+          } else {
+            crud.setShowCreateModal(open);
+          }
         }
       }}>
         <DialogContent className="sm:max-w-[500px]">
@@ -414,32 +396,29 @@ export const AccountsPage = () => {
               {t('accounts.createAccountDesc', 'Create a new account to track your finances.')}
             </DialogDescription>
           </DialogHeader>
-          
+
           <AccountForm
-            onSubmit={handleCreate}
-            isLoading={isCreating}
-            error={createError ? t('accounts.errors.createFailed') : undefined}
-            onClearError={resetCreate}
+            onSubmit={crud.handleCreate}
+            isLoading={crud.isCreating}
+            error={crud.createError ? t('accounts.errors.createFailed') : undefined}
+            onClearError={crud.resetCreate}
           />
-          
+
           <DialogFooter>
             <Button
               type="button"
               variant="outline"
-              onClick={() => {
-                setShowCreateModal(false);
-                resetCreate();
-              }}
-              disabled={isCreating}
+              onClick={() => crud.closeCreateModal()}
+              disabled={crud.isCreating}
             >
               {t('common.cancel')}
             </Button>
             <Button
               type="submit"
               form="account-form"
-              disabled={isCreating}
+              disabled={crud.isCreating}
             >
-              {isCreating ? (
+              {crud.isCreating ? (
                 <>
                   <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
                   {t('common.creating')}
@@ -453,11 +432,10 @@ export const AccountsPage = () => {
       </Dialog>
 
       {/* Edit Modal */}
-      <Dialog open={!!editingAccount} onOpenChange={(open) => {
-        if (!isUpdating) {
+      <Dialog open={!!crud.editingEntity} onOpenChange={(open) => {
+        if (!crud.isUpdating) {
           if (!open) {
-            setEditingAccount(null);
-            resetUpdate();
+            crud.closeEditModal();
           }
         }
       }}>
@@ -468,35 +446,32 @@ export const AccountsPage = () => {
               {t('accounts.editAccountDesc', 'Update account information and settings.')}
             </DialogDescription>
           </DialogHeader>
-          
-          {editingAccount && (
+
+          {crud.editingEntity && (
             <AccountForm
-              account={editingAccount}
-              onSubmit={handleUpdate}
-              isLoading={isUpdating}
-              error={updateError ? t('accounts.errors.updateFailed') : undefined}
-              onClearError={resetUpdate}
+              account={crud.editingEntity}
+              onSubmit={crud.handleUpdate}
+              isLoading={crud.isUpdating}
+              error={crud.updateError ? t('accounts.errors.updateFailed') : undefined}
+              onClearError={crud.resetUpdate}
             />
           )}
-          
+
           <DialogFooter>
             <Button
               type="button"
               variant="outline"
-              onClick={() => {
-                setEditingAccount(null);
-                resetUpdate();
-              }}
-              disabled={isUpdating}
+              onClick={() => crud.closeEditModal()}
+              disabled={crud.isUpdating}
             >
               {t('common.cancel')}
             </Button>
             <Button
               type="submit"
               form="account-form"
-              disabled={isUpdating}
+              disabled={crud.isUpdating}
             >
-              {isUpdating ? (
+              {crud.isUpdating ? (
                 <>
                   <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
                   {t('common.saving')}

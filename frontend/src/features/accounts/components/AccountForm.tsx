@@ -35,11 +35,8 @@ import {
 import { accountCreateSchema, accountUpdateSchema } from '../accounts.schemas';
 import type { AccountCreate, AccountUpdate, AccountResponse } from '../accounts.types';
 
-interface AccountFormProps {
-  /** Account to edit (if undefined, form is in create mode) */
-  account?: AccountResponse;
-  /** Called when form is submitted successfully */
-  onSubmit: (data: AccountCreate | AccountUpdate) => Promise<void>;
+// Conditional props based on mode
+interface BaseAccountFormProps {
   /** Current loading state */
   isLoading?: boolean;
   /** Error message to display */
@@ -47,6 +44,22 @@ interface AccountFormProps {
   /** Called when error alert is closed */
   onClearError?: () => void;
 }
+
+interface CreateModeProps extends BaseAccountFormProps {
+  /** No account means create mode */
+  account?: never;
+  /** Called when form is submitted successfully in create mode */
+  onSubmit: (data: AccountCreate) => Promise<void>;
+}
+
+interface EditModeProps extends BaseAccountFormProps {
+  /** Account to edit (presence means edit mode) */
+  account: AccountResponse;
+  /** Called when form is submitted successfully in edit mode */
+  onSubmit: (data: AccountUpdate) => Promise<void>;
+}
+
+type AccountFormProps = CreateModeProps | EditModeProps;
 
 export const AccountForm = ({
   account,
@@ -127,10 +140,12 @@ export const AccountForm = ({
           updateData.notes = data.notes || undefined;
         }
 
-        await onSubmit(updateData);
+        // Type assertion is safe here because we know we're in edit mode
+        await (onSubmit as (data: AccountUpdate) => Promise<void>)(updateData);
       } else {
         // In create mode, send all fields
-        await onSubmit(data as AccountCreate);
+        // Type assertion is safe here because we know we're in create mode
+        await (onSubmit as (data: AccountCreate) => Promise<void>)(data as AccountCreate);
       }
     } catch (err) {
       console.error('Form submission error:', err);
