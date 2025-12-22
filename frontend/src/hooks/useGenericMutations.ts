@@ -11,25 +11,57 @@
  * ```tsx
  * // In accounts.hooks.ts
  * export const useCreateAccount = () => {
- *   return useGenericCreate({
+ *   return useGenericCreate<AccountCreate, AccountResponse>({
  *     useMutation: useCreateAccountApiV1AccountsPost,
  *     invalidateQueryKey: getListAccountsApiV1AccountsGetQueryKey,
  *     mutationName: 'createAccount',
- *     paramMapper: (data) => ({ data }),
  *   });
  * };
  * ```
  */
-import { useQueryClient, type QueryKey } from '@tanstack/react-query';
+import { useQueryClient, type QueryKey, type UseMutationResult } from '@tanstack/react-query';
+
+/**
+ * Type for Orval-generated mutation hook with create pattern
+ * Expects mutation to accept { data: TData }
+ */
+export type OrvalCreateMutationHook<TData, TResponse, TError = Error> = (options?: {
+  mutation?: {
+    onSuccess?: (data: TResponse, variables: { data: TData }, context: unknown) => void;
+    onError?: (error: TError, variables: { data: TData }, context: unknown) => void;
+  };
+}) => UseMutationResult<TResponse, TError, { data: TData }, unknown>;
+
+/**
+ * Type for Orval-generated mutation hook with update pattern
+ * Expects mutation to accept { [idParamName]: string, data: TData }
+ */
+export type OrvalUpdateMutationHook<TData, TResponse, TError = Error> = (options?: {
+  mutation?: {
+    onSuccess?: (data: TResponse, variables: Record<string, unknown>, context: unknown) => void;
+    onError?: (error: TError, variables: Record<string, unknown>, context: unknown) => void;
+  };
+}) => UseMutationResult<TResponse, TError, Record<string, unknown>, unknown>;
+
+/**
+ * Type for Orval-generated mutation hook with delete pattern
+ * Expects mutation to accept { [idParamName]: string }
+ */
+export type OrvalDeleteMutationHook<TResponse = void, TError = Error> = (options?: {
+  mutation?: {
+    onSuccess?: (data: TResponse, variables: Record<string, unknown>, context: unknown) => void;
+    onError?: (error: TError, variables: Record<string, unknown>, context: unknown) => void;
+  };
+}) => UseMutationResult<TResponse, TError, Record<string, unknown>, unknown>;
 
 /**
  * Options for create mutation factory
  */
-export interface UseGenericCreateOptions<TData, TResponse> {
+export interface UseGenericCreateOptions<TData, TResponse, TError = Error> {
   /**
    * Orval-generated mutation hook (e.g., useCreateAccountApiV1AccountsPost)
    */
-  useMutation: (options?: any) => any;
+  useMutation: OrvalCreateMutationHook<TData, TResponse, TError>;
 
   /**
    * Query key getter function or static query key to invalidate on success
@@ -44,21 +76,24 @@ export interface UseGenericCreateOptions<TData, TResponse> {
   mutationName?: string;
 
   /**
-   * Maps input data to mutation parameters
-   * @default (data) => ({ data })
-   */
-  paramMapper?: (data: TData) => any;
-
-  /**
    * Optional callback after successful mutation
    */
-  onSuccess?: (response: TResponse) => void;
+  onSuccess?: (response: TResponse, data: TData) => void;
 
   /**
    * Optional callback on mutation error
    */
-  onError?: (error: Error) => void;
+  onError?: (error: TError, data: TData) => void;
 }
+
+/**
+ * Return type for useGenericCreate
+ */
+export type GenericCreateResult<TData, TResponse, TError = Error> = {
+  isPending: boolean;
+  error: TError | null;
+  reset: () => void;
+} & Record<string, (data: TData) => Promise<TResponse>>;
 
 /**
  * Generic factory for create mutations
@@ -68,19 +103,18 @@ export interface UseGenericCreateOptions<TData, TResponse> {
  * - Automatically invalidates cache on success
  * - Returns a normalized interface: { [mutationName], isPending, error, reset }
  */
-export function useGenericCreate<TData, TResponse = any>({
+export function useGenericCreate<TData, TResponse, TError = Error>({
   useMutation,
   invalidateQueryKey,
   mutationName = 'mutate',
-  paramMapper = (data: TData) => ({ data }),
   onSuccess,
   onError,
-}: UseGenericCreateOptions<TData, TResponse>) {
+}: UseGenericCreateOptions<TData, TResponse, TError>): GenericCreateResult<TData, TResponse, TError> {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutation: {
-      onSuccess: (response: TResponse) => {
+      onSuccess: (response: TResponse, variables: { data: TData }) => {
         // Invalidate cache
         const queryKey = typeof invalidateQueryKey === 'function'
           ? invalidateQueryKey()
@@ -88,30 +122,30 @@ export function useGenericCreate<TData, TResponse = any>({
         queryClient.invalidateQueries({ queryKey });
 
         // Call custom success callback
-        onSuccess?.(response);
+        onSuccess?.(response, variables.data);
       },
-      onError: (error: Error) => {
-        onError?.(error);
+      onError: (error: TError, variables: { data: TData }) => {
+        onError?.(error, variables.data);
       },
     },
   });
 
   return {
-    [mutationName]: (data: TData) => mutation.mutateAsync(paramMapper(data)),
+    [mutationName]: (data: TData) => mutation.mutateAsync({ data }),
     isPending: mutation.isPending,
-    error: mutation.error as Error | null,
+    error: mutation.error,
     reset: mutation.reset,
-  };
+  } as GenericCreateResult<TData, TResponse, TError>;
 }
 
 /**
  * Options for update mutation factory
  */
-export interface UseGenericUpdateOptions<TData, TResponse> {
+export interface UseGenericUpdateOptions<TData, TResponse, TError = Error> {
   /**
    * Orval-generated mutation hook (e.g., useUpdateAccountApiV1AccountsAccountIdPut)
    */
-  useMutation: (options?: any) => any;
+  useMutation: OrvalUpdateMutationHook<TData, TResponse, TError>;
 
   /**
    * Query key getter function or static query key to invalidate on success
@@ -134,13 +168,22 @@ export interface UseGenericUpdateOptions<TData, TResponse> {
   /**
    * Optional callback after successful mutation
    */
-  onSuccess?: (response: TResponse) => void;
+  onSuccess?: (response: TResponse, id: string, data: TData) => void;
 
   /**
    * Optional callback on mutation error
    */
-  onError?: (error: Error) => void;
+  onError?: (error: TError, id: string, data: TData) => void;
 }
+
+/**
+ * Return type for useGenericUpdate
+ */
+export type GenericUpdateResult<TData, TResponse, TError = Error> = {
+  isPending: boolean;
+  error: TError | null;
+  reset: () => void;
+} & Record<string, (id: string, data: TData) => Promise<TResponse>>;
 
 /**
  * Generic factory for update mutations
@@ -150,19 +193,19 @@ export interface UseGenericUpdateOptions<TData, TResponse> {
  * - Automatically invalidates cache on success
  * - Returns a normalized interface: { [mutationName], isPending, error, reset }
  */
-export function useGenericUpdate<TData, TResponse = any>({
+export function useGenericUpdate<TData, TResponse, TError = Error>({
   useMutation,
   invalidateQueryKey,
   mutationName = 'mutate',
   idParamName = 'id',
   onSuccess,
   onError,
-}: UseGenericUpdateOptions<TData, TResponse>) {
+}: UseGenericUpdateOptions<TData, TResponse, TError>): GenericUpdateResult<TData, TResponse, TError> {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutation: {
-      onSuccess: (response: TResponse) => {
+      onSuccess: (response: TResponse, variables: Record<string, unknown>) => {
         // Invalidate cache
         const queryKey = typeof invalidateQueryKey === 'function'
           ? invalidateQueryKey()
@@ -170,10 +213,14 @@ export function useGenericUpdate<TData, TResponse = any>({
         queryClient.invalidateQueries({ queryKey });
 
         // Call custom success callback
-        onSuccess?.(response);
+        const id = variables[idParamName] as string;
+        const data = variables.data as TData;
+        onSuccess?.(response, id, data);
       },
-      onError: (error: Error) => {
-        onError?.(error);
+      onError: (error: TError, variables: Record<string, unknown>) => {
+        const id = variables[idParamName] as string;
+        const data = variables.data as TData;
+        onError?.(error, id, data);
       },
     },
   });
@@ -182,19 +229,19 @@ export function useGenericUpdate<TData, TResponse = any>({
     [mutationName]: (id: string, data: TData) =>
       mutation.mutateAsync({ [idParamName]: id, data }),
     isPending: mutation.isPending,
-    error: mutation.error as Error | null,
+    error: mutation.error,
     reset: mutation.reset,
-  };
+  } as GenericUpdateResult<TData, TResponse, TError>;
 }
 
 /**
  * Options for delete mutation factory
  */
-export interface UseGenericDeleteOptions<TResponse = void> {
+export interface UseGenericDeleteOptions<TResponse = void, TError = Error> {
   /**
    * Orval-generated mutation hook (e.g., useDeleteAccountApiV1AccountsAccountIdDelete)
    */
-  useMutation: (options?: any) => any;
+  useMutation: OrvalDeleteMutationHook<TResponse, TError>;
 
   /**
    * Query key getter function or static query key to invalidate on success
@@ -222,8 +269,17 @@ export interface UseGenericDeleteOptions<TResponse = void> {
   /**
    * Optional callback on mutation error
    */
-  onError?: (error: Error) => void;
+  onError?: (error: TError, id: string) => void;
 }
+
+/**
+ * Return type for useGenericDelete
+ */
+export type GenericDeleteResult<TResponse = void, TError = Error> = {
+  isPending: boolean;
+  error: TError | null;
+  reset: () => void;
+} & Record<string, (id: string) => Promise<TResponse>>;
 
 /**
  * Generic factory for delete mutations
@@ -233,19 +289,19 @@ export interface UseGenericDeleteOptions<TResponse = void> {
  * - Automatically invalidates cache on success
  * - Returns a normalized interface: { [mutationName], isPending, error, reset }
  */
-export function useGenericDelete<TResponse = void>({
+export function useGenericDelete<TResponse = void, TError = Error>({
   useMutation,
   invalidateQueryKey,
   mutationName = 'mutate',
   idParamName = 'id',
   onSuccess,
   onError,
-}: UseGenericDeleteOptions<TResponse>) {
+}: UseGenericDeleteOptions<TResponse, TError>): GenericDeleteResult<TResponse, TError> {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutation: {
-      onSuccess: (_response: TResponse, variables: any) => {
+      onSuccess: (_response: TResponse, variables: Record<string, unknown>) => {
         // Invalidate cache
         const queryKey = typeof invalidateQueryKey === 'function'
           ? invalidateQueryKey()
@@ -253,11 +309,12 @@ export function useGenericDelete<TResponse = void>({
         queryClient.invalidateQueries({ queryKey });
 
         // Call custom success callback with the ID
-        const id = variables[idParamName];
+        const id = variables[idParamName] as string;
         onSuccess?.(id);
       },
-      onError: (error: Error) => {
-        onError?.(error);
+      onError: (error: TError, variables: Record<string, unknown>) => {
+        const id = variables[idParamName] as string;
+        onError?.(error, id);
       },
     },
   });
@@ -266,9 +323,9 @@ export function useGenericDelete<TResponse = void>({
     [mutationName]: (id: string) =>
       mutation.mutateAsync({ [idParamName]: id }),
     isPending: mutation.isPending,
-    error: mutation.error as Error | null,
+    error: mutation.error,
     reset: mutation.reset,
-  };
+  } as GenericDeleteResult<TResponse, TError>;
 }
 
 /**
@@ -276,7 +333,7 @@ export function useGenericDelete<TResponse = void>({
  *
  * @example
  * ```tsx
- * const accountMutations = useGenericCrudMutations({
+ * const accountMutations = createGenericCrudHooks({
  *   entity: 'account',
  *   mutations: {
  *     create: useCreateAccountApiV1AccountsPost,
@@ -288,16 +345,17 @@ export function useGenericDelete<TResponse = void>({
  * });
  *
  * // Returns: { useCreate, useUpdate, useDelete }
+ * export const { useCreate: useCreateAccount, useUpdate: useUpdateAccount, useDelete: useDeleteAccount } = accountMutations;
  * ```
  */
-export function createGenericCrudHooks<TCreate, TUpdate, TResponse = any>(config: {
+export function createGenericCrudHooks<TCreate, TUpdate, TResponse, TError = Error>(config: {
   /** Entity name (used for function naming) */
   entity: string;
   /** Orval-generated mutation hooks */
   mutations: {
-    create: (options?: any) => any;
-    update: (options?: any) => any;
-    delete: (options?: any) => any;
+    create: OrvalCreateMutationHook<TCreate, TResponse, TError>;
+    update: OrvalUpdateMutationHook<TUpdate, TResponse, TError>;
+    delete: OrvalDeleteMutationHook<TResponse, TError>;
   };
   /** Query key to invalidate */
   invalidateQueryKey: (() => QueryKey) | QueryKey;
@@ -307,23 +365,26 @@ export function createGenericCrudHooks<TCreate, TUpdate, TResponse = any>(config
   const { entity, mutations, invalidateQueryKey, idParamName = 'id' } = config;
 
   return {
-    useCreate: () => useGenericCreate<TCreate, TResponse>({
-      useMutation: mutations.create,
-      invalidateQueryKey,
-      mutationName: `create${capitalize(entity)}`,
-    }),
-    useUpdate: () => useGenericUpdate<TUpdate, TResponse>({
-      useMutation: mutations.update,
-      invalidateQueryKey,
-      mutationName: `update${capitalize(entity)}`,
-      idParamName,
-    }),
-    useDelete: () => useGenericDelete({
-      useMutation: mutations.delete,
-      invalidateQueryKey,
-      mutationName: `delete${capitalize(entity)}`,
-      idParamName,
-    }),
+    useCreate: (): GenericCreateResult<TCreate, TResponse, TError> =>
+      useGenericCreate<TCreate, TResponse, TError>({
+        useMutation: mutations.create,
+        invalidateQueryKey,
+        mutationName: `create${capitalize(entity)}`,
+      }),
+    useUpdate: (): GenericUpdateResult<TUpdate, TResponse, TError> =>
+      useGenericUpdate<TUpdate, TResponse, TError>({
+        useMutation: mutations.update,
+        invalidateQueryKey,
+        mutationName: `update${capitalize(entity)}`,
+        idParamName,
+      }),
+    useDelete: (): GenericDeleteResult<TResponse, TError> =>
+      useGenericDelete<TResponse, TError>({
+        useMutation: mutations.delete,
+        invalidateQueryKey,
+        mutationName: `delete${capitalize(entity)}`,
+        idParamName,
+      }),
   };
 }
 
