@@ -1,5 +1,18 @@
+/**
+ * Goal schemas with runtime validation using Zod
+ *
+ * Bridges Orval-generated schemas with application-specific needs
+ */
 import { z } from 'zod';
 import { GoalType, GoalStatus } from '@/api/generated/models';
+
+// Import auto-generated Zod schemas from Orval
+import {
+  createGoalApiV1GoalsPostBody,
+  updateGoalApiV1GoalsGoalIdPatchBody,
+  getGoalApiV1GoalsGoalIdGetResponse,
+  listGoalsApiV1GoalsGetResponse,
+} from '@/api/generated/zod/financial-goals/financial-goals.zod';
 
 export const goalTypeSchema = z.enum([
   GoalType.savings,
@@ -19,52 +32,27 @@ export const goalStatusSchema = z.enum([
   GoalStatus.cancelled,
 ]);
 
-export const goalCreateSchema = z.object({
-  name: z.string().min(1).max(100),
-  description: z.string().max(500).optional().nullable(),
-  goalType: goalTypeSchema,
-  targetAmount: z.number().positive(),
-  currentAmount: z.number().min(0).default(0).optional(),
-  currency: z.string().length(3).default('EUR'),
-  deadline: z.string().optional().nullable(),
-  linkedAccountId: z.string().uuid().optional().nullable(),
-  isActive: z.boolean().default(true).optional(),
-});
+/**
+ * Goal Create Schema
+ * Base schema from Orval
+ */
+export const goalCreateSchema = createGoalApiV1GoalsPostBody;
 
-export const goalUpdateSchema = z.object({
-  name: z.string().min(1).max(100).optional(),
-  description: z.string().max(500).optional().nullable(),
-  goalType: goalTypeSchema.optional(),
-  targetAmount: z.number().positive().optional(),
-  currentAmount: z.number().min(0).optional(),
-  deadline: z.string().optional().nullable(),
-  linkedAccountId: z.string().uuid().optional().nullable(),
-  status: goalStatusSchema.optional(),
-  isActive: z.boolean().optional(),
-});
+/**
+ * Goal Update Schema
+ * Base schema from Orval for partial updates
+ */
+export const goalUpdateSchema = updateGoalApiV1GoalsGoalIdPatchBody;
 
-export const goalResponseSchema = z.object({
-  id: z.string().uuid(),
-  userId: z.string().uuid(),
-  name: z.string(),
-  description: z.string().nullable(),
-  goalType: goalTypeSchema,
-  targetAmount: z.string(),
-  currentAmount: z.string(),
-  currency: z.string().length(3),
-  progressPercentage: z.number().min(0).max(100),
-  deadline: z.string().nullable(),
-  linkedAccountId: z.string().uuid().nullable(),
-  status: goalStatusSchema,
-  isActive: z.boolean(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
-});
+/**
+ * Goal Response Schema
+ */
+export const goalResponseSchema = getGoalApiV1GoalsGoalIdGetResponse;
 
-export const goalListSchema = z.object({
-  items: z.array(goalResponseSchema),
-  total: z.number().int().min(0),
-});
+/**
+ * Goal List Response Schema
+ */
+export const goalListSchema = listGoalsApiV1GoalsGetResponse;
 
 export const goalFiltersSchema = z.object({
   profileId: z.string().uuid().optional(),

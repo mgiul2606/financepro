@@ -1,9 +1,15 @@
+/**
+ * AI Assistant schemas with runtime validation using Zod
+ *
+ * Mix of Orval-generated schemas and frontend UI schemas
+ */
 import { z } from 'zod';
 
-/**
- * AI Assistant Schemas
- * Mix of backend API schemas and frontend UI schemas
- */
+// Import auto-generated Zod schemas from Orval where available
+import {
+  classifyTransactionApiV1AiAiClassifyTransactionPostBody,
+  sendChatMessageApiV1AiAiChatMessagePostBody,
+} from '@/api/generated/zod/ai-services/ai-services.zod';
 
 // Backend API Request/Response Schemas
 export const classificationRequestSchema = z.object({

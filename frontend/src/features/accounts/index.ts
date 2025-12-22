@@ -20,15 +20,8 @@ export {
   useDeleteAccount,
 } from './accounts.hooks';
 
-// API functions
-export {
-  fetchAccounts,
-  fetchAccount,
-  fetchAccountBalance,
-  createAccount,
-  updateAccount,
-  deleteAccount,
-} from './accounts.api';
+// API functions - Now using Orval-generated hooks directly
+// To use API functions directly, import from '@/api/generated/accounts/accounts'
 
 // Schemas
 export {

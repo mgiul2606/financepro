@@ -1,9 +1,11 @@
-import { z } from 'zod';
-
 /**
- * Optimization feature schemas
+ * Optimization feature schemas with runtime validation using Zod
+ *
  * Frontend-only schemas for financial optimization suggestions
  */
+import { z } from 'zod';
+
+// Note: Optimization schemas are primarily frontend-only for now
 
 export const savingsStrategySchema = z.object({
   id: z.string(),

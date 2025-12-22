@@ -24,16 +24,8 @@ export {
   useSetMainProfile,
 } from './profiles.hooks';
 
-// API functions
-export {
-  fetchProfiles,
-  fetchProfile,
-  fetchMainProfile,
-  createProfile,
-  updateProfile,
-  deleteProfile,
-  setMainProfile,
-} from './profiles.api';
+// API functions - Now using Orval-generated hooks directly
+// To use API functions directly, import from '@/api/generated/financial-profiles/financial-profiles'
 
 // Schemas
 export {
