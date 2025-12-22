@@ -44,9 +44,8 @@ export type EntityWithId = {
 
 /**
  * Structure returned by a create mutation hook
- * Flexible to accept any property name for the create function
  */
-export interface CreateMutationHook<TCreate, TResponse> {
+export interface CreateMutationHook {
   [key: string]: unknown;
   isCreating?: boolean;
   error?: Error | null;
@@ -55,9 +54,8 @@ export interface CreateMutationHook<TCreate, TResponse> {
 
 /**
  * Structure returned by an update mutation hook
- * Flexible to accept any property name for the update function
  */
-export interface UpdateMutationHook<TUpdate, TResponse> {
+export interface UpdateMutationHook {
   [key: string]: unknown;
   isUpdating?: boolean;
   error?: Error | null;
@@ -66,7 +64,6 @@ export interface UpdateMutationHook<TUpdate, TResponse> {
 
 /**
  * Structure returned by a delete mutation hook
- * Flexible to accept any property name for the delete function
  */
 export interface DeleteMutationHook {
   [key: string]: unknown;
@@ -83,13 +80,13 @@ export interface UseCrudModalOptions<TEntity extends EntityWithId, TCreate, TUpd
    * Hook that returns create mutation state
    * Should return an object with: { isCreating, error, reset }
    */
-  useCreate: () => CreateMutationHook<TCreate, TEntity>;
+  useCreate: () => CreateMutationHook;
 
   /**
    * Hook that returns update mutation state
    * Should return an object with: { isUpdating, error, reset }
    */
-  useUpdate: () => UpdateMutationHook<TUpdate, TEntity>;
+  useUpdate: () => UpdateMutationHook;
 
   /**
    * Hook that returns delete mutation state
