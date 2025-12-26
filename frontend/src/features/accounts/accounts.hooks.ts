@@ -4,7 +4,6 @@
  */
 import { useQueries } from '@tanstack/react-query';
 import {
-  useListAccountsApiV1AccountsGet,
   useGetAccountApiV1AccountsAccountIdGet,
   useCreateAccountApiV1AccountsPost,
   useUpdateAccountApiV1AccountsAccountIdPut,
@@ -38,12 +37,9 @@ export const useAccounts = (filters?: AccountFilters) => {
   // Create queries for each active profile
   const queries = useQueries({
     queries: activeProfileIds.map((profileId) => ({
-      queryKey: getListAccountsApiV1AccountsGetQueryKey({
-        ...filters,
-        profileId: profileId,
-      }),
+      queryKey: [...getListAccountsApiV1AccountsGetQueryKey(), profileId],
       queryFn: () =>
-        listAccountsApiV1AccountsGet({ ...filters, profileId: profileId }),
+        listAccountsApiV1AccountsGet(),
       enabled: !profileLoading && activeProfileIds.length > 0,
     })),
   });
