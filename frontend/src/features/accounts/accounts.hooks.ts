@@ -113,7 +113,13 @@ export const useAccountBalance = (accountId: string) => {
  * Uses generic mutation factory for consistency
  */
 export const useCreateAccount = () => {
-  const result = useGenericCreate<AccountCreate, createAccountApiV1AccountsPostResponse>({
+  const result = useGenericCreate<
+    AccountCreate,
+    createAccountApiV1AccountsPostResponse,
+    AccountResponse,
+    Error,
+    { data: AccountCreate }
+  >({
     useMutation: useCreateAccountApiV1AccountsPost,
     invalidateQueryKey: getListAccountsApiV1AccountsGetQueryKey,
     mutationName: 'createAccount',
@@ -132,7 +138,13 @@ export const useCreateAccount = () => {
  * Uses generic mutation factory for consistency
  */
 export const useUpdateAccount = () => {
-  const result = useGenericUpdate<AccountUpdate, updateAccountApiV1AccountsAccountIdPutResponse>({
+  const result = useGenericUpdate<
+    AccountUpdate,
+    updateAccountApiV1AccountsAccountIdPutResponse,
+    AccountResponse,
+    Error,
+    { accountId: string; data: AccountUpdate }
+  >({
     useMutation: useUpdateAccountApiV1AccountsAccountIdPut,
     invalidateQueryKey: getListAccountsApiV1AccountsGetQueryKey,
     mutationName: 'updateAccount',
