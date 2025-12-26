@@ -19,6 +19,7 @@ import {
   useGenericCreate,
   useGenericUpdate,
   useGenericDelete,
+  ExtractResponseData,
 } from '@/hooks/useGenericMutations';
 
 import type {
@@ -116,7 +117,7 @@ export const useCreateAccount = () => {
   const result = useGenericCreate<
     AccountCreate,
     createAccountApiV1AccountsPostResponse,
-    AccountResponse,
+    ExtractResponseData<createAccountApiV1AccountsPostResponse>,
     Error,
     { data: AccountCreate }
   >({
@@ -141,7 +142,7 @@ export const useUpdateAccount = () => {
   const result = useGenericUpdate<
     AccountUpdate,
     updateAccountApiV1AccountsAccountIdPutResponse,
-    AccountResponse,
+    ExtractResponseData<updateAccountApiV1AccountsAccountIdPutResponse>,
     Error,
     { accountId: string; data: AccountUpdate }
   >({
