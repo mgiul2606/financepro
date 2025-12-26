@@ -25,34 +25,34 @@ import { useQueryClient, type QueryKey, type UseMutationResult } from '@tanstack
  * Type for Orval-generated mutation hook with create pattern
  * Expects mutation to accept { data: TData }
  */
-export type OrvalCreateMutationHook<TData, TResponse, TError = Error> = (options?: {
-  mutation?: {
-    onSuccess?: (data: TResponse, variables: { data: TData }, context: unknown) => void;
-    onError?: (error: TError, variables: { data: TData }, context: unknown) => void;
-  };
-}) => UseMutationResult<TResponse, TError, { data: TData }, unknown>;
+export type OrvalCreateMutationHook<TData, TResponse, TError = Error> = <
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<TResponse, TError, { data: TData }, TContext>;
+  request?: RequestInit;
+}, queryClient?: QueryClient) => UseMutationResult<TResponse, TError, { data: TData }, TContext>;
 
 /**
  * Type for Orval-generated mutation hook with update pattern
  * Expects mutation to accept { [idParamName]: string, data: TData }
  */
-export type OrvalUpdateMutationHook<TData, TResponse, TError = Error> = (options?: {
-  mutation?: {
-    onSuccess?: (data: TResponse, variables: Record<string, unknown> & { data: TData }, context: unknown) => void;
-    onError?: (error: TError, variables: Record<string, unknown> & { data: TData }, context: unknown) => void;
-  };
-}) => UseMutationResult<TResponse, TError, Record<string, unknown> & { data: TData }, unknown>;
+export type OrvalUpdateMutationHook<TData, TResponse, TError = Error> = <
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<TResponse, TError, Record<string, unknown> & { data: TData }, TContext>;
+  request?: RequestInit;
+}, queryClient?: QueryClient) => UseMutationResult<TResponse, TError, Record<string, unknown> & { data: TData }, TContext>;
 
 /**
  * Type for Orval-generated mutation hook with delete pattern
  * Expects mutation to accept { [idParamName]: string }
  */
-export type OrvalDeleteMutationHook<TResponse = void, TError = Error> = (options?: {
-  mutation?: {
-    onSuccess?: (data: TResponse, variables: Record<string, unknown>, context: unknown) => void;
-    onError?: (error: TError, variables: Record<string, unknown>, context: unknown) => void;
-  };
-}) => UseMutationResult<TResponse, TError, Record<string, unknown>, unknown>;
+export type OrvalDeleteMutationHook<TResponse = void, TError = Error> = <
+  TContext = unknown
+>(options?: {
+  mutation?: UseMutationOptions<TResponse, TError, Record<string, unknown>, TContext>;
+  request?: RequestInit;
+}, queryClient?: QueryClient) => UseMutationResult<TResponse, TError, Record<string, unknown>, TContext>;
 
 /**
  * Options for create mutation factory

@@ -54,4 +54,4 @@ export type {
 } from './accounts.types';
 
 // Constants
-export { ACCOUNT_TYPE_OPTIONS, CURRENCY_OPTIONS } from './accounts.types';
+export { ACCOUNT_TYPE_OPTIONS, CURRENCY_OPTIONS } from './accounts.constants';
