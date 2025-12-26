@@ -36,28 +36,3 @@ export type AccountStatusInfo = z.infer<typeof accountStatusInfoSchema>;
 // Utility types
 export type AccountType = z.infer<typeof accountTypeSchema>;
 export type Currency = z.infer<typeof currencySchema>;
-
-/**
- * Account type options for UI select components
- */
-export const ACCOUNT_TYPE_OPTIONS = [
-  'checking',
-  'savings',
-  'credit_card',
-  'investment',
-  'cash',
-  'loan',
-  'mortgage',
-  'other',
-] as const;
-
-/**
- * Currency options for UI select components
- */
-export const CURRENCY_OPTIONS = [
-  'EUR',
-  'USD',
-  'GBP',
-  'CHF',
-  'JPY',
-] as const;
