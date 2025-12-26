@@ -19,40 +19,54 @@
  * };
  * ```
  */
-import { useQueryClient, type QueryKey, type UseMutationResult } from '@tanstack/react-query';
+import { useQueryClient, type QueryKey, type UseMutationResult, type UseMutationOptions } from '@tanstack/react-query';
+
+/**
+ * Type utility to extract the data type from an Orval wrapped response
+ * Orval responses have structure: { data: T, status: number, headers: Headers }
+ */
+export type ExtractResponseData<T> = T extends { data: infer D }
+  ? D extends { data: infer Inner } // Handle nested data structure
+    ? Inner
+    : D
+  : T;
 
 /**
  * Type for Orval-generated mutation hook with create pattern
  * Expects mutation to accept { data: TData }
+ * TWrappedResponse is the full Orval response: { data: TResponse, status: number, headers: Headers }
+ * TResponse is the actual data type we want to work with
  */
-export type OrvalCreateMutationHook<TData, TResponse, TError = Error> = <
+export type OrvalCreateMutationHook<TData, TWrappedResponse, TError = Error> = <
   TContext = unknown
 >(options?: {
-  mutation?: UseMutationOptions<TResponse, TError, { data: TData }, TContext>;
+  mutation?: UseMutationOptions<TWrappedResponse, TError, { data: TData }, TContext>;
   request?: RequestInit;
-}, queryClient?: QueryClient) => UseMutationResult<TResponse, TError, { data: TData }, TContext>;
+}, queryClient?: QueryClient) => UseMutationResult<TWrappedResponse, TError, { data: TData }, TContext>;
 
 /**
  * Type for Orval-generated mutation hook with update pattern
  * Expects mutation to accept { [idParamName]: string, data: TData }
+ * TWrappedResponse is the full Orval response: { data: TResponse, status: number, headers: Headers }
  */
-export type OrvalUpdateMutationHook<TData, TResponse, TError = Error> = <
+export type OrvalUpdateMutationHook<TData, TWrappedResponse, TError = Error> = <
   TContext = unknown
 >(options?: {
-  mutation?: UseMutationOptions<TResponse, TError, Record<string, unknown> & { data: TData }, TContext>;
+  mutation?: UseMutationOptions<TWrappedResponse, TError, Record<string, unknown> & { data: TData }, TContext>;
   request?: RequestInit;
-}, queryClient?: QueryClient) => UseMutationResult<TResponse, TError, Record<string, unknown> & { data: TData }, TContext>;
+}, queryClient?: QueryClient) => UseMutationResult<TWrappedResponse, TError, Record<string, unknown> & { data: TData }, TContext>;
 
 /**
  * Type for Orval-generated mutation hook with delete pattern
  * Expects mutation to accept { [idParamName]: string }
+ * TWrappedResponse is the full Orval response: { data: TResponse, status: number, headers: Headers }
  */
-export type OrvalDeleteMutationHook<TResponse = void, TError = Error> = <
+export type OrvalDeleteMutationHook<TWrappedResponse = void, TError = Error> = <
   TContext = unknown
 >(options?: {
-  mutation?: UseMutationOptions<TResponse, TError, Record<string, unknown>, TContext>;
+  mutation?: UseMutationOptions<TWrappedResponse, TError, Record<string, unknown>, TContext>;
   request?: RequestInit;
-}, queryClient?: QueryClient) => UseMutationResult<TResponse, TError, Record<string, unknown>, TContext>;
+}, queryClient?: QueryClient) => UseMutationResult<TWrappedResponse, TError, Record<string, unknown>, TContext>;
 
 /**
  * Options for create mutation factory
@@ -60,8 +74,9 @@ export type OrvalDeleteMutationHook<TResponse = void, TError = Error> = <
 export interface UseGenericCreateOptions<TData, TResponse, TError = Error> {
   /**
    * Orval-generated mutation hook (e.g., useCreateAccountApiV1AccountsPost)
+   * Accepts the wrapped response type from Orval
    */
-  useMutation: OrvalCreateMutationHook<TData, TResponse, TError>;
+  useMutation: OrvalCreateMutationHook<TData, any, TError>;
 
   /**
    * Query key getter function or static query key to invalidate on success
@@ -77,6 +92,7 @@ export interface UseGenericCreateOptions<TData, TResponse, TError = Error> {
 
   /**
    * Optional callback after successful mutation
+   * Receives the unwrapped data (TResponse) from the API response
    */
   onSuccess?: (response: TResponse, data: TData) => void;
 
@@ -100,6 +116,7 @@ export type GenericCreateResult<TData, TResponse, TError = Error> = {
  *
  * Creates a consistent mutation hook that:
  * - Wraps an Orval-generated mutation hook
+ * - Automatically extracts data from Orval's wrapped response
  * - Automatically invalidates cache on success
  * - Returns a normalized interface: { [mutationName], isPending, error, reset }
  */
@@ -114,14 +131,17 @@ export function useGenericCreate<TData, TResponse, TError = Error>({
 
   const mutation = useMutation({
     mutation: {
-      onSuccess: (response: TResponse, variables: { data: TData }) => {
+      onSuccess: (wrappedResponse: any, variables: { data: TData }) => {
+        // Extract the actual data from Orval's wrapped response
+        const response = wrappedResponse?.data as TResponse;
+
         // Invalidate cache
         const queryKey = typeof invalidateQueryKey === 'function'
           ? invalidateQueryKey()
           : invalidateQueryKey;
         queryClient.invalidateQueries({ queryKey });
 
-        // Call custom success callback
+        // Call custom success callback with unwrapped data
         onSuccess?.(response, variables.data);
       },
       onError: (error: TError, variables: { data: TData }) => {
@@ -131,7 +151,11 @@ export function useGenericCreate<TData, TResponse, TError = Error>({
   });
 
   return {
-    [mutationName]: (data: TData) => mutation.mutateAsync({ data }),
+    [mutationName]: async (data: TData) => {
+      const wrappedResponse = await mutation.mutateAsync({ data });
+      // Return unwrapped data to the caller
+      return (wrappedResponse as any)?.data as TResponse;
+    },
     isPending: mutation.isPending,
     error: mutation.error,
     reset: mutation.reset,
@@ -144,8 +168,9 @@ export function useGenericCreate<TData, TResponse, TError = Error>({
 export interface UseGenericUpdateOptions<TData, TResponse, TError = Error> {
   /**
    * Orval-generated mutation hook (e.g., useUpdateAccountApiV1AccountsAccountIdPut)
+   * Accepts the wrapped response type from Orval
    */
-  useMutation: OrvalUpdateMutationHook<TData, TResponse, TError>;
+  useMutation: OrvalUpdateMutationHook<TData, any, TError>;
 
   /**
    * Query key getter function or static query key to invalidate on success
@@ -167,6 +192,7 @@ export interface UseGenericUpdateOptions<TData, TResponse, TError = Error> {
 
   /**
    * Optional callback after successful mutation
+   * Receives the unwrapped data (TResponse) from the API response
    */
   onSuccess?: (response: TResponse, id: string, data: TData) => void;
 
@@ -190,6 +216,7 @@ export type GenericUpdateResult<TData, TResponse, TError = Error> = {
  *
  * Creates a consistent mutation hook that:
  * - Wraps an Orval-generated mutation hook
+ * - Automatically extracts data from Orval's wrapped response
  * - Automatically invalidates cache on success
  * - Returns a normalized interface: { [mutationName], isPending, error, reset }
  */
@@ -205,14 +232,17 @@ export function useGenericUpdate<TData, TResponse, TError = Error>({
 
   const mutation = useMutation({
     mutation: {
-      onSuccess: (response: TResponse, variables: Record<string, unknown>) => {
+      onSuccess: (wrappedResponse: any, variables: Record<string, unknown>) => {
+        // Extract the actual data from Orval's wrapped response
+        const response = wrappedResponse?.data as TResponse;
+
         // Invalidate cache
         const queryKey = typeof invalidateQueryKey === 'function'
           ? invalidateQueryKey()
           : invalidateQueryKey;
         queryClient.invalidateQueries({ queryKey });
 
-        // Call custom success callback
+        // Call custom success callback with unwrapped data
         const id = variables[idParamName] as string;
         const data = variables.data as TData;
         onSuccess?.(response, id, data);
@@ -226,8 +256,11 @@ export function useGenericUpdate<TData, TResponse, TError = Error>({
   });
 
   return {
-    [mutationName]: (id: string, data: TData) =>
-      mutation.mutateAsync({ [idParamName]: id, data }),
+    [mutationName]: async (id: string, data: TData) => {
+      const wrappedResponse = await mutation.mutateAsync({ [idParamName]: id, data });
+      // Return unwrapped data to the caller
+      return (wrappedResponse as any)?.data as TResponse;
+    },
     isPending: mutation.isPending,
     error: mutation.error,
     reset: mutation.reset,
@@ -240,8 +273,9 @@ export function useGenericUpdate<TData, TResponse, TError = Error>({
 export interface UseGenericDeleteOptions<TResponse = void, TError = Error> {
   /**
    * Orval-generated mutation hook (e.g., useDeleteAccountApiV1AccountsAccountIdDelete)
+   * Accepts the wrapped response type from Orval
    */
-  useMutation: OrvalDeleteMutationHook<TResponse, TError>;
+  useMutation: OrvalDeleteMutationHook<any, TError>;
 
   /**
    * Query key getter function or static query key to invalidate on success
@@ -286,6 +320,7 @@ export type GenericDeleteResult<TResponse = void, TError = Error> = {
  *
  * Creates a consistent mutation hook that:
  * - Wraps an Orval-generated mutation hook
+ * - Automatically extracts data from Orval's wrapped response
  * - Automatically invalidates cache on success
  * - Returns a normalized interface: { [mutationName], isPending, error, reset }
  */
@@ -301,7 +336,7 @@ export function useGenericDelete<TResponse = void, TError = Error>({
 
   const mutation = useMutation({
     mutation: {
-      onSuccess: (_response: TResponse, variables: Record<string, unknown>) => {
+      onSuccess: (_wrappedResponse: any, variables: Record<string, unknown>) => {
         // Invalidate cache
         const queryKey = typeof invalidateQueryKey === 'function'
           ? invalidateQueryKey()
@@ -320,8 +355,11 @@ export function useGenericDelete<TResponse = void, TError = Error>({
   });
 
   return {
-    [mutationName]: (id: string) =>
-      mutation.mutateAsync({ [idParamName]: id }),
+    [mutationName]: async (id: string) => {
+      const wrappedResponse = await mutation.mutateAsync({ [idParamName]: id });
+      // Return unwrapped data to the caller (usually void for delete)
+      return (wrappedResponse as any)?.data as TResponse;
+    },
     isPending: mutation.isPending,
     error: mutation.error,
     reset: mutation.reset,
@@ -351,11 +389,11 @@ export function useGenericDelete<TResponse = void, TError = Error>({
 export function createGenericCrudHooks<TCreate, TUpdate, TResponse, TError = Error>(config: {
   /** Entity name (used for function naming) */
   entity: string;
-  /** Orval-generated mutation hooks */
+  /** Orval-generated mutation hooks - accepts wrapped response types */
   mutations: {
-    create: OrvalCreateMutationHook<TCreate, TResponse, TError>;
-    update: OrvalUpdateMutationHook<TUpdate, TResponse, TError>;
-    delete: OrvalDeleteMutationHook<TResponse, TError>;
+    create: OrvalCreateMutationHook<TCreate, any, TError>;
+    update: OrvalUpdateMutationHook<TUpdate, any, TError>;
+    delete: OrvalDeleteMutationHook<any, TError>;
   };
   /** Query key to invalidate */
   invalidateQueryKey: (() => QueryKey) | QueryKey;
