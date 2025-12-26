@@ -2,7 +2,7 @@
  * React Query hooks for Transaction operations
  * Provides optimistic updates and cache management
  */
-import { useQueryClient, useQueries } from '@tanstack/react-query';
+import { useQueries } from '@tanstack/react-query';
 import {
   useGetTransactionApiV1TransactionsTransactionIdGet,
   useCreateTransactionApiV1TransactionsPost,
@@ -12,16 +12,23 @@ import {
   listTransactionsApiV1TransactionsGet,
   getTransactionStatsApiV1TransactionsStatsGet,
   getGetTransactionStatsApiV1TransactionsStatsGetQueryKey,
+  createTransactionApiV1TransactionsPostResponse,
+  updateTransactionApiV1TransactionsTransactionIdPatchResponse,
 } from '@/api/generated/transactions/transactions';
-import { useProfileContext } from '@/contexts/ProfileContext';
-
 import type {
   TransactionCreate,
   TransactionUpdate,
-  TransactionFilters,
   TransactionResponse,
-  TransactionStats,
-} from './transactions.types';
+} from '@/api/generated/models';
+import { useProfileContext } from '@/contexts/ProfileContext';
+import {
+  useGenericCreate,
+  useGenericUpdate,
+  useGenericDelete,
+  ExtractResponseData,
+} from '@/hooks/useGenericMutations';
+
+import type { TransactionFilters, TransactionStats } from './transactions.types';
 import { isTransactionStats } from './transactions.types';
 
 /**
@@ -104,7 +111,7 @@ export const useTransaction = (transactionId: string) => {
     transactionId,
     {
       query: {
-        enabled: !!transactionId,
+        enabled: !!transactionId && transactionId.length > 0,
       },
     }
   );
@@ -199,78 +206,71 @@ export const useTransactionStats = (params?: {
 
 /**
  * Hook to create a new transaction
+ * Uses generic mutation factory for consistency
  */
 export const useCreateTransaction = () => {
-  const queryClient = useQueryClient();
-
-  const mutation = useCreateTransactionApiV1TransactionsPost({
-    mutation: {
-      onSuccess: () => {
-        // Invalidate transactions list to refetch
-        queryClient.invalidateQueries({
-          queryKey: getListTransactionsApiV1TransactionsGetQueryKey(),
-        });
-      },
-    },
+  const result = useGenericCreate<
+    TransactionCreate,
+    createTransactionApiV1TransactionsPostResponse,
+    ExtractResponseData<createTransactionApiV1TransactionsPostResponse>,
+    Error,
+    { data: TransactionCreate }
+  >({
+    useMutation: useCreateTransactionApiV1TransactionsPost,
+    invalidateQueryKey: getListTransactionsApiV1TransactionsGetQueryKey,
+    mutationName: 'createTransaction',
   });
 
   return {
-    createTransaction: (data: TransactionCreate) =>
-      mutation.mutateAsync({ data }),
-    isCreating: mutation.isPending,
-    error: mutation.error,
-    reset: mutation.reset,
+    createTransaction: result.createTransaction,
+    isCreating: result.isPending,
+    error: result.error,
+    reset: result.reset,
   };
 };
 
 /**
  * Hook to update an existing transaction
+ * Uses generic mutation factory for consistency
  */
 export const useUpdateTransaction = () => {
-  const queryClient = useQueryClient();
-
-  const mutation = useUpdateTransactionApiV1TransactionsTransactionIdPatch({
-    mutation: {
-      onSuccess: () => {
-        // Invalidate transactions list to refetch
-        queryClient.invalidateQueries({
-          queryKey: getListTransactionsApiV1TransactionsGetQueryKey(),
-        });
-      },
-    },
+  const result = useGenericUpdate<
+    TransactionUpdate,
+    updateTransactionApiV1TransactionsTransactionIdPatchResponse,
+    ExtractResponseData<updateTransactionApiV1TransactionsTransactionIdPatchResponse>,
+    Error,
+    { transactionId: string; data: TransactionUpdate }
+  >({
+    useMutation: useUpdateTransactionApiV1TransactionsTransactionIdPatch,
+    invalidateQueryKey: getListTransactionsApiV1TransactionsGetQueryKey,
+    mutationName: 'updateTransaction',
+    idParamName: 'transactionId',
   });
 
   return {
-    updateTransaction: (transactionId: string, data: TransactionUpdate) =>
-      mutation.mutateAsync({ transactionId, data }),
-    isUpdating: mutation.isPending,
-    error: mutation.error,
-    reset: mutation.reset,
+    updateTransaction: result.updateTransaction,
+    isUpdating: result.isPending,
+    error: result.error,
+    reset: result.reset,
   };
 };
 
 /**
  * Hook to delete a transaction
+ * Uses generic mutation factory for consistency
  */
 export const useDeleteTransaction = () => {
-  const queryClient = useQueryClient();
-
-  const mutation = useDeleteTransactionApiV1TransactionsTransactionIdDelete({
-    mutation: {
-      onSuccess: () => {
-        // Invalidate transactions list to refetch
-        queryClient.invalidateQueries({
-          queryKey: getListTransactionsApiV1TransactionsGetQueryKey(),
-        });
-      },
-    },
+  const result = useGenericDelete({
+    useMutation: useDeleteTransactionApiV1TransactionsTransactionIdDelete,
+    invalidateQueryKey: getListTransactionsApiV1TransactionsGetQueryKey,
+    mutationName: 'deleteTransaction',
+    idParamName: 'transactionId',
   });
 
   return {
-    deleteTransaction: (transactionId: string) =>
-      mutation.mutateAsync({ transactionId }),
-    isDeleting: mutation.isPending,
-    error: mutation.error,
-    reset: mutation.reset,
+    deleteTransaction: result.deleteTransaction,
+    isDeleting: result.isPending,
+    error: result.error,
+    reset: result.reset,
   };
 };

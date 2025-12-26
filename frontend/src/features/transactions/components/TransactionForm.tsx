@@ -1,344 +1,286 @@
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useTranslation } from "react-i18next"
+// features/transactions/components/TransactionForm.tsx
+import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { TransactionCreate, TransactionType } from "@/api/generated/models"
-import { useCategories } from "@/features/categories"
-import { useAccounts } from "@/features/accounts"
-import {
-  transactionFormSchema,
-  type TransactionFormValues,
-} from "../schemas/transactionSchema"
+  DollarSign,
+  Calendar,
+  FileText,
+  Tag,
+  Store,
+  Wallet,
+  TrendingUp,
+} from 'lucide-react';
+import { Form } from '@/components/ui/form';
 
-/**
- * Transaction Form Component with shadcn/ui + React Hook Form + Zod
- * - Uses generated types from OpenAPI (Pydantic models)
- * - Client-side validation via Zod schema
- * - Accessible form components from shadcn/ui
- * - Follows DRY principles with reusable form patterns
- */
+// Import reusable form components
+import {
+  DismissibleErrorAlert,
+  FormInputField,
+  FormSelectField,
+  FormTextareaField,
+} from '@/components/form';
 
-export interface TransactionFormProps {
-  onSubmit: (data: TransactionCreate) => void
-  onCancel?: () => void
-  initialData?: Partial<TransactionCreate>
-  isLoading?: boolean
+// Import schemas, types, and constants
+import { transactionCreateSchema, transactionUpdateSchema } from '../transactions.schemas';
+import type { TransactionCreate, TransactionUpdate, TransactionResponse } from '@/api/generated/models';
+import { TRANSACTION_TYPE_OPTIONS, CURRENCY_OPTIONS } from '../transactions.constants';
+import { buildUpdatePayload } from '@/lib/form-utils';
+import { useCategories } from '@/features/categories';
+import { useAccounts } from '@/features/accounts';
+
+// Conditional props based on mode
+interface BaseTransactionFormProps {
+  /** Current loading state */
+  isLoading?: boolean;
+  /** Error message to display */
+  error?: string;
+  /** Called when error alert is closed */
+  onClearError?: () => void;
 }
 
-export const TransactionForm: React.FC<TransactionFormProps> = ({
+interface CreateModeProps extends BaseTransactionFormProps {
+  /** No transaction means create mode */
+  transaction?: never;
+  /** Called when form is submitted successfully in create mode */
+  onSubmit: (data: TransactionCreate) => Promise<void>;
+}
+
+interface EditModeProps extends BaseTransactionFormProps {
+  /** Transaction to edit (presence means edit mode) */
+  transaction: TransactionResponse;
+  /** Called when form is submitted successfully in edit mode */
+  onSubmit: (data: TransactionUpdate) => Promise<void>;
+}
+
+type TransactionFormProps = CreateModeProps | EditModeProps;
+
+export const TransactionForm = ({
+  transaction,
   onSubmit,
-  onCancel,
-  initialData,
   isLoading = false,
-}) => {
-  const { t } = useTranslation()
-  const { categories, isLoading: categoriesLoading } = useCategories()
-  const { accounts, isLoading: accountsLoading } = useAccounts()
+  error,
+  onClearError,
+}: TransactionFormProps) => {
+  const { t } = useTranslation();
+  const isEditMode = !!transaction;
 
-  // Initialize form with Zod validation
-  const form = useForm<TransactionFormValues>({
-    resolver: zodResolver(transactionFormSchema),
-    defaultValues: {
-      transaction_type: TransactionType.purchase,
-      currency: "EUR",
-      transaction_date: new Date().toISOString().split("T")[0],
-      category_id: null,
-      merchant_name: null,
-      notes: null,
-      ...initialData,
-    },
-    mode: "onChange",
-  })
+  // Load categories and accounts for dropdowns
+  const { categories, isLoading: categoriesLoading } = useCategories();
+  const { accounts, isLoading: accountsLoading } = useAccounts();
 
-  // DRY: Transaction type options with i18n
-  const transactionTypeOptions = [
-    { value: TransactionType.income, label: t("transactions.types.income") },
-    { value: TransactionType.salary, label: t("transactions.types.salary") },
-    { value: TransactionType.dividend, label: t("transactions.types.dividend") },
-    { value: TransactionType.refund, label: t("transactions.types.refund") },
-    { value: TransactionType.purchase, label: t("transactions.types.purchase") },
-    { value: TransactionType.payment, label: t("transactions.types.payment") },
-    { value: TransactionType.withdrawal, label: t("transactions.types.withdrawal") },
-    { value: TransactionType.bank_transfer, label: t("transactions.types.bank_transfer") },
-    { value: TransactionType.internal_transfer, label: t("transactions.types.internal_transfer") },
-    { value: TransactionType.fee, label: t("transactions.types.fee") },
-    { value: TransactionType.tax, label: t("transactions.types.tax") },
-    { value: TransactionType.other, label: t("transactions.types.other") },
-  ] as const
+  // Build category options
+  const categoryOptions = categories.map((category) => ({
+    value: category.id,
+    label: category.name,
+  }));
 
-  const handleFormSubmit = (data: TransactionFormValues) => {
-    // Transform form data to TransactionCreate (handle null vs undefined)
-    const payload: TransactionCreate = {
-      ...data,
-      category_id: data.category_id || undefined,
-      merchant_name: data.merchant_name || undefined,
-      notes: data.notes || undefined,
+  // Build account options with account type info
+  const accountOptions = accounts.map((account) => ({
+    value: account.id,
+    label: `${account.name} (${account.accountType})`,
+  }));
+
+  // Default values
+  const getDefaultValues = () => {
+    if (isEditMode && transaction) {
+      return {
+        accountId: transaction.accountId,
+        transactionType: transaction.transactionType,
+        amount: transaction.amount.toString(),
+        currency: transaction.currency || 'EUR',
+        categoryId: transaction.categoryId || undefined,
+        description: transaction.description,
+        transactionDate: transaction.transactionDate,
+        merchantName: transaction.merchantName || '',
+        notes: transaction.notes || '',
+      };
     }
-    onSubmit(payload)
-  }
+    return {
+      accountId: '',
+      transactionType: 'purchase' as const,
+      amount: '0',
+      currency: 'EUR',
+      categoryId: undefined,
+      description: '',
+      transactionDate: new Date().toISOString().split('T')[0],
+      merchantName: '',
+      notes: '',
+    };
+  };
+
+  // Initialize form with react-hook-form and zod
+  const form = useForm<TransactionCreate | TransactionUpdate>({
+    resolver: zodResolver(isEditMode ? transactionUpdateSchema : transactionCreateSchema),
+    defaultValues: getDefaultValues(),
+    mode: 'onChange',
+  });
+
+  // Reset form when transaction changes (edit mode)
+  useEffect(() => {
+    if (transaction) {
+      form.reset(getDefaultValues());
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transaction]);
+
+  const handleSubmit = async (data: TransactionCreate | TransactionUpdate) => {
+    try {
+      if (isEditMode) {
+        // In edit mode, build clean update payload with only defined fields
+        const updateData = buildUpdatePayload(data, [
+          'accountId',
+          'transactionType',
+          'amount',
+          'currency',
+          'categoryId',
+          'description',
+          'transactionDate',
+          'merchantName',
+          'notes',
+        ]);
+
+        await (onSubmit as (data: TransactionUpdate) => Promise<void>)(updateData);
+      } else {
+        // In create mode, send all fields
+        // Transform amount to number if it's a string
+        const createData = {
+          ...data,
+          amount: typeof data.amount === 'string' ? parseFloat(data.amount) : data.amount,
+        } as TransactionCreate;
+
+        await (onSubmit as (data: TransactionCreate) => Promise<void>)(createData);
+      }
+    } catch (err) {
+      console.error('Form submission error:', err);
+    }
+  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+      <form
+        id="transaction-form"
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="space-y-6"
+      >
+        {/* Error Alert */}
+        {error && (
+          <DismissibleErrorAlert error={error} onDismiss={onClearError} />
+        )}
+
         {/* Transaction Type & Amount Row */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FormField
+          <FormSelectField
             control={form.control}
-            name="transaction_type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t("transactions.type")} *</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  disabled={isLoading}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder={t("transactions.selectType")} />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {transactionTypeOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
+            name="transactionType"
+            label={t('transactions.type')}
+            options={TRANSACTION_TYPE_OPTIONS}
+            required
+            disabled={isLoading}
+            icon={<TrendingUp className="h-4 w-4" />}
+            description={t('transactions.typeHint')}
           />
 
-          <FormField
+          <FormInputField
             control={form.control}
             name="amount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t("transactions.amount")} *</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder={t("transactions.amountPlaceholder")}
-                    disabled={isLoading}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            label={t('transactions.amount')}
+            type="number"
+            step="0.01"
+            placeholder="0.00"
+            required
+            disabled={isLoading}
+            icon={<DollarSign className="h-4 w-4" />}
+            description={t('transactions.amountHint')}
+            transformValue={(value) => parseFloat(value) || 0}
           />
         </div>
 
         {/* Description */}
-        <FormField
+        <FormInputField
           control={form.control}
           name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t("transactions.description")} *</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder={t("transactions.descriptionPlaceholder")}
-                  disabled={isLoading}
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label={t('transactions.description')}
+          placeholder={t('transactions.descriptionPlaceholder')}
+          required
+          disabled={isLoading}
+          icon={<FileText className="h-4 w-4" />}
+          maxLength={200}
         />
 
-        {/* Category & Transaction Date Row */}
+        {/* Account & Category Row */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FormField
+          <FormSelectField
             control={form.control}
-            name="category_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t("transactions.category")}</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value || undefined}
-                  disabled={isLoading || categoriesLoading}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue
-                        placeholder={
-                          categoriesLoading
-                            ? "Loading categories..."
-                            : t("transactions.categoryPlaceholder")
-                        }
-                      />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {categories?.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
+            name="accountId"
+            label={t('transactions.accountId')}
+            options={accountOptions}
+            required
+            disabled={isLoading || accountsLoading}
+            icon={<Wallet className="h-4 w-4" />}
+            description={t('transactions.accountHint')}
+            translateLabels={false}
           />
 
-          <FormField
+          <FormSelectField
             control={form.control}
-            name="transaction_date"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t("transactions.date")} *</FormLabel>
-                <FormControl>
-                  <Input type="date" disabled={isLoading} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            name="categoryId"
+            label={t('transactions.category')}
+            options={categoryOptions}
+            disabled={isLoading || categoriesLoading}
+            icon={<Tag className="h-4 w-4" />}
+            description={t('transactions.categoryHint')}
+            translateLabels={false}
+          />
+        </div>
+
+        {/* Transaction Date & Currency Row */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <FormInputField
+            control={form.control}
+            name="transactionDate"
+            label={t('transactions.date')}
+            type="text"
+            required
+            disabled={isLoading}
+            icon={<Calendar className="h-4 w-4" />}
+            description={t('transactions.dateHint')}
+          />
+
+          <FormSelectField
+            control={form.control}
+            name="currency"
+            label={t('accounts.currency')}
+            options={CURRENCY_OPTIONS}
+            required
+            disabled={isLoading}
+            description={t('transactions.currencyHint')}
           />
         </div>
 
         {/* Merchant Name */}
-        <FormField
+        <FormInputField
           control={form.control}
-          name="merchant_name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t("transactions.merchant")}</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder={t("transactions.merchantPlaceholder")}
-                  disabled={isLoading}
-                  {...field}
-                  value={field.value || ""}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          name="merchantName"
+          label={t('transactions.merchant')}
+          placeholder={t('transactions.merchantPlaceholder')}
+          disabled={isLoading}
+          icon={<Store className="h-4 w-4" />}
+          description={t('transactions.merchantHint')}
         />
-
-        {/* Account & Currency Row */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="account_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t("transactions.accountId")} *</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  disabled={isLoading || accountsLoading}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue
-                        placeholder={
-                          accountsLoading
-                            ? "Loading accounts..."
-                            : "Select an account"
-                        }
-                      />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {accounts?.map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
-                        {account.name} ({account.account_type})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="currency"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t("accounts.currency")} *</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="EUR"
-                    disabled={isLoading}
-                    maxLength={3}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
 
         {/* Notes */}
-        <FormField
+        <FormTextareaField
           control={form.control}
           name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t("transactions.notes")}</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder={t("transactions.notesPlaceholder")}
-                  disabled={isLoading}
-                  rows={3}
-                  {...field}
-                  value={field.value || ""}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label={t('transactions.notes')}
+          placeholder={t('transactions.notesPlaceholder')}
+          disabled={isLoading}
+          icon={<FileText className="h-4 w-4" />}
+          rows={3}
         />
-
-        {/* Form Actions */}
-        <div className="flex justify-end gap-3 pt-4 border-t">
-          {onCancel && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isLoading}
-            >
-              {t("common.cancel")}
-            </Button>
-          )}
-          <Button type="submit" disabled={isLoading}>
-            {isLoading
-              ? "Submitting..."
-              : initialData
-              ? t("transactions.updateTransaction")
-              : t("transactions.createTransaction")}
-          </Button>
-        </div>
       </form>
     </Form>
-  )
-}
+  );
+};

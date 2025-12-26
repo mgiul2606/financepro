@@ -13,16 +13,17 @@ import {
 
 /**
  * Type definitions derived from Zod schemas
+ * These ensure type safety across the application
+ *
+ * Note: TransactionCreate, TransactionUpdate, and TransactionResponse
+ * are now imported from Orval-generated models for API compatibility.
+ * Only UI-specific types are defined here.
  */
 
-// Request types (input)
-export type TransactionCreate = z.infer<typeof transactionCreateSchema>;
-export type TransactionUpdate = z.infer<typeof transactionUpdateSchema>;
+// Query/Filter types
 export type TransactionFilters = z.infer<typeof transactionFiltersSchema>;
 
-// Response types (output)
-export type TransactionResponse = z.infer<typeof transactionResponseSchema>;
-export type Transaction = TransactionResponse; // Alias for convenience
+// Response types (output) - for lists and aggregations
 export type TransactionList = z.infer<typeof transactionListSchema>;
 export type TransactionStats = z.infer<typeof transactionStatsSchema>;
 
@@ -30,39 +31,6 @@ export type TransactionStats = z.infer<typeof transactionStatsSchema>;
 export type TransactionType = z.infer<typeof transactionTypeSchema>;
 export type TransactionSource = z.infer<typeof transactionSourceSchema>;
 export type Currency = z.infer<typeof currencySchema>;
-
-/**
- * Transaction type options for UI select components
- */
-export const TRANSACTION_TYPE_OPTIONS = [
-  'bank_transfer',
-  'withdrawal',
-  'payment',
-  'purchase',
-  'internal_transfer',
-  'income',
-  'salary',
-  'invoice',
-  'asset_purchase',
-  'asset_sale',
-  'dividend',
-  'interest',
-  'loan_payment',
-  'refund',
-  'fee',
-  'tax',
-  'other',
-] as const;
-
-/**
- * Transaction source options
- */
-export const TRANSACTION_SOURCE_OPTIONS = [
-  'manual',
-  'import_csv',
-  'bank_api',
-  'ai_classified',
-] as const;
 
 /**
  * Helper type guards
@@ -82,6 +50,6 @@ export function isTransactionList(data: unknown): data is TransactionList {
     typeof data === 'object' &&
     data !== null &&
     'items' in data &&
-    Array.isArray((data as any).items)
+    Array.isArray((data as Record<string, unknown>).items)
   );
 }
