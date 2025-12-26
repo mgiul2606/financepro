@@ -4,16 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Wallet, Building2, FileText, DollarSign } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Card,
   CardContent,
@@ -21,19 +11,21 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+import { Form } from '@/components/ui/form';
 
-// Import schemas and types from the new structure
+// Import reusable form components
+import {
+  DismissibleErrorAlert,
+  FormInputField,
+  FormSelectField,
+  FormTextareaField,
+} from '@/components/form';
+
+// Import schemas, types, and constants
 import { accountCreateSchema, accountUpdateSchema } from '../accounts.schemas';
 import type { AccountCreate, AccountUpdate, AccountResponse } from '../accounts.types';
+import { CURRENCY_OPTIONS, ACCOUNT_TYPE_OPTIONS } from '../accounts.constants';
+import { buildUpdatePayload } from '@/lib/form-utils';
 
 // Conditional props based on mode
 interface BaseAccountFormProps {
@@ -70,25 +62,6 @@ export const AccountForm = ({
 }: AccountFormProps) => {
   const { t } = useTranslation();
   const isEditMode = !!account;
-
-  const CURRENCY_OPTIONS = [
-    { value: 'EUR', label: t('settings.currencies.EUR') },
-    { value: 'USD', label: t('settings.currencies.USD') },
-    { value: 'GBP', label: t('settings.currencies.GBP') },
-    { value: 'CHF', label: t('settings.currencies.CHF') },
-    { value: 'JPY', label: t('settings.currencies.JPY') },
-  ] as const;
-
-  const ACCOUNT_TYPE_OPTIONS = [
-    { value: 'checking', label: t('accounts.types.checking') },
-    { value: 'savings', label: t('accounts.types.savings') },
-    { value: 'credit_card', label: t('accounts.types.credit_card') },
-    { value: 'investment', label: t('accounts.types.investment') },
-    { value: 'cash', label: t('accounts.types.cash') },
-    { value: 'loan', label: t('accounts.types.loan') },
-    { value: 'mortgage', label: t('accounts.types.mortgage') },
-    { value: 'other', label: t('accounts.types.other') },
-  ] as const;
 
   // Default values
   const getDefaultValues = () => {
@@ -128,23 +101,18 @@ export const AccountForm = ({
   const handleSubmit = async (data: AccountCreate | AccountUpdate) => {
     try {
       if (isEditMode) {
-        // In edit mode, send only defined fields excluding initialBalance
-        const updateData: AccountUpdate = {};
-        if (data.name) updateData.name = data.name;
-        if ('accountType' in data && data.accountType) updateData.accountType = data.accountType;
-        if (data.currency) updateData.currency = data.currency;
-        if ('institutionName' in data) {
-          updateData.institutionName = data.institutionName || undefined;
-        }
-        if ('notes' in data) {
-          updateData.notes = data.notes || undefined;
-        }
+        // In edit mode, build clean update payload with only defined fields
+        const updateData = buildUpdatePayload(data, [
+          'name',
+          'accountType',
+          'currency',
+          'institutionName',
+          'notes',
+        ]);
 
-        // Type assertion is safe here because we know we're in edit mode
         await (onSubmit as (data: AccountUpdate) => Promise<void>)(updateData);
       } else {
         // In create mode, send all fields
-        // Type assertion is safe here because we know we're in create mode
         await (onSubmit as (data: AccountCreate) => Promise<void>)(data as AccountCreate);
       }
     } catch (err) {
@@ -159,192 +127,81 @@ export const AccountForm = ({
         onSubmit={form.handleSubmit(handleSubmit)}
         className="space-y-6"
       >
+        {/* Error Alert */}
         {error && (
-          <Alert variant="destructive">
-            <AlertDescription className="flex items-center justify-between">
-              <span>{error}</span>
-              {onClearError && (
-                <button
-                  type="button"
-                  onClick={onClearError}
-                  className="text-sm underline hover:no-underline"
-                >
-                  {t('common.dismiss')}
-                </button>
-              )}
-            </AlertDescription>
-          </Alert>
+          <DismissibleErrorAlert error={error} onDismiss={onClearError} />
         )}
 
         {/* Account Name */}
-        <FormField
+        <FormInputField
           control={form.control}
           name="name"
-          render={({ field }) => {
-            const {value, ...rest} = field;
-            return <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      <Wallet className="h-4 w-4" />
-                      {t('accounts.accountName')}
-                      <span className="text-destructive">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        {...rest}
-                        value={value ?? ""}
-                        placeholder={t('accounts.accountNamePlaceholder')}
-                        disabled={isLoading}
-                        maxLength={100}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-          }}
+          label={t('accounts.accountName')}
+          placeholder={t('accounts.accountNamePlaceholder')}
+          required
+          disabled={isLoading}
+          icon={<Wallet className="h-4 w-4" />}
+          maxLength={100}
         />
 
         {/* Account Type */}
-        <FormField
+        <FormSelectField
           control={form.control}
           name="accountType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('accounts.accountType')}</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value ?? ""}
-                disabled={isLoading}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {ACCOUNT_TYPE_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormDescription>{t('accounts.accountTypeHint')}</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
+          label={t('accounts.accountType')}
+          options={ACCOUNT_TYPE_OPTIONS}
+          disabled={isLoading}
+          description={t('accounts.accountTypeHint')}
         />
 
         {/* Currency */}
-        <FormField
+        <FormSelectField
           control={form.control}
           name="currency"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                {t('accounts.currency')}
-                <span className="text-destructive ml-1">*</span>
-              </FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value ?? ""}
-                disabled={isLoading}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {CURRENCY_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormDescription>{t('accounts.currencyHint')}</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
+          label={t('accounts.currency')}
+          options={CURRENCY_OPTIONS}
+          required
+          disabled={isLoading}
+          description={t('accounts.currencyHint')}
         />
 
         {/* Initial Balance - Only in Create Mode */}
         {!isEditMode && (
-          <FormField
+          <FormInputField
             control={form.control}
             name="initialBalance"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  {t('accounts.initialBalance')}
-                  <span className="text-destructive">*</span>
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    {...field}
-                    onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                    placeholder="0.00"
-                    disabled={isLoading}
-                  />
-                </FormControl>
-                <FormDescription>
-                  {t('accounts.initialBalanceHint')} {t('accounts.negativeBalanceAllowed')}
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
+            label={t('accounts.initialBalance')}
+            type="number"
+            step="0.01"
+            placeholder="0.00"
+            required
+            disabled={isLoading}
+            icon={<DollarSign className="h-4 w-4" />}
+            description={`${t('accounts.initialBalanceHint')} ${t('accounts.negativeBalanceAllowed')}`}
+            transformValue={(value) => parseFloat(value) || 0}
           />
         )}
 
         {/* Institution Name */}
-        <FormField
+        <FormInputField
           control={form.control}
           name="institutionName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="flex items-center gap-2">
-                <Building2 className="h-4 w-4" />
-                {t('accounts.institutionName')}
-              </FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  value={field.value || ''}
-                  placeholder={t('accounts.institutionNamePlaceholder')}
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormDescription>{t('accounts.institutionNameHint')}</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
+          label={t('accounts.institutionName')}
+          placeholder={t('accounts.institutionNamePlaceholder')}
+          disabled={isLoading}
+          icon={<Building2 className="h-4 w-4" />}
+          description={t('accounts.institutionNameHint')}
         />
 
         {/* Notes */}
-        <FormField
+        <FormTextareaField
           control={form.control}
           name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                {t('accounts.notes')}
-              </FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  value={field.value || ''}
-                  placeholder={t('accounts.notesPlaceholder')}
-                  disabled={isLoading}
-                  rows={3}
-                  className="resize-none"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label={t('accounts.notes')}
+          placeholder={t('accounts.notesPlaceholder')}
+          disabled={isLoading}
+          icon={<FileText className="h-4 w-4" />}
+          rows={3}
         />
 
         {/* Current Account Info - Only in Edit Mode */}
