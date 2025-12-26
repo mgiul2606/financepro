@@ -11,6 +11,8 @@ import {
   useGetAccountBalanceApiV1AccountsAccountIdBalanceGet,
   getListAccountsApiV1AccountsGetQueryKey,
   listAccountsApiV1AccountsGet,
+  createAccountApiV1AccountsPostResponse,
+  updateAccountApiV1AccountsAccountIdPutResponse,
 } from '@/api/generated/accounts/accounts';
 import { useProfileContext } from '@/contexts/ProfileContext';
 import {
@@ -22,7 +24,6 @@ import {
 import type {
   AccountCreate,
   AccountUpdate,
-  AccountFilters,
   AccountResponse,
   AccountBalance,
 } from './accounts.types';
@@ -31,7 +32,7 @@ import type {
  * Hook to list all accounts
  * Fetches accounts from all active profiles and aggregates the results
  */
-export const useAccounts = (filters?: AccountFilters) => {
+export const useAccounts = () => {
   const { activeProfileIds, isLoading: profileLoading } = useProfileContext();
 
   // Create queries for each active profile
@@ -112,7 +113,7 @@ export const useAccountBalance = (accountId: string) => {
  * Uses generic mutation factory for consistency
  */
 export const useCreateAccount = () => {
-  const result = useGenericCreate<AccountCreate, AccountResponse>({
+  const result = useGenericCreate<AccountCreate, createAccountApiV1AccountsPostResponse>({
     useMutation: useCreateAccountApiV1AccountsPost,
     invalidateQueryKey: getListAccountsApiV1AccountsGetQueryKey,
     mutationName: 'createAccount',
@@ -131,7 +132,7 @@ export const useCreateAccount = () => {
  * Uses generic mutation factory for consistency
  */
 export const useUpdateAccount = () => {
-  const result = useGenericUpdate<AccountUpdate, AccountResponse>({
+  const result = useGenericUpdate<AccountUpdate, updateAccountApiV1AccountsAccountIdPutResponse>({
     useMutation: useUpdateAccountApiV1AccountsAccountIdPut,
     invalidateQueryKey: getListAccountsApiV1AccountsGetQueryKey,
     mutationName: 'updateAccount',

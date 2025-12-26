@@ -70,14 +70,15 @@ export type OrvalUpdateMutationHook<TData, TWrappedResponse, TError = Error> = <
  * Type for Orval-generated mutation hook with delete pattern
  * Expects mutation to accept { [idParamName]: string }
  * TWrappedResponse is the full Orval response type (union with status literals, headers, etc.)
+ * TVariables is the variables type (defaults to Record<string, unknown> for flexibility)
  * This is intentionally flexible to accommodate Orval's complex union types
  */
-export type OrvalDeleteMutationHook<TWrappedResponse, TError = Error> = <
+export type OrvalDeleteMutationHook<TWrappedResponse, TError = Error, TVariables = Record<string, unknown>> = <
   TContext = unknown
 >(options?: {
-  mutation?: UseMutationOptions<TWrappedResponse, TError, Record<string, unknown>, TContext>;
+  mutation?: UseMutationOptions<TWrappedResponse, TError, TVariables, TContext>;
   request?: RequestInit;
-}, queryClient?: QueryClient) => UseMutationResult<TWrappedResponse, TError, Record<string, unknown>, TContext>;
+}, queryClient?: QueryClient) => UseMutationResult<TWrappedResponse, TError, TVariables, TContext>;
 
 /**
  * Options for create mutation factory
@@ -291,12 +292,12 @@ export function useGenericUpdate<
 /**
  * Options for delete mutation factory
  */
-export interface UseGenericDeleteOptions<TWrappedResponse, TResponse = void, TError = Error> {
+export interface UseGenericDeleteOptions<TWrappedResponse, TResponse = void, TError = Error, TVariables = Record<string, unknown>> {
   /**
    * Orval-generated mutation hook (e.g., useDeleteAccountApiV1AccountsAccountIdDelete)
    * Returns the full Orval response type which must have a 'data' property of type TResponse
    */
-  useMutation: OrvalDeleteMutationHook<TWrappedResponse, TError>;
+  useMutation: OrvalDeleteMutationHook<TWrappedResponse, TError, TVariables>;
 
   /**
    * Query key getter function or static query key to invalidate on success
@@ -348,7 +349,8 @@ export type GenericDeleteResult<TResponse = void, TError = Error> = {
 export function useGenericDelete<
   TWrappedResponse extends { data: TResponse },
   TResponse = ExtractResponseData<TWrappedResponse>,
-  TError = Error
+  TError = Error,
+  TVariables = Record<string, unknown>
 >({
   useMutation,
   invalidateQueryKey,
@@ -356,12 +358,12 @@ export function useGenericDelete<
   idParamName = 'id',
   onSuccess,
   onError,
-}: UseGenericDeleteOptions<TWrappedResponse, TResponse, TError>): GenericDeleteResult<TResponse, TError> {
+}: UseGenericDeleteOptions<TWrappedResponse, TResponse, TError, TVariables>): GenericDeleteResult<TResponse, TError> {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutation: {
-      onSuccess: (_wrappedResponse: TWrappedResponse, variables: Record<string, unknown>) => {
+      onSuccess: (_wrappedResponse: TWrappedResponse, variables: TVariables) => {
         // Invalidate cache
         const queryKey = typeof invalidateQueryKey === 'function'
           ? invalidateQueryKey()
@@ -369,11 +371,11 @@ export function useGenericDelete<
         queryClient.invalidateQueries({ queryKey });
 
         // Call custom success callback with the ID
-        const id = variables[idParamName] as string;
+        const id = (variables as Record<string, unknown>)[idParamName] as string;
         onSuccess?.(id);
       },
-      onError: (error: TError, variables: Record<string, unknown>) => {
-        const id = variables[idParamName] as string;
+      onError: (error: TError, variables: TVariables) => {
+        const id = (variables as Record<string, unknown>)[idParamName] as string;
         onError?.(error, id);
       },
     },
@@ -381,7 +383,7 @@ export function useGenericDelete<
 
   return {
     [mutationName]: async (id: string): Promise<TResponse> => {
-      const wrappedResponse = await mutation.mutateAsync({ [idParamName]: id });
+      const wrappedResponse = await mutation.mutateAsync({ [idParamName]: id } as TVariables);
       // Return unwrapped data to the caller (usually void for delete)
       return wrappedResponse.data;
     },
@@ -416,7 +418,8 @@ export function createGenericCrudHooks<
   TUpdate,
   TWrappedResponse extends { data: TResponse },
   TResponse = ExtractResponseData<TWrappedResponse>,
-  TError = Error
+  TError = Error,
+  TDeleteVariables = Record<string, unknown>
 >(config: {
   /** Entity name (used for function naming) */
   entity: string;
@@ -424,7 +427,7 @@ export function createGenericCrudHooks<
   mutations: {
     create: OrvalCreateMutationHook<TCreate, TWrappedResponse, TError>;
     update: OrvalUpdateMutationHook<TUpdate, TWrappedResponse, TError>;
-    delete: OrvalDeleteMutationHook<TWrappedResponse, TError>;
+    delete: OrvalDeleteMutationHook<TWrappedResponse, TError, TDeleteVariables>;
   };
   /** Query key to invalidate */
   invalidateQueryKey: (() => QueryKey) | QueryKey;
@@ -448,7 +451,7 @@ export function createGenericCrudHooks<
         idParamName,
       }),
     useDelete: (): GenericDeleteResult<TResponse, TError> =>
-      useGenericDelete<TWrappedResponse, TResponse, TError>({
+      useGenericDelete<TWrappedResponse, TResponse, TError, TDeleteVariables>({
         useMutation: mutations.delete,
         invalidateQueryKey,
         mutationName: `delete${capitalize(entity)}`,
