@@ -38,12 +38,16 @@ export {
   currencySchema,
 } from './accounts.schemas';
 
-// Types
+// Types - Using Orval-generated types for API compatibility
 export type {
   AccountCreate,
   AccountUpdate,
   AccountResponse,
   AccountBalance,
+} from '@/api/generated/models';
+
+// Types - Local types for UI and validation
+export type {
   AccountList,
   AccountFilters,
   AccountWithStats,

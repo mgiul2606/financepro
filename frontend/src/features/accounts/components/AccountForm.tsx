@@ -23,7 +23,7 @@ import {
 
 // Import schemas, types, and constants
 import { accountCreateSchema, accountUpdateSchema } from '../accounts.schemas';
-import type { AccountCreate, AccountUpdate, AccountResponse } from '../accounts.types';
+import type { AccountCreate, AccountUpdate, AccountResponse } from '@/api/generated/models';
 import { CURRENCY_OPTIONS, ACCOUNT_TYPE_OPTIONS } from '../accounts.constants';
 import { buildUpdatePayload } from '@/lib/form-utils';
 

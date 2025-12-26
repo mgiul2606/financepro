@@ -16,16 +16,16 @@ import {
 /**
  * Type definitions derived from Zod schemas
  * These ensure type safety across the application
+ *
+ * Note: AccountCreate, AccountUpdate, AccountResponse, and AccountBalance
+ * are now imported from Orval-generated models for API compatibility.
+ * Only UI-specific types are defined here.
  */
 
-// Request types (input)
-export type AccountCreate = z.infer<typeof accountCreateSchema>;
-export type AccountUpdate = z.infer<typeof accountUpdateSchema>;
+// Query/Filter types
 export type AccountFilters = z.infer<typeof accountFiltersSchema>;
 
-// Response types (output)
-export type AccountResponse = z.infer<typeof accountResponseSchema>;
-export type AccountBalance = z.infer<typeof accountBalanceSchema>;
+// Response types (output) - for lists and aggregations
 export type AccountList = z.infer<typeof accountListSchema>;
 
 // UI-specific types

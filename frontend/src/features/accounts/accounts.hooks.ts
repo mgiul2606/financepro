@@ -14,6 +14,12 @@ import {
   createAccountApiV1AccountsPostResponse,
   updateAccountApiV1AccountsAccountIdPutResponse,
 } from '@/api/generated/accounts/accounts';
+import type {
+  AccountCreate,
+  AccountUpdate,
+  AccountResponse,
+  AccountBalance,
+} from '@/api/generated/models';
 import { useProfileContext } from '@/contexts/ProfileContext';
 import {
   useGenericCreate,
@@ -21,13 +27,6 @@ import {
   useGenericDelete,
   ExtractResponseData,
 } from '@/hooks/useGenericMutations';
-
-import type {
-  AccountCreate,
-  AccountUpdate,
-  AccountResponse,
-  AccountBalance,
-} from './accounts.types';
 
 /**
  * Hook to list all accounts
