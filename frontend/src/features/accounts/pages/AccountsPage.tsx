@@ -25,7 +25,7 @@ import {
   useUpdateAccount,
   useDeleteAccount,
 } from '../accounts.hooks';
-import type { AccountResponse, AccountCreate, AccountUpdate } from '../accounts.types';
+import type { AccountResponse, AccountCreate, AccountUpdate } from '@/api/generated/models';
 import { SupportedCurrency } from '@/utils/currency';
 import { AccountForm } from '..';
 
