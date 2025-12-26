@@ -180,24 +180,26 @@ export const AccountForm = ({
         <FormField
           control={form.control}
           name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="flex items-center gap-2">
-                <Wallet className="h-4 w-4" />
-                {t('accounts.accountName')}
-                <span className="text-destructive">*</span>
-              </FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  placeholder={t('accounts.accountNamePlaceholder')}
-                  disabled={isLoading}
-                  maxLength={100}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          render={({ field }) => {
+            const {value, ...rest} = field;
+            return <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <Wallet className="h-4 w-4" />
+                      {t('accounts.accountName')}
+                      <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        {...rest}
+                        value={value ?? ""}
+                        placeholder={t('accounts.accountNamePlaceholder')}
+                        disabled={isLoading}
+                        maxLength={100}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+          }}
         />
 
         {/* Account Type */}
@@ -209,7 +211,7 @@ export const AccountForm = ({
               <FormLabel>{t('accounts.accountType')}</FormLabel>
               <Select
                 onValueChange={field.onChange}
-                defaultValue={field.value}
+                defaultValue={field.value ?? ""}
                 disabled={isLoading}
               >
                 <FormControl>
@@ -243,7 +245,7 @@ export const AccountForm = ({
               </FormLabel>
               <Select
                 onValueChange={field.onChange}
-                defaultValue={field.value}
+                defaultValue={field.value ?? ""}
                 disabled={isLoading}
               >
                 <FormControl>
