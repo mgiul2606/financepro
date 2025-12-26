@@ -38,10 +38,10 @@ export type OrvalCreateMutationHook<TData, TResponse, TError = Error> = (options
  */
 export type OrvalUpdateMutationHook<TData, TResponse, TError = Error> = (options?: {
   mutation?: {
-    onSuccess?: (data: TResponse, variables: Record<string, unknown>, context: unknown) => void;
-    onError?: (error: TError, variables: Record<string, unknown>, context: unknown) => void;
+    onSuccess?: (data: TResponse, variables: Record<string, unknown> & { data: TData }, context: unknown) => void;
+    onError?: (error: TError, variables: Record<string, unknown> & { data: TData }, context: unknown) => void;
   };
-}) => UseMutationResult<TResponse, TError, Record<string, unknown>, unknown>;
+}) => UseMutationResult<TResponse, TError, Record<string, unknown> & { data: TData }, unknown>;
 
 /**
  * Type for Orval-generated mutation hook with delete pattern
