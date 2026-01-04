@@ -18,7 +18,11 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 import type { AccountUpdateName } from "./accountUpdateName";
 import type { AccountUpdateAccountType } from "./accountUpdateAccountType";
 import type { AccountUpdateCurrency } from "./accountUpdateCurrency";
+import type { AccountUpdateInitialBalance } from "./accountUpdateInitialBalance";
 import type { AccountUpdateInstitutionName } from "./accountUpdateInstitutionName";
+import type { AccountUpdateCreditLimit } from "./accountUpdateCreditLimit";
+import type { AccountUpdateInterestRate } from "./accountUpdateInterestRate";
+import type { AccountUpdateIsIncludedInTotals } from "./accountUpdateIsIncludedInTotals";
 import type { AccountUpdateAccountNumberLast4 } from "./accountUpdateAccountNumberLast4";
 import type { AccountUpdateIban } from "./accountUpdateIban";
 import type { AccountUpdateNotes } from "./accountUpdateNotes";
@@ -35,8 +39,16 @@ export interface AccountUpdate {
   accountType?: AccountUpdateAccountType;
   /** Updated currency code */
   currency?: AccountUpdateCurrency;
+  /** Initial account balance (can be negative for debts) */
+  initialBalance?: AccountUpdateInitialBalance;
   /** Updated institution name */
   institutionName?: AccountUpdateInstitutionName;
+  /** Updated credit limit */
+  creditLimit?: AccountUpdateCreditLimit;
+  /** Updated interest rate */
+  interestRate?: AccountUpdateInterestRate;
+  /** Updated inclusion in totals */
+  isIncludedInTotals?: AccountUpdateIsIncludedInTotals;
   /** Updated last 4 digits of account number */
   accountNumberLast4?: AccountUpdateAccountNumberLast4;
   /** Updated IBAN */

@@ -17,6 +17,6 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 /**
- * ID of the financial profile this account belongs to (optional, defaults to user's default profile)
+ * Exchange rate used for currency conversion
  */
-export type AccountCreateFinancialProfileId = string | null;
+export type TransactionResponseExchangeRate = string | null;

@@ -1,5 +1,5 @@
 # app/schemas/user.py
-from backend.app.schemas.base import CamelCaseModel
+from app.schemas.base import CamelCaseModel
 from pydantic import EmailStr
 from datetime import datetime
 from typing import Optional

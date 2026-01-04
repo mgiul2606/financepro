@@ -17,6 +17,6 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 /**
- * Transaction location
+ * Updated interest rate
  */
-export type TransactionResponseLocation = string | null;
+export type AccountUpdateInterestRate = number | string | null;

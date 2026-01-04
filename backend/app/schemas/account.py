@@ -1,6 +1,6 @@
 # app/schemas/account.py
 
-from backend.app.schemas.base import CamelCaseModel
+from app.schemas.base import CamelCaseModel
 from pydantic import Field, ConfigDict
 from datetime import datetime
 from typing import Optional

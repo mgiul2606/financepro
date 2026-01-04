@@ -17,6 +17,6 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 /**
- * Amount converted to profile's default currency
+ * Annual interest rate percentage (for loans/savings)
  */
-export type TransactionResponseAmountInProfileCurrency = string | null;
+export type AccountCreateInterestRate = number | string | null;

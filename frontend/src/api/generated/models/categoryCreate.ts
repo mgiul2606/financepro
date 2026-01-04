@@ -15,15 +15,15 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { CategoryResponseDescription } from "./categoryResponseDescription";
-import type { CategoryResponseIcon } from "./categoryResponseIcon";
-import type { CategoryResponseColor } from "./categoryResponseColor";
+import type { CategoryCreateDescription } from "./categoryCreateDescription";
+import type { CategoryCreateIcon } from "./categoryCreateIcon";
+import type { CategoryCreateColor } from "./categoryCreateColor";
 
 /**
- * Complete category schema returned by API endpoints.
-Categories are USER-level (shared across all user's profiles).
+ * Schema for creating a new category.
+Categories are USER-level and shared across all user's profiles.
  */
-export interface CategoryResponse {
+export interface CategoryCreate {
   /**
    * Category name
    * @minLength 1
@@ -31,25 +31,13 @@ export interface CategoryResponse {
    */
   name: string;
   /** Optional description of the category */
-  description?: CategoryResponseDescription;
+  description?: CategoryCreateDescription;
   /** Icon identifier (emoji or icon name) */
-  icon?: CategoryResponseIcon;
+  icon?: CategoryCreateIcon;
   /** Hex color code for UI display */
-  color?: CategoryResponseColor;
+  color?: CategoryCreateColor;
   /** True for income categories (salary, invoices), False for expense categories */
   isIncome?: boolean;
   /** Custom sort order for category display */
   sortOrder?: number;
-  /** Unique category identifier */
-  id: string;
-  /** ID of the user this category belongs to */
-  userId: string;
-  /** System categories cannot be deleted by users */
-  isSystem?: boolean;
-  /** Whether the category is currently active */
-  isActive?: boolean;
-  /** Category creation timestamp (UTC) */
-  createdAt: string;
-  /** Last update timestamp (UTC) */
-  updatedAt: string;
 }

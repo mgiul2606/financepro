@@ -17,6 +17,6 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 /**
- * Date when transaction was valued (for banking)
+ * ID of original transaction if this is a duplicate
  */
-export type TransactionCreateValueDate = string | null;
+export type TransactionResponseDuplicateOfId = string | null;

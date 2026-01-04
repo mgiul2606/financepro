@@ -17,6 +17,8 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 import type { AccountType } from "./accountType";
 import type { AccountResponseInstitutionName } from "./accountResponseInstitutionName";
+import type { AccountResponseCreditLimit } from "./accountResponseCreditLimit";
+import type { AccountResponseInterestRate } from "./accountResponseInterestRate";
 import type { AccountResponseNotes } from "./accountResponseNotes";
 import type { AccountResponseAccountNumberLast4 } from "./accountResponseAccountNumberLast4";
 import type { AccountResponseIban } from "./accountResponseIban";
@@ -29,7 +31,7 @@ export interface AccountResponse {
   /**
    * Account name
    * @minLength 1
-   * @maxLength 100
+   * @maxLength 255
    */
   name: string;
   /** Type of account (checking, savings, credit_card, etc.) */
@@ -41,6 +43,12 @@ export interface AccountResponse {
   currency?: string;
   /** Name of the financial institution */
   institutionName?: AccountResponseInstitutionName;
+  /** Credit limit (for credit cards) */
+  creditLimit?: AccountResponseCreditLimit;
+  /** Annual interest rate percentage (for loans/savings) */
+  interestRate?: AccountResponseInterestRate;
+  /** Include this account in net worth calculations */
+  isIncludedInTotals?: boolean;
   /** Additional notes about the account */
   notes?: AccountResponseNotes;
   /** Unique account identifier */

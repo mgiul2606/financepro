@@ -87,8 +87,8 @@ export const listBudgetsApiV1BudgetsGetResponse = zod.object({
         id: zod.uuid().describe("Unique budget identifier"),
         userId: zod.uuid().describe("ID of the user this budget belongs to"),
         scopeType: zod
-          .string()
-          .describe("Scope type (user, profile, multi_profile)"),
+          .enum(["user", "profile", "multi_profile"])
+          .describe("Scope type for budgets, goals, recommendations"),
         scopeProfileIds: zod
           .union([zod.array(zod.uuid()), zod.null()])
           .optional()
@@ -162,7 +162,6 @@ export const createBudgetApiV1BudgetsPostBodyTotalAmountOneExclusiveMin = 0;
 export const createBudgetApiV1BudgetsPostBodyCurrencyRegExp = new RegExp(
   "^[A-Z]{3}$",
 );
-export const createBudgetApiV1BudgetsPostBodyScopeTypeDefault = "USER";
 export const createBudgetApiV1BudgetsPostBodyRolloverEnabledDefault = false;
 export const createBudgetApiV1BudgetsPostBodyAlertThresholdPercentDefault = 80;
 export const createBudgetApiV1BudgetsPostBodyAlertThresholdPercentMin = 0;
@@ -196,9 +195,9 @@ export const createBudgetApiV1BudgetsPostBody = zod
       .regex(createBudgetApiV1BudgetsPostBodyCurrencyRegExp)
       .describe("ISO 4217 currency code (3 uppercase letters)"),
     scopeType: zod
-      .string()
-      .default(createBudgetApiV1BudgetsPostBodyScopeTypeDefault)
-      .describe("Scope type: USER, PROFILE, or MULTI_PROFILE"),
+      .enum(["user", "profile", "multi_profile"])
+      .optional()
+      .describe("Scope type for budgets, goals, recommendations"),
     scopeProfileIds: zod
       .union([zod.array(zod.uuid()), zod.null()])
       .optional()
@@ -262,8 +261,8 @@ export const getBudgetApiV1BudgetsBudgetIdGetResponse = zod
     id: zod.uuid().describe("Unique budget identifier"),
     userId: zod.uuid().describe("ID of the user this budget belongs to"),
     scopeType: zod
-      .string()
-      .describe("Scope type (user, profile, multi_profile)"),
+      .enum(["user", "profile", "multi_profile"])
+      .describe("Scope type for budgets, goals, recommendations"),
     scopeProfileIds: zod
       .union([zod.array(zod.uuid()), zod.null()])
       .optional()
@@ -387,7 +386,12 @@ export const updateBudgetApiV1BudgetsBudgetIdPatchBody = zod
       .optional()
       .describe("Updated currency code"),
     scopeType: zod
-      .union([zod.string(), zod.null()])
+      .union([
+        zod
+          .enum(["user", "profile", "multi_profile"])
+          .describe("Scope type for budgets, goals, recommendations"),
+        zod.null(),
+      ])
       .optional()
       .describe("Updated scope type"),
     scopeProfileIds: zod
@@ -453,8 +457,8 @@ export const updateBudgetApiV1BudgetsBudgetIdPatchResponse = zod
     id: zod.uuid().describe("Unique budget identifier"),
     userId: zod.uuid().describe("ID of the user this budget belongs to"),
     scopeType: zod
-      .string()
-      .describe("Scope type (user, profile, multi_profile)"),
+      .enum(["user", "profile", "multi_profile"])
+      .describe("Scope type for budgets, goals, recommendations"),
     scopeProfileIds: zod
       .union([zod.array(zod.uuid()), zod.null()])
       .optional()

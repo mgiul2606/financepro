@@ -17,6 +17,6 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 /**
- * Transaction location
+ * Updated merchant ID
  */
-export type TransactionCreateLocation = string | null;
+export type TransactionUpdateMerchantId = string | null;

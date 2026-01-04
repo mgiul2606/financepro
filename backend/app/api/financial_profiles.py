@@ -1,6 +1,6 @@
 # app/api/financial_profiles.py
 from sqlalchemy import select, update
-from backend.app.api.utils import children_for, get_by_id
+from app.api.utils import children_for, get_by_id
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Annotated

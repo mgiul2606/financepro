@@ -339,20 +339,30 @@ export const useCreateProfileApiV1ProfilesPost = <
   return useMutation(mutationOptions, queryClient);
 };
 /**
- * Get the main financial profile for the authenticated user
- * @summary Get main financial profile
+ * @summary Get Main Profile
  */
 export type getMainProfileApiV1ProfilesMainGetResponse200 = {
   data: MainProfileResponse;
   status: 200;
 };
 
+export type getMainProfileApiV1ProfilesMainGetResponse404 = {
+  data: void;
+  status: 404;
+};
+
 export type getMainProfileApiV1ProfilesMainGetResponseSuccess =
   getMainProfileApiV1ProfilesMainGetResponse200 & {
     headers: Headers;
   };
+export type getMainProfileApiV1ProfilesMainGetResponseError =
+  getMainProfileApiV1ProfilesMainGetResponse404 & {
+    headers: Headers;
+  };
+
 export type getMainProfileApiV1ProfilesMainGetResponse =
-  getMainProfileApiV1ProfilesMainGetResponseSuccess;
+  | getMainProfileApiV1ProfilesMainGetResponseSuccess
+  | getMainProfileApiV1ProfilesMainGetResponseError;
 
 export const getGetMainProfileApiV1ProfilesMainGetUrl = () => {
   return `/api/v1/profiles/main`;
@@ -376,7 +386,7 @@ export const getGetMainProfileApiV1ProfilesMainGetQueryKey = () => {
 
 export const getGetMainProfileApiV1ProfilesMainGetQueryOptions = <
   TData = Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
-  TError = unknown,
+  TError = void,
 >(options?: {
   query?: Partial<
     UseQueryOptions<
@@ -407,11 +417,11 @@ export const getGetMainProfileApiV1ProfilesMainGetQueryOptions = <
 export type GetMainProfileApiV1ProfilesMainGetQueryResult = NonNullable<
   Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>
 >;
-export type GetMainProfileApiV1ProfilesMainGetQueryError = unknown;
+export type GetMainProfileApiV1ProfilesMainGetQueryError = void;
 
 export function useGetMainProfileApiV1ProfilesMainGet<
   TData = Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
-  TError = unknown,
+  TError = void,
 >(
   options: {
     query: Partial<
@@ -437,7 +447,7 @@ export function useGetMainProfileApiV1ProfilesMainGet<
 };
 export function useGetMainProfileApiV1ProfilesMainGet<
   TData = Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
-  TError = unknown,
+  TError = void,
 >(
   options?: {
     query?: Partial<
@@ -463,7 +473,7 @@ export function useGetMainProfileApiV1ProfilesMainGet<
 };
 export function useGetMainProfileApiV1ProfilesMainGet<
   TData = Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
-  TError = unknown,
+  TError = void,
 >(
   options?: {
     query?: Partial<
@@ -480,12 +490,12 @@ export function useGetMainProfileApiV1ProfilesMainGet<
   queryKey: DataTag<QueryKey, TData, TError>;
 };
 /**
- * @summary Get main financial profile
+ * @summary Get Main Profile
  */
 
 export function useGetMainProfileApiV1ProfilesMainGet<
   TData = Awaited<ReturnType<typeof getMainProfileApiV1ProfilesMainGet>>,
-  TError = unknown,
+  TError = void,
 >(
   options?: {
     query?: Partial<

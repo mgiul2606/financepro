@@ -1,5 +1,5 @@
 # app/api/categories.py
-from backend.app.api.utils import get_by_id, children_for
+from app.api.utils import get_by_id, children_for
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import Annotated, Optional

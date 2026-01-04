@@ -19,13 +19,14 @@ import type { TransactionResponseCategoryId } from "./transactionResponseCategor
 import type { TransactionType } from "./transactionType";
 import type { TransactionResponseMerchantName } from "./transactionResponseMerchantName";
 import type { TransactionResponseNotes } from "./transactionResponseNotes";
+import type { TransactionResponseMerchantId } from "./transactionResponseMerchantId";
 import type { TransactionResponseRecurringTransactionId } from "./transactionResponseRecurringTransactionId";
-import type { TransactionResponseExchangeRateId } from "./transactionResponseExchangeRateId";
-import type { TransactionResponseAmountInProfileCurrency } from "./transactionResponseAmountInProfileCurrency";
-import type { TransactionResponseMerchantNormalized } from "./transactionResponseMerchantNormalized";
-import type { TransactionResponseValueDate } from "./transactionResponseValueDate";
-import type { TransactionResponseLocation } from "./transactionResponseLocation";
+import type { TransactionResponseRelatedTransactionId } from "./transactionResponseRelatedTransactionId";
+import type { TransactionResponseDuplicateOfId } from "./transactionResponseDuplicateOfId";
+import type { TransactionResponseExchangeRate } from "./transactionResponseExchangeRate";
 import type { TransactionResponseReceiptUrl } from "./transactionResponseReceiptUrl";
+import type { TransactionResponseImportJobId } from "./transactionResponseImportJobId";
+import type { TransactionResponseExternalId } from "./transactionResponseExternalId";
 import type { TransactionSource } from "./transactionSource";
 
 /**
@@ -59,23 +60,32 @@ export interface TransactionResponse {
   notes?: TransactionResponseNotes;
   /** Unique transaction identifier */
   id: string;
+  /** ID of the financial profile this transaction belongs to */
+  financialProfileId: string;
+  /** ID of the merchant (if known) */
+  merchantId?: TransactionResponseMerchantId;
   /** ID of parent recurring transaction (if applicable) */
   recurringTransactionId?: TransactionResponseRecurringTransactionId;
-  /** ID of exchange rate used for conversion */
-  exchangeRateId?: TransactionResponseExchangeRateId;
+  /** ID of related transaction (for transfers, splits) */
+  relatedTransactionId?: TransactionResponseRelatedTransactionId;
+  /** ID of original transaction if this is a duplicate */
+  duplicateOfId?: TransactionResponseDuplicateOfId;
+  /** Exchange rate used for currency conversion */
+  exchangeRate?: TransactionResponseExchangeRate;
   /** Amount converted to profile's default currency */
-  amountInProfileCurrency?: TransactionResponseAmountInProfileCurrency;
-  /** ML-normalized merchant name for better categorization */
-  merchantNormalized?: TransactionResponseMerchantNormalized;
-  /** Date when transaction was valued */
-  valueDate?: TransactionResponseValueDate;
+  amountInProfileCurrency: string;
   /** Whether transaction has been reconciled */
   isReconciled?: boolean;
-  /** Transaction location */
-  location?: TransactionResponseLocation;
+  /** Whether this transaction is marked as a duplicate */
+  isDuplicate?: boolean;
   /** URL to receipt or document */
   receiptUrl?: TransactionResponseReceiptUrl;
-  createdBy?: TransactionSource;
+  /** ID of the import job that created this transaction */
+  importJobId?: TransactionResponseImportJobId;
+  /** External ID from bank/import source */
+  externalId?: TransactionResponseExternalId;
+  /** Source of transaction creation (manual, import, api, etc.) */
+  source: TransactionSource;
   /** Transaction creation timestamp (UTC) */
   createdAt: string;
   /** Last update timestamp (UTC) */

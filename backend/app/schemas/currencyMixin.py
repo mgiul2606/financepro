@@ -1,4 +1,4 @@
-from backend.app.schemas.base import CamelCaseModel
+from app.schemas.base import CamelCaseModel
 from pydantic import Field, field_validator
 from typing import Optional
 

@@ -2,7 +2,7 @@
 """
 API endpoints for AI services (classification, forecasting, chat, optimization).
 """
-from backend.app.api.utils import get_by_id, children_for
+from app.api.utils import get_by_id, children_for
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional

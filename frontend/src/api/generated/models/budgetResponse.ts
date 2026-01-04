@@ -17,6 +17,7 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 import type { PeriodType } from "./periodType";
 import type { BudgetResponseEndDate } from "./budgetResponseEndDate";
+import type { ScopeType } from "./scopeType";
 import type { BudgetResponseScopeProfileIds } from "./budgetResponseScopeProfileIds";
 import type { BudgetResponseTotalSpent } from "./budgetResponseTotalSpent";
 import type { BudgetResponseRemaining } from "./budgetResponseRemaining";
@@ -52,7 +53,7 @@ export interface BudgetResponse {
   /** ID of the user this budget belongs to */
   userId: string;
   /** Scope type (user, profile, multi_profile) */
-  scopeType: string;
+  scopeType: ScopeType;
   /** List of profile IDs when using profile or multi_profile scope */
   scopeProfileIds?: BudgetResponseScopeProfileIds;
   /** Whether unspent amounts rollover to next period */

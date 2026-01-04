@@ -17,6 +17,13 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 /**
- * Full hierarchical path (e.g., 'Groceries > Fresh Food > Fruits')
+ * Scope type for budgets, goals, recommendations
  */
-export type CategoryResponseFullPath = string | null;
+export type ScopeType = (typeof ScopeType)[keyof typeof ScopeType];
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare
+export const ScopeType = {
+  User: "user",
+  Profile: "profile",
+  MultiProfile: "multi_profile",
+} as const;

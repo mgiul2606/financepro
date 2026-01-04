@@ -1,5 +1,5 @@
 # app/schemas/auth.py
-from backend.app.schemas.base import CamelCaseModel
+from app.schemas.base import CamelCaseModel
 from pydantic import EmailStr, Field
 from uuid import UUID
 

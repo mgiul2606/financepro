@@ -20,8 +20,7 @@ import type { TransactionType } from "./transactionType";
 import type { TransactionCreateAmount } from "./transactionCreateAmount";
 import type { TransactionCreateMerchantName } from "./transactionCreateMerchantName";
 import type { TransactionCreateNotes } from "./transactionCreateNotes";
-import type { TransactionCreateValueDate } from "./transactionCreateValueDate";
-import type { TransactionCreateLocation } from "./transactionCreateLocation";
+import type { TransactionCreateMerchantId } from "./transactionCreateMerchantId";
 import type { TransactionCreateReceiptUrl } from "./transactionCreateReceiptUrl";
 import type { TransactionSource } from "./transactionSource";
 
@@ -54,12 +53,12 @@ export interface TransactionCreate {
   transactionDate: string;
   /** Additional notes about the transaction */
   notes?: TransactionCreateNotes;
-  /** Date when transaction was valued (for banking) */
-  valueDate?: TransactionCreateValueDate;
-  /** Transaction location */
-  location?: TransactionCreateLocation;
+  /** ID of the merchant (if known) */
+  merchantId?: TransactionCreateMerchantId;
   /** URL to receipt or document */
   receiptUrl?: TransactionCreateReceiptUrl;
-  /** Source of transaction creation */
-  createdBy?: TransactionSource;
+  /** Source of transaction creation (manual, import, api, etc.) */
+  source?: TransactionSource;
+  /** Whether transaction has been reconciled */
+  isReconciled?: boolean;
 }
