@@ -17,6 +17,6 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 /**
- * ID of parent category (null for root categories)
+ * Updated inclusion in totals
  */
-export type CategoryResponseParentCategoryId = string | null;
+export type AccountUpdateIsIncludedInTotals = boolean | null;

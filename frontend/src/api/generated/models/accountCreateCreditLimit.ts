@@ -17,6 +17,6 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 /**
- * Updated value date
+ * Credit limit (for credit cards)
  */
-export type TransactionUpdateValueDate = string | null;
+export type AccountCreateCreditLimit = number | string | null;

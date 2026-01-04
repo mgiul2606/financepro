@@ -17,8 +17,9 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 import type { AccountType } from "./accountType";
 import type { AccountCreateInstitutionName } from "./accountCreateInstitutionName";
+import type { AccountCreateCreditLimit } from "./accountCreateCreditLimit";
+import type { AccountCreateInterestRate } from "./accountCreateInterestRate";
 import type { AccountCreateNotes } from "./accountCreateNotes";
-import type { AccountCreateFinancialProfileId } from "./accountCreateFinancialProfileId";
 import type { AccountCreateInitialBalance } from "./accountCreateInitialBalance";
 import type { AccountCreateAccountNumberLast4 } from "./accountCreateAccountNumberLast4";
 import type { AccountCreateIban } from "./accountCreateIban";
@@ -31,7 +32,7 @@ export interface AccountCreate {
   /**
    * Account name
    * @minLength 1
-   * @maxLength 100
+   * @maxLength 255
    */
   name: string;
   /** Type of account (checking, savings, credit_card, etc.) */
@@ -43,10 +44,16 @@ export interface AccountCreate {
   currency?: string;
   /** Name of the financial institution */
   institutionName?: AccountCreateInstitutionName;
+  /** Credit limit (for credit cards) */
+  creditLimit?: AccountCreateCreditLimit;
+  /** Annual interest rate percentage (for loans/savings) */
+  interestRate?: AccountCreateInterestRate;
+  /** Include this account in net worth calculations */
+  isIncludedInTotals?: boolean;
   /** Additional notes about the account */
   notes?: AccountCreateNotes;
-  /** ID of the financial profile this account belongs to (optional, defaults to user's default profile) */
-  financialProfileId?: AccountCreateFinancialProfileId;
+  /** ID of the financial profile this account belongs to (that is current user's default profile) */
+  financialProfileId: string;
   /** Initial account balance (can be negative for debts) */
   initialBalance?: AccountCreateInitialBalance;
   /** Last 4 digits of account number */

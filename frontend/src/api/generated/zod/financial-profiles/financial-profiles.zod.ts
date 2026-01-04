@@ -152,8 +152,7 @@ export const createProfileApiV1ProfilesPostBody = zod
   );
 
 /**
- * Get the main financial profile for the authenticated user
- * @summary Get main financial profile
+ * @summary Get Main Profile
  */
 export const getMainProfileApiV1ProfilesMainGetResponse = zod
   .object({

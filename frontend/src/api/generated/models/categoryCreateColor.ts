@@ -17,6 +17,6 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 /**
- * Date when transaction was valued
+ * Hex color code for UI display
  */
-export type TransactionResponseValueDate = string | null;
+export type CategoryCreateColor = string | null;

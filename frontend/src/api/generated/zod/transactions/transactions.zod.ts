@@ -67,6 +67,7 @@ export const listTransactionsApiV1TransactionsGetResponseItemsItemCurrencyRegExp
 export const listTransactionsApiV1TransactionsGetResponseItemsItemMerchantNameOneMax = 255;
 
 export const listTransactionsApiV1TransactionsGetResponseItemsItemIsReconciledDefault = false;
+export const listTransactionsApiV1TransactionsGetResponseItemsItemIsDuplicateDefault = false;
 
 export const listTransactionsApiV1TransactionsGetResponse = zod
   .object({
@@ -132,43 +133,59 @@ export const listTransactionsApiV1TransactionsGetResponse = zod
               .optional()
               .describe("Additional notes about the transaction"),
             id: zod.uuid().describe("Unique transaction identifier"),
+            financialProfileId: zod
+              .uuid()
+              .describe(
+                "ID of the financial profile this transaction belongs to",
+              ),
+            merchantId: zod
+              .union([zod.uuid(), zod.null()])
+              .optional()
+              .describe("ID of the merchant (if known)"),
             recurringTransactionId: zod
               .union([zod.uuid(), zod.null()])
               .optional()
               .describe("ID of parent recurring transaction (if applicable)"),
-            exchangeRateId: zod
+            relatedTransactionId: zod
               .union([zod.uuid(), zod.null()])
               .optional()
-              .describe("ID of exchange rate used for conversion"),
+              .describe("ID of related transaction (for transfers, splits)"),
+            duplicateOfId: zod
+              .union([zod.uuid(), zod.null()])
+              .optional()
+              .describe("ID of original transaction if this is a duplicate"),
+            exchangeRate: zod
+              .union([zod.string(), zod.null()])
+              .optional()
+              .describe("Exchange rate used for currency conversion"),
             amountInProfileCurrency: zod
-              .union([zod.string(), zod.null()])
-              .optional()
+              .string()
               .describe("Amount converted to profile's default currency"),
-            merchantNormalized: zod
-              .union([zod.string(), zod.null()])
-              .optional()
-              .describe(
-                "ML-normalized merchant name for better categorization",
-              ),
-            valueDate: zod
-              .union([zod.iso.date(), zod.null()])
-              .optional()
-              .describe("Date when transaction was valued"),
             isReconciled: zod
               .boolean()
               .default(
                 listTransactionsApiV1TransactionsGetResponseItemsItemIsReconciledDefault,
               )
               .describe("Whether transaction has been reconciled"),
-            location: zod
-              .union([zod.string(), zod.null()])
-              .optional()
-              .describe("Transaction location"),
+            isDuplicate: zod
+              .boolean()
+              .default(
+                listTransactionsApiV1TransactionsGetResponseItemsItemIsDuplicateDefault,
+              )
+              .describe("Whether this transaction is marked as a duplicate"),
             receiptUrl: zod
               .union([zod.string(), zod.null()])
               .optional()
               .describe("URL to receipt or document"),
-            createdBy: zod
+            importJobId: zod
+              .union([zod.uuid(), zod.null()])
+              .optional()
+              .describe("ID of the import job that created this transaction"),
+            externalId: zod
+              .union([zod.string(), zod.null()])
+              .optional()
+              .describe("External ID from bank/import source"),
+            source: zod
               .enum([
                 "manual",
                 "import_csv",
@@ -177,7 +194,6 @@ export const listTransactionsApiV1TransactionsGetResponse = zod
                 "recurring",
                 "bank_sync",
               ])
-              .optional()
               .describe("Source of transaction creation"),
             createdAt: zod.iso
               .datetime({})
@@ -204,9 +220,9 @@ export const createTransactionApiV1TransactionsPostBodyCurrencyRegExp =
 
 export const createTransactionApiV1TransactionsPostBodyMerchantNameOneMax = 255;
 
-export const createTransactionApiV1TransactionsPostBodyLocationOneMax = 255;
-
 export const createTransactionApiV1TransactionsPostBodyReceiptUrlOneMax = 500;
+
+export const createTransactionApiV1TransactionsPostBodyIsReconciledDefault = false;
 
 export const createTransactionApiV1TransactionsPostBody = zod
   .object({
@@ -262,19 +278,10 @@ export const createTransactionApiV1TransactionsPostBody = zod
       .union([zod.string(), zod.null()])
       .optional()
       .describe("Additional notes about the transaction"),
-    valueDate: zod
-      .union([zod.iso.date(), zod.null()])
+    merchantId: zod
+      .union([zod.uuid(), zod.null()])
       .optional()
-      .describe("Date when transaction was valued (for banking)"),
-    location: zod
-      .union([
-        zod
-          .string()
-          .max(createTransactionApiV1TransactionsPostBodyLocationOneMax),
-        zod.null(),
-      ])
-      .optional()
-      .describe("Transaction location"),
+      .describe("ID of the merchant (if known)"),
     receiptUrl: zod
       .union([
         zod
@@ -284,7 +291,7 @@ export const createTransactionApiV1TransactionsPostBody = zod
       ])
       .optional()
       .describe("URL to receipt or document"),
-    createdBy: zod
+    source: zod
       .enum([
         "manual",
         "import_csv",
@@ -295,6 +302,10 @@ export const createTransactionApiV1TransactionsPostBody = zod
       ])
       .optional()
       .describe("Source of transaction creation"),
+    isReconciled: zod
+      .boolean()
+      .default(createTransactionApiV1TransactionsPostBodyIsReconciledDefault)
+      .describe("Whether transaction has been reconciled"),
   })
   .describe(
     "Schema for creating a new transaction.\nIncludes optional fields for advanced features.",
@@ -343,6 +354,7 @@ export const getTransactionApiV1TransactionsTransactionIdGetResponseCurrencyRegE
 export const getTransactionApiV1TransactionsTransactionIdGetResponseMerchantNameOneMax = 255;
 
 export const getTransactionApiV1TransactionsTransactionIdGetResponseIsReconciledDefault = false;
+export const getTransactionApiV1TransactionsTransactionIdGetResponseIsDuplicateDefault = false;
 
 export const getTransactionApiV1TransactionsTransactionIdGetResponse = zod
   .object({
@@ -401,41 +413,57 @@ export const getTransactionApiV1TransactionsTransactionIdGetResponse = zod
       .optional()
       .describe("Additional notes about the transaction"),
     id: zod.uuid().describe("Unique transaction identifier"),
+    financialProfileId: zod
+      .uuid()
+      .describe("ID of the financial profile this transaction belongs to"),
+    merchantId: zod
+      .union([zod.uuid(), zod.null()])
+      .optional()
+      .describe("ID of the merchant (if known)"),
     recurringTransactionId: zod
       .union([zod.uuid(), zod.null()])
       .optional()
       .describe("ID of parent recurring transaction (if applicable)"),
-    exchangeRateId: zod
+    relatedTransactionId: zod
       .union([zod.uuid(), zod.null()])
       .optional()
-      .describe("ID of exchange rate used for conversion"),
+      .describe("ID of related transaction (for transfers, splits)"),
+    duplicateOfId: zod
+      .union([zod.uuid(), zod.null()])
+      .optional()
+      .describe("ID of original transaction if this is a duplicate"),
+    exchangeRate: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Exchange rate used for currency conversion"),
     amountInProfileCurrency: zod
-      .union([zod.string(), zod.null()])
-      .optional()
+      .string()
       .describe("Amount converted to profile's default currency"),
-    merchantNormalized: zod
-      .union([zod.string(), zod.null()])
-      .optional()
-      .describe("ML-normalized merchant name for better categorization"),
-    valueDate: zod
-      .union([zod.iso.date(), zod.null()])
-      .optional()
-      .describe("Date when transaction was valued"),
     isReconciled: zod
       .boolean()
       .default(
         getTransactionApiV1TransactionsTransactionIdGetResponseIsReconciledDefault,
       )
       .describe("Whether transaction has been reconciled"),
-    location: zod
-      .union([zod.string(), zod.null()])
-      .optional()
-      .describe("Transaction location"),
+    isDuplicate: zod
+      .boolean()
+      .default(
+        getTransactionApiV1TransactionsTransactionIdGetResponseIsDuplicateDefault,
+      )
+      .describe("Whether this transaction is marked as a duplicate"),
     receiptUrl: zod
       .union([zod.string(), zod.null()])
       .optional()
       .describe("URL to receipt or document"),
-    createdBy: zod
+    importJobId: zod
+      .union([zod.uuid(), zod.null()])
+      .optional()
+      .describe("ID of the import job that created this transaction"),
+    externalId: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("External ID from bank/import source"),
+    source: zod
       .enum([
         "manual",
         "import_csv",
@@ -444,7 +472,6 @@ export const getTransactionApiV1TransactionsTransactionIdGetResponse = zod
         "recurring",
         "bank_sync",
       ])
-      .optional()
       .describe("Source of transaction creation"),
     createdAt: zod.iso
       .datetime({})
@@ -464,14 +491,10 @@ export const updateTransactionApiV1TransactionsTransactionIdPatchParams =
     transaction_id: zod.uuid(),
   });
 
-export const updateTransactionApiV1TransactionsTransactionIdPatchBodyAmountOneExclusiveMin = 0;
-
 export const updateTransactionApiV1TransactionsTransactionIdPatchBodyCurrencyOneRegExp =
   new RegExp("^[A-Z]{3}$");
 
 export const updateTransactionApiV1TransactionsTransactionIdPatchBodyMerchantNameOneMax = 255;
-
-export const updateTransactionApiV1TransactionsTransactionIdPatchBodyLocationOneMax = 255;
 
 export const updateTransactionApiV1TransactionsTransactionIdPatchBodyReceiptUrlOneMax = 500;
 
@@ -481,6 +504,10 @@ export const updateTransactionApiV1TransactionsTransactionIdPatchBody = zod
       .union([zod.uuid(), zod.null()])
       .optional()
       .describe("Updated category ID"),
+    merchantId: zod
+      .union([zod.uuid(), zod.null()])
+      .optional()
+      .describe("Updated merchant ID"),
     transactionType: zod
       .union([
         zod
@@ -509,15 +536,7 @@ export const updateTransactionApiV1TransactionsTransactionIdPatchBody = zod
       .optional()
       .describe("Updated transaction type"),
     amount: zod
-      .union([
-        zod
-          .number()
-          .gt(
-            updateTransactionApiV1TransactionsTransactionIdPatchBodyAmountOneExclusiveMin,
-          ),
-        zod.string(),
-        zod.null(),
-      ])
+      .union([zod.number(), zod.string(), zod.null()])
       .optional()
       .describe("Updated amount"),
     currency: zod
@@ -550,10 +569,6 @@ export const updateTransactionApiV1TransactionsTransactionIdPatchBody = zod
       .union([zod.iso.date(), zod.null()])
       .optional()
       .describe("Updated transaction date"),
-    valueDate: zod
-      .union([zod.iso.date(), zod.null()])
-      .optional()
-      .describe("Updated value date"),
     notes: zod
       .union([zod.string(), zod.null()])
       .optional()
@@ -562,17 +577,6 @@ export const updateTransactionApiV1TransactionsTransactionIdPatchBody = zod
       .union([zod.boolean(), zod.null()])
       .optional()
       .describe("Whether transaction has been reconciled"),
-    location: zod
-      .union([
-        zod
-          .string()
-          .max(
-            updateTransactionApiV1TransactionsTransactionIdPatchBodyLocationOneMax,
-          ),
-        zod.null(),
-      ])
-      .optional()
-      .describe("Updated location"),
     receiptUrl: zod
       .union([
         zod
@@ -595,6 +599,7 @@ export const updateTransactionApiV1TransactionsTransactionIdPatchResponseCurrenc
 export const updateTransactionApiV1TransactionsTransactionIdPatchResponseMerchantNameOneMax = 255;
 
 export const updateTransactionApiV1TransactionsTransactionIdPatchResponseIsReconciledDefault = false;
+export const updateTransactionApiV1TransactionsTransactionIdPatchResponseIsDuplicateDefault = false;
 
 export const updateTransactionApiV1TransactionsTransactionIdPatchResponse = zod
   .object({
@@ -653,41 +658,57 @@ export const updateTransactionApiV1TransactionsTransactionIdPatchResponse = zod
       .optional()
       .describe("Additional notes about the transaction"),
     id: zod.uuid().describe("Unique transaction identifier"),
+    financialProfileId: zod
+      .uuid()
+      .describe("ID of the financial profile this transaction belongs to"),
+    merchantId: zod
+      .union([zod.uuid(), zod.null()])
+      .optional()
+      .describe("ID of the merchant (if known)"),
     recurringTransactionId: zod
       .union([zod.uuid(), zod.null()])
       .optional()
       .describe("ID of parent recurring transaction (if applicable)"),
-    exchangeRateId: zod
+    relatedTransactionId: zod
       .union([zod.uuid(), zod.null()])
       .optional()
-      .describe("ID of exchange rate used for conversion"),
+      .describe("ID of related transaction (for transfers, splits)"),
+    duplicateOfId: zod
+      .union([zod.uuid(), zod.null()])
+      .optional()
+      .describe("ID of original transaction if this is a duplicate"),
+    exchangeRate: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Exchange rate used for currency conversion"),
     amountInProfileCurrency: zod
-      .union([zod.string(), zod.null()])
-      .optional()
+      .string()
       .describe("Amount converted to profile's default currency"),
-    merchantNormalized: zod
-      .union([zod.string(), zod.null()])
-      .optional()
-      .describe("ML-normalized merchant name for better categorization"),
-    valueDate: zod
-      .union([zod.iso.date(), zod.null()])
-      .optional()
-      .describe("Date when transaction was valued"),
     isReconciled: zod
       .boolean()
       .default(
         updateTransactionApiV1TransactionsTransactionIdPatchResponseIsReconciledDefault,
       )
       .describe("Whether transaction has been reconciled"),
-    location: zod
-      .union([zod.string(), zod.null()])
-      .optional()
-      .describe("Transaction location"),
+    isDuplicate: zod
+      .boolean()
+      .default(
+        updateTransactionApiV1TransactionsTransactionIdPatchResponseIsDuplicateDefault,
+      )
+      .describe("Whether this transaction is marked as a duplicate"),
     receiptUrl: zod
       .union([zod.string(), zod.null()])
       .optional()
       .describe("URL to receipt or document"),
-    createdBy: zod
+    importJobId: zod
+      .union([zod.uuid(), zod.null()])
+      .optional()
+      .describe("ID of the import job that created this transaction"),
+    externalId: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("External ID from bank/import source"),
+    source: zod
       .enum([
         "manual",
         "import_csv",
@@ -696,7 +717,6 @@ export const updateTransactionApiV1TransactionsTransactionIdPatchResponse = zod
         "recurring",
         "bank_sync",
       ])
-      .optional()
       .describe("Source of transaction creation"),
     createdAt: zod.iso
       .datetime({})
@@ -725,9 +745,9 @@ export const bulkCreateTransactionsApiV1TransactionsBulkPostBodyCurrencyRegExp =
 
 export const bulkCreateTransactionsApiV1TransactionsBulkPostBodyMerchantNameOneMax = 255;
 
-export const bulkCreateTransactionsApiV1TransactionsBulkPostBodyLocationOneMax = 255;
-
 export const bulkCreateTransactionsApiV1TransactionsBulkPostBodyReceiptUrlOneMax = 500;
+
+export const bulkCreateTransactionsApiV1TransactionsBulkPostBodyIsReconciledDefault = false;
 
 export const bulkCreateTransactionsApiV1TransactionsBulkPostBodyItem = zod
   .object({
@@ -785,21 +805,10 @@ export const bulkCreateTransactionsApiV1TransactionsBulkPostBodyItem = zod
       .union([zod.string(), zod.null()])
       .optional()
       .describe("Additional notes about the transaction"),
-    valueDate: zod
-      .union([zod.iso.date(), zod.null()])
+    merchantId: zod
+      .union([zod.uuid(), zod.null()])
       .optional()
-      .describe("Date when transaction was valued (for banking)"),
-    location: zod
-      .union([
-        zod
-          .string()
-          .max(
-            bulkCreateTransactionsApiV1TransactionsBulkPostBodyLocationOneMax,
-          ),
-        zod.null(),
-      ])
-      .optional()
-      .describe("Transaction location"),
+      .describe("ID of the merchant (if known)"),
     receiptUrl: zod
       .union([
         zod
@@ -811,7 +820,7 @@ export const bulkCreateTransactionsApiV1TransactionsBulkPostBodyItem = zod
       ])
       .optional()
       .describe("URL to receipt or document"),
-    createdBy: zod
+    source: zod
       .enum([
         "manual",
         "import_csv",
@@ -822,6 +831,12 @@ export const bulkCreateTransactionsApiV1TransactionsBulkPostBodyItem = zod
       ])
       .optional()
       .describe("Source of transaction creation"),
+    isReconciled: zod
+      .boolean()
+      .default(
+        bulkCreateTransactionsApiV1TransactionsBulkPostBodyIsReconciledDefault,
+      )
+      .describe("Whether transaction has been reconciled"),
   })
   .describe(
     "Schema for creating a new transaction.\nIncludes optional fields for advanced features.",

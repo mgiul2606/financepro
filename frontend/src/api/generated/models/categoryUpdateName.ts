@@ -17,6 +17,6 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 /**
- * ID of exchange rate used for conversion
+ * Updated category name
  */
-export type TransactionResponseExchangeRateId = string | null;
+export type CategoryUpdateName = string | null;

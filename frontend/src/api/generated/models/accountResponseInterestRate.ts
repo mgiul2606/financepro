@@ -17,6 +17,6 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 /**
- * ML-normalized merchant name for better categorization
+ * Annual interest rate percentage (for loans/savings)
  */
-export type TransactionResponseMerchantNormalized = string | null;
+export type AccountResponseInterestRate = string | null;

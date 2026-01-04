@@ -38,6 +38,7 @@ import type {
   AccountResponse,
   AccountUpdate,
   HTTPValidationError,
+  ListAccountsApiV1AccountsGetParams,
 } from ".././models";
 
 import { customInstance } from "../../client";
@@ -45,7 +46,7 @@ import { customInstance } from "../../client";
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 /**
- * Retrieve all accounts for the authenticated user
+ * Retrieve all accounts for the authenticated user, filtered by currently selected financial profiles
  * @summary List all accounts
  */
 export type listAccountsApiV1AccountsGetResponse200 = {
@@ -53,22 +54,55 @@ export type listAccountsApiV1AccountsGetResponse200 = {
   status: 200;
 };
 
+export type listAccountsApiV1AccountsGetResponse400 = {
+  data: void;
+  status: 400;
+};
+
+export type listAccountsApiV1AccountsGetResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
 export type listAccountsApiV1AccountsGetResponseSuccess =
   listAccountsApiV1AccountsGetResponse200 & {
     headers: Headers;
   };
-export type listAccountsApiV1AccountsGetResponse =
-  listAccountsApiV1AccountsGetResponseSuccess;
+export type listAccountsApiV1AccountsGetResponseError = (
+  | listAccountsApiV1AccountsGetResponse400
+  | listAccountsApiV1AccountsGetResponse422
+) & {
+  headers: Headers;
+};
 
-export const getListAccountsApiV1AccountsGetUrl = () => {
-  return `/api/v1/accounts/`;
+export type listAccountsApiV1AccountsGetResponse =
+  | listAccountsApiV1AccountsGetResponseSuccess
+  | listAccountsApiV1AccountsGetResponseError;
+
+export const getListAccountsApiV1AccountsGetUrl = (
+  params: ListAccountsApiV1AccountsGetParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/v1/accounts/?${stringifiedParams}`
+    : `/api/v1/accounts/`;
 };
 
 export const listAccountsApiV1AccountsGet = async (
+  params: ListAccountsApiV1AccountsGetParams,
   options?: RequestInit,
 ): Promise<listAccountsApiV1AccountsGetResponse> => {
   return customInstance<listAccountsApiV1AccountsGetResponse>(
-    getListAccountsApiV1AccountsGetUrl(),
+    getListAccountsApiV1AccountsGetUrl(params),
     {
       ...options,
       method: "GET",
@@ -76,32 +110,37 @@ export const listAccountsApiV1AccountsGet = async (
   );
 };
 
-export const getListAccountsApiV1AccountsGetQueryKey = () => {
-  return [`/api/v1/accounts/`] as const;
+export const getListAccountsApiV1AccountsGetQueryKey = (
+  params?: ListAccountsApiV1AccountsGetParams,
+) => {
+  return [`/api/v1/accounts/`, ...(params ? [params] : [])] as const;
 };
 
 export const getListAccountsApiV1AccountsGetQueryOptions = <
   TData = Awaited<ReturnType<typeof listAccountsApiV1AccountsGet>>,
-  TError = unknown,
->(options?: {
-  query?: Partial<
-    UseQueryOptions<
-      Awaited<ReturnType<typeof listAccountsApiV1AccountsGet>>,
-      TError,
-      TData
-    >
-  >;
-  request?: SecondParameter<typeof customInstance>;
-}) => {
+  TError = void | HTTPValidationError,
+>(
+  params: ListAccountsApiV1AccountsGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof listAccountsApiV1AccountsGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
   const queryKey =
-    queryOptions?.queryKey ?? getListAccountsApiV1AccountsGetQueryKey();
+    queryOptions?.queryKey ?? getListAccountsApiV1AccountsGetQueryKey(params);
 
   const queryFn: QueryFunction<
     Awaited<ReturnType<typeof listAccountsApiV1AccountsGet>>
   > = ({ signal }) =>
-    listAccountsApiV1AccountsGet({ signal, ...requestOptions });
+    listAccountsApiV1AccountsGet(params, { signal, ...requestOptions });
 
   return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof listAccountsApiV1AccountsGet>>,
@@ -113,12 +152,13 @@ export const getListAccountsApiV1AccountsGetQueryOptions = <
 export type ListAccountsApiV1AccountsGetQueryResult = NonNullable<
   Awaited<ReturnType<typeof listAccountsApiV1AccountsGet>>
 >;
-export type ListAccountsApiV1AccountsGetQueryError = unknown;
+export type ListAccountsApiV1AccountsGetQueryError = void | HTTPValidationError;
 
 export function useListAccountsApiV1AccountsGet<
   TData = Awaited<ReturnType<typeof listAccountsApiV1AccountsGet>>,
-  TError = unknown,
+  TError = void | HTTPValidationError,
 >(
+  params: ListAccountsApiV1AccountsGetParams,
   options: {
     query: Partial<
       UseQueryOptions<
@@ -143,8 +183,9 @@ export function useListAccountsApiV1AccountsGet<
 };
 export function useListAccountsApiV1AccountsGet<
   TData = Awaited<ReturnType<typeof listAccountsApiV1AccountsGet>>,
-  TError = unknown,
+  TError = void | HTTPValidationError,
 >(
+  params: ListAccountsApiV1AccountsGetParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -169,8 +210,9 @@ export function useListAccountsApiV1AccountsGet<
 };
 export function useListAccountsApiV1AccountsGet<
   TData = Awaited<ReturnType<typeof listAccountsApiV1AccountsGet>>,
-  TError = unknown,
+  TError = void | HTTPValidationError,
 >(
+  params: ListAccountsApiV1AccountsGetParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -191,8 +233,9 @@ export function useListAccountsApiV1AccountsGet<
 
 export function useListAccountsApiV1AccountsGet<
   TData = Awaited<ReturnType<typeof listAccountsApiV1AccountsGet>>,
-  TError = unknown,
+  TError = void | HTTPValidationError,
 >(
+  params: ListAccountsApiV1AccountsGetParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -207,7 +250,10 @@ export function useListAccountsApiV1AccountsGet<
 ): UseQueryResult<TData, TError> & {
   queryKey: DataTag<QueryKey, TData, TError>;
 } {
-  const queryOptions = getListAccountsApiV1AccountsGetQueryOptions(options);
+  const queryOptions = getListAccountsApiV1AccountsGetQueryOptions(
+    params,
+    options,
+  );
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<
     TData,

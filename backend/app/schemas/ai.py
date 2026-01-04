@@ -2,7 +2,7 @@
 """
 Pydantic schemas for AI services.
 """
-from backend.app.schemas.base import CamelCaseModel
+from app.schemas.base import CamelCaseModel
 from pydantic import Field, field_validator
 from typing import List, Optional, Dict, Any
 from uuid import UUID

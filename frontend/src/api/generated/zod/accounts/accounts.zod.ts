@@ -18,10 +18,16 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 import * as zod from "zod";
 
 /**
- * Retrieve all accounts for the authenticated user
+ * Retrieve all accounts for the authenticated user, filtered by currently selected financial profiles
  * @summary List all accounts
  */
-export const listAccountsApiV1AccountsGetResponseAccountsItemNameMax = 100;
+export const listAccountsApiV1AccountsGetQueryParams = zod.object({
+  profile_ids: zod
+    .array(zod.uuid())
+    .describe("List of currently active financial profile IDs"),
+});
+
+export const listAccountsApiV1AccountsGetResponseAccountsItemNameMax = 255;
 
 export const listAccountsApiV1AccountsGetResponseAccountsItemCurrencyDefault =
   "EUR";
@@ -29,6 +35,7 @@ export const listAccountsApiV1AccountsGetResponseAccountsItemCurrencyRegExp =
   new RegExp("^[A-Z]{3}$");
 export const listAccountsApiV1AccountsGetResponseAccountsItemInstitutionNameOneMax = 255;
 
+export const listAccountsApiV1AccountsGetResponseAccountsItemIsIncludedInTotalsDefault = true;
 export const listAccountsApiV1AccountsGetResponseAccountsItemIsActiveDefault = true;
 
 export const listAccountsApiV1AccountsGetResponse = zod
@@ -75,6 +82,20 @@ export const listAccountsApiV1AccountsGetResponse = zod
               ])
               .optional()
               .describe("Name of the financial institution"),
+            creditLimit: zod
+              .union([zod.string(), zod.null()])
+              .optional()
+              .describe("Credit limit (for credit cards)"),
+            interestRate: zod
+              .union([zod.string(), zod.null()])
+              .optional()
+              .describe("Annual interest rate percentage (for loans/savings)"),
+            isIncludedInTotals: zod
+              .boolean()
+              .default(
+                listAccountsApiV1AccountsGetResponseAccountsItemIsIncludedInTotalsDefault,
+              )
+              .describe("Include this account in net worth calculations"),
             notes: zod
               .union([zod.string(), zod.null()])
               .optional()
@@ -125,7 +146,7 @@ export const listAccountsApiV1AccountsGetResponse = zod
  * Create a new financial account for the authenticated user
  * @summary Create new account
  */
-export const createAccountApiV1AccountsPostBodyNameMax = 100;
+export const createAccountApiV1AccountsPostBodyNameMax = 255;
 
 export const createAccountApiV1AccountsPostBodyCurrencyDefault = "EUR";
 export const createAccountApiV1AccountsPostBodyCurrencyRegExp = new RegExp(
@@ -133,6 +154,7 @@ export const createAccountApiV1AccountsPostBodyCurrencyRegExp = new RegExp(
 );
 export const createAccountApiV1AccountsPostBodyInstitutionNameOneMax = 255;
 
+export const createAccountApiV1AccountsPostBodyIsIncludedInTotalsDefault = true;
 export const createAccountApiV1AccountsPostBodyInitialBalanceDefault = "0.00";
 export const createAccountApiV1AccountsPostBodyAccountNumberLast4OneMin = 4;
 export const createAccountApiV1AccountsPostBodyAccountNumberLast4OneMax = 4;
@@ -175,15 +197,26 @@ export const createAccountApiV1AccountsPostBody = zod
       ])
       .optional()
       .describe("Name of the financial institution"),
+    creditLimit: zod
+      .union([zod.number(), zod.string(), zod.null()])
+      .optional()
+      .describe("Credit limit (for credit cards)"),
+    interestRate: zod
+      .union([zod.number(), zod.string(), zod.null()])
+      .optional()
+      .describe("Annual interest rate percentage (for loans/savings)"),
+    isIncludedInTotals: zod
+      .boolean()
+      .default(createAccountApiV1AccountsPostBodyIsIncludedInTotalsDefault)
+      .describe("Include this account in net worth calculations"),
     notes: zod
       .union([zod.string(), zod.null()])
       .optional()
       .describe("Additional notes about the account"),
     financialProfileId: zod
-      .union([zod.uuid(), zod.null()])
-      .optional()
+      .uuid()
       .describe(
-        "ID of the financial profile this account belongs to (optional, defaults to user's default profile)",
+        "ID of the financial profile this account belongs to (that is current user's default profile)",
       ),
     initialBalance: zod
       .union([zod.number(), zod.string()])
@@ -220,13 +253,14 @@ export const getAccountApiV1AccountsAccountIdGetParams = zod.object({
   account_id: zod.uuid(),
 });
 
-export const getAccountApiV1AccountsAccountIdGetResponseNameMax = 100;
+export const getAccountApiV1AccountsAccountIdGetResponseNameMax = 255;
 
 export const getAccountApiV1AccountsAccountIdGetResponseCurrencyDefault = "EUR";
 export const getAccountApiV1AccountsAccountIdGetResponseCurrencyRegExp =
   new RegExp("^[A-Z]{3}$");
 export const getAccountApiV1AccountsAccountIdGetResponseInstitutionNameOneMax = 255;
 
+export const getAccountApiV1AccountsAccountIdGetResponseIsIncludedInTotalsDefault = true;
 export const getAccountApiV1AccountsAccountIdGetResponseIsActiveDefault = true;
 
 export const getAccountApiV1AccountsAccountIdGetResponse = zod
@@ -265,6 +299,20 @@ export const getAccountApiV1AccountsAccountIdGetResponse = zod
       ])
       .optional()
       .describe("Name of the financial institution"),
+    creditLimit: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Credit limit (for credit cards)"),
+    interestRate: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Annual interest rate percentage (for loans/savings)"),
+    isIncludedInTotals: zod
+      .boolean()
+      .default(
+        getAccountApiV1AccountsAccountIdGetResponseIsIncludedInTotalsDefault,
+      )
+      .describe("Include this account in net worth calculations"),
     notes: zod
       .union([zod.string(), zod.null()])
       .optional()
@@ -308,10 +356,12 @@ export const updateAccountApiV1AccountsAccountIdPutParams = zod.object({
   account_id: zod.uuid(),
 });
 
-export const updateAccountApiV1AccountsAccountIdPutBodyNameOneMax = 100;
+export const updateAccountApiV1AccountsAccountIdPutBodyNameOneMax = 255;
 
 export const updateAccountApiV1AccountsAccountIdPutBodyCurrencyOneRegExp =
   new RegExp("^[A-Z]{3}$");
+export const updateAccountApiV1AccountsAccountIdPutBodyInitialBalanceDefault =
+  "0.00";
 export const updateAccountApiV1AccountsAccountIdPutBodyInstitutionNameOneMax = 255;
 
 export const updateAccountApiV1AccountsAccountIdPutBodyAccountNumberLast4OneMin = 4;
@@ -360,6 +410,10 @@ export const updateAccountApiV1AccountsAccountIdPutBody = zod
       ])
       .optional()
       .describe("Updated currency code"),
+    initialBalance: zod
+      .union([zod.number(), zod.string(), zod.null()])
+      .default(updateAccountApiV1AccountsAccountIdPutBodyInitialBalanceDefault)
+      .describe("Initial account balance (can be negative for debts)"),
     institutionName: zod
       .union([
         zod
@@ -369,6 +423,18 @@ export const updateAccountApiV1AccountsAccountIdPutBody = zod
       ])
       .optional()
       .describe("Updated institution name"),
+    creditLimit: zod
+      .union([zod.number(), zod.string(), zod.null()])
+      .optional()
+      .describe("Updated credit limit"),
+    interestRate: zod
+      .union([zod.number(), zod.string(), zod.null()])
+      .optional()
+      .describe("Updated interest rate"),
+    isIncludedInTotals: zod
+      .union([zod.boolean(), zod.null()])
+      .optional()
+      .describe("Updated inclusion in totals"),
     accountNumberLast4: zod
       .union([
         zod
@@ -406,7 +472,7 @@ export const updateAccountApiV1AccountsAccountIdPutBody = zod
     "Schema for updating an existing account.\nAll fields are optional (partial update).",
   );
 
-export const updateAccountApiV1AccountsAccountIdPutResponseNameMax = 100;
+export const updateAccountApiV1AccountsAccountIdPutResponseNameMax = 255;
 
 export const updateAccountApiV1AccountsAccountIdPutResponseCurrencyDefault =
   "EUR";
@@ -414,6 +480,7 @@ export const updateAccountApiV1AccountsAccountIdPutResponseCurrencyRegExp =
   new RegExp("^[A-Z]{3}$");
 export const updateAccountApiV1AccountsAccountIdPutResponseInstitutionNameOneMax = 255;
 
+export const updateAccountApiV1AccountsAccountIdPutResponseIsIncludedInTotalsDefault = true;
 export const updateAccountApiV1AccountsAccountIdPutResponseIsActiveDefault = true;
 
 export const updateAccountApiV1AccountsAccountIdPutResponse = zod
@@ -452,6 +519,20 @@ export const updateAccountApiV1AccountsAccountIdPutResponse = zod
       ])
       .optional()
       .describe("Name of the financial institution"),
+    creditLimit: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Credit limit (for credit cards)"),
+    interestRate: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Annual interest rate percentage (for loans/savings)"),
+    isIncludedInTotals: zod
+      .boolean()
+      .default(
+        updateAccountApiV1AccountsAccountIdPutResponseIsIncludedInTotalsDefault,
+      )
+      .describe("Include this account in net worth calculations"),
     notes: zod
       .union([zod.string(), zod.null()])
       .optional()

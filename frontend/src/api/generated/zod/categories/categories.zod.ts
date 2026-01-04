@@ -18,30 +18,22 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 import * as zod from "zod";
 
 /**
- * Retrieve all categories for a financial profile
+ * Retrieve all categories for the current user (USER-level, shared across all profiles)
  * @summary List categories
  */
-export const listCategoriesApiV1CategoriesGetQueryLevelOneMax = 3;
-
-export const listCategoriesApiV1CategoriesGetQueryIsActiveDefault = true;
-
 export const listCategoriesApiV1CategoriesGetQueryParams = zod.object({
-  profile_id: zod.uuid().describe("Financial profile ID"),
-  parent_id: zod
-    .union([zod.uuid(), zod.null()])
-    .optional()
-    .describe("Filter by parent category ID (null for root categories)"),
-  level: zod
-    .union([
-      zod.number().min(1).max(listCategoriesApiV1CategoriesGetQueryLevelOneMax),
-      zod.null(),
-    ])
-    .optional()
-    .describe("Filter by hierarchy level (1, 2, or 3)"),
   is_active: zod
-    .boolean()
-    .default(listCategoriesApiV1CategoriesGetQueryIsActiveDefault)
-    .describe("Filter by active status"),
+    .union([zod.boolean(), zod.null()])
+    .optional()
+    .describe(
+      "Filter by active status (None = all, True = active only, False = inactive only)",
+    ),
+  is_income: zod
+    .union([zod.boolean(), zod.null()])
+    .optional()
+    .describe(
+      "Filter by category type (None = all, True = income, False = expense)",
+    ),
 });
 
 export const listCategoriesApiV1CategoriesGetResponseItemsItemNameMax = 100;
@@ -50,8 +42,8 @@ export const listCategoriesApiV1CategoriesGetResponseItemsItemIconOneMax = 50;
 
 export const listCategoriesApiV1CategoriesGetResponseItemsItemColorOneRegExp =
   new RegExp("^#[0-9A-Fa-f]{6}$");
-export const listCategoriesApiV1CategoriesGetResponseItemsItemLevelMax = 3;
-
+export const listCategoriesApiV1CategoriesGetResponseItemsItemIsIncomeDefault = false;
+export const listCategoriesApiV1CategoriesGetResponseItemsItemSortOrderDefault = 0;
 export const listCategoriesApiV1CategoriesGetResponseItemsItemIsSystemDefault = false;
 export const listCategoriesApiV1CategoriesGetResponseItemsItemIsActiveDefault = true;
 
@@ -92,25 +84,24 @@ export const listCategoriesApiV1CategoriesGetResponse = zod
               ])
               .optional()
               .describe("Hex color code for UI display"),
-            parentCategoryId: zod
-              .union([zod.uuid(), zod.null()])
-              .optional()
-              .describe("ID of parent category (null for root categories)"),
-            level: zod
-              .number()
-              .min(1)
-              .max(listCategoriesApiV1CategoriesGetResponseItemsItemLevelMax)
-              .describe("Hierarchy level (1, 2, or 3)"),
-            id: zod.uuid().describe("Unique category identifier"),
-            financialProfileId: zod
-              .uuid()
-              .describe("ID of the financial profile this category belongs to"),
-            fullPath: zod
-              .union([zod.string(), zod.null()])
-              .optional()
+            isIncome: zod
+              .boolean()
+              .default(
+                listCategoriesApiV1CategoriesGetResponseItemsItemIsIncomeDefault,
+              )
               .describe(
-                "Full hierarchical path (e.g., 'Groceries > Fresh Food > Fruits')",
+                "True for income categories (salary, invoices), False for expense categories",
               ),
+            sortOrder: zod
+              .number()
+              .default(
+                listCategoriesApiV1CategoriesGetResponseItemsItemSortOrderDefault,
+              )
+              .describe("Custom sort order for category display"),
+            id: zod.uuid().describe("Unique category identifier"),
+            userId: zod
+              .uuid()
+              .describe("ID of the user this category belongs to"),
             isSystem: zod
               .boolean()
               .default(
@@ -129,16 +120,296 @@ export const listCategoriesApiV1CategoriesGetResponse = zod
             updatedAt: zod.iso
               .datetime({})
               .describe("Last update timestamp (UTC)"),
-            subcategories: zod
-              .union([zod.array(zod.unknown()), zod.null()])
-              .optional()
-              .describe("Child categories (for hierarchical display)"),
           })
           .describe(
-            "Complete category schema returned by API endpoints.\nIncludes all fields and optional subcategories for tree view.",
+            "Complete category schema returned by API endpoints.\nCategories are USER-level (shared across all user's profiles).",
           ),
       )
       .describe("List of categories"),
     total: zod.number().describe("Total number of categories"),
   })
   .describe("Schema for list categories response with pagination support.");
+
+/**
+ * Create a new category for the current user
+ * @summary Create category
+ */
+export const createCategoryApiV1CategoriesPostBodyNameMax = 100;
+
+export const createCategoryApiV1CategoriesPostBodyIconOneMax = 50;
+
+export const createCategoryApiV1CategoriesPostBodyColorOneRegExp = new RegExp(
+  "^#[0-9A-Fa-f]{6}$",
+);
+export const createCategoryApiV1CategoriesPostBodyIsIncomeDefault = false;
+export const createCategoryApiV1CategoriesPostBodySortOrderDefault = 0;
+
+export const createCategoryApiV1CategoriesPostBody = zod
+  .object({
+    name: zod
+      .string()
+      .min(1)
+      .max(createCategoryApiV1CategoriesPostBodyNameMax)
+      .describe("Category name"),
+    description: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Optional description of the category"),
+    icon: zod
+      .union([
+        zod.string().max(createCategoryApiV1CategoriesPostBodyIconOneMax),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Icon identifier (emoji or icon name)"),
+    color: zod
+      .union([
+        zod.string().regex(createCategoryApiV1CategoriesPostBodyColorOneRegExp),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Hex color code for UI display"),
+    isIncome: zod
+      .boolean()
+      .default(createCategoryApiV1CategoriesPostBodyIsIncomeDefault)
+      .describe(
+        "True for income categories (salary, invoices), False for expense categories",
+      ),
+    sortOrder: zod
+      .number()
+      .default(createCategoryApiV1CategoriesPostBodySortOrderDefault)
+      .describe("Custom sort order for category display"),
+  })
+  .describe(
+    "Schema for creating a new category.\nCategories are USER-level and shared across all user's profiles.",
+  );
+
+/**
+ * Get a specific category by ID
+ * @summary Get category
+ */
+export const getCategoryApiV1CategoriesCategoryIdGetParams = zod.object({
+  category_id: zod.uuid(),
+});
+
+export const getCategoryApiV1CategoriesCategoryIdGetResponseNameMax = 100;
+
+export const getCategoryApiV1CategoriesCategoryIdGetResponseIconOneMax = 50;
+
+export const getCategoryApiV1CategoriesCategoryIdGetResponseColorOneRegExp =
+  new RegExp("^#[0-9A-Fa-f]{6}$");
+export const getCategoryApiV1CategoriesCategoryIdGetResponseIsIncomeDefault = false;
+export const getCategoryApiV1CategoriesCategoryIdGetResponseSortOrderDefault = 0;
+export const getCategoryApiV1CategoriesCategoryIdGetResponseIsSystemDefault = false;
+export const getCategoryApiV1CategoriesCategoryIdGetResponseIsActiveDefault = true;
+
+export const getCategoryApiV1CategoriesCategoryIdGetResponse = zod
+  .object({
+    name: zod
+      .string()
+      .min(1)
+      .max(getCategoryApiV1CategoriesCategoryIdGetResponseNameMax)
+      .describe("Category name"),
+    description: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Optional description of the category"),
+    icon: zod
+      .union([
+        zod
+          .string()
+          .max(getCategoryApiV1CategoriesCategoryIdGetResponseIconOneMax),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Icon identifier (emoji or icon name)"),
+    color: zod
+      .union([
+        zod
+          .string()
+          .regex(getCategoryApiV1CategoriesCategoryIdGetResponseColorOneRegExp),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Hex color code for UI display"),
+    isIncome: zod
+      .boolean()
+      .default(getCategoryApiV1CategoriesCategoryIdGetResponseIsIncomeDefault)
+      .describe(
+        "True for income categories (salary, invoices), False for expense categories",
+      ),
+    sortOrder: zod
+      .number()
+      .default(getCategoryApiV1CategoriesCategoryIdGetResponseSortOrderDefault)
+      .describe("Custom sort order for category display"),
+    id: zod.uuid().describe("Unique category identifier"),
+    userId: zod.uuid().describe("ID of the user this category belongs to"),
+    isSystem: zod
+      .boolean()
+      .default(getCategoryApiV1CategoriesCategoryIdGetResponseIsSystemDefault)
+      .describe("System categories cannot be deleted by users"),
+    isActive: zod
+      .boolean()
+      .default(getCategoryApiV1CategoriesCategoryIdGetResponseIsActiveDefault)
+      .describe("Whether the category is currently active"),
+    createdAt: zod.iso
+      .datetime({})
+      .describe("Category creation timestamp (UTC)"),
+    updatedAt: zod.iso.datetime({}).describe("Last update timestamp (UTC)"),
+  })
+  .describe(
+    "Complete category schema returned by API endpoints.\nCategories are USER-level (shared across all user's profiles).",
+  );
+
+/**
+ * Update an existing category
+ * @summary Update category
+ */
+export const updateCategoryApiV1CategoriesCategoryIdPutParams = zod.object({
+  category_id: zod.uuid(),
+});
+
+export const updateCategoryApiV1CategoriesCategoryIdPutBodyNameOneMax = 100;
+
+export const updateCategoryApiV1CategoriesCategoryIdPutBodyIconOneMax = 50;
+
+export const updateCategoryApiV1CategoriesCategoryIdPutBodyColorOneRegExp =
+  new RegExp("^#[0-9A-Fa-f]{6}$");
+
+export const updateCategoryApiV1CategoriesCategoryIdPutBody = zod
+  .object({
+    name: zod
+      .union([
+        zod
+          .string()
+          .min(1)
+          .max(updateCategoryApiV1CategoriesCategoryIdPutBodyNameOneMax),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated category name"),
+    description: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Updated description"),
+    icon: zod
+      .union([
+        zod
+          .string()
+          .max(updateCategoryApiV1CategoriesCategoryIdPutBodyIconOneMax),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated icon"),
+    color: zod
+      .union([
+        zod
+          .string()
+          .regex(updateCategoryApiV1CategoriesCategoryIdPutBodyColorOneRegExp),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Updated color"),
+    isIncome: zod
+      .union([zod.boolean(), zod.null()])
+      .optional()
+      .describe("Whether the category is for income"),
+    sortOrder: zod
+      .union([zod.number(), zod.null()])
+      .optional()
+      .describe("Updated sort order"),
+    isActive: zod
+      .union([zod.boolean(), zod.null()])
+      .optional()
+      .describe("Whether the category is active"),
+  })
+  .describe(
+    "Schema for updating an existing category.\nAll fields are optional (partial update).",
+  );
+
+export const updateCategoryApiV1CategoriesCategoryIdPutResponseNameMax = 100;
+
+export const updateCategoryApiV1CategoriesCategoryIdPutResponseIconOneMax = 50;
+
+export const updateCategoryApiV1CategoriesCategoryIdPutResponseColorOneRegExp =
+  new RegExp("^#[0-9A-Fa-f]{6}$");
+export const updateCategoryApiV1CategoriesCategoryIdPutResponseIsIncomeDefault = false;
+export const updateCategoryApiV1CategoriesCategoryIdPutResponseSortOrderDefault = 0;
+export const updateCategoryApiV1CategoriesCategoryIdPutResponseIsSystemDefault = false;
+export const updateCategoryApiV1CategoriesCategoryIdPutResponseIsActiveDefault = true;
+
+export const updateCategoryApiV1CategoriesCategoryIdPutResponse = zod
+  .object({
+    name: zod
+      .string()
+      .min(1)
+      .max(updateCategoryApiV1CategoriesCategoryIdPutResponseNameMax)
+      .describe("Category name"),
+    description: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Optional description of the category"),
+    icon: zod
+      .union([
+        zod
+          .string()
+          .max(updateCategoryApiV1CategoriesCategoryIdPutResponseIconOneMax),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Icon identifier (emoji or icon name)"),
+    color: zod
+      .union([
+        zod
+          .string()
+          .regex(
+            updateCategoryApiV1CategoriesCategoryIdPutResponseColorOneRegExp,
+          ),
+        zod.null(),
+      ])
+      .optional()
+      .describe("Hex color code for UI display"),
+    isIncome: zod
+      .boolean()
+      .default(
+        updateCategoryApiV1CategoriesCategoryIdPutResponseIsIncomeDefault,
+      )
+      .describe(
+        "True for income categories (salary, invoices), False for expense categories",
+      ),
+    sortOrder: zod
+      .number()
+      .default(
+        updateCategoryApiV1CategoriesCategoryIdPutResponseSortOrderDefault,
+      )
+      .describe("Custom sort order for category display"),
+    id: zod.uuid().describe("Unique category identifier"),
+    userId: zod.uuid().describe("ID of the user this category belongs to"),
+    isSystem: zod
+      .boolean()
+      .default(
+        updateCategoryApiV1CategoriesCategoryIdPutResponseIsSystemDefault,
+      )
+      .describe("System categories cannot be deleted by users"),
+    isActive: zod
+      .boolean()
+      .default(
+        updateCategoryApiV1CategoriesCategoryIdPutResponseIsActiveDefault,
+      )
+      .describe("Whether the category is currently active"),
+    createdAt: zod.iso
+      .datetime({})
+      .describe("Category creation timestamp (UTC)"),
+    updatedAt: zod.iso.datetime({}).describe("Last update timestamp (UTC)"),
+  })
+  .describe(
+    "Complete category schema returned by API endpoints.\nCategories are USER-level (shared across all user's profiles).",
+  );
+
+/**
+ * Delete a category
+ * @summary Delete category
+ */
+export const deleteCategoryApiV1CategoriesCategoryIdDeleteParams = zod.object({
+  category_id: zod.uuid(),
+});

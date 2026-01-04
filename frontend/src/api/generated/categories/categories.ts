@@ -15,21 +15,27 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
   DataTag,
   DefinedInitialDataOptions,
   DefinedUseQueryResult,
+  MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
 
 import type {
+  CategoryCreate,
   CategoryListResponse,
+  CategoryResponse,
+  CategoryUpdate,
   HTTPValidationError,
   ListCategoriesApiV1CategoriesGetParams,
 } from ".././models";
@@ -39,7 +45,7 @@ import { customInstance } from "../../client";
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 /**
- * Retrieve all categories for a financial profile
+ * Retrieve all categories for the current user (USER-level, shared across all profiles)
  * @summary List categories
  */
 export type listCategoriesApiV1CategoriesGetResponse200 = {
@@ -66,7 +72,7 @@ export type listCategoriesApiV1CategoriesGetResponse =
   | listCategoriesApiV1CategoriesGetResponseError;
 
 export const getListCategoriesApiV1CategoriesGetUrl = (
-  params: ListCategoriesApiV1CategoriesGetParams,
+  params?: ListCategoriesApiV1CategoriesGetParams,
 ) => {
   const normalizedParams = new URLSearchParams();
 
@@ -84,7 +90,7 @@ export const getListCategoriesApiV1CategoriesGetUrl = (
 };
 
 export const listCategoriesApiV1CategoriesGet = async (
-  params: ListCategoriesApiV1CategoriesGetParams,
+  params?: ListCategoriesApiV1CategoriesGetParams,
   options?: RequestInit,
 ): Promise<listCategoriesApiV1CategoriesGetResponse> => {
   return customInstance<listCategoriesApiV1CategoriesGetResponse>(
@@ -106,7 +112,7 @@ export const getListCategoriesApiV1CategoriesGetQueryOptions = <
   TData = Awaited<ReturnType<typeof listCategoriesApiV1CategoriesGet>>,
   TError = HTTPValidationError,
 >(
-  params: ListCategoriesApiV1CategoriesGetParams,
+  params?: ListCategoriesApiV1CategoriesGetParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -145,7 +151,7 @@ export function useListCategoriesApiV1CategoriesGet<
   TData = Awaited<ReturnType<typeof listCategoriesApiV1CategoriesGet>>,
   TError = HTTPValidationError,
 >(
-  params: ListCategoriesApiV1CategoriesGetParams,
+  params: undefined | ListCategoriesApiV1CategoriesGetParams,
   options: {
     query: Partial<
       UseQueryOptions<
@@ -172,7 +178,7 @@ export function useListCategoriesApiV1CategoriesGet<
   TData = Awaited<ReturnType<typeof listCategoriesApiV1CategoriesGet>>,
   TError = HTTPValidationError,
 >(
-  params: ListCategoriesApiV1CategoriesGetParams,
+  params?: ListCategoriesApiV1CategoriesGetParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -199,7 +205,7 @@ export function useListCategoriesApiV1CategoriesGet<
   TData = Awaited<ReturnType<typeof listCategoriesApiV1CategoriesGet>>,
   TError = HTTPValidationError,
 >(
-  params: ListCategoriesApiV1CategoriesGetParams,
+  params?: ListCategoriesApiV1CategoriesGetParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -222,7 +228,7 @@ export function useListCategoriesApiV1CategoriesGet<
   TData = Awaited<ReturnType<typeof listCategoriesApiV1CategoriesGet>>,
   TError = HTTPValidationError,
 >(
-  params: ListCategoriesApiV1CategoriesGetParams,
+  params?: ListCategoriesApiV1CategoriesGetParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -251,3 +257,585 @@ export function useListCategoriesApiV1CategoriesGet<
 
   return query;
 }
+
+/**
+ * Create a new category for the current user
+ * @summary Create category
+ */
+export type createCategoryApiV1CategoriesPostResponse201 = {
+  data: CategoryResponse;
+  status: 201;
+};
+
+export type createCategoryApiV1CategoriesPostResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type createCategoryApiV1CategoriesPostResponseSuccess =
+  createCategoryApiV1CategoriesPostResponse201 & {
+    headers: Headers;
+  };
+export type createCategoryApiV1CategoriesPostResponseError =
+  createCategoryApiV1CategoriesPostResponse422 & {
+    headers: Headers;
+  };
+
+export type createCategoryApiV1CategoriesPostResponse =
+  | createCategoryApiV1CategoriesPostResponseSuccess
+  | createCategoryApiV1CategoriesPostResponseError;
+
+export const getCreateCategoryApiV1CategoriesPostUrl = () => {
+  return `/api/v1/categories/`;
+};
+
+export const createCategoryApiV1CategoriesPost = async (
+  categoryCreate: CategoryCreate,
+  options?: RequestInit,
+): Promise<createCategoryApiV1CategoriesPostResponse> => {
+  return customInstance<createCategoryApiV1CategoriesPostResponse>(
+    getCreateCategoryApiV1CategoriesPostUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(categoryCreate),
+    },
+  );
+};
+
+export const getCreateCategoryApiV1CategoriesPostMutationOptions = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createCategoryApiV1CategoriesPost>>,
+    TError,
+    { data: CategoryCreate },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createCategoryApiV1CategoriesPost>>,
+  TError,
+  { data: CategoryCreate },
+  TContext
+> => {
+  const mutationKey = ["createCategoryApiV1CategoriesPost"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createCategoryApiV1CategoriesPost>>,
+    { data: CategoryCreate }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createCategoryApiV1CategoriesPost(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateCategoryApiV1CategoriesPostMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createCategoryApiV1CategoriesPost>>
+>;
+export type CreateCategoryApiV1CategoriesPostMutationBody = CategoryCreate;
+export type CreateCategoryApiV1CategoriesPostMutationError =
+  HTTPValidationError;
+
+/**
+ * @summary Create category
+ */
+export const useCreateCategoryApiV1CategoriesPost = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof createCategoryApiV1CategoriesPost>>,
+      TError,
+      { data: CategoryCreate },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof createCategoryApiV1CategoriesPost>>,
+  TError,
+  { data: CategoryCreate },
+  TContext
+> => {
+  const mutationOptions =
+    getCreateCategoryApiV1CategoriesPostMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
+ * Get a specific category by ID
+ * @summary Get category
+ */
+export type getCategoryApiV1CategoriesCategoryIdGetResponse200 = {
+  data: CategoryResponse;
+  status: 200;
+};
+
+export type getCategoryApiV1CategoriesCategoryIdGetResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type getCategoryApiV1CategoriesCategoryIdGetResponseSuccess =
+  getCategoryApiV1CategoriesCategoryIdGetResponse200 & {
+    headers: Headers;
+  };
+export type getCategoryApiV1CategoriesCategoryIdGetResponseError =
+  getCategoryApiV1CategoriesCategoryIdGetResponse422 & {
+    headers: Headers;
+  };
+
+export type getCategoryApiV1CategoriesCategoryIdGetResponse =
+  | getCategoryApiV1CategoriesCategoryIdGetResponseSuccess
+  | getCategoryApiV1CategoriesCategoryIdGetResponseError;
+
+export const getGetCategoryApiV1CategoriesCategoryIdGetUrl = (
+  categoryId: string,
+) => {
+  return `/api/v1/categories/${categoryId}`;
+};
+
+export const getCategoryApiV1CategoriesCategoryIdGet = async (
+  categoryId: string,
+  options?: RequestInit,
+): Promise<getCategoryApiV1CategoriesCategoryIdGetResponse> => {
+  return customInstance<getCategoryApiV1CategoriesCategoryIdGetResponse>(
+    getGetCategoryApiV1CategoriesCategoryIdGetUrl(categoryId),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetCategoryApiV1CategoriesCategoryIdGetQueryKey = (
+  categoryId?: string,
+) => {
+  return [`/api/v1/categories/${categoryId}`] as const;
+};
+
+export const getGetCategoryApiV1CategoriesCategoryIdGetQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCategoryApiV1CategoriesCategoryIdGet>>,
+  TError = HTTPValidationError,
+>(
+  categoryId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getCategoryApiV1CategoriesCategoryIdGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetCategoryApiV1CategoriesCategoryIdGetQueryKey(categoryId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getCategoryApiV1CategoriesCategoryIdGet>>
+  > = ({ signal }) =>
+    getCategoryApiV1CategoriesCategoryIdGet(categoryId, {
+      signal,
+      ...requestOptions,
+    });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!categoryId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCategoryApiV1CategoriesCategoryIdGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetCategoryApiV1CategoriesCategoryIdGetQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCategoryApiV1CategoriesCategoryIdGet>>
+>;
+export type GetCategoryApiV1CategoriesCategoryIdGetQueryError =
+  HTTPValidationError;
+
+export function useGetCategoryApiV1CategoriesCategoryIdGet<
+  TData = Awaited<ReturnType<typeof getCategoryApiV1CategoriesCategoryIdGet>>,
+  TError = HTTPValidationError,
+>(
+  categoryId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getCategoryApiV1CategoriesCategoryIdGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCategoryApiV1CategoriesCategoryIdGet>>,
+          TError,
+          Awaited<ReturnType<typeof getCategoryApiV1CategoriesCategoryIdGet>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetCategoryApiV1CategoriesCategoryIdGet<
+  TData = Awaited<ReturnType<typeof getCategoryApiV1CategoriesCategoryIdGet>>,
+  TError = HTTPValidationError,
+>(
+  categoryId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getCategoryApiV1CategoriesCategoryIdGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCategoryApiV1CategoriesCategoryIdGet>>,
+          TError,
+          Awaited<ReturnType<typeof getCategoryApiV1CategoriesCategoryIdGet>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetCategoryApiV1CategoriesCategoryIdGet<
+  TData = Awaited<ReturnType<typeof getCategoryApiV1CategoriesCategoryIdGet>>,
+  TError = HTTPValidationError,
+>(
+  categoryId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getCategoryApiV1CategoriesCategoryIdGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get category
+ */
+
+export function useGetCategoryApiV1CategoriesCategoryIdGet<
+  TData = Awaited<ReturnType<typeof getCategoryApiV1CategoriesCategoryIdGet>>,
+  TError = HTTPValidationError,
+>(
+  categoryId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getCategoryApiV1CategoriesCategoryIdGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetCategoryApiV1CategoriesCategoryIdGetQueryOptions(
+    categoryId,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+/**
+ * Update an existing category
+ * @summary Update category
+ */
+export type updateCategoryApiV1CategoriesCategoryIdPutResponse200 = {
+  data: CategoryResponse;
+  status: 200;
+};
+
+export type updateCategoryApiV1CategoriesCategoryIdPutResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type updateCategoryApiV1CategoriesCategoryIdPutResponseSuccess =
+  updateCategoryApiV1CategoriesCategoryIdPutResponse200 & {
+    headers: Headers;
+  };
+export type updateCategoryApiV1CategoriesCategoryIdPutResponseError =
+  updateCategoryApiV1CategoriesCategoryIdPutResponse422 & {
+    headers: Headers;
+  };
+
+export type updateCategoryApiV1CategoriesCategoryIdPutResponse =
+  | updateCategoryApiV1CategoriesCategoryIdPutResponseSuccess
+  | updateCategoryApiV1CategoriesCategoryIdPutResponseError;
+
+export const getUpdateCategoryApiV1CategoriesCategoryIdPutUrl = (
+  categoryId: string,
+) => {
+  return `/api/v1/categories/${categoryId}`;
+};
+
+export const updateCategoryApiV1CategoriesCategoryIdPut = async (
+  categoryId: string,
+  categoryUpdate: CategoryUpdate,
+  options?: RequestInit,
+): Promise<updateCategoryApiV1CategoriesCategoryIdPutResponse> => {
+  return customInstance<updateCategoryApiV1CategoriesCategoryIdPutResponse>(
+    getUpdateCategoryApiV1CategoriesCategoryIdPutUrl(categoryId),
+    {
+      ...options,
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(categoryUpdate),
+    },
+  );
+};
+
+export const getUpdateCategoryApiV1CategoriesCategoryIdPutMutationOptions = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateCategoryApiV1CategoriesCategoryIdPut>>,
+    TError,
+    { categoryId: string; data: CategoryUpdate },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateCategoryApiV1CategoriesCategoryIdPut>>,
+  TError,
+  { categoryId: string; data: CategoryUpdate },
+  TContext
+> => {
+  const mutationKey = ["updateCategoryApiV1CategoriesCategoryIdPut"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateCategoryApiV1CategoriesCategoryIdPut>>,
+    { categoryId: string; data: CategoryUpdate }
+  > = (props) => {
+    const { categoryId, data } = props ?? {};
+
+    return updateCategoryApiV1CategoriesCategoryIdPut(
+      categoryId,
+      data,
+      requestOptions,
+    );
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateCategoryApiV1CategoriesCategoryIdPutMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof updateCategoryApiV1CategoriesCategoryIdPut>>
+  >;
+export type UpdateCategoryApiV1CategoriesCategoryIdPutMutationBody =
+  CategoryUpdate;
+export type UpdateCategoryApiV1CategoriesCategoryIdPutMutationError =
+  HTTPValidationError;
+
+/**
+ * @summary Update category
+ */
+export const useUpdateCategoryApiV1CategoriesCategoryIdPut = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateCategoryApiV1CategoriesCategoryIdPut>>,
+      TError,
+      { categoryId: string; data: CategoryUpdate },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateCategoryApiV1CategoriesCategoryIdPut>>,
+  TError,
+  { categoryId: string; data: CategoryUpdate },
+  TContext
+> => {
+  const mutationOptions =
+    getUpdateCategoryApiV1CategoriesCategoryIdPutMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
+ * Delete a category
+ * @summary Delete category
+ */
+export type deleteCategoryApiV1CategoriesCategoryIdDeleteResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type deleteCategoryApiV1CategoriesCategoryIdDeleteResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type deleteCategoryApiV1CategoriesCategoryIdDeleteResponseSuccess =
+  deleteCategoryApiV1CategoriesCategoryIdDeleteResponse204 & {
+    headers: Headers;
+  };
+export type deleteCategoryApiV1CategoriesCategoryIdDeleteResponseError =
+  deleteCategoryApiV1CategoriesCategoryIdDeleteResponse422 & {
+    headers: Headers;
+  };
+
+export type deleteCategoryApiV1CategoriesCategoryIdDeleteResponse =
+  | deleteCategoryApiV1CategoriesCategoryIdDeleteResponseSuccess
+  | deleteCategoryApiV1CategoriesCategoryIdDeleteResponseError;
+
+export const getDeleteCategoryApiV1CategoriesCategoryIdDeleteUrl = (
+  categoryId: string,
+) => {
+  return `/api/v1/categories/${categoryId}`;
+};
+
+export const deleteCategoryApiV1CategoriesCategoryIdDelete = async (
+  categoryId: string,
+  options?: RequestInit,
+): Promise<deleteCategoryApiV1CategoriesCategoryIdDeleteResponse> => {
+  return customInstance<deleteCategoryApiV1CategoriesCategoryIdDeleteResponse>(
+    getDeleteCategoryApiV1CategoriesCategoryIdDeleteUrl(categoryId),
+    {
+      ...options,
+      method: "DELETE",
+    },
+  );
+};
+
+export const getDeleteCategoryApiV1CategoriesCategoryIdDeleteMutationOptions = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteCategoryApiV1CategoriesCategoryIdDelete>>,
+    TError,
+    { categoryId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteCategoryApiV1CategoriesCategoryIdDelete>>,
+  TError,
+  { categoryId: string },
+  TContext
+> => {
+  const mutationKey = ["deleteCategoryApiV1CategoriesCategoryIdDelete"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteCategoryApiV1CategoriesCategoryIdDelete>>,
+    { categoryId: string }
+  > = (props) => {
+    const { categoryId } = props ?? {};
+
+    return deleteCategoryApiV1CategoriesCategoryIdDelete(
+      categoryId,
+      requestOptions,
+    );
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteCategoryApiV1CategoriesCategoryIdDeleteMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof deleteCategoryApiV1CategoriesCategoryIdDelete>>
+  >;
+
+export type DeleteCategoryApiV1CategoriesCategoryIdDeleteMutationError =
+  HTTPValidationError;
+
+/**
+ * @summary Delete category
+ */
+export const useDeleteCategoryApiV1CategoriesCategoryIdDelete = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof deleteCategoryApiV1CategoriesCategoryIdDelete>>,
+      TError,
+      { categoryId: string },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof deleteCategoryApiV1CategoriesCategoryIdDelete>>,
+  TError,
+  { categoryId: string },
+  TContext
+> => {
+  const mutationOptions =
+    getDeleteCategoryApiV1CategoriesCategoryIdDeleteMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};

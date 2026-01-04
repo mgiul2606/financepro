@@ -1,6 +1,6 @@
 # app/schemas/goal.py
 
-from backend.app.schemas.base import CamelCaseModel
+from app.schemas.base import CamelCaseModel
 from pydantic import Field, ConfigDict, computed_field, field_validator
 from datetime import datetime, date
 from typing import Optional

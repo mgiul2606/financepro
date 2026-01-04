@@ -1,5 +1,5 @@
 # app/api/accounts.py
-from backend.app.api.utils import children_for, get_by_id
+from app.api.utils import children_for, get_by_id
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 from typing import Annotated

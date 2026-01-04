@@ -271,8 +271,7 @@
           "Financial Profiles",
           "Financial Profiles"
         ],
-        "summary": "Get main financial profile",
-        "description": "Get the main financial profile for the authenticated user",
+        "summary": "Get Main Profile",
         "operationId": "get_main_profile_api_v1_profiles_main_get",
         "responses": {
           "200": {
@@ -284,6 +283,9 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "Default profile not found (data integrity issue)"
           }
         },
         "security": [
@@ -518,8 +520,30 @@
           "Accounts"
         ],
         "summary": "List all accounts",
-        "description": "Retrieve all accounts for the authenticated user",
+        "description": "Retrieve all accounts for the authenticated user, filtered by currently selected financial profiles",
         "operationId": "list_accounts_api_v1_accounts__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "profile_ids",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "description": "List of currently active financial profile IDs",
+              "title": "Profile Ids"
+            },
+            "description": "List of currently active financial profile IDs"
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of accounts retrieved successfully",
@@ -545,13 +569,21 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Invalid or unauthorized profile IDs"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       },
       "post": {
         "tags": [
@@ -560,15 +592,20 @@
         "summary": "Create new account",
         "description": "Create a new financial account for the authenticated user",
         "operationId": "create_account_api_v1_accounts__post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/AccountCreate"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "201": {
@@ -591,12 +628,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     },
     "/api/v1/accounts/{account_id}": {
@@ -806,7 +838,7 @@
           "Categories"
         ],
         "summary": "List categories",
-        "description": "Retrieve all categories for a financial profile",
+        "description": "Retrieve all categories for the current user (USER-level, shared across all profiles)",
         "operationId": "list_categories_api_v1_categories__get",
         "security": [
           {
@@ -815,67 +847,40 @@
         ],
         "parameters": [
           {
-            "name": "profile_id",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "description": "Financial profile ID",
-              "title": "Profile Id"
-            },
-            "description": "Financial profile ID"
-          },
-          {
-            "name": "parent_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Filter by parent category ID (null for root categories)",
-              "title": "Parent Id"
-            },
-            "description": "Filter by parent category ID (null for root categories)"
-          },
-          {
-            "name": "level",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "integer",
-                  "maximum": 3,
-                  "minimum": 1
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Filter by hierarchy level (1, 2, or 3)",
-              "title": "Level"
-            },
-            "description": "Filter by hierarchy level (1, 2, or 3)"
-          },
-          {
             "name": "is_active",
             "in": "query",
             "required": false,
             "schema": {
-              "type": "boolean",
-              "description": "Filter by active status",
-              "default": true,
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by active status (None = all, True = active only, False = inactive only)",
               "title": "Is Active"
             },
-            "description": "Filter by active status"
+            "description": "Filter by active status (None = all, True = active only, False = inactive only)"
+          },
+          {
+            "name": "is_income",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by category type (None = all, True = income, False = expense)",
+              "title": "Is Income"
+            },
+            "description": "Filter by category type (None = all, True = income, False = expense)"
           }
         ],
         "responses": {
@@ -888,6 +893,197 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Create category",
+        "description": "Create a new category for the current user",
+        "operationId": "create_category_api_v1_categories__post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/categories/{category_id}": {
+      "get": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Get category",
+        "description": "Get a specific category by ID",
+        "operationId": "get_category_api_v1_categories__category_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "category_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Category Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Update category",
+        "description": "Update an existing category",
+        "operationId": "update_category_api_v1_categories__category_id__put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "category_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Category Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Delete category",
+        "description": "Delete a category",
+        "operationId": "delete_category_api_v1_categories__category_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "category_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Category Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
           },
           "422": {
             "description": "Validation Error",
@@ -1102,6 +1298,120 @@
           },
           "404": {
             "description": "Account not found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/transactions/stats": {
+      "get": {
+        "tags": [
+          "Transactions",
+          "Transactions"
+        ],
+        "summary": "Get transaction statistics",
+        "description": "Get spending statistics for transactions (total spent, total income, by category)",
+        "operationId": "get_transaction_stats_api_v1_transactions_stats_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "profile_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by financial profile ID",
+              "title": "Profile Id"
+            },
+            "description": "Filter by financial profile ID"
+          },
+          {
+            "name": "account_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by account ID",
+              "title": "Account Id"
+            },
+            "description": "Filter by account ID"
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Statistics from this date (inclusive)",
+              "title": "Date From"
+            },
+            "description": "Statistics from this date (inclusive)"
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Statistics to this date (inclusive)",
+              "title": "Date To"
+            },
+            "description": "Statistics to this date (inclusive)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Statistics retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -1339,120 +1649,6 @@
             "HTTPBearer": []
           }
         ]
-      }
-    },
-    "/api/v1/transactions/stats": {
-      "get": {
-        "tags": [
-          "Transactions",
-          "Transactions"
-        ],
-        "summary": "Get transaction statistics",
-        "description": "Get spending statistics for transactions (total spent, total income, by category)",
-        "operationId": "get_transaction_stats_api_v1_transactions_stats_get",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "profile_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Filter by financial profile ID",
-              "title": "Profile Id"
-            },
-            "description": "Filter by financial profile ID"
-          },
-          {
-            "name": "account_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Filter by account ID",
-              "title": "Account Id"
-            },
-            "description": "Filter by account ID"
-          },
-          {
-            "name": "date_from",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "date"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Statistics from this date (inclusive)",
-              "title": "Date From"
-            },
-            "description": "Statistics from this date (inclusive)"
-          },
-          {
-            "name": "date_to",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string",
-                  "format": "date"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "description": "Statistics to this date (inclusive)",
-              "title": "Date To"
-            },
-            "description": "Statistics to this date (inclusive)"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Statistics retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
       }
     },
     "/api/v1/budgets/": {
@@ -2024,7 +2220,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/GoalCreate"
+                "$ref": "#/components/schemas/FinancialGoalCreate"
               }
             }
           }
@@ -2035,7 +2231,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GoalResponse"
+                  "$ref": "#/components/schemas/FinancialGoalResponse"
                 }
               }
             }
@@ -2084,7 +2280,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GoalResponse"
+                  "$ref": "#/components/schemas/FinancialGoalResponse"
                 }
               }
             }
@@ -2130,7 +2326,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/GoalUpdate"
+                "$ref": "#/components/schemas/FinancialGoalUpdate"
               }
             }
           }
@@ -2141,7 +2337,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GoalResponse"
+                  "$ref": "#/components/schemas/FinancialGoalResponse"
                 }
               }
             }
@@ -2278,7 +2474,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/GoalContributionCreate"
+                "$ref": "#/components/schemas/GoalMilestoneCreate"
               }
             }
           }
@@ -2289,7 +2485,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GoalContributionResponse"
+                  "$ref": "#/components/schemas/GoalMilestoneResponse"
                 }
               }
             }
@@ -2395,7 +2591,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/GoalContributionResponse"
+                    "$ref": "#/components/schemas/GoalMilestoneResponse"
                   },
                   "title": "Response List Contributions Api V1 Goals  Goal Id  Contributions Get"
                 }
@@ -4004,27 +4200,27 @@
     "schemas": {
       "AIServiceStatus": {
         "properties": {
-          "classification_available": {
+          "classificationAvailable": {
             "type": "boolean",
-            "title": "Classification Available"
+            "title": "Classificationavailable"
           },
-          "forecasting_available": {
+          "forecastingAvailable": {
             "type": "boolean",
-            "title": "Forecasting Available"
+            "title": "Forecastingavailable"
           },
-          "chat_available": {
+          "chatAvailable": {
             "type": "boolean",
-            "title": "Chat Available"
+            "title": "Chatavailable"
           },
-          "optimization_available": {
+          "optimizationAvailable": {
             "type": "boolean",
-            "title": "Optimization Available"
+            "title": "Optimizationavailable"
           },
-          "model_version": {
+          "modelVersion": {
             "type": "string",
-            "title": "Model Version"
+            "title": "Modelversion"
           },
-          "last_updated": {
+          "lastUpdated": {
             "anyOf": [
               {
                 "type": "string",
@@ -4034,26 +4230,26 @@
                 "type": "null"
               }
             ],
-            "title": "Last Updated"
+            "title": "Lastupdated"
           }
         },
         "type": "object",
         "required": [
-          "classification_available",
-          "forecasting_available",
-          "chat_available",
-          "optimization_available",
-          "model_version"
+          "classificationAvailable",
+          "forecastingAvailable",
+          "chatAvailable",
+          "optimizationAvailable",
+          "modelVersion"
         ],
         "title": "AIServiceStatus",
         "description": "Status of AI services"
       },
       "AccountBalance": {
         "properties": {
-          "account_id": {
+          "accountId": {
             "type": "string",
             "format": "uuid",
-            "title": "Account Id",
+            "title": "Accountid",
             "description": "Account ID"
           },
           "balance": {
@@ -4066,19 +4262,19 @@
             "title": "Currency",
             "description": "Account currency"
           },
-          "last_updated": {
+          "lastUpdated": {
             "type": "string",
             "format": "date-time",
-            "title": "Last Updated",
+            "title": "Lastupdated",
             "description": "Last transaction timestamp"
           }
         },
         "type": "object",
         "required": [
-          "account_id",
+          "accountId",
           "balance",
           "currency",
-          "last_updated"
+          "lastUpdated"
         ],
         "title": "AccountBalance",
         "description": "Schema for account balance endpoint response.\nReturns current balance with metadata.",
@@ -4093,7 +4289,7 @@
         "properties": {
           "name": {
             "type": "string",
-            "maxLength": 100,
+            "maxLength": 255,
             "minLength": 1,
             "title": "Name",
             "description": "Account name",
@@ -4103,7 +4299,7 @@
               "Credit Card"
             ]
           },
-          "account_type": {
+          "accountType": {
             "$ref": "#/components/schemas/AccountType",
             "description": "Type of account (checking, savings, credit_card, etc.)",
             "default": "checking"
@@ -4120,7 +4316,7 @@
               "GBP"
             ]
           },
-          "institution_name": {
+          "institutionName": {
             "anyOf": [
               {
                 "type": "string",
@@ -4130,8 +4326,44 @@
                 "type": "null"
               }
             ],
-            "title": "Institution Name",
+            "title": "Institutionname",
             "description": "Name of the financial institution"
+          },
+          "creditLimit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Creditlimit",
+            "description": "Credit limit (for credit cards)"
+          },
+          "interestRate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interestrate",
+            "description": "Annual interest rate percentage (for loans/savings)"
+          },
+          "isIncludedInTotals": {
+            "type": "boolean",
+            "title": "Isincludedintotals",
+            "description": "Include this account in net worth calculations",
+            "default": true
           },
           "notes": {
             "anyOf": [
@@ -4145,20 +4377,13 @@
             "title": "Notes",
             "description": "Additional notes about the account"
           },
-          "financial_profile_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Financial Profile Id",
-            "description": "ID of the financial profile this account belongs to (optional, defaults to user's default profile)"
+          "financialProfileId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Financialprofileid",
+            "description": "ID of the financial profile this account belongs to (that is current user's default profile)"
           },
-          "initial_balance": {
+          "initialBalance": {
             "anyOf": [
               {
                 "type": "number"
@@ -4167,32 +4392,49 @@
                 "type": "string"
               }
             ],
-            "title": "Initial Balance",
-            "description": "Initial account balance",
+            "title": "Initialbalance",
+            "description": "Initial account balance (can be negative for debts)",
             "default": "0.00",
             "examples": [
               0,
               1000.5,
+              -5000,
               5000
             ]
           },
-          "account_number": {
+          "accountNumberLast4": {
             "anyOf": [
               {
                 "type": "string",
-                "maxLength": 255
+                "maxLength": 4,
+                "minLength": 4,
+                "pattern": "^[0-9]{4}$"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Account Number",
-            "description": "Account number (will be encrypted in production)"
+            "title": "Accountnumberlast4",
+            "description": "Last 4 digits of account number"
+          },
+          "iban": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 34
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Iban",
+            "description": "Full IBAN (will be encrypted for high-security profiles)"
           }
         },
         "type": "object",
         "required": [
-          "name"
+          "name",
+          "financialProfileId"
         ],
         "title": "AccountCreate",
         "description": "Schema for creating a new account.\nfinancial_profile_id is optional - if not provided, the user's default profile will be used.",
@@ -4241,6 +4483,7 @@
               "initial_balance": 1000.0,
               "institution_name": "My Bank",
               "is_active": true,
+              "is_included_in_totals": true,
               "name": "Main Checking",
               "updated_at": "2025-01-20T14:22:00Z"
             }
@@ -4252,7 +4495,7 @@
         "properties": {
           "name": {
             "type": "string",
-            "maxLength": 100,
+            "maxLength": 255,
             "minLength": 1,
             "title": "Name",
             "description": "Account name",
@@ -4262,7 +4505,7 @@
               "Credit Card"
             ]
           },
-          "account_type": {
+          "accountType": {
             "$ref": "#/components/schemas/AccountType",
             "description": "Type of account (checking, savings, credit_card, etc.)",
             "default": "checking"
@@ -4279,7 +4522,7 @@
               "GBP"
             ]
           },
-          "institution_name": {
+          "institutionName": {
             "anyOf": [
               {
                 "type": "string",
@@ -4289,8 +4532,38 @@
                 "type": "null"
               }
             ],
-            "title": "Institution Name",
+            "title": "Institutionname",
             "description": "Name of the financial institution"
+          },
+          "creditLimit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Creditlimit",
+            "description": "Credit limit (for credit cards)"
+          },
+          "interestRate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interestrate",
+            "description": "Annual interest rate percentage (for loans/savings)"
+          },
+          "isIncludedInTotals": {
+            "type": "boolean",
+            "title": "Isincludedintotals",
+            "description": "Include this account in net worth calculations",
+            "default": true
           },
           "notes": {
             "anyOf": [
@@ -4310,23 +4583,23 @@
             "title": "Id",
             "description": "Unique account identifier"
           },
-          "financial_profile_id": {
+          "financialProfileId": {
             "type": "string",
             "format": "uuid",
-            "title": "Financial Profile Id",
+            "title": "Financialprofileid",
             "description": "ID of the financial profile this account belongs to"
           },
-          "initial_balance": {
+          "initialBalance": {
             "type": "string",
-            "title": "Initial Balance",
-            "description": "Initial balance when account was created"
+            "title": "Initialbalance",
+            "description": "Initial balance when account was created (can be negative)"
           },
-          "current_balance": {
+          "currentBalance": {
             "type": "string",
-            "title": "Current Balance",
+            "title": "Currentbalance",
             "description": "Current balance (initial + transactions)"
           },
-          "account_number": {
+          "accountNumberLast4": {
             "anyOf": [
               {
                 "type": "string"
@@ -4335,25 +4608,37 @@
                 "type": "null"
               }
             ],
-            "title": "Account Number",
-            "description": "Account number (encrypted)"
+            "title": "Accountnumberlast4",
+            "description": "Last 4 digits of account number"
           },
-          "is_active": {
+          "iban": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Iban",
+            "description": "Full IBAN (encrypted for high-security profiles)"
+          },
+          "isActive": {
             "type": "boolean",
-            "title": "Is Active",
+            "title": "Isactive",
             "description": "Whether the account is currently active",
             "default": true
           },
-          "created_at": {
+          "createdAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Created At",
+            "title": "Createdat",
             "description": "Account creation timestamp (UTC)"
           },
-          "updated_at": {
+          "updatedAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Updated At",
+            "title": "Updatedat",
             "description": "Last update timestamp (UTC)"
           }
         },
@@ -4361,11 +4646,11 @@
         "required": [
           "name",
           "id",
-          "financial_profile_id",
-          "initial_balance",
-          "current_balance",
-          "created_at",
-          "updated_at"
+          "financialProfileId",
+          "initialBalance",
+          "currentBalance",
+          "createdAt",
+          "updatedAt"
         ],
         "title": "AccountResponse",
         "description": "Complete account schema returned by API endpoints.\nIncludes all fields including computed current_balance.",
@@ -4379,6 +4664,7 @@
           "initial_balance": 1000.0,
           "institution_name": "My Bank",
           "is_active": true,
+          "is_included_in_totals": true,
           "name": "Main Checking Account",
           "notes": "Primary checking account",
           "updated_at": "2025-01-20T14:22:00Z"
@@ -4405,7 +4691,7 @@
             "anyOf": [
               {
                 "type": "string",
-                "maxLength": 100,
+                "maxLength": 255,
                 "minLength": 1
               },
               {
@@ -4415,7 +4701,7 @@
             "title": "Name",
             "description": "Updated account name"
           },
-          "account_type": {
+          "accountType": {
             "anyOf": [
               {
                 "$ref": "#/components/schemas/AccountType"
@@ -4439,7 +4725,29 @@
             "title": "Currency",
             "description": "Updated currency code"
           },
-          "institution_name": {
+          "initialBalance": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Initialbalance",
+            "description": "Initial account balance (can be negative for debts)",
+            "default": "0.00",
+            "examples": [
+              0,
+              1000.5,
+              -5000,
+              5000
+            ]
+          },
+          "institutionName": {
             "anyOf": [
               {
                 "type": "string",
@@ -4449,21 +4757,78 @@
                 "type": "null"
               }
             ],
-            "title": "Institution Name",
+            "title": "Institutionname",
             "description": "Updated institution name"
           },
-          "account_number": {
+          "creditLimit": {
             "anyOf": [
               {
-                "type": "string",
-                "maxLength": 255
+                "type": "number"
+              },
+              {
+                "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Account Number",
-            "description": "Updated account number"
+            "title": "Creditlimit",
+            "description": "Updated credit limit"
+          },
+          "interestRate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interestrate",
+            "description": "Updated interest rate"
+          },
+          "isIncludedInTotals": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isincludedintotals",
+            "description": "Updated inclusion in totals"
+          },
+          "accountNumberLast4": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4,
+                "minLength": 4,
+                "pattern": "^[0-9]{4}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accountnumberlast4",
+            "description": "Updated last 4 digits of account number"
+          },
+          "iban": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 34
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Iban",
+            "description": "Updated IBAN"
           },
           "notes": {
             "anyOf": [
@@ -4477,7 +4842,7 @@
             "title": "Notes",
             "description": "Updated notes"
           },
-          "is_active": {
+          "isActive": {
             "anyOf": [
               {
                 "type": "boolean"
@@ -4486,7 +4851,7 @@
                 "type": "null"
               }
             ],
-            "title": "Is Active",
+            "title": "Isactive",
             "description": "Whether the account is active"
           }
         },
@@ -4494,6 +4859,7 @@
         "title": "AccountUpdate",
         "description": "Schema for updating an existing account.\nAll fields are optional (partial update).",
         "example": {
+          "credit_limit": 5000.0,
           "institution_name": "New Bank",
           "name": "Updated Account Name"
         }
@@ -4590,14 +4956,47 @@
         ],
         "title": "Body_preview_import_api_v1_imports_preview_post"
       },
-      "BudgetCategoryCreate": {
+      "BudgetCategoryAllocation": {
         "properties": {
-          "category_id": {
+          "categoryId": {
             "type": "string",
             "format": "uuid",
-            "title": "Category Id"
+            "title": "Categoryid",
+            "description": "Category identifier"
           },
-          "allocated_amount": {
+          "categoryName": {
+            "type": "string",
+            "title": "Categoryname",
+            "description": "Category name"
+          },
+          "allocatedAmount": {
+            "type": "string",
+            "title": "Allocatedamount",
+            "description": "Amount allocated to this category"
+          }
+        },
+        "type": "object",
+        "required": [
+          "categoryId",
+          "categoryName",
+          "allocatedAmount"
+        ],
+        "title": "BudgetCategoryAllocation",
+        "description": "Schema for category allocation within a budget.\nShows how budget amount is distributed across categories.",
+        "example": {
+          "allocated_amount": 500.0,
+          "category_id": "550e8400-e29b-41d4-a716-446655440020",
+          "category_name": "Groceries"
+        }
+      },
+      "BudgetCategoryCreate": {
+        "properties": {
+          "categoryId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Categoryid"
+          },
+          "allocatedAmount": {
             "anyOf": [
               {
                 "type": "number",
@@ -4607,13 +5006,13 @@
                 "type": "string"
               }
             ],
-            "title": "Allocated Amount"
+            "title": "Allocatedamount"
           }
         },
         "type": "object",
         "required": [
-          "category_id",
-          "allocated_amount"
+          "categoryId",
+          "allocatedAmount"
         ],
         "title": "BudgetCategoryCreate",
         "description": "Schema for budget category allocation"
@@ -4625,37 +5024,37 @@
             "format": "uuid",
             "title": "Id"
           },
-          "budget_id": {
+          "budgetId": {
             "type": "string",
             "format": "uuid",
-            "title": "Budget Id"
+            "title": "Budgetid"
           },
-          "category_id": {
+          "categoryId": {
             "type": "string",
             "format": "uuid",
-            "title": "Category Id"
+            "title": "Categoryid"
           },
-          "allocated_amount": {
+          "allocatedAmount": {
             "type": "string",
-            "title": "Allocated Amount"
+            "title": "Allocatedamount"
           },
-          "spent_amount": {
+          "spentAmount": {
             "type": "string",
-            "title": "Spent Amount",
+            "title": "Spentamount",
             "default": "0.00"
           },
-          "percentage_used": {
+          "percentageUsed": {
             "type": "number",
-            "title": "Percentage Used",
+            "title": "Percentageused",
             "default": 0.0
           }
         },
         "type": "object",
         "required": [
           "id",
-          "budget_id",
-          "category_id",
-          "allocated_amount"
+          "budgetId",
+          "categoryId",
+          "allocatedAmount"
         ],
         "title": "BudgetCategoryResponse",
         "description": "Schema for budget category response"
@@ -4702,18 +5101,25 @@
             "type": "string",
             "maxLength": 255,
             "minLength": 1,
-            "title": "Name"
+            "title": "Name",
+            "description": "Budget name",
+            "examples": [
+              "Monthly Expenses",
+              "Q1 2025 Budget",
+              "Annual Vacation Fund"
+            ]
           },
-          "period_type": {
+          "periodType": {
             "$ref": "#/components/schemas/PeriodType",
-            "default": "monthly"
+            "description": "Type of budget period (monthly, quarterly, yearly, custom)"
           },
-          "start_date": {
+          "startDate": {
             "type": "string",
             "format": "date",
-            "title": "Start Date"
+            "title": "Startdate",
+            "description": "Start date of the budget period"
           },
-          "end_date": {
+          "endDate": {
             "anyOf": [
               {
                 "type": "string",
@@ -4723,48 +5129,44 @@
                 "type": "null"
               }
             ],
-            "title": "End Date"
+            "title": "Enddate",
+            "description": "End date of the budget period (NULL for rolling budgets)"
           },
-          "total_amount": {
+          "totalAmount": {
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0.0
+                "exclusiveMinimum": 0.0
               },
               {
                 "type": "string"
               }
             ],
-            "title": "Total Amount"
+            "title": "Totalamount",
+            "description": "Total budget amount (must be positive)",
+            "examples": [
+              1000.0,
+              5000.0,
+              50000.0
+            ]
           },
           "currency": {
             "type": "string",
-            "maxLength": 3,
-            "minLength": 3,
-            "title": "Currency"
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "description": "ISO 4217 currency code (3 uppercase letters)",
+            "examples": [
+              "EUR",
+              "USD",
+              "GBP"
+            ]
           },
-          "rollover_enabled": {
-            "type": "boolean",
-            "title": "Rollover Enabled",
-            "default": false
-          },
-          "alert_threshold_percent": {
-            "type": "integer",
-            "maximum": 100.0,
-            "minimum": 0.0,
-            "title": "Alert Threshold Percent",
-            "default": 80
-          },
-          "is_active": {
-            "type": "boolean",
-            "title": "Is Active",
-            "default": true
-          },
-          "scope_type": {
+          "scopeType": {
             "$ref": "#/components/schemas/ScopeType",
+            "description": "Scope type: USER, PROFILE, or MULTI_PROFILE",
             "default": "user"
           },
-          "scope_profile_ids": {
+          "scopeProfileIds": {
             "anyOf": [
               {
                 "items": {
@@ -4777,32 +5179,58 @@
                 "type": "null"
               }
             ],
-            "title": "Scope Profile Ids"
+            "title": "Scopeprofileids",
+            "description": "Profile IDs for PROFILE or MULTI_PROFILE scope"
           },
-          "category_allocations": {
+          "rolloverEnabled": {
+            "type": "boolean",
+            "title": "Rolloverenabled",
+            "description": "Enable rollover of unspent amounts to next period",
+            "default": false
+          },
+          "alertThresholdPercent": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Alertthresholdpercent",
+            "description": "Percentage of budget to trigger alerts (0-100)",
+            "default": 80
+          },
+          "categoryAllocations": {
             "anyOf": [
               {
-                "items": {
-                  "type": "object"
-                },
+                "items": {},
                 "type": "array"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Category Allocations"
+            "title": "Categoryallocations",
+            "description": "Optional category allocations for this budget"
           }
         },
         "type": "object",
         "required": [
           "name",
-          "start_date",
-          "total_amount",
+          "periodType",
+          "startDate",
+          "totalAmount",
           "currency"
         ],
         "title": "BudgetCreate",
-        "description": "Schema for creating a budget"
+        "description": "Schema for creating a new budget.\nUser-level budget with scope support.",
+        "example": {
+          "alert_threshold_percent": 80,
+          "currency": "EUR",
+          "end_date": "2025-01-31",
+          "name": "Monthly Expenses January 2025",
+          "period_type": "monthly",
+          "rollover_enabled": false,
+          "scope_type": "user",
+          "start_date": "2025-01-01",
+          "total_amount": 2000.0
+        }
       },
       "BudgetListResponse": {
         "properties": {
@@ -4827,24 +5255,79 @@
       },
       "BudgetResponse": {
         "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "description": "Budget name",
+            "examples": [
+              "Monthly Expenses",
+              "Q1 2025 Budget",
+              "Annual Vacation Fund"
+            ]
+          },
+          "periodType": {
+            "$ref": "#/components/schemas/PeriodType",
+            "description": "Type of budget period (monthly, quarterly, yearly, custom)"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Startdate",
+            "description": "Start date of the budget period"
+          },
+          "endDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enddate",
+            "description": "End date of the budget period (NULL for rolling budgets)"
+          },
+          "totalAmount": {
+            "type": "string",
+            "title": "Totalamount",
+            "description": "Total budget amount (must be positive)",
+            "examples": [
+              1000.0,
+              5000.0,
+              50000.0
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "description": "ISO 4217 currency code (3 uppercase letters)",
+            "examples": [
+              "EUR",
+              "USD",
+              "GBP"
+            ]
+          },
           "id": {
             "type": "string",
             "format": "uuid",
-            "title": "Id"
+            "title": "Id",
+            "description": "Unique budget identifier"
           },
-          "user_id": {
+          "userId": {
             "type": "string",
             "format": "uuid",
-            "title": "User Id"
+            "title": "Userid",
+            "description": "ID of the user this budget belongs to"
           },
-          "name": {
-            "type": "string",
-            "title": "Name"
+          "scopeType": {
+            "$ref": "#/components/schemas/ScopeType",
+            "description": "Scope type (user, profile, multi_profile)"
           },
-          "scope_type": {
-            "$ref": "#/components/schemas/ScopeType"
-          },
-          "scope_profile_ids": {
+          "scopeProfileIds": {
             "anyOf": [
               {
                 "items": {
@@ -4857,100 +5340,132 @@
                 "type": "null"
               }
             ],
-            "title": "Scope Profile Ids"
+            "title": "Scopeprofileids",
+            "description": "List of profile IDs when using profile or multi_profile scope"
           },
-          "period_type": {
-            "$ref": "#/components/schemas/PeriodType"
+          "rolloverEnabled": {
+            "type": "boolean",
+            "title": "Rolloverenabled",
+            "description": "Whether unspent amounts rollover to next period",
+            "default": false
           },
-          "start_date": {
-            "type": "string",
-            "format": "date",
-            "title": "Start Date"
+          "isActive": {
+            "type": "boolean",
+            "title": "Isactive",
+            "description": "Whether the budget is currently active",
+            "default": true
           },
-          "end_date": {
+          "alertThresholdPercent": {
+            "type": "integer",
+            "title": "Alertthresholdpercent",
+            "description": "Percentage of budget to trigger alerts"
+          },
+          "totalSpent": {
             "anyOf": [
               {
-                "type": "string",
-                "format": "date"
+                "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "End Date"
-          },
-          "total_amount": {
-            "type": "string",
-            "title": "Total Amount"
-          },
-          "currency": {
-            "type": "string",
-            "title": "Currency"
-          },
-          "rollover_enabled": {
-            "type": "boolean",
-            "title": "Rollover Enabled"
-          },
-          "alert_threshold_percent": {
-            "type": "integer",
-            "title": "Alert Threshold Percent"
-          },
-          "is_active": {
-            "type": "boolean",
-            "title": "Is Active"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Created At"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Updated At"
-          },
-          "total_spent": {
-            "type": "string",
-            "title": "Total Spent",
-            "default": "0.00"
+            "title": "Totalspent",
+            "description": "Total spent against this budget (computed)"
           },
           "remaining": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Remaining",
-            "default": "0.00"
+            "description": "Remaining budget amount (computed)"
           },
-          "usage_percentage": {
+          "usagePercentage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Usagepercentage",
+            "description": "Percentage of budget used (computed)"
+          },
+          "categoryAllocations": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/BudgetCategoryAllocation"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Categoryallocations",
+            "description": "Category allocations for this budget"
+          },
+          "createdAt": {
             "type": "string",
-            "title": "Usage Percentage",
-            "default": "0.00"
+            "format": "date-time",
+            "title": "Createdat",
+            "description": "Budget creation timestamp (UTC)"
           },
-          "categories": {
-            "items": {
-              "$ref": "#/components/schemas/BudgetCategoryResponse"
-            },
-            "type": "array",
-            "title": "Categories",
-            "default": []
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updatedat",
+            "description": "Last update timestamp (UTC)"
           }
         },
         "type": "object",
         "required": [
-          "id",
-          "user_id",
           "name",
-          "scope_type",
-          "period_type",
-          "start_date",
-          "total_amount",
+          "periodType",
+          "startDate",
+          "totalAmount",
           "currency",
-          "rollover_enabled",
-          "alert_threshold_percent",
-          "is_active",
-          "created_at",
-          "updated_at"
+          "id",
+          "userId",
+          "scopeType",
+          "alertThresholdPercent",
+          "createdAt",
+          "updatedAt"
         ],
         "title": "BudgetResponse",
-        "description": "Schema for budget response"
+        "description": "Complete budget schema returned by API endpoints.\nIncludes all fields, current usage, and category allocations.",
+        "example": {
+          "alert_threshold_percent": 80,
+          "category_allocations": [
+            {
+              "allocated_amount": 500.0,
+              "category_id": "550e8400-e29b-41d4-a716-446655440020",
+              "category_name": "Groceries"
+            }
+          ],
+          "created_at": "2025-01-01T00:00:00Z",
+          "currency": "EUR",
+          "end_date": "2025-01-31",
+          "id": "550e8400-e29b-41d4-a716-446655440030",
+          "is_active": true,
+          "name": "Monthly Expenses January 2025",
+          "period_type": "monthly",
+          "remaining": 750.0,
+          "rollover_enabled": false,
+          "scope_type": "user",
+          "start_date": "2025-01-01",
+          "total_amount": 2000.0,
+          "total_spent": 1250.0,
+          "updated_at": "2025-01-15T10:30:00Z",
+          "usage_percentage": 62.5,
+          "user_id": "550e8400-e29b-41d4-a716-446655440001"
+        }
       },
       "BudgetUpdate": {
         "properties": {
@@ -4965,9 +5480,10 @@
                 "type": "null"
               }
             ],
-            "title": "Name"
+            "title": "Name",
+            "description": "Updated budget name"
           },
-          "period_type": {
+          "periodType": {
             "anyOf": [
               {
                 "$ref": "#/components/schemas/PeriodType"
@@ -4975,9 +5491,10 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "Updated period type"
           },
-          "start_date": {
+          "startDate": {
             "anyOf": [
               {
                 "type": "string",
@@ -4987,9 +5504,10 @@
                 "type": "null"
               }
             ],
-            "title": "Start Date"
+            "title": "Startdate",
+            "description": "Updated start date"
           },
-          "end_date": {
+          "endDate": {
             "anyOf": [
               {
                 "type": "string",
@@ -4999,13 +5517,14 @@
                 "type": "null"
               }
             ],
-            "title": "End Date"
+            "title": "Enddate",
+            "description": "Updated end date"
           },
-          "total_amount": {
+          "totalAmount": {
             "anyOf": [
               {
                 "type": "number",
-                "minimum": 0.0
+                "exclusiveMinimum": 0.0
               },
               {
                 "type": "string"
@@ -5014,57 +5533,23 @@
                 "type": "null"
               }
             ],
-            "title": "Total Amount"
+            "title": "Totalamount",
+            "description": "Updated budget amount"
           },
           "currency": {
             "anyOf": [
               {
                 "type": "string",
-                "maxLength": 3,
-                "minLength": 3
+                "pattern": "^[A-Z]{3}$"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Currency"
+            "title": "Currency",
+            "description": "Updated currency code"
           },
-          "rollover_enabled": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Rollover Enabled"
-          },
-          "alert_threshold_percent": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "maximum": 100.0,
-                "minimum": 0.0
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Alert Threshold Percent"
-          },
-          "is_active": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Is Active"
-          },
-          "scope_type": {
+          "scopeType": {
             "anyOf": [
               {
                 "$ref": "#/components/schemas/ScopeType"
@@ -5072,9 +5557,10 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "Updated scope type"
           },
-          "scope_profile_ids": {
+          "scopeProfileIds": {
             "anyOf": [
               {
                 "items": {
@@ -5087,26 +5573,56 @@
                 "type": "null"
               }
             ],
-            "title": "Scope Profile Ids"
+            "title": "Scopeprofileids",
+            "description": "Updated profile IDs"
           },
-          "category_allocations": {
+          "rolloverEnabled": {
             "anyOf": [
               {
-                "items": {
-                  "type": "object"
-                },
-                "type": "array"
+                "type": "boolean"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Category Allocations"
+            "title": "Rolloverenabled",
+            "description": "Updated rollover setting"
+          },
+          "isActive": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isactive",
+            "description": "Whether the budget is active"
+          },
+          "alertThresholdPercent": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alertthresholdpercent",
+            "description": "Updated alert threshold percentage"
           }
         },
         "type": "object",
         "title": "BudgetUpdate",
-        "description": "Schema for updating a budget"
+        "description": "Schema for updating an existing budget.\nAll fields are optional (partial update).",
+        "example": {
+          "alert_threshold_percent": 85,
+          "name": "Updated Budget Name",
+          "total_amount": 2500.0
+        }
       },
       "BudgetUsageResponse": {
         "properties": {
@@ -5256,50 +5772,7 @@
         ],
         "title": "CashFlowResponse"
       },
-      "CategoryListResponse": {
-        "properties": {
-          "items": {
-            "items": {
-              "$ref": "#/components/schemas/CategoryResponse"
-            },
-            "type": "array",
-            "title": "Items",
-            "description": "List of categories"
-          },
-          "total": {
-            "type": "integer",
-            "title": "Total",
-            "description": "Total number of categories"
-          }
-        },
-        "type": "object",
-        "required": [
-          "items",
-          "total"
-        ],
-        "title": "CategoryListResponse",
-        "description": "Schema for list categories response with pagination support.",
-        "example": {
-          "items": [
-            {
-              "color": "#FF5733",
-              "created_at": "2025-01-15T10:30:00Z",
-              "description": "Food and household items",
-              "financial_profile_id": "550e8400-e29b-41d4-a716-446655440000",
-              "full_path": "Groceries",
-              "icon": "🛒",
-              "id": "550e8400-e29b-41d4-a716-446655440020",
-              "is_active": true,
-              "is_system": false,
-              "level": 1,
-              "name": "Groceries",
-              "updated_at": "2025-01-15T10:30:00Z"
-            }
-          ],
-          "total": 1
-        }
-      },
-      "CategoryResponse": {
+      "CategoryCreate": {
         "properties": {
           "name": {
             "type": "string",
@@ -5310,7 +5783,9 @@
             "examples": [
               "Groceries",
               "Utilities",
-              "Entertainment"
+              "Entertainment",
+              "Salary",
+              "Freelance"
             ]
           },
           "description": {
@@ -5340,7 +5815,8 @@
             "examples": [
               "🛒",
               "💡",
-              "🎬"
+              "🎬",
+              "💰"
             ]
           },
           "color": {
@@ -5361,39 +5837,94 @@
               "#2ECC71"
             ]
           },
-          "parent_category_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Parent Category Id",
-            "description": "ID of parent category (null for root categories)"
+          "isIncome": {
+            "type": "boolean",
+            "title": "Isincome",
+            "description": "True for income categories (salary, invoices), False for expense categories",
+            "default": false
           },
-          "level": {
+          "sortOrder": {
             "type": "integer",
-            "maximum": 3.0,
-            "minimum": 1.0,
-            "title": "Level",
-            "description": "Hierarchy level (1, 2, or 3)"
+            "title": "Sortorder",
+            "description": "Custom sort order for category display",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "CategoryCreate",
+        "description": "Schema for creating a new category.\nCategories are USER-level and shared across all user's profiles.",
+        "example": {
+          "color": "#FF5733",
+          "description": "Food and household items",
+          "icon": "🛒",
+          "is_income": false,
+          "name": "Groceries",
+          "sort_order": 0
+        }
+      },
+      "CategoryListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryResponse"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "List of categories"
           },
-          "id": {
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Total number of categories"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "CategoryListResponse",
+        "description": "Schema for list categories response with pagination support.",
+        "example": {
+          "items": [
+            {
+              "color": "#FF5733",
+              "created_at": "2025-01-15T10:30:00Z",
+              "description": "Food and household items",
+              "icon": "🛒",
+              "id": "550e8400-e29b-41d4-a716-446655440020",
+              "is_active": true,
+              "is_income": false,
+              "is_system": false,
+              "name": "Groceries",
+              "sort_order": 0,
+              "updated_at": "2025-01-15T10:30:00Z",
+              "user_id": "550e8400-e29b-41d4-a716-446655440001"
+            }
+          ],
+          "total": 1
+        }
+      },
+      "CategoryResponse": {
+        "properties": {
+          "name": {
             "type": "string",
-            "format": "uuid",
-            "title": "Id",
-            "description": "Unique category identifier"
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name",
+            "description": "Category name",
+            "examples": [
+              "Groceries",
+              "Utilities",
+              "Entertainment",
+              "Salary",
+              "Freelance"
+            ]
           },
-          "financial_profile_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Financial Profile Id",
-            "description": "ID of the financial profile this category belongs to"
-          },
-          "full_path": {
+          "description": {
             "anyOf": [
               {
                 "type": "string"
@@ -5402,74 +5933,118 @@
                 "type": "null"
               }
             ],
-            "title": "Full Path",
-            "description": "Full hierarchical path (e.g., 'Groceries > Fresh Food > Fruits')"
+            "title": "Description",
+            "description": "Optional description of the category"
           },
-          "is_system": {
-            "type": "boolean",
-            "title": "Is System",
-            "description": "System categories cannot be deleted by users",
-            "default": false
-          },
-          "is_active": {
-            "type": "boolean",
-            "title": "Is Active",
-            "description": "Whether the category is currently active",
-            "default": true
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Created At",
-            "description": "Category creation timestamp (UTC)"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Updated At",
-            "description": "Last update timestamp (UTC)"
-          },
-          "subcategories": {
+          "icon": {
             "anyOf": [
               {
-                "items": {
-                  "$ref": "#/components/schemas/CategoryResponse"
-                },
-                "type": "array"
+                "type": "string",
+                "maxLength": 50
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Subcategories",
-            "description": "Child categories (for hierarchical display)"
+            "title": "Icon",
+            "description": "Icon identifier (emoji or icon name)",
+            "examples": [
+              "🛒",
+              "💡",
+              "🎬",
+              "💰"
+            ]
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^#[0-9A-Fa-f]{6}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color",
+            "description": "Hex color code for UI display",
+            "examples": [
+              "#FF5733",
+              "#3498DB",
+              "#2ECC71"
+            ]
+          },
+          "isIncome": {
+            "type": "boolean",
+            "title": "Isincome",
+            "description": "True for income categories (salary, invoices), False for expense categories",
+            "default": false
+          },
+          "sortOrder": {
+            "type": "integer",
+            "title": "Sortorder",
+            "description": "Custom sort order for category display",
+            "default": 0
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "Unique category identifier"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Userid",
+            "description": "ID of the user this category belongs to"
+          },
+          "isSystem": {
+            "type": "boolean",
+            "title": "Issystem",
+            "description": "System categories cannot be deleted by users",
+            "default": false
+          },
+          "isActive": {
+            "type": "boolean",
+            "title": "Isactive",
+            "description": "Whether the category is currently active",
+            "default": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat",
+            "description": "Category creation timestamp (UTC)"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updatedat",
+            "description": "Last update timestamp (UTC)"
           }
         },
         "type": "object",
         "required": [
           "name",
-          "level",
           "id",
-          "financial_profile_id",
-          "created_at",
-          "updated_at"
+          "userId",
+          "createdAt",
+          "updatedAt"
         ],
         "title": "CategoryResponse",
-        "description": "Complete category schema returned by API endpoints.\nIncludes all fields and optional subcategories for tree view.",
+        "description": "Complete category schema returned by API endpoints.\nCategories are USER-level (shared across all user's profiles).",
         "example": {
           "color": "#FF5733",
           "created_at": "2025-01-15T10:30:00Z",
           "description": "Food and household items",
-          "financial_profile_id": "550e8400-e29b-41d4-a716-446655440000",
-          "full_path": "Groceries",
           "icon": "🛒",
           "id": "550e8400-e29b-41d4-a716-446655440020",
           "is_active": true,
+          "is_income": false,
           "is_system": false,
-          "level": 1,
           "name": "Groceries",
-          "subcategories": [],
-          "updated_at": "2025-01-15T10:30:00Z"
+          "sort_order": 0,
+          "updated_at": "2025-01-15T10:30:00Z",
+          "user_id": "550e8400-e29b-41d4-a716-446655440001"
         }
       },
       "CategorySpending": {
@@ -5510,6 +6085,106 @@
         ],
         "title": "CategorySpending"
       },
+      "CategoryUpdate": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name",
+            "description": "Updated category name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Updated description"
+          },
+          "icon": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 50
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon",
+            "description": "Updated icon"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^#[0-9A-Fa-f]{6}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color",
+            "description": "Updated color"
+          },
+          "isIncome": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isincome",
+            "description": "Whether the category is for income"
+          },
+          "sortOrder": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sortorder",
+            "description": "Updated sort order"
+          },
+          "isActive": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isactive",
+            "description": "Whether the category is active"
+          }
+        },
+        "type": "object",
+        "title": "CategoryUpdate",
+        "description": "Schema for updating an existing category.\nAll fields are optional (partial update).",
+        "example": {
+          "color": "#3498DB",
+          "is_active": true,
+          "name": "Updated Category Name"
+        }
+      },
       "ChatMessageRequest": {
         "properties": {
           "message": {
@@ -5518,7 +6193,7 @@
             "minLength": 1,
             "title": "Message"
           },
-          "financial_profile_id": {
+          "financialProfileId": {
             "anyOf": [
               {
                 "type": "string",
@@ -5528,9 +6203,9 @@
                 "type": "null"
               }
             ],
-            "title": "Financial Profile Id"
+            "title": "Financialprofileid"
           },
-          "conversation_id": {
+          "conversationId": {
             "anyOf": [
               {
                 "type": "string",
@@ -5540,7 +6215,7 @@
                 "type": "null"
               }
             ],
-            "title": "Conversation Id"
+            "title": "Conversationid"
           }
         },
         "type": "object",
@@ -5552,15 +6227,15 @@
       },
       "ChatMessageResponse": {
         "properties": {
-          "conversation_id": {
+          "conversationId": {
             "type": "string",
             "format": "uuid",
-            "title": "Conversation Id"
+            "title": "Conversationid"
           },
-          "message_id": {
+          "messageId": {
             "type": "string",
             "format": "uuid",
-            "title": "Message Id"
+            "title": "Messageid"
           },
           "content": {
             "type": "string",
@@ -5576,8 +6251,8 @@
         },
         "type": "object",
         "required": [
-          "conversation_id",
-          "message_id",
+          "conversationId",
+          "messageId",
           "content",
           "intent"
         ],
@@ -5586,62 +6261,62 @@
       },
       "ClassificationMetrics": {
         "properties": {
-          "total_classifications": {
+          "totalClassifications": {
             "type": "integer",
-            "title": "Total Classifications"
+            "title": "Totalclassifications"
           },
-          "acceptance_rate": {
+          "acceptanceRate": {
             "type": "number",
-            "title": "Acceptance Rate"
+            "title": "Acceptancerate"
           },
-          "average_confidence": {
+          "averageConfidence": {
             "type": "number",
-            "title": "Average Confidence"
+            "title": "Averageconfidence"
           },
-          "model_version": {
+          "modelVersion": {
             "type": "string",
-            "title": "Model Version"
+            "title": "Modelversion"
           }
         },
         "type": "object",
         "required": [
-          "total_classifications",
-          "acceptance_rate",
-          "average_confidence",
-          "model_version"
+          "totalClassifications",
+          "acceptanceRate",
+          "averageConfidence",
+          "modelVersion"
         ],
         "title": "ClassificationMetrics",
         "description": "Classification performance metrics"
       },
       "ClassificationRequest": {
         "properties": {
-          "transaction_id": {
+          "transactionId": {
             "type": "string",
             "format": "uuid",
-            "title": "Transaction Id"
+            "title": "Transactionid"
           },
-          "auto_apply": {
+          "autoApply": {
             "type": "boolean",
-            "title": "Auto Apply",
+            "title": "Autoapply",
             "description": "Automatically apply classification if confidence is high",
             "default": false
           }
         },
         "type": "object",
         "required": [
-          "transaction_id"
+          "transactionId"
         ],
         "title": "ClassificationRequest",
         "description": "Request to classify a transaction"
       },
       "ClassificationResponse": {
         "properties": {
-          "transaction_id": {
+          "transactionId": {
             "type": "string",
             "format": "uuid",
-            "title": "Transaction Id"
+            "title": "Transactionid"
           },
-          "predicted_category_id": {
+          "predictedCategoryId": {
             "anyOf": [
               {
                 "type": "string",
@@ -5651,9 +6326,9 @@
                 "type": "null"
               }
             ],
-            "title": "Predicted Category Id"
+            "title": "Predictedcategoryid"
           },
-          "predicted_category_name": {
+          "predictedCategoryName": {
             "anyOf": [
               {
                 "type": "string"
@@ -5662,29 +6337,29 @@
                 "type": "null"
               }
             ],
-            "title": "Predicted Category Name"
+            "title": "Predictedcategoryname"
           },
-          "confidence_score": {
+          "confidenceScore": {
             "type": "number",
-            "title": "Confidence Score"
+            "title": "Confidencescore"
           },
           "explanation": {
             "type": "string",
             "title": "Explanation"
           },
-          "was_applied": {
+          "wasApplied": {
             "type": "boolean",
-            "title": "Was Applied"
+            "title": "Wasapplied"
           }
         },
         "type": "object",
         "required": [
-          "transaction_id",
-          "predicted_category_id",
-          "predicted_category_name",
-          "confidence_score",
+          "transactionId",
+          "predictedCategoryId",
+          "predictedCategoryName",
+          "confidenceScore",
           "explanation",
-          "was_applied"
+          "wasApplied"
         ],
         "title": "ClassificationResponse",
         "description": "Response from classification"
@@ -5707,17 +6382,17 @@
             ],
             "title": "Title"
           },
-          "created_at": {
+          "createdAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Created At"
+            "title": "Createdat"
           },
-          "updated_at": {
+          "updatedAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Updated At"
+            "title": "Updatedat"
           },
-          "financial_profile_id": {
+          "financialProfileId": {
             "anyOf": [
               {
                 "type": "string",
@@ -5727,7 +6402,7 @@
                 "type": "null"
               }
             ],
-            "title": "Financial Profile Id"
+            "title": "Financialprofileid"
           },
           "messages": {
             "items": {
@@ -5741,9 +6416,9 @@
         "required": [
           "id",
           "title",
-          "created_at",
-          "updated_at",
-          "financial_profile_id",
+          "createdAt",
+          "updatedAt",
+          "financialProfileId",
           "messages"
         ],
         "title": "ConversationDetail",
@@ -5767,21 +6442,21 @@
             ],
             "title": "Title"
           },
-          "created_at": {
+          "createdAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Created At"
+            "title": "Createdat"
           },
-          "updated_at": {
+          "updatedAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Updated At"
+            "title": "Updatedat"
           },
-          "message_count": {
+          "messageCount": {
             "type": "integer",
-            "title": "Message Count"
+            "title": "Messagecount"
           },
-          "financial_profile_id": {
+          "financialProfileId": {
             "anyOf": [
               {
                 "type": "string",
@@ -5791,17 +6466,17 @@
                 "type": "null"
               }
             ],
-            "title": "Financial Profile Id"
+            "title": "Financialprofileid"
           }
         },
         "type": "object",
         "required": [
           "id",
           "title",
-          "created_at",
-          "updated_at",
-          "message_count",
-          "financial_profile_id"
+          "createdAt",
+          "updatedAt",
+          "messageCount",
+          "financialProfileId"
         ],
         "title": "ConversationListItem",
         "description": "A conversation in the list"
@@ -5858,6 +6533,547 @@
         ],
         "title": "ExpenseAnalysisResponse"
       },
+      "FinancialGoalCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "description": "Goal name",
+            "examples": [
+              "New House Down Payment",
+              "Dream Vacation",
+              "Emergency Fund"
+            ]
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Detailed description of the goal"
+          },
+          "goalType": {
+            "$ref": "#/components/schemas/GoalType",
+            "description": "Type of goal (house, car, vacation, retirement, etc.)"
+          },
+          "targetAmount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Targetamount",
+            "description": "Target amount to achieve (must be positive)",
+            "examples": [
+              50000.0,
+              10000.0,
+              100000.0
+            ]
+          },
+          "targetDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Targetdate",
+            "description": "Target date to achieve the goal"
+          },
+          "priority": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Priority",
+            "description": "Priority level (1-10, where 10 is highest priority)",
+            "default": 5
+          },
+          "scopeType": {
+            "type": "string",
+            "title": "Scopetype",
+            "description": "Scope type: USER, PROFILE, or MULTI_PROFILE",
+            "default": "USER"
+          },
+          "scopeProfileIds": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scopeprofileids",
+            "description": "Profile IDs for PROFILE or MULTI_PROFILE scope"
+          },
+          "linkedAccountId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Linkedaccountid",
+            "description": "Optional linked account for this goal"
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "description": "ISO 4217 currency code",
+            "default": "USD"
+          },
+          "startDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Startdate",
+            "description": "Goal start date (defaults to today)"
+          },
+          "currentAmount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Currentamount",
+            "description": "Initial amount already saved towards this goal",
+            "default": "0.00"
+          },
+          "autoAllocate": {
+            "type": "boolean",
+            "title": "Autoallocate",
+            "description": "Enable automatic allocation",
+            "default": false
+          },
+          "milestones": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Milestones",
+            "description": "Optional milestones for this goal"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "goalType",
+          "targetAmount",
+          "targetDate"
+        ],
+        "title": "FinancialGoalCreate",
+        "description": "Schema for creating a new financial goal.\nUser-level goal with scope support.",
+        "example": {
+          "currency": "USD",
+          "current_amount": 5000.0,
+          "description": "Save for 20% down payment on new house",
+          "goal_type": "house",
+          "name": "New House Down Payment",
+          "priority": 9,
+          "scope_type": "USER",
+          "target_amount": 50000.0,
+          "target_date": "2026-12-31"
+        }
+      },
+      "FinancialGoalResponse": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "description": "Goal name",
+            "examples": [
+              "New House Down Payment",
+              "Dream Vacation",
+              "Emergency Fund"
+            ]
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Detailed description of the goal"
+          },
+          "goalType": {
+            "$ref": "#/components/schemas/GoalType",
+            "description": "Type of goal (house, car, vacation, retirement, etc.)"
+          },
+          "targetAmount": {
+            "type": "string",
+            "title": "Targetamount",
+            "description": "Target amount to achieve (must be positive)",
+            "examples": [
+              50000.0,
+              10000.0,
+              100000.0
+            ]
+          },
+          "targetDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Targetdate",
+            "description": "Target date to achieve the goal"
+          },
+          "priority": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Priority",
+            "description": "Priority level (1-10, where 10 is highest priority)",
+            "default": 5
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "Unique goal identifier"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Userid",
+            "description": "ID of the user this goal belongs to"
+          },
+          "scopeType": {
+            "type": "string",
+            "title": "Scopetype",
+            "description": "Scope type (user, profile, multi_profile)"
+          },
+          "scopeProfileIds": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scopeprofileids",
+            "description": "List of profile IDs when using profile or multi_profile scope"
+          },
+          "linkedAccountId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Linkedaccountid",
+            "description": "Optional linked account ID for this goal"
+          },
+          "currentAmount": {
+            "type": "string",
+            "title": "Currentamount",
+            "description": "Current amount saved towards this goal"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "description": "Currency code for the goal"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Startdate",
+            "description": "Goal start date"
+          },
+          "autoAllocate": {
+            "type": "boolean",
+            "title": "Autoallocate",
+            "description": "Whether to auto-allocate funds to this goal",
+            "default": false
+          },
+          "monthlyContribution": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monthlycontribution",
+            "description": "Recommended monthly contribution to reach goal on time"
+          },
+          "status": {
+            "$ref": "#/components/schemas/GoalStatus",
+            "description": "Current goal status (active, paused, completed, cancelled)"
+          },
+          "achievementProbability": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Achievementprobability",
+            "description": "ML-predicted probability of achieving goal (0-100%)"
+          },
+          "gamificationPoints": {
+            "type": "integer",
+            "title": "Gamificationpoints",
+            "description": "Points earned for progress on this goal",
+            "default": 0
+          },
+          "milestones": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/GoalMilestoneResponse"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Milestones",
+            "description": "Milestones for this goal"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat",
+            "description": "Goal creation timestamp (UTC)"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updatedat",
+            "description": "Last update timestamp (UTC)"
+          },
+          "progressPercentage": {
+            "type": "string",
+            "title": "Progresspercentage",
+            "description": "Progress towards goal as percentage"
+          },
+          "isOnTrack": {
+            "type": "boolean",
+            "title": "Isontrack",
+            "description": "Whether the goal is on track to be achieved"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "goalType",
+          "targetAmount",
+          "targetDate",
+          "id",
+          "userId",
+          "scopeType",
+          "currentAmount",
+          "currency",
+          "startDate",
+          "status",
+          "createdAt",
+          "updatedAt",
+          "progressPercentage",
+          "isOnTrack"
+        ],
+        "title": "FinancialGoalResponse",
+        "description": "Complete financial goal schema returned by API endpoints.\nIncludes all fields, computed progress, and optional milestones.",
+        "example": {
+          "achievement_probability": 85.5,
+          "auto_allocate": false,
+          "created_at": "2025-01-01T00:00:00Z",
+          "currency": "USD",
+          "current_amount": 15000.0,
+          "description": "Save for 20% down payment on new house",
+          "gamification_points": 150,
+          "goal_type": "house",
+          "id": "550e8400-e29b-41d4-a716-446655440040",
+          "is_on_track": true,
+          "milestones": [
+            {
+              "completed_at": "2025-06-15T14:30:00Z",
+              "created_at": "2025-01-01T00:00:00Z",
+              "goal_id": "550e8400-e29b-41d4-a716-446655440040",
+              "id": "550e8400-e29b-41d4-a716-446655440041",
+              "is_completed": true,
+              "name": "First 10k saved",
+              "target_amount": 10000.0,
+              "target_date": "2025-06-30"
+            }
+          ],
+          "monthly_contribution": 1750.0,
+          "name": "New House Down Payment",
+          "priority": 9,
+          "progress_percentage": 30.0,
+          "scope_type": "user",
+          "start_date": "2025-01-01",
+          "status": "active",
+          "target_amount": 50000.0,
+          "target_date": "2026-12-31",
+          "updated_at": "2025-01-15T10:30:00Z",
+          "user_id": "550e8400-e29b-41d4-a716-446655440001"
+        }
+      },
+      "FinancialGoalUpdate": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name",
+            "description": "Updated goal name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Updated description"
+          },
+          "goalType": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GoalType"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Updated goal type"
+          },
+          "targetAmount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Targetamount",
+            "description": "Updated target amount"
+          },
+          "currentAmount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currentamount",
+            "description": "Updated current saved amount (for manual updates)"
+          },
+          "targetDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Targetdate",
+            "description": "Updated target date"
+          },
+          "priority": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 10.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority",
+            "description": "Updated priority level"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GoalStatus"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Updated goal status"
+          }
+        },
+        "type": "object",
+        "title": "FinancialGoalUpdate",
+        "description": "Schema for updating an existing financial goal.\nAll fields are optional (partial update).",
+        "example": {
+          "current_amount": 7500.0,
+          "priority": 10,
+          "status": "active"
+        }
+      },
       "FinancialProfileCreate": {
         "properties": {
           "name": {
@@ -5884,15 +7100,15 @@
             "title": "Description",
             "description": "Optional description of the financial profile"
           },
-          "profile_type": {
+          "profileType": {
             "$ref": "#/components/schemas/ProfileType",
             "description": "Type of financial profile (personal, family, business)",
             "default": "personal"
           },
-          "default_currency": {
+          "defaultCurrency": {
             "type": "string",
             "pattern": "^[A-Z]{3}$",
-            "title": "Default Currency",
+            "title": "Defaultcurrency",
             "description": "ISO 4217 currency code (3 uppercase letters)",
             "default": "EUR",
             "examples": [
@@ -5901,7 +7117,7 @@
               "GBP"
             ]
           },
-          "database_connection_string": {
+          "databaseConnectionString": {
             "anyOf": [
               {
                 "type": "string"
@@ -5910,10 +7126,10 @@
                 "type": "null"
               }
             ],
-            "title": "Database Connection String",
+            "title": "Databaseconnectionstring",
             "description": "Connection string for distributed database (will be encrypted)"
           },
-          "database_type": {
+          "databaseType": {
             "anyOf": [
               {
                 "$ref": "#/components/schemas/DatabaseType"
@@ -6005,15 +7221,15 @@
             "title": "Description",
             "description": "Optional description of the financial profile"
           },
-          "profile_type": {
+          "profileType": {
             "$ref": "#/components/schemas/ProfileType",
             "description": "Type of financial profile (personal, family, business)",
             "default": "personal"
           },
-          "default_currency": {
+          "defaultCurrency": {
             "type": "string",
             "pattern": "^[A-Z]{3}$",
-            "title": "Default Currency",
+            "title": "Defaultcurrency",
             "description": "ISO 4217 currency code (3 uppercase letters)",
             "default": "EUR",
             "examples": [
@@ -6028,13 +7244,13 @@
             "title": "Id",
             "description": "Unique financial profile identifier"
           },
-          "user_id": {
+          "userId": {
             "type": "string",
             "format": "uuid",
-            "title": "User Id",
+            "title": "Userid",
             "description": "Owner user ID"
           },
-          "database_connection_string": {
+          "databaseConnectionString": {
             "anyOf": [
               {
                 "type": "string"
@@ -6043,10 +7259,10 @@
                 "type": "null"
               }
             ],
-            "title": "Database Connection String",
+            "title": "Databaseconnectionstring",
             "description": "Database connection string (encrypted)"
           },
-          "database_type": {
+          "databaseType": {
             "anyOf": [
               {
                 "$ref": "#/components/schemas/DatabaseType"
@@ -6057,26 +7273,26 @@
             ],
             "description": "Database type for distributed storage"
           },
-          "is_active": {
+          "isActive": {
             "type": "boolean",
-            "title": "Is Active",
+            "title": "Isactive",
             "description": "Whether the profile is currently active"
           },
-          "created_at": {
+          "createdAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Created At",
+            "title": "Createdat",
             "description": "Profile creation timestamp (UTC)"
           },
-          "updated_at": {
+          "updatedAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Updated At",
+            "title": "Updatedat",
             "description": "Last update timestamp (UTC)"
           },
-          "is_available": {
+          "isAvailable": {
             "type": "boolean",
-            "title": "Is Available",
+            "title": "Isavailable",
             "description": "Check if the profile's database is currently available.\nProfiles without custom database are always available.",
             "readOnly": true
           }
@@ -6085,11 +7301,11 @@
         "required": [
           "name",
           "id",
-          "user_id",
-          "is_active",
-          "created_at",
-          "updated_at",
-          "is_available"
+          "userId",
+          "isActive",
+          "createdAt",
+          "updatedAt",
+          "isAvailable"
         ],
         "title": "FinancialProfileResponse",
         "description": "Complete financial profile schema returned by API endpoints.\nIncludes all fields including computed is_available field.",
@@ -6134,7 +7350,7 @@
             "title": "Description",
             "description": "Updated description"
           },
-          "profile_type": {
+          "profileType": {
             "anyOf": [
               {
                 "$ref": "#/components/schemas/ProfileType"
@@ -6145,7 +7361,7 @@
             ],
             "description": "Updated profile type"
           },
-          "default_currency": {
+          "defaultCurrency": {
             "anyOf": [
               {
                 "type": "string",
@@ -6155,10 +7371,10 @@
                 "type": "null"
               }
             ],
-            "title": "Default Currency",
+            "title": "Defaultcurrency",
             "description": "Updated default currency"
           },
-          "database_connection_string": {
+          "databaseConnectionString": {
             "anyOf": [
               {
                 "type": "string"
@@ -6167,10 +7383,10 @@
                 "type": "null"
               }
             ],
-            "title": "Database Connection String",
+            "title": "Databaseconnectionstring",
             "description": "Updated database connection string"
           },
-          "database_type": {
+          "databaseType": {
             "anyOf": [
               {
                 "$ref": "#/components/schemas/DatabaseType"
@@ -6181,7 +7397,7 @@
             ],
             "description": "Updated database type"
           },
-          "is_active": {
+          "isActive": {
             "anyOf": [
               {
                 "type": "boolean"
@@ -6190,7 +7406,7 @@
                 "type": "null"
               }
             ],
-            "title": "Is Active",
+            "title": "Isactive",
             "description": "Whether the profile is active"
           }
         },
@@ -6213,13 +7429,13 @@
             "type": "number",
             "title": "Value"
           },
-          "confidence_lower": {
+          "confidenceLower": {
             "type": "number",
-            "title": "Confidence Lower"
+            "title": "Confidencelower"
           },
-          "confidence_upper": {
+          "confidenceUpper": {
             "type": "number",
-            "title": "Confidence Upper"
+            "title": "Confidenceupper"
           },
           "scenario": {
             "$ref": "#/components/schemas/ScenarioTypeEnum"
@@ -6229,8 +7445,8 @@
         "required": [
           "date",
           "value",
-          "confidence_lower",
-          "confidence_upper",
+          "confidenceLower",
+          "confidenceUpper",
           "scenario"
         ],
         "title": "ForecastPointSchema",
@@ -6238,12 +7454,12 @@
       },
       "ForecastRequest": {
         "properties": {
-          "financial_profile_id": {
+          "financialProfileId": {
             "type": "string",
             "format": "uuid",
-            "title": "Financial Profile Id"
+            "title": "Financialprofileid"
           },
-          "account_id": {
+          "accountId": {
             "anyOf": [
               {
                 "type": "string",
@@ -6253,72 +7469,72 @@
                 "type": "null"
               }
             ],
-            "title": "Account Id"
+            "title": "Accountid"
           },
-          "horizon_days": {
+          "horizonDays": {
             "type": "integer",
             "maximum": 365.0,
             "minimum": 7.0,
-            "title": "Horizon Days",
+            "title": "Horizondays",
             "description": "Number of days to forecast (7-365)",
             "default": 90
           },
-          "include_recurring": {
+          "includeRecurring": {
             "type": "boolean",
-            "title": "Include Recurring",
+            "title": "Includerecurring",
             "description": "Include recurring transactions in forecast",
             "default": true
           },
-          "include_patterns": {
+          "includePatterns": {
             "type": "boolean",
-            "title": "Include Patterns",
+            "title": "Includepatterns",
             "description": "Include historical pattern analysis",
             "default": true
           }
         },
         "type": "object",
         "required": [
-          "financial_profile_id"
+          "financialProfileId"
         ],
         "title": "ForecastRequest",
         "description": "Request for cash flow forecast"
       },
       "ForecastResponse": {
         "properties": {
-          "start_date": {
+          "startDate": {
             "type": "string",
             "format": "date",
-            "title": "Start Date"
+            "title": "Startdate"
           },
-          "end_date": {
+          "endDate": {
             "type": "string",
             "format": "date",
-            "title": "End Date"
+            "title": "Enddate"
           },
-          "current_balance": {
+          "currentBalance": {
             "type": "number",
-            "title": "Current Balance"
+            "title": "Currentbalance"
           },
-          "optimistic_scenario": {
+          "optimisticScenario": {
             "items": {
               "$ref": "#/components/schemas/ForecastPointSchema"
             },
             "type": "array",
-            "title": "Optimistic Scenario"
+            "title": "Optimisticscenario"
           },
-          "likely_scenario": {
+          "likelyScenario": {
             "items": {
               "$ref": "#/components/schemas/ForecastPointSchema"
             },
             "type": "array",
-            "title": "Likely Scenario"
+            "title": "Likelyscenario"
           },
-          "pessimistic_scenario": {
+          "pessimisticScenario": {
             "items": {
               "$ref": "#/components/schemas/ForecastPointSchema"
             },
             "type": "array",
-            "title": "Pessimistic Scenario"
+            "title": "Pessimisticscenario"
           },
           "insights": {
             "items": {
@@ -6334,327 +7550,31 @@
             "type": "array",
             "title": "Warnings"
           },
-          "reliability_score": {
+          "reliabilityScore": {
             "type": "number",
-            "title": "Reliability Score"
+            "title": "Reliabilityscore"
           }
         },
         "type": "object",
         "required": [
-          "start_date",
-          "end_date",
-          "current_balance",
-          "optimistic_scenario",
-          "likely_scenario",
-          "pessimistic_scenario",
+          "startDate",
+          "endDate",
+          "currentBalance",
+          "optimisticScenario",
+          "likelyScenario",
+          "pessimisticScenario",
           "insights",
           "warnings",
-          "reliability_score"
+          "reliabilityScore"
         ],
         "title": "ForecastResponse",
         "description": "Forecast response"
-      },
-      "GoalContributionCreate": {
-        "properties": {
-          "amount": {
-            "anyOf": [
-              {
-                "type": "number",
-                "exclusiveMinimum": 0.0
-              },
-              {
-                "type": "string"
-              }
-            ],
-            "title": "Amount"
-          },
-          "contribution_date": {
-            "type": "string",
-            "format": "date",
-            "title": "Contribution Date"
-          },
-          "transaction_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Transaction Id"
-          },
-          "notes": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Notes"
-          }
-        },
-        "type": "object",
-        "required": [
-          "amount",
-          "contribution_date"
-        ],
-        "title": "GoalContributionCreate",
-        "description": "Schema for creating a goal contribution"
-      },
-      "GoalContributionResponse": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Id"
-          },
-          "goal_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Goal Id"
-          },
-          "amount": {
-            "type": "string",
-            "title": "Amount"
-          },
-          "contribution_date": {
-            "type": "string",
-            "format": "date",
-            "title": "Contribution Date"
-          },
-          "transaction_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Transaction Id"
-          },
-          "notes": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Notes"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Created At"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "goal_id",
-          "amount",
-          "contribution_date",
-          "created_at"
-        ],
-        "title": "GoalContributionResponse",
-        "description": "Schema for goal contribution response"
-      },
-      "GoalCreate": {
-        "properties": {
-          "name": {
-            "type": "string",
-            "maxLength": 255,
-            "minLength": 1,
-            "title": "Name"
-          },
-          "goal_type": {
-            "$ref": "#/components/schemas/GoalType"
-          },
-          "target_amount": {
-            "anyOf": [
-              {
-                "type": "number",
-                "exclusiveMinimum": 0.0
-              },
-              {
-                "type": "string"
-              }
-            ],
-            "title": "Target Amount"
-          },
-          "currency": {
-            "type": "string",
-            "maxLength": 3,
-            "minLength": 3,
-            "title": "Currency"
-          },
-          "target_date": {
-            "type": "string",
-            "format": "date",
-            "title": "Target Date"
-          },
-          "priority": {
-            "type": "integer",
-            "maximum": 10.0,
-            "minimum": 1.0,
-            "title": "Priority",
-            "default": 5
-          },
-          "icon": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Icon"
-          },
-          "color": {
-            "anyOf": [
-              {
-                "type": "string",
-                "pattern": "^#[0-9A-Fa-f]{6}$"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Color"
-          },
-          "image_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Image Url"
-          },
-          "notes": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Notes"
-          },
-          "scope_type": {
-            "$ref": "#/components/schemas/ScopeType",
-            "default": "user"
-          },
-          "scope_profile_ids": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Scope Profile Ids"
-          },
-          "linked_account_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Linked Account Id"
-          },
-          "description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Description"
-          },
-          "start_date": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Start Date"
-          },
-          "auto_allocate": {
-            "type": "boolean",
-            "title": "Auto Allocate",
-            "default": false
-          },
-          "milestones": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "object"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Milestones"
-          },
-          "initial_amount": {
-            "anyOf": [
-              {
-                "type": "number",
-                "minimum": 0.0
-              },
-              {
-                "type": "string"
-              }
-            ],
-            "title": "Initial Amount",
-            "default": "0.00"
-          }
-        },
-        "type": "object",
-        "required": [
-          "name",
-          "goal_type",
-          "target_amount",
-          "currency",
-          "target_date"
-        ],
-        "title": "GoalCreate",
-        "description": "Schema for creating a goal"
       },
       "GoalListResponse": {
         "properties": {
           "items": {
             "items": {
-              "$ref": "#/components/schemas/GoalResponse"
+              "$ref": "#/components/schemas/FinancialGoalResponse"
             },
             "type": "array",
             "title": "Items"
@@ -6670,6 +7590,127 @@
           "total"
         ],
         "title": "GoalListResponse"
+      },
+      "GoalMilestoneCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "description": "Milestone name"
+          },
+          "targetAmount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Targetamount",
+            "description": "Target amount for this milestone"
+          },
+          "targetDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Targetdate",
+            "description": "Target date for this milestone"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "targetAmount",
+          "targetDate"
+        ],
+        "title": "GoalMilestoneCreate",
+        "description": "Schema for creating a new milestone for a goal.",
+        "example": {
+          "name": "Reach 25k milestone",
+          "target_amount": 25000.0,
+          "target_date": "2025-12-31"
+        }
+      },
+      "GoalMilestoneResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "Unique milestone identifier"
+          },
+          "goalId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Goalid",
+            "description": "ID of the parent goal"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Milestone name"
+          },
+          "targetAmount": {
+            "type": "string",
+            "title": "Targetamount",
+            "description": "Target amount for this milestone"
+          },
+          "targetDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Targetdate",
+            "description": "Target date for this milestone"
+          },
+          "isCompleted": {
+            "type": "boolean",
+            "title": "Iscompleted",
+            "description": "Whether the milestone has been completed",
+            "default": false
+          },
+          "completedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completedat",
+            "description": "When the milestone was completed"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat",
+            "description": "Milestone creation timestamp (UTC)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "goalId",
+          "name",
+          "targetAmount",
+          "targetDate",
+          "createdAt"
+        ],
+        "title": "GoalMilestoneResponse",
+        "description": "Schema for goal milestone.\nRepresents a smaller achievable step towards the main goal.",
+        "example": {
+          "completed_at": "2025-06-15T14:30:00Z",
+          "created_at": "2025-01-01T00:00:00Z",
+          "goal_id": "550e8400-e29b-41d4-a716-446655440040",
+          "id": "550e8400-e29b-41d4-a716-446655440041",
+          "is_completed": true,
+          "name": "First 10k saved",
+          "target_amount": 10000.0,
+          "target_date": "2025-06-30"
+        }
       },
       "GoalProgressResponse": {
         "properties": {
@@ -6749,162 +7790,6 @@
         ],
         "title": "GoalProgressResponse"
       },
-      "GoalResponse": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Id"
-          },
-          "user_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "User Id"
-          },
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "goal_type": {
-            "$ref": "#/components/schemas/GoalType"
-          },
-          "scope_type": {
-            "$ref": "#/components/schemas/ScopeType"
-          },
-          "scope_profile_ids": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Scope Profile Ids"
-          },
-          "linked_account_id": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Linked Account Id"
-          },
-          "description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Description"
-          },
-          "target_amount": {
-            "type": "string",
-            "title": "Target Amount"
-          },
-          "current_amount": {
-            "type": "string",
-            "title": "Current Amount"
-          },
-          "currency": {
-            "type": "string",
-            "title": "Currency"
-          },
-          "start_date": {
-            "type": "string",
-            "format": "date",
-            "title": "Start Date"
-          },
-          "target_date": {
-            "type": "string",
-            "format": "date",
-            "title": "Target Date"
-          },
-          "monthly_contribution": {
-            "type": "string",
-            "title": "Monthly Contribution"
-          },
-          "auto_allocate": {
-            "type": "boolean",
-            "title": "Auto Allocate"
-          },
-          "priority": {
-            "type": "integer",
-            "title": "Priority"
-          },
-          "status": {
-            "$ref": "#/components/schemas/GoalStatus"
-          },
-          "achievement_probability": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Achievement Probability"
-          },
-          "gamification_points": {
-            "type": "integer",
-            "title": "Gamification Points",
-            "default": 0
-          },
-          "progress_percentage": {
-            "type": "string",
-            "title": "Progress Percentage",
-            "default": "0.00"
-          },
-          "is_on_track": {
-            "type": "boolean",
-            "title": "Is On Track",
-            "default": true
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Created At"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Updated At"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "user_id",
-          "name",
-          "goal_type",
-          "scope_type",
-          "target_amount",
-          "current_amount",
-          "currency",
-          "start_date",
-          "target_date",
-          "monthly_contribution",
-          "auto_allocate",
-          "priority",
-          "status",
-          "created_at",
-          "updated_at"
-        ],
-        "title": "GoalResponse",
-        "description": "Schema for goal response"
-      },
       "GoalStatus": {
         "type": "string",
         "enum": [
@@ -6932,183 +7817,6 @@
         ],
         "title": "GoalType",
         "description": "Types of financial goals"
-      },
-      "GoalUpdate": {
-        "properties": {
-          "name": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 255,
-                "minLength": 1
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Name"
-          },
-          "goal_type": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/GoalType"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "target_amount": {
-            "anyOf": [
-              {
-                "type": "number",
-                "exclusiveMinimum": 0.0
-              },
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Target Amount"
-          },
-          "currency": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 3,
-                "minLength": 3
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Currency"
-          },
-          "target_date": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Target Date"
-          },
-          "priority": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "maximum": 10.0,
-                "minimum": 1.0
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Priority"
-          },
-          "status": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/GoalStatus"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "icon": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Icon"
-          },
-          "color": {
-            "anyOf": [
-              {
-                "type": "string",
-                "pattern": "^#[0-9A-Fa-f]{6}$"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Color"
-          },
-          "image_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Image Url"
-          },
-          "notes": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Notes"
-          },
-          "scope_type": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ScopeType"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "scope_profile_ids": {
-            "anyOf": [
-              {
-                "items": {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Scope Profile Ids"
-          },
-          "milestones": {
-            "anyOf": [
-              {
-                "items": {
-                  "$ref": "#/components/schemas/MilestoneSchema"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Milestones"
-          }
-        },
-        "type": "object",
-        "title": "GoalUpdate",
-        "description": "Schema for updating a goal"
       },
       "HTTPValidationError": {
         "properties": {
@@ -7397,13 +8105,13 @@
       },
       "MainProfileResponse": {
         "properties": {
-          "user_id": {
+          "userId": {
             "type": "string",
             "format": "uuid",
-            "title": "User Id",
+            "title": "Userid",
             "description": "User ID"
           },
-          "main_profile_id": {
+          "mainProfileId": {
             "anyOf": [
               {
                 "type": "string",
@@ -7413,13 +8121,13 @@
                 "type": "null"
               }
             ],
-            "title": "Main Profile Id",
+            "title": "Mainprofileid",
             "description": "Main profile ID"
           }
         },
         "type": "object",
         "required": [
-          "user_id"
+          "userId"
         ],
         "title": "MainProfileResponse",
         "description": "Schema for main profile response.",
@@ -7430,16 +8138,16 @@
       },
       "MainProfileUpdate": {
         "properties": {
-          "main_profile_id": {
+          "mainProfileId": {
             "type": "string",
             "format": "uuid",
-            "title": "Main Profile Id",
+            "title": "Mainprofileid",
             "description": "Profile ID to set as main profile"
           }
         },
         "type": "object",
         "required": [
-          "main_profile_id"
+          "mainProfileId"
         ],
         "title": "MainProfileUpdate",
         "description": "Schema for setting user's main profile.",
@@ -7465,60 +8173,14 @@
             "type": "number",
             "title": "Target Amount"
           },
-          "target_percentage": {
-            "type": "integer",
-            "title": "Target Percentage"
-          },
-          "is_achieved": {
-            "type": "boolean",
-            "title": "Is Achieved"
-          },
-          "achieved_date": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Achieved Date"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "goal_id",
-          "name",
-          "target_amount",
-          "target_percentage",
-          "is_achieved"
-        ],
-        "title": "MilestoneResponse"
-      },
-      "MilestoneSchema": {
-        "properties": {
-          "name": {
+          "target_date": {
             "type": "string",
-            "title": "Name"
+            "format": "date",
+            "title": "Target Date"
           },
-          "target_amount": {
-            "anyOf": [
-              {
-                "type": "number",
-                "minimum": 0.0
-              },
-              {
-                "type": "string"
-              }
-            ],
-            "title": "Target Amount"
-          },
-          "completed": {
+          "is_completed": {
             "type": "boolean",
-            "title": "Completed",
-            "default": false
+            "title": "Is Completed"
           },
           "completed_at": {
             "anyOf": [
@@ -7535,11 +8197,14 @@
         },
         "type": "object",
         "required": [
+          "id",
+          "goal_id",
           "name",
-          "target_amount"
+          "target_amount",
+          "target_date",
+          "is_completed"
         ],
-        "title": "MilestoneSchema",
-        "description": "Schema for goal milestone"
+        "title": "MilestoneResponse"
       },
       "MultiProfileAnalysisResponse": {
         "properties": {
@@ -7604,24 +8269,24 @@
             "type": "string",
             "title": "Description"
           },
-          "potential_savings": {
+          "potentialSavings": {
             "type": "number",
-            "title": "Potential Savings"
+            "title": "Potentialsavings"
           },
           "actionable": {
             "type": "boolean",
             "title": "Actionable"
           },
-          "action_steps": {
+          "actionSteps": {
             "items": {
               "type": "string"
             },
             "type": "array",
-            "title": "Action Steps"
+            "title": "Actionsteps"
           },
-          "impact_score": {
+          "impactScore": {
             "type": "number",
-            "title": "Impact Score"
+            "title": "Impactscore"
           }
         },
         "type": "object",
@@ -7630,10 +8295,10 @@
           "priority",
           "title",
           "description",
-          "potential_savings",
+          "potentialSavings",
           "actionable",
-          "action_steps",
-          "impact_score"
+          "actionSteps",
+          "impactScore"
         ],
         "title": "OptimizationInsightSchema",
         "description": "An optimization insight"
@@ -7650,23 +8315,23 @@
       },
       "OptimizationRequest": {
         "properties": {
-          "financial_profile_id": {
+          "financialProfileId": {
             "type": "string",
             "format": "uuid",
-            "title": "Financial Profile Id"
+            "title": "Financialprofileid"
           },
-          "lookback_days": {
+          "lookbackDays": {
             "type": "integer",
             "maximum": 365.0,
             "minimum": 30.0,
-            "title": "Lookback Days",
+            "title": "Lookbackdays",
             "description": "Days of history to analyze (30-365)",
             "default": 90
           }
         },
         "type": "object",
         "required": [
-          "financial_profile_id"
+          "financialProfileId"
         ],
         "title": "OptimizationRequest",
         "description": "Request for optimization insights"
@@ -7680,23 +8345,23 @@
             "type": "array",
             "title": "Insights"
           },
-          "total_potential_savings": {
+          "totalPotentialSavings": {
             "type": "number",
-            "title": "Total Potential Savings"
+            "title": "Totalpotentialsavings"
           },
-          "insights_by_priority": {
+          "insightsByPriority": {
             "additionalProperties": {
               "type": "integer"
             },
             "type": "object",
-            "title": "Insights By Priority"
+            "title": "Insightsbypriority"
           }
         },
         "type": "object",
         "required": [
           "insights",
-          "total_potential_savings",
-          "insights_by_priority"
+          "totalPotentialSavings",
+          "insightsByPriority"
         ],
         "title": "OptimizationResponse",
         "description": "Optimization insights response"
@@ -7855,45 +8520,45 @@
       },
       "SavingsSummary": {
         "properties": {
-          "total_monthly_savings": {
+          "totalMonthlySavings": {
             "type": "number",
-            "title": "Total Monthly Savings"
+            "title": "Totalmonthlysavings"
           },
-          "annual_savings": {
+          "annualSavings": {
             "type": "number",
-            "title": "Annual Savings"
+            "title": "Annualsavings"
           },
-          "by_category": {
+          "byCategory": {
             "additionalProperties": {
               "type": "number"
             },
             "type": "object",
-            "title": "By Category"
+            "title": "Bycategory"
           },
-          "insights_count": {
+          "insightsCount": {
             "type": "integer",
-            "title": "Insights Count"
+            "title": "Insightscount"
           },
-          "high_priority_count": {
+          "highPriorityCount": {
             "type": "integer",
-            "title": "High Priority Count"
+            "title": "Highprioritycount"
           },
-          "top_insights": {
+          "topInsights": {
             "items": {
               "type": "object"
             },
             "type": "array",
-            "title": "Top Insights"
+            "title": "Topinsights"
           }
         },
         "type": "object",
         "required": [
-          "total_monthly_savings",
-          "annual_savings",
-          "by_category",
-          "insights_count",
-          "high_priority_count",
-          "top_insights"
+          "totalMonthlySavings",
+          "annualSavings",
+          "byCategory",
+          "insightsCount",
+          "highPriorityCount",
+          "topInsights"
         ],
         "title": "SavingsSummary",
         "description": "Summary of potential savings"
@@ -7932,22 +8597,22 @@
             "type": "string",
             "title": "Frequency"
           },
-          "average_amount": {
+          "averageAmount": {
             "type": "number",
-            "title": "Average Amount"
+            "title": "Averageamount"
           },
-          "total_amount": {
+          "totalAmount": {
             "type": "number",
-            "title": "Total Amount"
+            "title": "Totalamount"
           },
-          "transaction_count": {
+          "transactionCount": {
             "type": "integer",
-            "title": "Transaction Count"
+            "title": "Transactioncount"
           },
-          "last_occurrence": {
+          "lastOccurrence": {
             "type": "string",
             "format": "date",
-            "title": "Last Occurrence"
+            "title": "Lastoccurrence"
           }
         },
         "type": "object",
@@ -7955,10 +8620,10 @@
           "merchant",
           "category",
           "frequency",
-          "average_amount",
-          "total_amount",
-          "transaction_count",
-          "last_occurrence"
+          "averageAmount",
+          "totalAmount",
+          "transactionCount",
+          "lastOccurrence"
         ],
         "title": "SpendingPatternSchema",
         "description": "A detected spending pattern"
@@ -7972,15 +8637,15 @@
             "type": "array",
             "title": "Patterns"
           },
-          "total_patterns": {
+          "totalPatterns": {
             "type": "integer",
-            "title": "Total Patterns"
+            "title": "Totalpatterns"
           }
         },
         "type": "object",
         "required": [
           "patterns",
-          "total_patterns"
+          "totalPatterns"
         ],
         "title": "SpendingPatternsResponse",
         "description": "Spending patterns response"
@@ -8015,18 +8680,18 @@
       },
       "SuggestedTag": {
         "properties": {
-          "tag_id": {
+          "tagId": {
             "type": "string",
             "format": "uuid",
-            "title": "Tag Id"
+            "title": "Tagid"
           },
-          "tag_name": {
+          "tagName": {
             "type": "string",
-            "title": "Tag Name"
+            "title": "Tagname"
           },
-          "tag_type": {
+          "tagType": {
             "type": "string",
-            "title": "Tag Type"
+            "title": "Tagtype"
           },
           "confidence": {
             "type": "number",
@@ -8035,9 +8700,9 @@
         },
         "type": "object",
         "required": [
-          "tag_id",
-          "tag_name",
-          "tag_type",
+          "tagId",
+          "tagName",
+          "tagType",
           "confidence"
         ],
         "title": "SuggestedTag",
@@ -8045,33 +8710,33 @@
       },
       "Token": {
         "properties": {
-          "access_token": {
+          "accessToken": {
             "type": "string",
-            "title": "Access Token"
+            "title": "Accesstoken"
           },
-          "token_type": {
+          "tokenType": {
             "type": "string",
-            "title": "Token Type",
+            "title": "Tokentype",
             "default": "bearer"
           }
         },
         "type": "object",
         "required": [
-          "access_token"
+          "accessToken"
         ],
         "title": "Token"
       },
       "TrainModelRequest": {
         "properties": {
-          "financial_profile_id": {
+          "financialProfileId": {
             "type": "string",
             "format": "uuid",
-            "title": "Financial Profile Id"
+            "title": "Financialprofileid"
           }
         },
         "type": "object",
         "required": [
-          "financial_profile_id"
+          "financialProfileId"
         ],
         "title": "TrainModelRequest",
         "description": "Request to train user model"
@@ -8100,7 +8765,7 @@
             ],
             "title": "Metrics"
           },
-          "training_samples": {
+          "trainingSamples": {
             "anyOf": [
               {
                 "type": "integer"
@@ -8109,9 +8774,9 @@
                 "type": "null"
               }
             ],
-            "title": "Training Samples"
+            "title": "Trainingsamples"
           },
-          "model_version": {
+          "modelVersion": {
             "anyOf": [
               {
                 "type": "string"
@@ -8120,7 +8785,7 @@
                 "type": "null"
               }
             ],
-            "title": "Model Version"
+            "title": "Modelversion"
           }
         },
         "type": "object",
@@ -8133,13 +8798,13 @@
       },
       "TransactionCreate": {
         "properties": {
-          "account_id": {
+          "accountId": {
             "type": "string",
             "format": "uuid",
-            "title": "Account Id",
+            "title": "Accountid",
             "description": "ID of the account this transaction belongs to"
           },
-          "category_id": {
+          "categoryId": {
             "anyOf": [
               {
                 "type": "string",
@@ -8149,29 +8814,28 @@
                 "type": "null"
               }
             ],
-            "title": "Category Id",
+            "title": "Categoryid",
             "description": "ID of the category this transaction is assigned to"
           },
-          "transaction_type": {
+          "transactionType": {
             "$ref": "#/components/schemas/TransactionType",
             "description": "Type of transaction (bank_transfer, withdrawal, payment, etc.)"
           },
           "amount": {
             "anyOf": [
               {
-                "type": "number",
-                "exclusiveMinimum": 0.0
+                "type": "number"
               },
               {
                 "type": "string"
               }
             ],
             "title": "Amount",
-            "description": "Transaction amount (must be positive)",
+            "description": "Transaction amount",
             "examples": [
               50.0,
               1250.75,
-              99.99
+              -99.99
             ]
           },
           "currency": {
@@ -8196,7 +8860,7 @@
               "Salary deposit"
             ]
           },
-          "merchant_name": {
+          "merchantName": {
             "anyOf": [
               {
                 "type": "string",
@@ -8206,13 +8870,13 @@
                 "type": "null"
               }
             ],
-            "title": "Merchant Name",
+            "title": "Merchantname",
             "description": "Name of the merchant/vendor"
           },
-          "transaction_date": {
+          "transactionDate": {
             "type": "string",
             "format": "date",
-            "title": "Transaction Date",
+            "title": "Transactiondate",
             "description": "Date when the transaction occurred"
           },
           "notes": {
@@ -8227,33 +8891,20 @@
             "title": "Notes",
             "description": "Additional notes about the transaction"
           },
-          "value_date": {
+          "merchantId": {
             "anyOf": [
               {
                 "type": "string",
-                "format": "date"
+                "format": "uuid"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Value Date",
-            "description": "Date when transaction was valued (for banking)"
+            "title": "Merchantid",
+            "description": "ID of the merchant (if known)"
           },
-          "location": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 255
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Location",
-            "description": "Transaction location"
-          },
-          "receipt_url": {
+          "receiptUrl": {
             "anyOf": [
               {
                 "type": "string",
@@ -8263,23 +8914,29 @@
                 "type": "null"
               }
             ],
-            "title": "Receipt Url",
+            "title": "Receipturl",
             "description": "URL to receipt or document"
           },
-          "created_by": {
+          "source": {
             "$ref": "#/components/schemas/TransactionSource",
-            "description": "Source of transaction creation",
+            "description": "Source of transaction creation (manual, import, api, etc.)",
             "default": "manual"
+          },
+          "isReconciled": {
+            "type": "boolean",
+            "title": "Isreconciled",
+            "description": "Whether transaction has been reconciled",
+            "default": false
           }
         },
         "type": "object",
         "required": [
-          "account_id",
-          "transaction_type",
+          "accountId",
+          "transactionType",
           "amount",
           "currency",
           "description",
-          "transaction_date"
+          "transactionDate"
         ],
         "title": "TransactionCreate",
         "description": "Schema for creating a new transaction.\nIncludes optional fields for advanced features.",
@@ -8287,11 +8944,12 @@
           "account_id": "550e8400-e29b-41d4-a716-446655440000",
           "amount": 85.5,
           "category_id": "550e8400-e29b-41d4-a716-446655440002",
-          "created_by": "manual",
           "currency": "EUR",
           "description": "Grocery shopping at Supermarket",
+          "is_reconciled": false,
           "merchant_name": "Local Supermarket",
           "notes": "Weekly groceries",
+          "source": "manual",
           "transaction_date": "2025-01-15",
           "transaction_type": "purchase"
         }
@@ -8327,14 +8985,15 @@
               "amount_in_profile_currency": 85.5,
               "category_id": "550e8400-e29b-41d4-a716-446655440002",
               "created_at": "2025-01-15T10:30:00Z",
-              "created_by": "manual",
               "currency": "EUR",
               "description": "Grocery shopping",
+              "financial_profile_id": "550e8400-e29b-41d4-a716-446655440001",
               "id": "550e8400-e29b-41d4-a716-446655440010",
+              "is_duplicate": false,
               "is_reconciled": false,
               "merchant_name": "Local Supermarket",
-              "merchant_normalized": "local_supermarket",
               "notes": "Weekly groceries",
+              "source": "manual",
               "transaction_date": "2025-01-15",
               "transaction_type": "purchase",
               "updated_at": "2025-01-15T10:30:00Z"
@@ -8345,13 +9004,13 @@
       },
       "TransactionResponse": {
         "properties": {
-          "account_id": {
+          "accountId": {
             "type": "string",
             "format": "uuid",
-            "title": "Account Id",
+            "title": "Accountid",
             "description": "ID of the account this transaction belongs to"
           },
-          "category_id": {
+          "categoryId": {
             "anyOf": [
               {
                 "type": "string",
@@ -8361,21 +9020,21 @@
                 "type": "null"
               }
             ],
-            "title": "Category Id",
+            "title": "Categoryid",
             "description": "ID of the category this transaction is assigned to"
           },
-          "transaction_type": {
+          "transactionType": {
             "$ref": "#/components/schemas/TransactionType",
             "description": "Type of transaction (bank_transfer, withdrawal, payment, etc.)"
           },
           "amount": {
             "type": "string",
             "title": "Amount",
-            "description": "Transaction amount (must be positive)",
+            "description": "Transaction amount",
             "examples": [
               50.0,
               1250.75,
-              99.99
+              -99.99
             ]
           },
           "currency": {
@@ -8400,7 +9059,7 @@
               "Salary deposit"
             ]
           },
-          "merchant_name": {
+          "merchantName": {
             "anyOf": [
               {
                 "type": "string",
@@ -8410,13 +9069,13 @@
                 "type": "null"
               }
             ],
-            "title": "Merchant Name",
+            "title": "Merchantname",
             "description": "Name of the merchant/vendor"
           },
-          "transaction_date": {
+          "transactionDate": {
             "type": "string",
             "format": "date",
-            "title": "Transaction Date",
+            "title": "Transactiondate",
             "description": "Date when the transaction occurred"
           },
           "notes": {
@@ -8437,7 +9096,13 @@
             "title": "Id",
             "description": "Unique transaction identifier"
           },
-          "recurring_transaction_id": {
+          "financialProfileId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Financialprofileid",
+            "description": "ID of the financial profile this transaction belongs to"
+          },
+          "merchantId": {
             "anyOf": [
               {
                 "type": "string",
@@ -8447,10 +9112,23 @@
                 "type": "null"
               }
             ],
-            "title": "Recurring Transaction Id",
+            "title": "Merchantid",
+            "description": "ID of the merchant (if known)"
+          },
+          "recurringTransactionId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recurringtransactionid",
             "description": "ID of parent recurring transaction (if applicable)"
           },
-          "exchange_rate_id": {
+          "relatedTransactionId": {
             "anyOf": [
               {
                 "type": "string",
@@ -8460,65 +9138,52 @@
                 "type": "null"
               }
             ],
-            "title": "Exchange Rate Id",
-            "description": "ID of exchange rate used for conversion"
+            "title": "Relatedtransactionid",
+            "description": "ID of related transaction (for transfers, splits)"
           },
-          "amount_in_profile_currency": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Amount In Profile Currency",
-            "description": "Amount converted to profile's default currency"
-          },
-          "merchant_normalized": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Merchant Normalized",
-            "description": "ML-normalized merchant name for better categorization"
-          },
-          "value_date": {
+          "duplicateOfId": {
             "anyOf": [
               {
                 "type": "string",
-                "format": "date"
+                "format": "uuid"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Value Date",
-            "description": "Date when transaction was valued"
+            "title": "Duplicateofid",
+            "description": "ID of original transaction if this is a duplicate"
           },
-          "is_reconciled": {
+          "exchangeRate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exchangerate",
+            "description": "Exchange rate used for currency conversion"
+          },
+          "amountInProfileCurrency": {
+            "type": "string",
+            "title": "Amountinprofilecurrency",
+            "description": "Amount converted to profile's default currency"
+          },
+          "isReconciled": {
             "type": "boolean",
-            "title": "Is Reconciled",
+            "title": "Isreconciled",
             "description": "Whether transaction has been reconciled",
             "default": false
           },
-          "location": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Location",
-            "description": "Transaction location"
+          "isDuplicate": {
+            "type": "boolean",
+            "title": "Isduplicate",
+            "description": "Whether this transaction is marked as a duplicate",
+            "default": false
           },
-          "receipt_url": {
+          "receiptUrl": {
             "anyOf": [
               {
                 "type": "string"
@@ -8527,37 +9192,65 @@
                 "type": "null"
               }
             ],
-            "title": "Receipt Url",
+            "title": "Receipturl",
             "description": "URL to receipt or document"
           },
-          "created_by": {
-            "$ref": "#/components/schemas/TransactionSource"
+          "importJobId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Importjobid",
+            "description": "ID of the import job that created this transaction"
           },
-          "created_at": {
+          "externalId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Externalid",
+            "description": "External ID from bank/import source"
+          },
+          "source": {
+            "$ref": "#/components/schemas/TransactionSource",
+            "description": "Source of transaction creation (manual, import, api, etc.)"
+          },
+          "createdAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Created At",
+            "title": "Createdat",
             "description": "Transaction creation timestamp (UTC)"
           },
-          "updated_at": {
+          "updatedAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Updated At",
+            "title": "Updatedat",
             "description": "Last update timestamp (UTC)"
           }
         },
         "type": "object",
         "required": [
-          "account_id",
-          "transaction_type",
+          "accountId",
+          "transactionType",
           "amount",
           "currency",
           "description",
-          "transaction_date",
+          "transactionDate",
           "id",
-          "created_by",
-          "created_at",
-          "updated_at"
+          "financialProfileId",
+          "amountInProfileCurrency",
+          "source",
+          "createdAt",
+          "updatedAt"
         ],
         "title": "TransactionResponse",
         "description": "Complete transaction schema returned by API endpoints.\nIncludes all fields including computed and metadata fields.",
@@ -8567,14 +9260,15 @@
           "amount_in_profile_currency": 85.5,
           "category_id": "550e8400-e29b-41d4-a716-446655440002",
           "created_at": "2025-01-15T10:30:00Z",
-          "created_by": "manual",
           "currency": "EUR",
           "description": "Grocery shopping at Supermarket",
+          "financial_profile_id": "550e8400-e29b-41d4-a716-446655440001",
           "id": "550e8400-e29b-41d4-a716-446655440010",
+          "is_duplicate": false,
           "is_reconciled": false,
           "merchant_name": "Local Supermarket",
-          "merchant_normalized": "local_supermarket",
           "notes": "Weekly groceries",
+          "source": "manual",
           "transaction_date": "2025-01-15",
           "transaction_type": "purchase",
           "updated_at": "2025-01-15T10:30:00Z"
@@ -8619,7 +9313,7 @@
       },
       "TransactionUpdate": {
         "properties": {
-          "category_id": {
+          "categoryId": {
             "anyOf": [
               {
                 "type": "string",
@@ -8629,10 +9323,23 @@
                 "type": "null"
               }
             ],
-            "title": "Category Id",
+            "title": "Categoryid",
             "description": "Updated category ID"
           },
-          "transaction_type": {
+          "merchantId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Merchantid",
+            "description": "Updated merchant ID"
+          },
+          "transactionType": {
             "anyOf": [
               {
                 "$ref": "#/components/schemas/TransactionType"
@@ -8646,8 +9353,7 @@
           "amount": {
             "anyOf": [
               {
-                "type": "number",
-                "exclusiveMinimum": 0.0
+                "type": "number"
               },
               {
                 "type": "string"
@@ -8685,7 +9391,7 @@
             "title": "Description",
             "description": "Updated description"
           },
-          "merchant_name": {
+          "merchantName": {
             "anyOf": [
               {
                 "type": "string",
@@ -8695,10 +9401,10 @@
                 "type": "null"
               }
             ],
-            "title": "Merchant Name",
+            "title": "Merchantname",
             "description": "Updated merchant name"
           },
-          "transaction_date": {
+          "transactionDate": {
             "anyOf": [
               {
                 "type": "string",
@@ -8708,21 +9414,8 @@
                 "type": "null"
               }
             ],
-            "title": "Transaction Date",
+            "title": "Transactiondate",
             "description": "Updated transaction date"
-          },
-          "value_date": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Value Date",
-            "description": "Updated value date"
           },
           "notes": {
             "anyOf": [
@@ -8736,7 +9429,7 @@
             "title": "Notes",
             "description": "Updated notes"
           },
-          "is_reconciled": {
+          "isReconciled": {
             "anyOf": [
               {
                 "type": "boolean"
@@ -8745,23 +9438,10 @@
                 "type": "null"
               }
             ],
-            "title": "Is Reconciled",
+            "title": "Isreconciled",
             "description": "Whether transaction has been reconciled"
           },
-          "location": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 255
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Location",
-            "description": "Updated location"
-          },
-          "receipt_url": {
+          "receiptUrl": {
             "anyOf": [
               {
                 "type": "string",
@@ -8771,7 +9451,7 @@
                 "type": "null"
               }
             ],
-            "title": "Receipt Url",
+            "title": "Receipturl",
             "description": "Updated receipt URL"
           }
         },
@@ -8780,6 +9460,7 @@
         "description": "Schema for updating an existing transaction.\nAll fields are optional (partial update).",
         "example": {
           "category_id": "550e8400-e29b-41d4-a716-446655440003",
+          "is_reconciled": true,
           "notes": "Updated notes"
         }
       },
@@ -8876,7 +9557,7 @@
             "format": "uuid",
             "title": "Id"
           },
-          "full_name": {
+          "fullName": {
             "anyOf": [
               {
                 "type": "string"
@@ -8885,35 +9566,35 @@
                 "type": "null"
               }
             ],
-            "title": "Full Name"
+            "title": "Fullname"
           },
-          "is_active": {
+          "isActive": {
             "type": "boolean",
-            "title": "Is Active"
+            "title": "Isactive"
           },
-          "is_verified": {
+          "isVerified": {
             "type": "boolean",
-            "title": "Is Verified"
+            "title": "Isverified"
           },
-          "created_at": {
+          "createdAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Created At"
+            "title": "Createdat"
           },
-          "updated_at": {
+          "updatedAt": {
             "type": "string",
             "format": "date-time",
-            "title": "Updated At"
+            "title": "Updatedat"
           }
         },
         "type": "object",
         "required": [
           "email",
           "id",
-          "is_active",
-          "is_verified",
-          "created_at",
-          "updated_at"
+          "isActive",
+          "isVerified",
+          "createdAt",
+          "updatedAt"
         ],
         "title": "UserResponse"
       },

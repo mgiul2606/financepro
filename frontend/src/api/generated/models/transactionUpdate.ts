@@ -16,16 +16,15 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
 import type { TransactionUpdateCategoryId } from "./transactionUpdateCategoryId";
+import type { TransactionUpdateMerchantId } from "./transactionUpdateMerchantId";
 import type { TransactionUpdateTransactionType } from "./transactionUpdateTransactionType";
 import type { TransactionUpdateAmount } from "./transactionUpdateAmount";
 import type { TransactionUpdateCurrency } from "./transactionUpdateCurrency";
 import type { TransactionUpdateDescription } from "./transactionUpdateDescription";
 import type { TransactionUpdateMerchantName } from "./transactionUpdateMerchantName";
 import type { TransactionUpdateTransactionDate } from "./transactionUpdateTransactionDate";
-import type { TransactionUpdateValueDate } from "./transactionUpdateValueDate";
 import type { TransactionUpdateNotes } from "./transactionUpdateNotes";
 import type { TransactionUpdateIsReconciled } from "./transactionUpdateIsReconciled";
-import type { TransactionUpdateLocation } from "./transactionUpdateLocation";
 import type { TransactionUpdateReceiptUrl } from "./transactionUpdateReceiptUrl";
 
 /**
@@ -35,6 +34,8 @@ All fields are optional (partial update).
 export interface TransactionUpdate {
   /** Updated category ID */
   categoryId?: TransactionUpdateCategoryId;
+  /** Updated merchant ID */
+  merchantId?: TransactionUpdateMerchantId;
   /** Updated transaction type */
   transactionType?: TransactionUpdateTransactionType;
   /** Updated amount */
@@ -47,14 +48,10 @@ export interface TransactionUpdate {
   merchantName?: TransactionUpdateMerchantName;
   /** Updated transaction date */
   transactionDate?: TransactionUpdateTransactionDate;
-  /** Updated value date */
-  valueDate?: TransactionUpdateValueDate;
   /** Updated notes */
   notes?: TransactionUpdateNotes;
   /** Whether transaction has been reconciled */
   isReconciled?: TransactionUpdateIsReconciled;
-  /** Updated location */
-  location?: TransactionUpdateLocation;
   /** Updated receipt URL */
   receiptUrl?: TransactionUpdateReceiptUrl;
 }
