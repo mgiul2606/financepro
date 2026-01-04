@@ -23,12 +23,13 @@ import type { FinancialGoalResponseMonthlyContribution } from "./financialGoalRe
 import type { GoalStatus } from "./goalStatus";
 import type { FinancialGoalResponseAchievementProbability } from "./financialGoalResponseAchievementProbability";
 import type { FinancialGoalResponseMilestones } from "./financialGoalResponseMilestones";
+import type { EntityWithId } from "../../../hooks/useCrudModal";
 
 /**
  * Complete financial goal schema returned by API endpoints.
 Includes all fields, computed progress, and optional milestones.
  */
-export interface FinancialGoalResponse {
+export interface FinancialGoalResponse extends EntityWithId {
   /**
    * Goal name
    * @minLength 1

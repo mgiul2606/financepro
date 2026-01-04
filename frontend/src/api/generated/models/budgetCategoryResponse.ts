@@ -15,11 +15,12 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
+import type { EntityWithId } from "../../../hooks/useCrudModal";
 
 /**
  * Schema for budget category response
  */
-export interface BudgetCategoryResponse {
+export interface BudgetCategoryResponse extends EntityWithId {
   id: string;
   budgetId: string;
   categoryId: string;

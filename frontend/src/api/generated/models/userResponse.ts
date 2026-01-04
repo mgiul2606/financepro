@@ -16,8 +16,9 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
 import type { UserResponseFullName } from "./userResponseFullName";
+import type { EntityWithId } from "../../../hooks/useCrudModal";
 
-export interface UserResponse {
+export interface UserResponse extends EntityWithId {
   email: string;
   id: string;
   fullName?: UserResponseFullName;

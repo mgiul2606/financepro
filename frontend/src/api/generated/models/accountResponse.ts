@@ -22,12 +22,13 @@ import type { AccountResponseInterestRate } from "./accountResponseInterestRate"
 import type { AccountResponseNotes } from "./accountResponseNotes";
 import type { AccountResponseAccountNumberLast4 } from "./accountResponseAccountNumberLast4";
 import type { AccountResponseIban } from "./accountResponseIban";
+import type { EntityWithId } from "../../../hooks/useCrudModal";
 
 /**
  * Complete account schema returned by API endpoints.
 Includes all fields including computed current_balance.
  */
-export interface AccountResponse {
+export interface AccountResponse extends EntityWithId {
   /**
    * Account name
    * @minLength 1

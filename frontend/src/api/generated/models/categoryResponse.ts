@@ -18,12 +18,13 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 import type { CategoryResponseDescription } from "./categoryResponseDescription";
 import type { CategoryResponseIcon } from "./categoryResponseIcon";
 import type { CategoryResponseColor } from "./categoryResponseColor";
+import type { EntityWithId } from "../../../hooks/useCrudModal";
 
 /**
  * Complete category schema returned by API endpoints.
 Categories are USER-level (shared across all user's profiles).
  */
-export interface CategoryResponse {
+export interface CategoryResponse extends EntityWithId {
   /**
    * Category name
    * @minLength 1
