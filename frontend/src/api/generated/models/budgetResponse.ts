@@ -23,12 +23,13 @@ import type { BudgetResponseTotalSpent } from "./budgetResponseTotalSpent";
 import type { BudgetResponseRemaining } from "./budgetResponseRemaining";
 import type { BudgetResponseUsagePercentage } from "./budgetResponseUsagePercentage";
 import type { BudgetResponseCategoryAllocations } from "./budgetResponseCategoryAllocations";
+import type { EntityWithId } from "../../../hooks/useCrudModal";
 
 /**
  * Complete budget schema returned by API endpoints.
 Includes all fields, current usage, and category allocations.
  */
-export interface BudgetResponse {
+export interface BudgetResponse extends EntityWithId {
   /**
    * Budget name
    * @minLength 1

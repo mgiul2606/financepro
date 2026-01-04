@@ -28,12 +28,13 @@ import type { TransactionResponseReceiptUrl } from "./transactionResponseReceipt
 import type { TransactionResponseImportJobId } from "./transactionResponseImportJobId";
 import type { TransactionResponseExternalId } from "./transactionResponseExternalId";
 import type { TransactionSource } from "./transactionSource";
+import type { EntityWithId } from "../../../hooks/useCrudModal";
 
 /**
  * Complete transaction schema returned by API endpoints.
 Includes all fields including computed and metadata fields.
  */
-export interface TransactionResponse {
+export interface TransactionResponse extends EntityWithId {
   /** ID of the account this transaction belongs to */
   accountId: string;
   /** ID of the category this transaction is assigned to */

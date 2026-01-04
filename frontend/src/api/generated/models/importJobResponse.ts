@@ -23,8 +23,9 @@ import type { ImportJobResponseFailedImports } from "./importJobResponseFailedIm
 import type { ImportJobResponseSkippedDuplicates } from "./importJobResponseSkippedDuplicates";
 import type { ImportJobResponseErrorMessage } from "./importJobResponseErrorMessage";
 import type { ImportJobResponseCompletedAt } from "./importJobResponseCompletedAt";
+import type { EntityWithId } from "../../../hooks/useCrudModal";
 
-export interface ImportJobResponse {
+export interface ImportJobResponse extends EntityWithId {
   id: string;
   financialProfileId: string;
   accountId?: ImportJobResponseAccountId;

@@ -19,12 +19,13 @@ import type { FinancialProfileResponseDescription } from "./financialProfileResp
 import type { ProfileType } from "./profileType";
 import type { FinancialProfileResponseDatabaseConnectionString } from "./financialProfileResponseDatabaseConnectionString";
 import type { FinancialProfileResponseDatabaseType } from "./financialProfileResponseDatabaseType";
+import type { EntityWithId } from "../../../hooks/useCrudModal";
 
 /**
  * Complete financial profile schema returned by API endpoints.
 Includes all fields including computed is_available field.
  */
-export interface FinancialProfileResponse {
+export interface FinancialProfileResponse extends EntityWithId {
   /**
    * Financial profile name
    * @minLength 1
