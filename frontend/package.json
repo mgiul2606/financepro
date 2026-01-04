@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "generate:api": "orval --config orval.config.ts && npm run generate:post-process",
-    "generate:post-process": "tsx scripts/post-generate-orval.ts",
+    "generate:post-process": "npx tsx scripts/post-generate-orval.ts",
     "generate:openapi": "cd ../backend && ./venv/bin/python scripts/generate_openapi.py",
     "generate:full": "npm run generate:openapi && npm run generate:api",
     "prebuild": "npm run generate:api",
