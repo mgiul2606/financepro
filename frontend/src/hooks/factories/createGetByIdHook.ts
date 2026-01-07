@@ -1,0 +1,253 @@
+/**
+ * Factory for creating type-safe GET-by-ID hooks
+ *
+ * Creates consistent hooks for fetching single entities by ID
+ * with automatic data extraction and type inference.
+ *
+ * @module createGetByIdHook
+ */
+
+import type { UseQueryResult, QueryKey } from '@tanstack/react-query';
+import { extractQueryData } from '@/lib/orval-utils';
+import type { ExtractOrvalData } from '@/lib/orval-types';
+
+/**
+ * Type signature for Orval-generated GET by ID hooks
+ *
+ * Matches hooks like:
+ * - useGetAccountApiV1AccountsAccountIdGet
+ * - useGetTransactionApiV1TransactionsTransactionIdGet
+ * - etc.
+ */
+export type OrvalGetByIdHook<TResponse, TError = Error> = (
+  id: string,
+  options?: {
+    query?: {
+      enabled?: boolean;
+      staleTime?: number;
+      gcTime?: number;
+      refetchOnMount?: boolean;
+      refetchOnWindowFocus?: boolean;
+    };
+    request?: RequestInit;
+  }
+) => UseQueryResult<TResponse, TError> & { queryKey: QueryKey };
+
+/**
+ * Options for the created hook
+ */
+export interface GetByIdHookOptions {
+  /**
+   * Whether the query is enabled by default
+   * @default true (but disabled if ID is empty)
+   */
+  enabled?: boolean;
+
+  /**
+   * Additional validation for the ID
+   * @example (id) => id.length === 36  // Validate UUID format
+   */
+  isIdValid?: (id: string) => boolean;
+
+  /**
+   * How long data should be considered fresh (ms)
+   * @default 0 (always refetch)
+   */
+  staleTime?: number;
+
+  /**
+   * How long unused data should stay in cache (ms)
+   * @default 5 minutes
+   */
+  gcTime?: number;
+
+  /**
+   * Options to pass to the request
+   */
+  requestOptions?: RequestInit;
+}
+
+/**
+ * Result shape for the created hook
+ *
+ * Provides a consistent, type-safe interface with:
+ * - Unwrapped data (undefined if loading/error)
+ * - Loading state
+ * - Error state and error object
+ * - Refetch function
+ * - Original query key for cache manipulation
+ */
+export interface GetByIdHookResult<TData> {
+  /** Extracted data (undefined if loading or error) */
+  data: TData | undefined;
+  /** True while the query is in-flight */
+  isLoading: boolean;
+  /** True if the query encountered an error */
+  isError: boolean;
+  /** Error object (null if no error) */
+  error: Error | null;
+  /** Manually refetch the data */
+  refetch: () => void;
+  /** Query key for cache access */
+  queryKey: QueryKey;
+}
+
+/**
+ * Creates a type-safe GET by ID hook
+ *
+ * This is a factory function, NOT a hook itself.
+ * It returns a new hook that can be used in components.
+ *
+ * @example
+ * ```typescript
+ * // Create the hook (do this once, in a separate file)
+ * import {
+ *   useGetAccountApiV1AccountsAccountIdGet,
+ *   type GetAccountApiV1AccountsAccountIdGetQueryResult,
+ * } from '@/api/generated/accounts/accounts';
+ * import type { AccountResponse } from '@/api/generated/models';
+ *
+ * export const useAccount = createGetByIdHook<
+ *   GetAccountApiV1AccountsAccountIdGetQueryResult,
+ *   AccountResponse
+ * >({
+ *   useQuery: useGetAccountApiV1AccountsAccountIdGet,
+ * });
+ *
+ * // Use the hook in a component
+ * function AccountDetails({ accountId }: { accountId: string }) {
+ *   const { data, isLoading, error } = useAccount(accountId);
+ *   //     ^? { data: AccountResponse | undefined, ... }
+ *
+ *   if (isLoading) return <div>Loading...</div>;
+ *   if (error) return <div>Error: {error.message}</div>;
+ *   if (!data) return <div>No data</div>;
+ *
+ *   return <div>{data.name}</div>;  // ✅ Type-safe!
+ * }
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // With custom validation
+ * export const useAccount = createGetByIdHook({
+ *   useQuery: useGetAccountApiV1AccountsAccountIdGet,
+ *   isIdValid: (id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id),
+ *   staleTime: 60000,  // Consider data fresh for 1 minute
+ * });
+ * ```
+ */
+export function createGetByIdHook<
+  TResponse extends { data: TData; status: number },
+  TData = ExtractOrvalData<TResponse>,
+  TError = Error
+>(config: {
+  /**
+   * Orval-generated query hook
+   * @example useGetAccountApiV1AccountsAccountIdGet
+   */
+  useQuery: OrvalGetByIdHook<TResponse, TError>;
+
+  /**
+   * Default options for the hook
+   */
+  defaultOptions?: Omit<GetByIdHookOptions, 'enabled'>;
+}) {
+  const { useQuery: useOrvalQuery, defaultOptions } = config;
+
+  // Return a hook (function that calls hooks at top level)
+  return (
+    id: string,
+    options?: GetByIdHookOptions
+  ): GetByIdHookResult<TData> => {
+    // Validate ID
+    const isIdValid = options?.isIdValid ?? defaultOptions?.isIdValid;
+    const isValid = isIdValid ? isIdValid(id) && !!id : !!id;
+
+    // Merge options
+    const enabled = options?.enabled ?? true;
+    const staleTime = options?.staleTime ?? defaultOptions?.staleTime;
+    const gcTime = options?.gcTime ?? defaultOptions?.gcTime;
+    const requestOptions =
+      options?.requestOptions ?? defaultOptions?.requestOptions;
+
+    // Call Orval hook
+    const query = useOrvalQuery(id, {
+      query: {
+        enabled: enabled && isValid,
+        staleTime,
+        gcTime,
+      },
+      request: requestOptions,
+    });
+
+    // Extract data type-safely
+    const data = extractQueryData(query);
+
+    return {
+      data: data as TData | undefined,
+      isLoading: query.isLoading,
+      isError: query.isError,
+      error: query.error as Error | null,
+      refetch: query.refetch,
+      queryKey: query.queryKey,
+    };
+  };
+}
+
+/**
+ * Creates a GET by ID hook with automatic unwrapping via select
+ *
+ * Alternative approach that uses TanStack Query's `select` option
+ * to unwrap data at the query level (more idiomatic).
+ *
+ * @example
+ * ```typescript
+ * export const useAccount = createGetByIdHookWithSelect({
+ *   useQuery: useGetAccountApiV1AccountsAccountIdGet,
+ * });
+ *
+ * // In component:
+ * const { data, isLoading } = useAccount(id);
+ * // data is AccountResponse | undefined (already unwrapped!)
+ * ```
+ */
+export function createGetByIdHookWithSelect<
+  TResponse extends { data: TData; status: number },
+  TData = ExtractOrvalData<TResponse>,
+  TError = Error
+>(config: {
+  useQuery: OrvalGetByIdHook<TResponse, TError>;
+  defaultOptions?: Omit<GetByIdHookOptions, 'enabled'>;
+}) {
+  const { useQuery: useOrvalQuery, defaultOptions } = config;
+
+  return (id: string, options?: GetByIdHookOptions) => {
+    const isIdValid = options?.isIdValid ?? defaultOptions?.isIdValid;
+    const isValid = isIdValid ? isIdValid(id) && !!id : !!id;
+
+    const enabled = options?.enabled ?? true;
+    const staleTime = options?.staleTime ?? defaultOptions?.staleTime;
+    const gcTime = options?.gcTime ?? defaultOptions?.gcTime;
+
+    // Use select to unwrap data at query level
+    const query = useOrvalQuery(id, {
+      query: {
+        enabled: enabled && isValid,
+        staleTime,
+        gcTime,
+        select: (response) => response.data as TData,
+      },
+      request: options?.requestOptions ?? defaultOptions?.requestOptions,
+    });
+
+    return {
+      data: query.data,
+      isLoading: query.isLoading,
+      isError: query.isError,
+      error: query.error as Error | null,
+      refetch: query.refetch,
+      queryKey: query.queryKey,
+    };
+  };
+}
