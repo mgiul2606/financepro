@@ -7,7 +7,8 @@ Utilities e factory functions per creare hook type-safe che wrappano i metodi ge
 - [Panoramica](#panoramica)
 - [Architettura](#architettura)
 - [Utilities](#utilities)
-- [Hook Factories](#hook-factories)
+- [Query Hook Factories](#query-hook-factories)
+- [Mutation Hook Factories](#mutation-hook-factories)
 - [Esempi](#esempi)
 - [Best Practices](#best-practices)
 - [Migration Guide](#migration-guide)
@@ -282,6 +283,224 @@ const useTransactionsBase = createMultiProfileListHook({
 
 ---
 
+## 🔄 Mutation Hook Factories
+
+### `createCreateMutationHook`
+
+Crea hook type-safe per CREATE (POST) mutations.
+
+#### Tipo di Signature
+
+```typescript
+function createCreateMutationHook<TResponse, TCreate, TData>(config: {
+  useMutation: OrvalCreateMutationHook<TResponse, TCreate>;
+  defaultOptions?: CreateMutationHookOptions<TCreate, TData>;
+}): (options?: CreateMutationHookOptions<TCreate, TData>) => CreateMutationResult<TCreate, TData>
+```
+
+#### Esempio Base
+
+```typescript
+import { createCreateMutationHook } from '@/hooks/factories/createCreateMutationHook';
+import {
+  useCreateAccountApiV1AccountsPost,
+  getListAccountsApiV1AccountsGetQueryKey,
+  type CreateAccountApiV1AccountsPostMutationResult,
+} from '@/api/generated/accounts/accounts';
+import type { AccountCreate, AccountResponse } from '@/api/generated/models';
+
+export const useCreateAccount = createCreateMutationHook<
+  CreateAccountApiV1AccountsPostMutationResult,
+  AccountCreate,
+  AccountResponse
+>({
+  useMutation: useCreateAccountApiV1AccountsPost,
+  defaultOptions: {
+    invalidateKeys: getListAccountsApiV1AccountsGetQueryKey({}),
+  },
+});
+
+// Uso:
+const { mutate, isPending, error } = useCreateAccount();
+
+mutate({ name: 'New Account', accountType: 'checking', ... });
+```
+
+#### Con Callbacks e Optimistic Updates
+
+```typescript
+export const useCreateAccount = createCreateMutationHook({
+  useMutation: useCreateAccountApiV1AccountsPost,
+  defaultOptions: {
+    invalidateKeys: getListAccountsApiV1AccountsGetQueryKey({}),
+    onSuccess: (account) => {
+      console.log('Created:', account.name);
+    },
+    optimisticUpdate: (newAccount, queryClient) => {
+      const queryKey = getListAccountsApiV1AccountsGetQueryKey({});
+      queryClient.setQueryData(queryKey, (old) => {
+        if (!old) return old;
+        return {
+          ...old.data,
+          accounts: [...old.data.accounts, { ...newAccount, id: 'temp' }],
+          total: old.data.total + 1,
+        };
+      });
+    },
+  },
+});
+```
+
+### `createUpdateMutationHook`
+
+Crea hook type-safe per UPDATE (PUT) mutations.
+
+#### Tipo di Signature
+
+```typescript
+function createUpdateMutationHook<TResponse, TUpdate, TData, TIdParam>(config: {
+  useMutation: OrvalUpdateMutationHook<TResponse, TUpdate, TIdParam>;
+  idParamName?: TIdParam;
+  defaultOptions?: UpdateMutationHookOptions<TUpdate, TData>;
+}): (options?: UpdateMutationHookOptions<TUpdate, TData>) => UpdateMutationResult<TUpdate, TData>
+```
+
+#### Esempio Base
+
+```typescript
+import { createUpdateMutationHook } from '@/hooks/factories/createUpdateMutationHook';
+import {
+  useUpdateAccountApiV1AccountsAccountIdPut,
+  getListAccountsApiV1AccountsGetQueryKey,
+  getGetAccountApiV1AccountsAccountIdGetQueryKey,
+} from '@/api/generated/accounts/accounts';
+import type { AccountUpdate, AccountResponse } from '@/api/generated/models';
+
+export const useUpdateAccount = createUpdateMutationHook<
+  UpdateAccountApiV1AccountsAccountIdPutMutationResult,
+  AccountUpdate,
+  AccountResponse,
+  'accountId'
+>({
+  useMutation: useUpdateAccountApiV1AccountsAccountIdPut,
+  idParamName: 'accountId',
+  defaultOptions: {
+    invalidateKeys: (_, accountId) => [
+      getListAccountsApiV1AccountsGetQueryKey({}),
+      getGetAccountApiV1AccountsAccountIdGetQueryKey(accountId),
+    ],
+  },
+});
+
+// Uso:
+const { mutate, isPending } = useUpdateAccount();
+
+mutate(accountId, { name: 'Updated Name' });
+```
+
+#### Con Optimistic Updates
+
+```typescript
+export const useUpdateAccount = createUpdateMutationHook({
+  useMutation: useUpdateAccountApiV1AccountsAccountIdPut,
+  idParamName: 'accountId',
+  defaultOptions: {
+    invalidateKeys: (_, id) => [
+      getListAccountsApiV1AccountsGetQueryKey({}),
+      getGetAccountApiV1AccountsAccountIdGetQueryKey(id),
+    ],
+    optimisticUpdate: (id, updates, queryClient) => {
+      // Update single entity cache
+      const singleKey = getGetAccountApiV1AccountsAccountIdGetQueryKey(id);
+      queryClient.setQueryData(singleKey, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: { ...old.data, ...updates },
+        };
+      });
+
+      // Update list cache
+      const listKey = getListAccountsApiV1AccountsGetQueryKey({});
+      queryClient.setQueryData(listKey, (old) => {
+        if (!old) return old;
+        return {
+          ...old.data,
+          accounts: old.data.accounts.map((acc) =>
+            acc.id === id ? { ...acc, ...updates } : acc
+          ),
+        };
+      });
+    },
+  },
+});
+```
+
+### `createDeleteMutationHook`
+
+Crea hook type-safe per DELETE mutations.
+
+#### Tipo di Signature
+
+```typescript
+function createDeleteMutationHook<TResponse, TIdParam>(config: {
+  useMutation: OrvalDeleteMutationHook<TResponse, TIdParam>;
+  idParamName?: TIdParam;
+  defaultOptions?: DeleteMutationHookOptions;
+}): (options?: DeleteMutationHookOptions) => DeleteMutationResult
+```
+
+#### Esempio Base
+
+```typescript
+import { createDeleteMutationHook } from '@/hooks/factories/createDeleteMutationHook';
+import {
+  useDeleteAccountApiV1AccountsAccountIdDelete,
+  getListAccountsApiV1AccountsGetQueryKey,
+} from '@/api/generated/accounts/accounts';
+
+export const useDeleteAccount = createDeleteMutationHook({
+  useMutation: useDeleteAccountApiV1AccountsAccountIdDelete,
+  idParamName: 'accountId',
+  defaultOptions: {
+    invalidateKeys: getListAccountsApiV1AccountsGetQueryKey({}),
+  },
+});
+
+// Uso:
+const { mutate, isPending } = useDeleteAccount();
+
+mutate(accountId);
+```
+
+#### Con Optimistic Delete
+
+```typescript
+export const useDeleteAccount = createDeleteMutationHook({
+  useMutation: useDeleteAccountApiV1AccountsAccountIdDelete,
+  idParamName: 'accountId',
+  defaultOptions: {
+    invalidateKeys: getListAccountsApiV1AccountsGetQueryKey({}),
+    optimisticDelete: (id, queryClient) => {
+      const listKey = getListAccountsApiV1AccountsGetQueryKey({});
+      queryClient.setQueryData(listKey, (old) => {
+        if (!old) return old;
+        return {
+          ...old.data,
+          accounts: old.data.accounts.filter((acc) => acc.id !== id),
+          total: old.data.total - 1,
+        };
+      });
+    },
+    onSuccess: (id) => {
+      console.log('Deleted:', id);
+    },
+  },
+});
+```
+
+---
+
 ## 📝 Esempi
 
 ### Esempio Completo: Account Management
@@ -371,6 +590,115 @@ export function AccountsList() {
         </div>
       ))}
     </div>
+  );
+}
+```
+
+### Esempio Completo con Mutations
+
+```typescript
+// hooks/useAccountMutations.ts
+import {
+  useCreateAccountApiV1AccountsPost,
+  useUpdateAccountApiV1AccountsAccountIdPut,
+  useDeleteAccountApiV1AccountsAccountIdDelete,
+  getListAccountsApiV1AccountsGetQueryKey,
+  getGetAccountApiV1AccountsAccountIdGetQueryKey,
+} from '@/api/generated/accounts/accounts';
+import { createCreateMutationHook } from '@/hooks/factories/createCreateMutationHook';
+import { createUpdateMutationHook } from '@/hooks/factories/createUpdateMutationHook';
+import { createDeleteMutationHook } from '@/hooks/factories/createDeleteMutationHook';
+
+export const useCreateAccount = createCreateMutationHook({
+  useMutation: useCreateAccountApiV1AccountsPost,
+  defaultOptions: {
+    invalidateKeys: getListAccountsApiV1AccountsGetQueryKey({}),
+    onSuccess: (account) => {
+      console.log('Account created:', account.name);
+    },
+  },
+});
+
+export const useUpdateAccount = createUpdateMutationHook({
+  useMutation: useUpdateAccountApiV1AccountsAccountIdPut,
+  idParamName: 'accountId',
+  defaultOptions: {
+    invalidateKeys: (_, accountId) => [
+      getListAccountsApiV1AccountsGetQueryKey({}),
+      getGetAccountApiV1AccountsAccountIdGetQueryKey(accountId),
+    ],
+  },
+});
+
+export const useDeleteAccount = createDeleteMutationHook({
+  useMutation: useDeleteAccountApiV1AccountsAccountIdDelete,
+  idParamName: 'accountId',
+  defaultOptions: {
+    invalidateKeys: getListAccountsApiV1AccountsGetQueryKey({}),
+  },
+});
+
+// components/CreateAccountForm.tsx
+import { useCreateAccount } from '@/hooks/useAccountMutations';
+import type { AccountCreate } from '@/api/generated/models';
+
+export function CreateAccountForm() {
+  const { mutate, isPending, error } = useCreateAccount();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const data: AccountCreate = {
+      name: 'New Account',
+      accountType: 'checking',
+      currency: 'USD',
+      financialProfileId: 'profile-id',
+    };
+    mutate(data);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {error && <div>Error: {error.message}</div>}
+      <button type="submit" disabled={isPending}>
+        {isPending ? 'Creating...' : 'Create Account'}
+      </button>
+    </form>
+  );
+}
+
+// components/EditAccountForm.tsx
+import { useUpdateAccount } from '@/hooks/useAccountMutations';
+import type { AccountUpdate } from '@/api/generated/models';
+
+export function EditAccountForm({ accountId }: { accountId: string }) {
+  const { mutate, isPending } = useUpdateAccount();
+
+  const handleSubmit = (data: AccountUpdate) => {
+    mutate(accountId, data);
+  };
+
+  return <form onSubmit={() => handleSubmit({ name: 'Updated' })}>...</form>;
+}
+
+// components/DeleteAccountButton.tsx
+import { useDeleteAccount } from '@/hooks/useAccountMutations';
+
+export function DeleteAccountButton({ accountId, accountName }: {
+  accountId: string;
+  accountName: string;
+}) {
+  const { mutate, isPending } = useDeleteAccount();
+
+  const handleDelete = () => {
+    if (confirm(`Delete ${accountName}?`)) {
+      mutate(accountId);
+    }
+  };
+
+  return (
+    <button onClick={handleDelete} disabled={isPending}>
+      {isPending ? 'Deleting...' : 'Delete'}
+    </button>
   );
 }
 ```
