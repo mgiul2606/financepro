@@ -11,14 +11,3 @@ export {
   simpleConfirm
 } from './useConfirm';
 export type { ConfirmOptions } from './useConfirm';
-
-// CRUD hooks
-export {
-  useCrud,
-  useOptimisticCrud
-} from './useCrud';
-export type {
-  CrudState,
-  CrudActions,
-  UseCrudOptions
-} from './useCrud';

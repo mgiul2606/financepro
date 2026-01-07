@@ -1,6 +1,6 @@
 /**
  * React Query hooks for Transaction operations
- * Provides optimistic updates and cache management
+ * Migrated to use new hook factories for better type safety and consistency
  */
 import { useQueries } from '@tanstack/react-query';
 import {
@@ -12,8 +12,9 @@ import {
   listTransactionsApiV1TransactionsGet,
   getTransactionStatsApiV1TransactionsStatsGet,
   getGetTransactionStatsApiV1TransactionsStatsGetQueryKey,
-  createTransactionApiV1TransactionsPostResponse,
-  updateTransactionApiV1TransactionsTransactionIdPatchResponse,
+  type CreateTransactionApiV1TransactionsPostMutationResult,
+  type UpdateTransactionApiV1TransactionsTransactionIdPatchMutationResult,
+  type DeleteTransactionApiV1TransactionsTransactionIdDeleteMutationResult,
 } from '@/api/generated/transactions/transactions';
 import type {
   TransactionCreate,
@@ -21,12 +22,16 @@ import type {
   TransactionResponse,
 } from '@/api/generated/models';
 import { useProfileContext } from '@/contexts/ProfileContext';
+import { createGetByIdHook } from '@/hooks/factories/createGetByIdHook';
+import { createCreateMutationHook } from '@/hooks/factories/createCreateMutationHook';
+import { createUpdateMutationHook } from '@/hooks/factories/createUpdateMutationHook';
+import { createDeleteMutationHook } from '@/hooks/factories/createDeleteMutationHook';
+import type { ExtractOrvalData } from '@/lib/orval-types';
 import {
-  useGenericCreate,
-  useGenericUpdate,
-  useGenericDelete,
-  ExtractResponseData,
-} from '@/hooks/useGenericMutations';
+  isAnyQueryLoading,
+  getFirstQueryError,
+  refetchAllQueries,
+} from '@/lib/orval-utils';
 
 import type { TransactionFilters, TransactionStats } from './transactions.types';
 import { isTransactionStats } from './transactions.types';
@@ -34,6 +39,9 @@ import { isTransactionStats } from './transactions.types';
 /**
  * Hook to list all transactions with optional filters
  * Fetches transactions from all active profiles and aggregates the results
+ *
+ * Note: This hook uses manual useQueries implementation due to dynamic filter support
+ * which is not yet supported by createMultiProfileListHook
  */
 export const useTransactions = (filters?: TransactionFilters) => {
   const { activeProfileIds, isLoading: profileLoading } = useProfileContext();
@@ -87,46 +95,49 @@ export const useTransactions = (filters?: TransactionFilters) => {
     return sum;
   }, 0);
 
-  const isLoading = profileLoading || queries.some((query) => query.isLoading);
-  const error = queries.find((query) => query.error)?.error || null;
-
-  const refetch = () => {
-    queries.forEach((query) => query.refetch());
-  };
+  const isLoading = profileLoading || isAnyQueryLoading(queries);
+  const error = getFirstQueryError(queries);
 
   return {
     transactions: allTransactions as TransactionResponse[],
     total: totalCount,
     isLoading,
     error,
-    refetch,
+    refetch: () => refetchAllQueries(queries),
   };
 };
+
+/**
+ * Base hook for getting a single transaction by ID
+ * Created using the GET by ID hook factory
+ */
+const useTransactionBase = createGetByIdHook<
+  { data: TransactionResponse; status: number },
+  TransactionResponse
+>({
+  useQuery: useGetTransactionApiV1TransactionsTransactionIdGet,
+});
 
 /**
  * Hook to get a single transaction by ID
  */
 export const useTransaction = (transactionId: string) => {
-  const query = useGetTransactionApiV1TransactionsTransactionIdGet(
-    transactionId,
-    {
-      query: {
-        enabled: !!transactionId && transactionId.length > 0,
-      },
-    }
-  );
+  const result = useTransactionBase(transactionId);
 
   return {
-    transaction: query.data?.data as TransactionResponse | undefined,
-    isLoading: query.isLoading,
-    error: query.error,
-    refetch: query.refetch,
+    transaction: result.data,
+    isLoading: result.isLoading,
+    error: result.error,
+    refetch: result.refetch,
   };
 };
 
 /**
  * Hook to get transaction statistics
  * Fetches stats from all active profiles and aggregates the results
+ *
+ * Note: This hook has custom aggregation logic for financial stats
+ * which requires manual implementation
  */
 export const useTransactionStats = (params?: {
   profileId?: string;
@@ -188,89 +199,103 @@ export const useTransactionStats = (params?: {
     }
   );
 
-  const isLoading = profileLoading || queries.some((query) => query.isLoading);
-  const error = queries.find((query) => query.error)?.error || null;
+  const isLoading = profileLoading || isAnyQueryLoading(queries);
+  const error = getFirstQueryError(queries);
   const hasData = queries.some((query) => query.data?.data);
-
-  const refetch = () => {
-    queries.forEach((query) => query.refetch());
-  };
 
   return {
     stats: hasData ? (aggregatedStats as TransactionStats) : undefined,
     isLoading,
     error,
-    refetch,
+    refetch: () => refetchAllQueries(queries),
   };
 };
+
+/**
+ * Base hook for creating transactions
+ * Created using the CREATE mutation hook factory
+ */
+const useCreateTransactionBase = createCreateMutationHook<
+  CreateTransactionApiV1TransactionsPostMutationResult,
+  TransactionCreate,
+  ExtractOrvalData<CreateTransactionApiV1TransactionsPostMutationResult>
+>({
+  useMutation: useCreateTransactionApiV1TransactionsPost,
+  defaultOptions: {
+    invalidateKeys: getListTransactionsApiV1TransactionsGetQueryKey(),
+  },
+});
 
 /**
  * Hook to create a new transaction
- * Uses generic mutation factory for consistency
  */
 export const useCreateTransaction = () => {
-  const result = useGenericCreate<
-    TransactionCreate,
-    createTransactionApiV1TransactionsPostResponse,
-    ExtractResponseData<createTransactionApiV1TransactionsPostResponse>,
-    Error,
-    { data: TransactionCreate }
-  >({
-    useMutation: useCreateTransactionApiV1TransactionsPost,
-    invalidateQueryKey: getListTransactionsApiV1TransactionsGetQueryKey,
-    mutationName: 'createTransaction',
-  });
+  const { mutate, mutateAsync, isPending, error, reset } = useCreateTransactionBase();
 
   return {
-    createTransaction: result.createTransaction,
-    isCreating: result.isPending,
-    error: result.error,
-    reset: result.reset,
+    createTransaction: mutateAsync,
+    isCreating: isPending,
+    error,
+    reset,
   };
 };
+
+/**
+ * Base hook for updating transactions
+ * Created using the UPDATE mutation hook factory
+ */
+const useUpdateTransactionBase = createUpdateMutationHook<
+  UpdateTransactionApiV1TransactionsTransactionIdPatchMutationResult,
+  TransactionUpdate,
+  ExtractOrvalData<UpdateTransactionApiV1TransactionsTransactionIdPatchMutationResult>,
+  'transactionId'
+>({
+  useMutation: useUpdateTransactionApiV1TransactionsTransactionIdPatch,
+  idParamName: 'transactionId',
+  defaultOptions: {
+    invalidateKeys: getListTransactionsApiV1TransactionsGetQueryKey(),
+  },
+});
 
 /**
  * Hook to update an existing transaction
- * Uses generic mutation factory for consistency
  */
 export const useUpdateTransaction = () => {
-  const result = useGenericUpdate<
-    TransactionUpdate,
-    updateTransactionApiV1TransactionsTransactionIdPatchResponse,
-    ExtractResponseData<updateTransactionApiV1TransactionsTransactionIdPatchResponse>,
-    Error,
-    { transactionId: string; data: TransactionUpdate }
-  >({
-    useMutation: useUpdateTransactionApiV1TransactionsTransactionIdPatch,
-    invalidateQueryKey: getListTransactionsApiV1TransactionsGetQueryKey,
-    mutationName: 'updateTransaction',
-    idParamName: 'transactionId',
-  });
+  const { mutate, mutateAsync, isPending, error, reset } = useUpdateTransactionBase();
 
   return {
-    updateTransaction: result.updateTransaction,
-    isUpdating: result.isPending,
-    error: result.error,
-    reset: result.reset,
+    updateTransaction: mutateAsync,
+    isUpdating: isPending,
+    error,
+    reset,
   };
 };
 
 /**
+ * Base hook for deleting transactions
+ * Created using the DELETE mutation hook factory
+ */
+const useDeleteTransactionBase = createDeleteMutationHook<
+  DeleteTransactionApiV1TransactionsTransactionIdDeleteMutationResult,
+  'transactionId'
+>({
+  useMutation: useDeleteTransactionApiV1TransactionsTransactionIdDelete,
+  idParamName: 'transactionId',
+  defaultOptions: {
+    invalidateKeys: getListTransactionsApiV1TransactionsGetQueryKey(),
+  },
+});
+
+/**
  * Hook to delete a transaction
- * Uses generic mutation factory for consistency
  */
 export const useDeleteTransaction = () => {
-  const result = useGenericDelete({
-    useMutation: useDeleteTransactionApiV1TransactionsTransactionIdDelete,
-    invalidateQueryKey: getListTransactionsApiV1TransactionsGetQueryKey,
-    mutationName: 'deleteTransaction',
-    idParamName: 'transactionId',
-  });
+  const { mutate, mutateAsync, isPending, error, reset } = useDeleteTransactionBase();
 
   return {
-    deleteTransaction: result.deleteTransaction,
-    isDeleting: result.isPending,
-    error: result.error,
-    reset: result.reset,
+    deleteTransaction: mutateAsync,
+    isDeleting: isPending,
+    error,
+    reset,
   };
 };
