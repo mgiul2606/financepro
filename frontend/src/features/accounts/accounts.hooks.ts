@@ -1,8 +1,7 @@
 /**
  * React Query hooks for Account operations
- * Provides optimistic updates and cache management
+ * Migrated to use new hook factories for better type safety and consistency
  */
-import { useQueries } from '@tanstack/react-query';
 import {
   useGetAccountApiV1AccountsAccountIdGet,
   useCreateAccountApiV1AccountsPost,
@@ -11,8 +10,9 @@ import {
   useGetAccountBalanceApiV1AccountsAccountIdBalanceGet,
   getListAccountsApiV1AccountsGetQueryKey,
   listAccountsApiV1AccountsGet,
-  createAccountApiV1AccountsPostResponse,
-  updateAccountApiV1AccountsAccountIdPutResponse,
+  type CreateAccountApiV1AccountsPostMutationResult,
+  type UpdateAccountApiV1AccountsAccountIdPutMutationResult,
+  type DeleteAccountApiV1AccountsAccountIdDeleteMutationResult,
 } from '@/api/generated/accounts/accounts';
 import type {
   AccountCreate,
@@ -21,12 +21,27 @@ import type {
   AccountBalance,
 } from '@/api/generated/models';
 import { useProfileContext } from '@/contexts/ProfileContext';
-import {
-  useGenericCreate,
-  useGenericUpdate,
-  useGenericDelete,
-  ExtractResponseData,
-} from '@/hooks/useGenericMutations';
+import { createMultiProfileListHook } from '@/hooks/factories/createMultiProfileListHook';
+import { createGetByIdHook } from '@/hooks/factories/createGetByIdHook';
+import { createCreateMutationHook } from '@/hooks/factories/createCreateMutationHook';
+import { createUpdateMutationHook } from '@/hooks/factories/createUpdateMutationHook';
+import { createDeleteMutationHook } from '@/hooks/factories/createDeleteMutationHook';
+import type { ExtractOrvalData } from '@/lib/orval-types';
+
+/**
+ * Base hook for listing accounts across multiple profiles
+ * Created using the multi-profile list hook factory
+ */
+const useAccountsBase = createMultiProfileListHook<
+  Record<string, unknown>,
+  { data: { accounts: AccountResponse[]; total: number }; status: number },
+  AccountResponse
+>({
+  getQueryKey: getListAccountsApiV1AccountsGetQueryKey,
+  queryFn: listAccountsApiV1AccountsGet,
+  extractItems: (response) => response.data.accounts,
+  extractTotal: (response) => response.data.total,
+});
 
 /**
  * Hook to list all accounts
@@ -35,55 +50,41 @@ import {
 export const useAccounts = () => {
   const { activeProfileIds, isLoading: profileLoading } = useProfileContext();
 
-  // Create queries for each active profile
-  const queries = useQueries({
-    queries: activeProfileIds.map((profileId) => ({
-      queryKey: [...getListAccountsApiV1AccountsGetQueryKey(), profileId],
-      queryFn: () =>
-        listAccountsApiV1AccountsGet(),
-      enabled: !profileLoading && activeProfileIds.length > 0,
-    })),
+  const result = useAccountsBase(activeProfileIds, {
+    enabled: !profileLoading,
   });
 
-  // Aggregate results from all profiles
-  const allAccounts = queries.flatMap(
-    (query) => query.data?.data?.accounts || []
-  );
-  const totalCount = queries.reduce(
-    (sum, query) => sum + (query.data?.data?.total || 0),
-    0
-  );
-  const isLoading = profileLoading || queries.some((query) => query.isLoading);
-  const error = queries.find((query) => query.error)?.error || null;
-
-  const refetch = () => {
-    queries.forEach((query) => query.refetch());
-  };
-
   return {
-    accounts: allAccounts as AccountResponse[],
-    total: totalCount,
-    isLoading,
-    error,
-    refetch,
+    accounts: result.items,
+    total: result.total,
+    isLoading: result.isLoading || profileLoading,
+    error: result.error,
+    refetch: result.refetch,
   };
 };
+
+/**
+ * Base hook for getting a single account by ID
+ * Created using the GET by ID hook factory
+ */
+const useAccountBase = createGetByIdHook<
+  { data: AccountResponse; status: number },
+  AccountResponse
+>({
+  useQuery: useGetAccountApiV1AccountsAccountIdGet,
+});
 
 /**
  * Hook to get a single account by ID
  */
 export const useAccount = (accountId: string) => {
-  const query = useGetAccountApiV1AccountsAccountIdGet(accountId, {
-    query: {
-      enabled: !!accountId && accountId.length > 0,
-    },
-  });
+  const result = useAccountBase(accountId);
 
   return {
-    account: query.data?.data as AccountResponse | undefined,
-    isLoading: query.isLoading,
-    error: query.error,
-    refetch: query.refetch,
+    account: result.data,
+    isLoading: result.isLoading,
+    error: result.error,
+    refetch: result.refetch,
   };
 };
 
@@ -109,72 +110,90 @@ export const useAccountBalance = (accountId: string) => {
 };
 
 /**
+ * Base hook for creating accounts
+ * Created using the CREATE mutation hook factory
+ */
+const useCreateAccountBase = createCreateMutationHook<
+  CreateAccountApiV1AccountsPostMutationResult,
+  AccountCreate,
+  ExtractOrvalData<CreateAccountApiV1AccountsPostMutationResult>
+>({
+  useMutation: useCreateAccountApiV1AccountsPost,
+  defaultOptions: {
+    invalidateKeys: getListAccountsApiV1AccountsGetQueryKey(),
+  },
+});
+
+/**
  * Hook to create a new account
- * Uses generic mutation factory for consistency
  */
 export const useCreateAccount = () => {
-  const result = useGenericCreate<
-    AccountCreate,
-    createAccountApiV1AccountsPostResponse,
-    ExtractResponseData<createAccountApiV1AccountsPostResponse>,
-    Error,
-    { data: AccountCreate }
-  >({
-    useMutation: useCreateAccountApiV1AccountsPost,
-    invalidateQueryKey: getListAccountsApiV1AccountsGetQueryKey,
-    mutationName: 'createAccount',
-  });
+  const { mutate, mutateAsync, isPending, error, reset } = useCreateAccountBase();
 
   return {
-    createAccount: result.createAccount,
-    isCreating: result.isPending,
-    error: result.error,
-    reset: result.reset,
+    createAccount: mutateAsync,
+    isCreating: isPending,
+    error,
+    reset,
   };
 };
+
+/**
+ * Base hook for updating accounts
+ * Created using the UPDATE mutation hook factory
+ */
+const useUpdateAccountBase = createUpdateMutationHook<
+  UpdateAccountApiV1AccountsAccountIdPutMutationResult,
+  AccountUpdate,
+  ExtractOrvalData<UpdateAccountApiV1AccountsAccountIdPutMutationResult>,
+  'accountId'
+>({
+  useMutation: useUpdateAccountApiV1AccountsAccountIdPut,
+  idParamName: 'accountId',
+  defaultOptions: {
+    invalidateKeys: getListAccountsApiV1AccountsGetQueryKey(),
+  },
+});
 
 /**
  * Hook to update an existing account
- * Uses generic mutation factory for consistency
  */
 export const useUpdateAccount = () => {
-  const result = useGenericUpdate<
-    AccountUpdate,
-    updateAccountApiV1AccountsAccountIdPutResponse,
-    ExtractResponseData<updateAccountApiV1AccountsAccountIdPutResponse>,
-    Error,
-    { accountId: string; data: AccountUpdate }
-  >({
-    useMutation: useUpdateAccountApiV1AccountsAccountIdPut,
-    invalidateQueryKey: getListAccountsApiV1AccountsGetQueryKey,
-    mutationName: 'updateAccount',
-    idParamName: 'accountId',
-  });
+  const { mutate, mutateAsync, isPending, error, reset } = useUpdateAccountBase();
 
   return {
-    updateAccount: result.updateAccount,
-    isUpdating: result.isPending,
-    error: result.error,
-    reset: result.reset,
+    updateAccount: mutateAsync,
+    isUpdating: isPending,
+    error,
+    reset,
   };
 };
 
 /**
+ * Base hook for deleting accounts
+ * Created using the DELETE mutation hook factory
+ */
+const useDeleteAccountBase = createDeleteMutationHook<
+  DeleteAccountApiV1AccountsAccountIdDeleteMutationResult,
+  'accountId'
+>({
+  useMutation: useDeleteAccountApiV1AccountsAccountIdDelete,
+  idParamName: 'accountId',
+  defaultOptions: {
+    invalidateKeys: getListAccountsApiV1AccountsGetQueryKey(),
+  },
+});
+
+/**
  * Hook to delete an account
- * Uses generic mutation factory for consistency
  */
 export const useDeleteAccount = () => {
-  const result = useGenericDelete({
-    useMutation: useDeleteAccountApiV1AccountsAccountIdDelete,
-    invalidateQueryKey: getListAccountsApiV1AccountsGetQueryKey,
-    mutationName: 'deleteAccount',
-    idParamName: 'accountId',
-  });
+  const { mutate, mutateAsync, isPending, error, reset } = useDeleteAccountBase();
 
   return {
-    deleteAccount: result.deleteAccount,
-    isDeleting: result.isPending,
-    error: result.error,
-    reset: result.reset,
+    deleteAccount: mutateAsync,
+    isDeleting: isPending,
+    error,
+    reset,
   };
 };

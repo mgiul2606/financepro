@@ -1,15 +1,14 @@
 // src/components/showcase/ComponentsShowcase.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Modal, ModalFooter } from '../ui/Modal';
 import { FormField, TextareaField, SelectField } from '../ui/FormField';
 import { Alert, ToastAlert, BannerAlert, InlineAlert } from '../ui/Alert';
 import { EntityCard, EntityCardGrid, EntityCardList } from '../ui/EntityCard';
 import { useConfirm, useDeleteConfirm, useDiscardConfirm, useSaveConfirm, ConfirmProvider } from '../../hooks/useConfirm';
-import { useCrud } from '../../hooks/useCrud';
-import { 
-  Wallet, 
-  CreditCard, 
-  DollarSign, 
+import {
+  Wallet,
+  CreditCard,
+  DollarSign,
   Copy,
   Share2} from 'lucide-react';
 
@@ -78,10 +77,76 @@ const ComponentsShowcaseContent = () => {
   const discardConfirm = useDiscardConfirm();
   const saveConfirm = useSaveConfirm();
 
-  const [crudState, crudActions] = useCrud<MockEntity>({
-    service: mockService,
-    autoLoad: true
-  });
+  // Simple state management for showcase demo (replaces useCrud)
+  const [items, setItems] = useState<MockEntity[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Auto-load items on mount
+    setLoading(true);
+    mockService.list()
+      .then(setItems)
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleLoad = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await mockService.list();
+      setItems(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load items');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreate = async () => {
+    setCreating(true);
+    setError(null);
+    try {
+      const newItem = await mockService.create({
+        name: `New Entity ${Date.now()}`,
+        amount: Math.random() * 1000,
+        status: 'active'
+      });
+      setItems([newItem, ...items]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create item');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await mockService.delete(id);
+      setItems(items.filter(item => item.id !== id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete item');
+    }
+  };
+
+  const crudState = {
+    items,
+    loading,
+    creating,
+    updating: false,
+    deleting: false,
+    error,
+    selectedItem: null,
+  };
+
+  const crudActions = {
+    load: handleLoad,
+    create: handleCreate,
+    delete: handleDelete,
+    clearError: () => setError(null),
+  };
 
   // Alert examples
   const alertExamples = [
