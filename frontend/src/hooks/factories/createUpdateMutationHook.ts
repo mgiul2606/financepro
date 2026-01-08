@@ -38,7 +38,7 @@ export type OrvalUpdateMutationHook<
     mutation?: UseMutationOptions<
       TResponse,
       TError,
-      Record<string, string> & { data: TUpdate },
+      Record<string, unknown> & { data: TUpdate },
       TContext
     >;
     request?: RequestInit;
@@ -47,7 +47,7 @@ export type OrvalUpdateMutationHook<
 ) => UseMutationResult<
   TResponse,
   TError,
-  Record<string, string> & { data: TUpdate },
+  Record<string, unknown> & { data: TUpdate },
   TContext
 >;
 
@@ -290,9 +290,9 @@ export function createUpdateMutationHook<
       {
         mutation: {
           onMutate: async (
-            variables: Record<string, string> & { data: TUpdate }
+            variables: Record<string, unknown> & { data: TUpdate }
           ) => {
-            const id = variables[idParamName ?? 'id'];
+            const id = variables[idParamName ?? 'id'] as string;
 
             // Run optimistic update if provided
             if (optimisticUpdate) {
@@ -301,10 +301,10 @@ export function createUpdateMutationHook<
           },
           onSuccess: (
             response: TResponse,
-            variables: Record<string, string> & { data: TUpdate }
+            variables: Record<string, unknown> & { data: TUpdate }
           ) => {
             const updatedData = response.data as TData;
-            const id = variables[idParamName ?? 'id'];
+            const id = variables[idParamName ?? 'id'] as string;
 
             // Invalidate queries
             if (invalidateKeys) {
@@ -334,9 +334,9 @@ export function createUpdateMutationHook<
           },
           onError: (
             error: TError,
-            variables: Record<string, string> & { data: TUpdate }
+            variables: Record<string, unknown> & { data: TUpdate }
           ) => {
-            const id = variables[idParamName ?? 'id'];
+            const id = variables[idParamName ?? 'id'] as string;
 
             // Show error toast if enabled
             if (showToast && errorMessage) {

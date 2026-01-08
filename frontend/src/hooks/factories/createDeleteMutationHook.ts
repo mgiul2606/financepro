@@ -36,13 +36,13 @@ export type OrvalDeleteMutationHook<
     mutation?: UseMutationOptions<
       TResponse,
       TError,
-      Record<string, string>,
+      Record<string, unknown>,
       TContext
     >;
     request?: RequestInit;
   },
   queryClient?: QueryClient
-) => UseMutationResult<TResponse, TError, Record<string, string>, TContext>;
+) => UseMutationResult<TResponse, TError, Record<string, unknown>, TContext>;
 
 /**
  * Options for delete mutation hook factory
@@ -258,8 +258,8 @@ export function createDeleteMutationHook<
     const mutation = useOrvalMutation(
       {
         mutation: {
-          onMutate: async (variables: Record<string, string>) => {
-            const id = variables[idParamName ?? 'id'];
+          onMutate: async (variables: Record<string, unknown>) => {
+            const id = variables[idParamName ?? 'id'] as string;
 
             // Run optimistic delete if provided
             if (optimisticDelete) {
@@ -268,9 +268,9 @@ export function createDeleteMutationHook<
           },
           onSuccess: (
             _response: TResponse,
-            variables: Record<string, string>
+            variables: Record<string, unknown>
           ) => {
-            const id = variables[idParamName ?? 'id'];
+            const id = variables[idParamName ?? 'id'] as string;
 
             // Invalidate queries
             if (invalidateKeys) {
@@ -298,8 +298,8 @@ export function createDeleteMutationHook<
             // Call custom success callback
             onSuccess?.(id);
           },
-          onError: (error: TError, variables: Record<string, string>) => {
-            const id = variables[idParamName ?? 'id'];
+          onError: (error: TError, variables: Record<string, unknown>) => {
+            const id = variables[idParamName ?? 'id'] as string;
 
             // Show error toast if enabled
             if (showToast && errorMessage) {
