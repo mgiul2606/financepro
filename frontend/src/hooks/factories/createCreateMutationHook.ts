@@ -229,7 +229,7 @@ export interface CreateMutationResult<TCreate, TData> {
  * ```
  */
 export function createCreateMutationHook<
-  TResponse extends { data: TData; status: number },
+  TResponse extends { data: unknown; status: number },
   TCreate,
   TData = ExtractOrvalData<TResponse>,
   TError = Error

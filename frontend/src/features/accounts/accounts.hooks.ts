@@ -1,6 +1,5 @@
 /**
  * React Query hooks for Account operations
- * Migrated to use new hook factories for better type safety and consistency
  */
 import {
   useGetAccountApiV1AccountsAccountIdGet,
@@ -13,12 +12,14 @@ import {
   type CreateAccountApiV1AccountsPostMutationResult,
   type UpdateAccountApiV1AccountsAccountIdPutMutationResult,
   type DeleteAccountApiV1AccountsAccountIdDeleteMutationResult,
+  listAccountsApiV1AccountsGetResponse,
 } from '@/api/generated/accounts/accounts';
 import type {
   AccountCreate,
   AccountUpdate,
   AccountResponse,
   AccountBalance,
+  ListAccountsApiV1AccountsGetParams,
 } from '@/api/generated/models';
 import { useProfileContext } from '@/contexts/ProfileContext';
 import { createMultiProfileListHook } from '@/hooks/factories/createMultiProfileListHook';
@@ -27,20 +28,21 @@ import { createCreateMutationHook } from '@/hooks/factories/createCreateMutation
 import { createUpdateMutationHook } from '@/hooks/factories/createUpdateMutationHook';
 import { createDeleteMutationHook } from '@/hooks/factories/createDeleteMutationHook';
 import type { ExtractOrvalData } from '@/lib/orval-types';
+import { AccountList } from './accounts.types';
 
 /**
  * Base hook for listing accounts across multiple profiles
  * Created using the multi-profile list hook factory
  */
 const useAccountsBase = createMultiProfileListHook<
-  Record<string, unknown>,
-  { data: { accounts: AccountResponse[]; total: number }; status: number },
+  ListAccountsApiV1AccountsGetParams,
+  listAccountsApiV1AccountsGetResponse,
   AccountResponse
 >({
   getQueryKey: getListAccountsApiV1AccountsGetQueryKey,
   queryFn: listAccountsApiV1AccountsGet,
-  extractItems: (response) => response.data.accounts,
-  extractTotal: (response) => response.data.total,
+  extractItems: (response) => (response.data as AccountList)?.accounts,
+  extractTotal: (response) => (response.data as AccountList)?.total,
 });
 
 /**
@@ -115,8 +117,7 @@ export const useAccountBalance = (accountId: string) => {
  */
 const useCreateAccountBase = createCreateMutationHook<
   CreateAccountApiV1AccountsPostMutationResult,
-  AccountCreate,
-  ExtractOrvalData<CreateAccountApiV1AccountsPostMutationResult>
+  AccountCreate
 >({
   useMutation: useCreateAccountApiV1AccountsPost,
   defaultOptions: {
@@ -128,7 +129,7 @@ const useCreateAccountBase = createCreateMutationHook<
  * Hook to create a new account
  */
 export const useCreateAccount = () => {
-  const { mutate, mutateAsync, isPending, error, reset } = useCreateAccountBase();
+  const { mutateAsync, isPending, error, reset } = useCreateAccountBase();
 
   return {
     createAccount: mutateAsync,
@@ -159,7 +160,7 @@ const useUpdateAccountBase = createUpdateMutationHook<
  * Hook to update an existing account
  */
 export const useUpdateAccount = () => {
-  const { mutate, mutateAsync, isPending, error, reset } = useUpdateAccountBase();
+  const { mutateAsync, isPending, error, reset } = useUpdateAccountBase();
 
   return {
     updateAccount: mutateAsync,
@@ -188,7 +189,7 @@ const useDeleteAccountBase = createDeleteMutationHook<
  * Hook to delete an account
  */
 export const useDeleteAccount = () => {
-  const { mutate, mutateAsync, isPending, error, reset } = useDeleteAccountBase();
+  const { mutateAsync, isPending, error, reset } = useDeleteAccountBase();
 
   return {
     deleteAccount: mutateAsync,

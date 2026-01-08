@@ -243,7 +243,7 @@ export interface UpdateMutationResult<TUpdate, TData> {
  * ```
  */
 export function createUpdateMutationHook<
-  TResponse extends { data: TData; status: number },
+  TResponse extends { data: unknown; status: number },
   TUpdate,
   TData = ExtractOrvalData<TResponse>,
   TIdParam extends string = 'id',
