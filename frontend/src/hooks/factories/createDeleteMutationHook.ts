@@ -30,20 +30,19 @@ import type {
  */
 export type OrvalDeleteMutationHook<
   TResponse,
-  TIdParam extends string = 'id',
   TError = Error
 > = <TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       TResponse,
       TError,
-      { [K in TIdParam]: string },
+      Record<string, string>,
       TContext
     >;
     request?: RequestInit;
   },
   queryClient?: QueryClient
-) => UseMutationResult<TResponse, TError, { [K in TIdParam]: string }, TContext>;
+) => UseMutationResult<TResponse, TError, Record<string, string>, TContext>;
 
 /**
  * Options for delete mutation hook factory
@@ -217,21 +216,20 @@ export interface DeleteMutationResult {
  */
 export function createDeleteMutationHook<
   TResponse extends { data: unknown; status: number },
-  TIdParam extends string = 'id',
   TError = Error
 >(config: {
   /**
    * Orval-generated mutation hook
    * @example useDeleteAccountApiV1AccountsAccountIdDelete
    */
-  useMutation: OrvalDeleteMutationHook<TResponse, TIdParam, TError>;
+  useMutation: OrvalDeleteMutationHook<TResponse, TError>;
 
   /**
    * Name of the ID parameter in Orval mutation
    * @example 'accountId', 'transactionId', 'budgetId'
    * @default 'id'
    */
-  idParamName?: TIdParam;
+  idParamName?: string;
 
   /**
    * Default options for all uses of this hook
@@ -260,8 +258,8 @@ export function createDeleteMutationHook<
     const mutation = useOrvalMutation(
       {
         mutation: {
-          onMutate: async (variables: { [K in TIdParam]: string }) => {
-            const id = variables[idParamName as TIdParam] as string;
+          onMutate: async (variables: Record<string, string>) => {
+            const id = variables[idParamName ?? 'id'];
 
             // Run optimistic delete if provided
             if (optimisticDelete) {
@@ -270,9 +268,9 @@ export function createDeleteMutationHook<
           },
           onSuccess: (
             _response: TResponse,
-            variables: { [K in TIdParam]: string }
+            variables: Record<string, string>
           ) => {
-            const id = variables[idParamName as TIdParam] as string;
+            const id = variables[idParamName ?? 'id'];
 
             // Invalidate queries
             if (invalidateKeys) {
@@ -300,8 +298,8 @@ export function createDeleteMutationHook<
             // Call custom success callback
             onSuccess?.(id);
           },
-          onError: (error: TError, variables: { [K in TIdParam]: string }) => {
-            const id = variables[idParamName as TIdParam] as string;
+          onError: (error: TError, variables: Record<string, string>) => {
+            const id = variables[idParamName ?? 'id'];
 
             // Show error toast if enabled
             if (showToast && errorMessage) {
@@ -322,14 +320,10 @@ export function createDeleteMutationHook<
 
     return {
       mutate: (id: string) => {
-        mutation.mutate({ [idParamName as TIdParam]: id } as {
-          [K in TIdParam]: string;
-        });
+        mutation.mutate({ [idParamName ?? 'id']: id });
       },
       mutateAsync: async (id: string): Promise<void> => {
-        await mutation.mutateAsync({ [idParamName as TIdParam]: id } as {
-          [K in TIdParam]: string;
-        });
+        await mutation.mutateAsync({ [idParamName ?? 'id']: id });
       },
       isPending: mutation.isPending,
       isError: mutation.isError,

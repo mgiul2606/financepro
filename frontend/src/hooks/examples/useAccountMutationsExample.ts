@@ -175,8 +175,7 @@ export const useCreateAccountOptimistic = createCreateMutationHook<
 export const useUpdateAccount = createUpdateMutationHook<
   UpdateAccountApiV1AccountsAccountIdPutMutationResult,
   AccountUpdate,
-  AccountResponse,
-  'accountId'
+  AccountResponse
 >({
   useMutation: useUpdateAccountApiV1AccountsAccountIdPut,
   idParamName: 'accountId',
@@ -201,8 +200,7 @@ export const useUpdateAccount = createUpdateMutationHook<
 export const useUpdateAccountOptimistic = createUpdateMutationHook<
   UpdateAccountApiV1AccountsAccountIdPutMutationResult,
   AccountUpdate,
-  AccountResponse,
-  'accountId'
+  AccountResponse
 >({
   useMutation: useUpdateAccountApiV1AccountsAccountIdPut,
   idParamName: 'accountId',
@@ -279,8 +277,7 @@ export const useUpdateAccountOptimistic = createUpdateMutationHook<
  * ```
  */
 export const useDeleteAccount = createDeleteMutationHook<
-  DeleteAccountApiV1AccountsAccountIdDeleteMutationResult,
-  'accountId'
+  DeleteAccountApiV1AccountsAccountIdDeleteMutationResult
 >({
   useMutation: useDeleteAccountApiV1AccountsAccountIdDelete,
   idParamName: 'accountId',
@@ -299,8 +296,7 @@ export const useDeleteAccount = createDeleteMutationHook<
  * Account disappears from list immediately
  */
 export const useDeleteAccountOptimistic = createDeleteMutationHook<
-  DeleteAccountApiV1AccountsAccountIdDeleteMutationResult,
-  'accountId'
+  DeleteAccountApiV1AccountsAccountIdDeleteMutationResult
 >({
   useMutation: useDeleteAccountApiV1AccountsAccountIdDelete,
   idParamName: 'accountId',

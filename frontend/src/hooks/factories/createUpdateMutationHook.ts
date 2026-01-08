@@ -32,14 +32,13 @@ import type { ExtractOrvalData } from '@/lib/orval-types';
 export type OrvalUpdateMutationHook<
   TResponse,
   TUpdate,
-  TIdParam extends string = 'id',
   TError = Error
 > = <TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       TResponse,
       TError,
-      { [K in TIdParam]: string } & { data: TUpdate },
+      Record<string, string> & { data: TUpdate },
       TContext
     >;
     request?: RequestInit;
@@ -48,7 +47,7 @@ export type OrvalUpdateMutationHook<
 ) => UseMutationResult<
   TResponse,
   TError,
-  { [K in TIdParam]: string } & { data: TUpdate },
+  Record<string, string> & { data: TUpdate },
   TContext
 >;
 
@@ -246,21 +245,20 @@ export function createUpdateMutationHook<
   TResponse extends { data: unknown; status: number },
   TUpdate,
   TData = ExtractOrvalData<TResponse>,
-  TIdParam extends string = 'id',
   TError = Error
 >(config: {
   /**
    * Orval-generated mutation hook
    * @example useUpdateAccountApiV1AccountsAccountIdPut
    */
-  useMutation: OrvalUpdateMutationHook<TResponse, TUpdate, TIdParam, TError>;
+  useMutation: OrvalUpdateMutationHook<TResponse, TUpdate, TError>;
 
   /**
    * Name of the ID parameter in Orval mutation
    * @example 'accountId', 'transactionId', 'budgetId'
    * @default 'id'
    */
-  idParamName?: TIdParam;
+  idParamName?: string;
 
   /**
    * Default options for all uses of this hook
@@ -292,9 +290,9 @@ export function createUpdateMutationHook<
       {
         mutation: {
           onMutate: async (
-            variables: { [K in TIdParam]: string } & { data: TUpdate }
+            variables: Record<string, string> & { data: TUpdate }
           ) => {
-            const id = variables[idParamName as TIdParam] as string;
+            const id = variables[idParamName ?? 'id'];
 
             // Run optimistic update if provided
             if (optimisticUpdate) {
@@ -303,10 +301,10 @@ export function createUpdateMutationHook<
           },
           onSuccess: (
             response: TResponse,
-            variables: { [K in TIdParam]: string } & { data: TUpdate }
+            variables: Record<string, string> & { data: TUpdate }
           ) => {
             const updatedData = response.data as TData;
-            const id = variables[idParamName as TIdParam] as string;
+            const id = variables[idParamName ?? 'id'];
 
             // Invalidate queries
             if (invalidateKeys) {
@@ -336,9 +334,9 @@ export function createUpdateMutationHook<
           },
           onError: (
             error: TError,
-            variables: { [K in TIdParam]: string } & { data: TUpdate }
+            variables: Record<string, string> & { data: TUpdate }
           ) => {
-            const id = variables[idParamName as TIdParam] as string;
+            const id = variables[idParamName ?? 'id'];
 
             // Show error toast if enabled
             if (showToast && errorMessage) {
@@ -359,15 +357,13 @@ export function createUpdateMutationHook<
 
     return {
       mutate: (id: string, data: TUpdate) => {
-        mutation.mutate({ [idParamName as TIdParam]: id, data } as {
-          [K in TIdParam]: string;
-        } & { data: TUpdate });
+        mutation.mutate({ [idParamName ?? 'id']: id, data });
       },
       mutateAsync: async (id: string, data: TUpdate): Promise<TData> => {
         const response = await mutation.mutateAsync({
-          [idParamName as TIdParam]: id,
+          [idParamName ?? 'id']: id,
           data,
-        } as { [K in TIdParam]: string } & { data: TUpdate });
+        });
         return response.data as TData;
       },
       data: mutation.data?.data as TData | undefined,
