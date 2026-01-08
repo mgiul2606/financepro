@@ -146,8 +146,7 @@ export const useCreateAccount = () => {
 const useUpdateAccountBase = createUpdateMutationHook<
   UpdateAccountApiV1AccountsAccountIdPutMutationResult,
   AccountUpdate,
-  ExtractOrvalData<UpdateAccountApiV1AccountsAccountIdPutMutationResult>,
-  'accountId'
+  ExtractOrvalData<UpdateAccountApiV1AccountsAccountIdPutMutationResult>
 >({
   useMutation: useUpdateAccountApiV1AccountsAccountIdPut,
   idParamName: 'accountId',
@@ -175,8 +174,7 @@ export const useUpdateAccount = () => {
  * Created using the DELETE mutation hook factory
  */
 const useDeleteAccountBase = createDeleteMutationHook<
-  DeleteAccountApiV1AccountsAccountIdDeleteMutationResult,
-  'accountId'
+  DeleteAccountApiV1AccountsAccountIdDeleteMutationResult
 >({
   useMutation: useDeleteAccountApiV1AccountsAccountIdDelete,
   idParamName: 'accountId',

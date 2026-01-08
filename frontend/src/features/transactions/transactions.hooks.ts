@@ -247,8 +247,7 @@ export const useCreateTransaction = () => {
 const useUpdateTransactionBase = createUpdateMutationHook<
   UpdateTransactionApiV1TransactionsTransactionIdPatchMutationResult,
   TransactionUpdate,
-  ExtractOrvalData<UpdateTransactionApiV1TransactionsTransactionIdPatchMutationResult>,
-  'transactionId'
+  ExtractOrvalData<UpdateTransactionApiV1TransactionsTransactionIdPatchMutationResult>
 >({
   useMutation: useUpdateTransactionApiV1TransactionsTransactionIdPatch,
   idParamName: 'transactionId',
@@ -276,8 +275,7 @@ export const useUpdateTransaction = () => {
  * Created using the DELETE mutation hook factory
  */
 const useDeleteTransactionBase = createDeleteMutationHook<
-  DeleteTransactionApiV1TransactionsTransactionIdDeleteMutationResult,
-  'transactionId'
+  DeleteTransactionApiV1TransactionsTransactionIdDeleteMutationResult
 >({
   useMutation: useDeleteTransactionApiV1TransactionsTransactionIdDelete,
   idParamName: 'transactionId',
