@@ -28,6 +28,7 @@ export type OrvalGetByIdHook<TResponse, TError = Error> = (
       gcTime?: number;
       refetchOnMount?: boolean;
       refetchOnWindowFocus?: boolean;
+      select?: (data: TResponse) => unknown;
     };
     request?: RequestInit;
   }
