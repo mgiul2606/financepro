@@ -28,19 +28,19 @@ import type { ExtractOrvalData } from '@/lib/orval-types';
  * - etc.
  *
  * UPDATE mutations expect variables: { [idParam]: string, data: TUpdate }
- * Uses `any` for variables to support all Orval-generated mutation signatures.
+ * TVariables is a generic to support different ID parameter names (accountId, transactionId, etc.)
  */
 export type OrvalUpdateMutationHook<
   TResponse,
-  TUpdate,
+  TVariables,
   TError = Error
 > = <TContext = unknown>(
   options?: {
-    mutation?: UseMutationOptions<TResponse, TError, any, TContext>;
+    mutation?: UseMutationOptions<TResponse, TError, TVariables, TContext>;
     request?: RequestInit;
   },
   queryClient?: QueryClient
-) => UseMutationResult<TResponse, TError, any, TContext>;
+) => UseMutationResult<TResponse, TError, TVariables, TContext>;
 
 /**
  * Options for update mutation hook factory
@@ -234,6 +234,7 @@ export interface UpdateMutationResult<TUpdate, TData> {
  */
 export function createUpdateMutationHook<
   TResponse extends { data: unknown; status: number },
+  TVariables extends { data: TUpdate; [key: string]: unknown },
   TUpdate,
   TData = ExtractOrvalData<TResponse>,
   TError = Error
@@ -242,7 +243,7 @@ export function createUpdateMutationHook<
    * Orval-generated mutation hook
    * @example useUpdateAccountApiV1AccountsAccountIdPut
    */
-  useMutation: OrvalUpdateMutationHook<TResponse, TUpdate, TError>;
+  useMutation: OrvalUpdateMutationHook<TResponse, TVariables, TError>;
 
   /**
    * Name of the ID parameter in Orval mutation
@@ -280,7 +281,7 @@ export function createUpdateMutationHook<
     const mutation = useOrvalMutation(
       {
         mutation: {
-          onMutate: async (variables: any) => {
+          onMutate: async (variables: TVariables) => {
             const id = variables[idParamName ?? 'id'] as string;
 
             // Run optimistic update if provided
@@ -288,7 +289,7 @@ export function createUpdateMutationHook<
               optimisticUpdate(id, variables.data, queryClient);
             }
           },
-          onSuccess: (response: TResponse, variables: any) => {
+          onSuccess: (response: TResponse, variables: TVariables) => {
             const updatedData = response.data as TData;
             const id = variables[idParamName ?? 'id'] as string;
 
@@ -318,7 +319,7 @@ export function createUpdateMutationHook<
             // Call custom success callback
             onSuccess?.(updatedData, id, variables.data);
           },
-          onError: (error: TError, variables: any) => {
+          onError: (error: TError, variables: TVariables) => {
             const id = variables[idParamName ?? 'id'] as string;
 
             // Show error toast if enabled
