@@ -28,7 +28,6 @@ import type { ExtractOrvalData } from '@/lib/orval-types';
  * - etc.
  *
  * UPDATE mutations expect variables: { [idParam]: string, data: TUpdate }
- * Uses `any` for variables to support all Orval-generated mutation signatures.
  */
 export type OrvalUpdateMutationHook<
   TResponse,
@@ -36,11 +35,21 @@ export type OrvalUpdateMutationHook<
   TError = Error
 > = <TContext = unknown>(
   options?: {
-    mutation?: UseMutationOptions<TResponse, TError, any, TContext>;
+    mutation?: UseMutationOptions<
+      TResponse,
+      TError,
+      Record<string, unknown> & { data: TUpdate },
+      TContext
+    >;
     request?: RequestInit;
   },
   queryClient?: QueryClient
-) => UseMutationResult<TResponse, TError, any, TContext>;
+) => UseMutationResult<
+  TResponse,
+  TError,
+  Record<string, unknown> & { data: TUpdate },
+  TContext
+>;
 
 /**
  * Options for update mutation hook factory
@@ -280,7 +289,9 @@ export function createUpdateMutationHook<
     const mutation = useOrvalMutation(
       {
         mutation: {
-          onMutate: async (variables: any) => {
+          onMutate: async (
+            variables: Record<string, unknown> & { data: TUpdate }
+          ) => {
             const id = variables[idParamName ?? 'id'] as string;
 
             // Run optimistic update if provided
@@ -288,7 +299,10 @@ export function createUpdateMutationHook<
               optimisticUpdate(id, variables.data, queryClient);
             }
           },
-          onSuccess: (response: TResponse, variables: any) => {
+          onSuccess: (
+            response: TResponse,
+            variables: Record<string, unknown> & { data: TUpdate }
+          ) => {
             const updatedData = response.data as TData;
             const id = variables[idParamName ?? 'id'] as string;
 
@@ -318,7 +332,10 @@ export function createUpdateMutationHook<
             // Call custom success callback
             onSuccess?.(updatedData, id, variables.data);
           },
-          onError: (error: TError, variables: any) => {
+          onError: (
+            error: TError,
+            variables: Record<string, unknown> & { data: TUpdate }
+          ) => {
             const id = variables[idParamName ?? 'id'] as string;
 
             // Show error toast if enabled
