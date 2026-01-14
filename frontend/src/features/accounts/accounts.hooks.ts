@@ -146,7 +146,8 @@ export const useCreateAccount = () => {
 const useUpdateAccountBase = createUpdateMutationHook<
   UpdateAccountApiV1AccountsAccountIdPutMutationResult,
   AccountUpdate,
-  ExtractOrvalData<UpdateAccountApiV1AccountsAccountIdPutMutationResult>
+  ExtractOrvalData<UpdateAccountApiV1AccountsAccountIdPutMutationResult>,
+  'accountId'
 >({
   useMutation: useUpdateAccountApiV1AccountsAccountIdPut,
   idParamName: 'accountId',

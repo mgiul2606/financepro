@@ -28,17 +28,23 @@ import type { ExtractOrvalData } from '@/lib/orval-types';
  * - etc.
  *
  * UPDATE mutations expect variables: { [idParam]: string, data: TUpdate }
+ *
+ * @typeParam TResponse - The response type from the mutation
+ * @typeParam TUpdate - The data type for updating the entity
+ * @typeParam TIdParam - The name of the ID parameter (e.g., 'accountId', 'transactionId')
+ * @typeParam TError - The error type (defaults to Error)
  */
 export type OrvalUpdateMutationHook<
   TResponse,
   TUpdate,
+  TIdParam extends string = string,
   TError = Error
 > = <TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       TResponse,
       TError,
-      Record<string, unknown> & { data: TUpdate },
+      { [K in TIdParam]: string } & { data: TUpdate },
       TContext
     >;
     request?: RequestInit;
@@ -47,7 +53,7 @@ export type OrvalUpdateMutationHook<
 ) => UseMutationResult<
   TResponse,
   TError,
-  Record<string, unknown> & { data: TUpdate },
+  { [K in TIdParam]: string } & { data: TUpdate },
   TContext
 >;
 
@@ -245,20 +251,21 @@ export function createUpdateMutationHook<
   TResponse extends { data: unknown; status: number },
   TUpdate,
   TData = ExtractOrvalData<TResponse>,
+  TIdParam extends string = 'id',
   TError = Error
 >(config: {
   /**
    * Orval-generated mutation hook
    * @example useUpdateAccountApiV1AccountsAccountIdPut
    */
-  useMutation: OrvalUpdateMutationHook<TResponse, TUpdate, TError>;
+  useMutation: OrvalUpdateMutationHook<TResponse, TUpdate, TIdParam, TError>;
 
   /**
    * Name of the ID parameter in Orval mutation
    * @example 'accountId', 'transactionId', 'budgetId'
    * @default 'id'
    */
-  idParamName?: string;
+  idParamName?: TIdParam;
 
   /**
    * Default options for all uses of this hook
@@ -285,26 +292,24 @@ export function createUpdateMutationHook<
       errorMessage,
     } = mergedOptions;
 
+    // Define variable type for this hook
+    type Variables = { [K in TIdParam]: string } & { data: TUpdate };
+
     // Call Orval mutation hook
     const mutation = useOrvalMutation(
       {
         mutation: {
-          onMutate: async (
-            variables: Record<string, unknown> & { data: TUpdate }
-          ) => {
-            const id = variables[idParamName ?? 'id'] as string;
+          onMutate: async (variables: Variables) => {
+            const id = variables[idParamName ?? ('id' as TIdParam)] as string;
 
             // Run optimistic update if provided
             if (optimisticUpdate) {
               optimisticUpdate(id, variables.data, queryClient);
             }
           },
-          onSuccess: (
-            response: TResponse,
-            variables: Record<string, unknown> & { data: TUpdate }
-          ) => {
+          onSuccess: (response: TResponse, variables: Variables) => {
             const updatedData = response.data as TData;
-            const id = variables[idParamName ?? 'id'] as string;
+            const id = variables[idParamName ?? ('id' as TIdParam)] as string;
 
             // Invalidate queries
             if (invalidateKeys) {
@@ -332,11 +337,8 @@ export function createUpdateMutationHook<
             // Call custom success callback
             onSuccess?.(updatedData, id, variables.data);
           },
-          onError: (
-            error: TError,
-            variables: Record<string, unknown> & { data: TUpdate }
-          ) => {
-            const id = variables[idParamName ?? 'id'] as string;
+          onError: (error: TError, variables: Variables) => {
+            const id = variables[idParamName ?? ('id' as TIdParam)] as string;
 
             // Show error toast if enabled
             if (showToast && errorMessage) {
@@ -357,13 +359,16 @@ export function createUpdateMutationHook<
 
     return {
       mutate: (id: string, data: TUpdate) => {
-        mutation.mutate({ [idParamName ?? 'id']: id, data });
+        mutation.mutate({
+          [idParamName ?? 'id']: id,
+          data,
+        } as Variables);
       },
       mutateAsync: async (id: string, data: TUpdate): Promise<TData> => {
         const response = await mutation.mutateAsync({
           [idParamName ?? 'id']: id,
           data,
-        });
+        } as Variables);
         return response.data as TData;
       },
       data: mutation.data?.data as TData | undefined,
