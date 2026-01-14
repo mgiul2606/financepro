@@ -353,6 +353,7 @@ export function createListHook<
     extractItems,
     extractTotal,
     requestOptions,
+    baseParams: params,
   });
 
   // Return a simpler hook that doesn't require profile IDs
