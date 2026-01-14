@@ -175,7 +175,8 @@ export const useUpdateAccount = () => {
  * Created using the DELETE mutation hook factory
  */
 const useDeleteAccountBase = createDeleteMutationHook<
-  DeleteAccountApiV1AccountsAccountIdDeleteMutationResult
+  DeleteAccountApiV1AccountsAccountIdDeleteMutationResult,
+  'accountId'
 >({
   useMutation: useDeleteAccountApiV1AccountsAccountIdDelete,
   idParamName: 'accountId',
