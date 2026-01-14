@@ -27,22 +27,27 @@ import type {
  *
  * DELETE mutations expect variables: { [idParam]: string }
  * Usually return void (status 204)
+ *
+ * @typeParam TResponse - The response type from the mutation
+ * @typeParam TIdParam - The name of the ID parameter (e.g., 'accountId', 'transactionId')
+ * @typeParam TError - The error type (defaults to Error)
  */
 export type OrvalDeleteMutationHook<
   TResponse,
+  TIdParam extends string = string,
   TError = Error
 > = <TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
       TResponse,
       TError,
-      Record<string, unknown>,
+      { [K in TIdParam]: string },
       TContext
     >;
     request?: RequestInit;
   },
   queryClient?: QueryClient
-) => UseMutationResult<TResponse, TError, Record<string, unknown>, TContext>;
+) => UseMutationResult<TResponse, TError, { [K in TIdParam]: string }, TContext>;
 
 /**
  * Options for delete mutation hook factory
@@ -216,20 +221,21 @@ export interface DeleteMutationResult {
  */
 export function createDeleteMutationHook<
   TResponse extends { data: unknown; status: number },
+  TIdParam extends string = 'id',
   TError = Error
 >(config: {
   /**
    * Orval-generated mutation hook
    * @example useDeleteAccountApiV1AccountsAccountIdDelete
    */
-  useMutation: OrvalDeleteMutationHook<TResponse, TError>;
+  useMutation: OrvalDeleteMutationHook<TResponse, TIdParam, TError>;
 
   /**
    * Name of the ID parameter in Orval mutation
    * @example 'accountId', 'transactionId', 'budgetId'
    * @default 'id'
    */
-  idParamName?: string;
+  idParamName?: TIdParam;
 
   /**
    * Default options for all uses of this hook
@@ -254,23 +260,23 @@ export function createDeleteMutationHook<
       errorMessage,
     } = mergedOptions;
 
+    // Define variable type for this hook
+    type Variables = { [K in TIdParam]: string };
+
     // Call Orval mutation hook
     const mutation = useOrvalMutation(
       {
         mutation: {
-          onMutate: async (variables: Record<string, unknown>) => {
-            const id = variables[idParamName ?? 'id'] as string;
+          onMutate: async (variables: Variables) => {
+            const id = variables[idParamName ?? ('id' as TIdParam)] as string;
 
             // Run optimistic delete if provided
             if (optimisticDelete) {
               optimisticDelete(id, queryClient);
             }
           },
-          onSuccess: (
-            _response: TResponse,
-            variables: Record<string, unknown>
-          ) => {
-            const id = variables[idParamName ?? 'id'] as string;
+          onSuccess: (_response: TResponse, variables: Variables) => {
+            const id = variables[idParamName ?? ('id' as TIdParam)] as string;
 
             // Invalidate queries
             if (invalidateKeys) {
@@ -298,8 +304,8 @@ export function createDeleteMutationHook<
             // Call custom success callback
             onSuccess?.(id);
           },
-          onError: (error: TError, variables: Record<string, unknown>) => {
-            const id = variables[idParamName ?? 'id'] as string;
+          onError: (error: TError, variables: Variables) => {
+            const id = variables[idParamName ?? ('id' as TIdParam)] as string;
 
             // Show error toast if enabled
             if (showToast && errorMessage) {
@@ -320,10 +326,10 @@ export function createDeleteMutationHook<
 
     return {
       mutate: (id: string) => {
-        mutation.mutate({ [idParamName ?? 'id']: id });
+        mutation.mutate({ [idParamName ?? 'id']: id } as Variables);
       },
       mutateAsync: async (id: string): Promise<void> => {
-        await mutation.mutateAsync({ [idParamName ?? 'id']: id });
+        await mutation.mutateAsync({ [idParamName ?? 'id']: id } as Variables);
       },
       isPending: mutation.isPending,
       isError: mutation.isError,
