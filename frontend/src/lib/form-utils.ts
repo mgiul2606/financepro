@@ -19,7 +19,7 @@ export function safeFieldValue(value: string | null | undefined): string {
  * @param fields - Array of field names to include in the payload
  * @returns A clean object with only defined values
  */
-export function buildUpdatePayload<T extends Record<string, unknown>>(
+export function buildUpdatePayload<T extends object>(
   data: T,
   fields: (keyof T)[]
 ): Partial<T> {
