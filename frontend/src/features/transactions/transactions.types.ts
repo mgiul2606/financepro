@@ -1,10 +1,8 @@
 import { z } from 'zod';
 import {
-  transactionCreateSchema,
-  transactionUpdateSchema,
-  transactionResponseSchema,
   transactionListSchema,
   transactionFiltersSchema,
+  transactionUIFiltersSchema,
   transactionStatsSchema,
   transactionTypeSchema,
   transactionSourceSchema,
@@ -16,12 +14,26 @@ import {
  * These ensure type safety across the application
  *
  * Note: TransactionCreate, TransactionUpdate, and TransactionResponse
- * are now imported from Orval-generated models for API compatibility.
+ * are imported from Orval-generated models for API compatibility.
  * Only UI-specific types are defined here.
  */
 
-// Query/Filter types
+// Re-export API types from Orval for convenience
+export type {
+  TransactionCreate,
+  TransactionUpdate,
+  TransactionResponse,
+  TransactionListResponse,
+} from '@/api/generated/models';
+
+// Alias: Transaction = TransactionResponse (for backward compatibility)
+export type { TransactionResponse as Transaction } from '@/api/generated/models';
+
+// Query/Filter types (API-aligned)
 export type TransactionFilters = z.infer<typeof transactionFiltersSchema>;
+
+// UI Filter types (extended for multi-select in components)
+export type TransactionUIFilters = z.infer<typeof transactionUIFiltersSchema>;
 
 // Response types (output) - for lists and aggregations
 export type TransactionList = z.infer<typeof transactionListSchema>;

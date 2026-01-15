@@ -49,7 +49,7 @@ import { useConfirm } from '@/hooks/useConfirm';
 import { useCrudModal } from '@/hooks/useCrudModal';
 
 import {
-  useTransactions,
+  useTransactionsWithUIFilters,
   useCreateTransaction,
   useUpdateTransaction,
   useDeleteTransaction,
@@ -60,7 +60,7 @@ import type {
   TransactionCreate,
   TransactionUpdate,
 } from '@/api/generated/models';
-import type { TransactionFilters } from '../transactions.types';
+import type { TransactionUIFilters } from '../transactions.types';
 import type { SupportedCurrency } from '@/utils/currency';
 import { TransactionForm } from '..';
 import { TransactionFilterModal } from '../components/TransactionFilterModal';
@@ -72,7 +72,7 @@ export const TransactionsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Filter and modal states
-  const [filters, setFilters] = useState<TransactionFilters>({});
+  const [filters, setFilters] = useState<TransactionUIFilters>({});
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [deletingTransactionId, setDeletingTransactionId] = useState<string | null>(null);
@@ -85,8 +85,8 @@ export const TransactionsPage = () => {
     }
   }, [searchParams]);
 
-  // Data fetching
-  const { transactions, isLoading, error: loadError } = useTransactions(filters);
+  // Data fetching using the UI-aware hook
+  const { transactions, isLoading, error: loadError } = useTransactionsWithUIFilters(filters);
   const { stats } = useTransactionStats();
 
   // Mutations
@@ -122,49 +122,13 @@ export const TransactionsPage = () => {
     },
   });
 
-  // Apply filters to transactions
+  // The hook already applies all UI filters (types[], categories[], amount range, etc.)
+  // We just need to ensure the transactions array is properly handled
   const filteredTransactions = useMemo(() => {
-    if (!transactions) return [];
+    return transactions ?? [];
+  }, [transactions]);
 
-    return transactions.filter((txn) => {
-      // Date range filter
-      if (filters.dateFrom && new Date(txn.transactionDate) < new Date(filters.dateFrom)) {
-        return false;
-      }
-      if (filters.dateTo && new Date(txn.transactionDate) > new Date(filters.dateTo)) {
-        return false;
-      }
-
-      const amountVal = parseFloat(txn.amount.toString());
-
-      // Amount range filter
-      if (filters.minAmount !== undefined && amountVal < filters.minAmount) {
-        return false;
-      }
-      if (filters.maxAmount !== undefined && amountVal > filters.maxAmount) {
-        return false;
-      }
-
-      // Type filter
-      if (filters.transactionType && txn.transactionType !== filters.transactionType) {
-        return false;
-      }
-
-      // Category filter
-      if (filters.categoryId && txn.categoryId !== filters.categoryId) {
-        return false;
-      }
-
-      // Account filter (from URL params)
-      if (filters.accountId && txn.accountId !== filters.accountId) {
-        return false;
-      }
-
-      return true;
-    });
-  }, [transactions, filters]);
-
-  const handleApplyFilters = (newFilters: TransactionFilters) => {
+  const handleApplyFilters = (newFilters: TransactionUIFilters) => {
     setFilters(newFilters);
     setIsFilterModalOpen(false);
   };
