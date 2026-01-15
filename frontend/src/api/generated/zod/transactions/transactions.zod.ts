@@ -335,8 +335,33 @@ export const getTransactionStatsApiV1TransactionsStatsGetQueryParams =
       .describe("Statistics to this date (inclusive)"),
   });
 
-export const getTransactionStatsApiV1TransactionsStatsGetResponse =
-  zod.unknown();
+export const getTransactionStatsApiV1TransactionsStatsGetResponse = zod
+  .object({
+    totalIncome: zod.number().describe("Total income amount"),
+    totalExpenses: zod
+      .number()
+      .describe("Total expenses amount (absolute value)"),
+    netAmount: zod.number().describe("Net amount (income - expenses)"),
+    transactionCount: zod.number().describe("Total number of transactions"),
+    categoryBreakdown: zod
+      .array(
+        zod
+          .object({
+            categoryId: zod
+              .union([zod.uuid(), zod.null()])
+              .describe("Category identifier (null for uncategorized)"),
+            count: zod
+              .number()
+              .describe("Number of transactions in this category"),
+            totalAmount: zod
+              .number()
+              .describe("Total amount for this category"),
+          })
+          .describe("Statistics for a single category"),
+      )
+      .describe("Breakdown of transactions by category"),
+  })
+  .describe("Transaction statistics response with category breakdown");
 
 /**
  * Retrieve a specific transaction by its ID

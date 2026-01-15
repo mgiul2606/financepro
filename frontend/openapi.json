@@ -1409,7 +1409,9 @@
             "description": "Statistics retrieved successfully",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionStatsResponse"
+                }
               }
             }
           },
@@ -5199,7 +5201,9 @@
           "categoryAllocations": {
             "anyOf": [
               {
-                "items": {},
+                "items": {
+                  "$ref": "#/components/schemas/BudgetCategoryCreate"
+                },
                 "type": "array"
               },
               {
@@ -5663,7 +5667,9 @@
             "title": "Is Over Budget"
           },
           "category_breakdown": {
-            "items": {},
+            "items": {
+              "$ref": "#/components/schemas/BudgetCategoryResponse"
+            },
             "type": "array",
             "title": "Category Breakdown"
           }
@@ -6673,7 +6679,9 @@
           "milestones": {
             "anyOf": [
               {
-                "items": {},
+                "items": {
+                  "$ref": "#/components/schemas/GoalMilestoneCreate"
+                },
                 "type": "array"
               },
               {
@@ -9273,6 +9281,83 @@
           "transaction_type": "purchase",
           "updated_at": "2025-01-15T10:30:00Z"
         }
+      },
+      "TransactionStatsResponse": {
+        "properties": {
+          "totalIncome": {
+            "type": "number",
+            "title": "Total Income",
+            "description": "Total income amount"
+          },
+          "totalExpenses": {
+            "type": "number",
+            "title": "Total Expenses",
+            "description": "Total expenses amount (absolute value)"
+          },
+          "netAmount": {
+            "type": "number",
+            "title": "Net Amount",
+            "description": "Net amount (income - expenses)"
+          },
+          "transactionCount": {
+            "type": "integer",
+            "title": "Transaction Count",
+            "description": "Total number of transactions"
+          },
+          "categoryBreakdown": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryStatsItem"
+            },
+            "type": "array",
+            "title": "Category Breakdown",
+            "description": "Breakdown of transactions by category"
+          }
+        },
+        "type": "object",
+        "required": [
+          "totalIncome",
+          "totalExpenses",
+          "netAmount",
+          "transactionCount",
+          "categoryBreakdown"
+        ],
+        "title": "TransactionStatsResponse",
+        "description": "Transaction statistics response with category breakdown"
+      },
+      "CategoryStatsItem": {
+        "properties": {
+          "categoryId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category Id",
+            "description": "Category identifier (null for uncategorized)"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count",
+            "description": "Number of transactions in this category"
+          },
+          "totalAmount": {
+            "type": "number",
+            "title": "Total Amount",
+            "description": "Total amount for this category"
+          }
+        },
+        "type": "object",
+        "required": [
+          "categoryId",
+          "count",
+          "totalAmount"
+        ],
+        "title": "CategoryStatsItem",
+        "description": "Statistics for a single category"
       },
       "TransactionSource": {
         "type": "string",

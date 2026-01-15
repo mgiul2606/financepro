@@ -38,6 +38,7 @@ import type {
   TransactionCreate,
   TransactionListResponse,
   TransactionResponse,
+  TransactionStatsResponse,
   TransactionUpdate,
 } from ".././models";
 
@@ -398,7 +399,7 @@ export const useCreateTransactionApiV1TransactionsPost = <
  * @summary Get transaction statistics
  */
 export type getTransactionStatsApiV1TransactionsStatsGetResponse200 = {
-  data: unknown;
+  data: TransactionStatsResponse;
   status: 200;
 };
 
