@@ -9285,17 +9285,17 @@
       "TransactionStatsResponse": {
         "properties": {
           "totalIncome": {
-            "type": "number",
+            "type": "string",
             "title": "Total Income",
             "description": "Total income amount"
           },
           "totalExpenses": {
-            "type": "number",
+            "type": "string",
             "title": "Total Expenses",
             "description": "Total expenses amount (absolute value)"
           },
           "netAmount": {
-            "type": "number",
+            "type": "string",
             "title": "Net Amount",
             "description": "Net amount (income - expenses)"
           },
@@ -9345,7 +9345,7 @@
             "description": "Number of transactions in this category"
           },
           "totalAmount": {
-            "type": "number",
+            "type": "string",
             "title": "Total Amount",
             "description": "Total amount for this category"
           }

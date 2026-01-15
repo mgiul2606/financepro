@@ -337,11 +337,11 @@ export const getTransactionStatsApiV1TransactionsStatsGetQueryParams =
 
 export const getTransactionStatsApiV1TransactionsStatsGetResponse = zod
   .object({
-    totalIncome: zod.number().describe("Total income amount"),
+    totalIncome: zod.string().describe("Total income amount"),
     totalExpenses: zod
-      .number()
+      .string()
       .describe("Total expenses amount (absolute value)"),
-    netAmount: zod.number().describe("Net amount (income - expenses)"),
+    netAmount: zod.string().describe("Net amount (income - expenses)"),
     transactionCount: zod.number().describe("Total number of transactions"),
     categoryBreakdown: zod
       .array(
@@ -354,7 +354,7 @@ export const getTransactionStatsApiV1TransactionsStatsGetResponse = zod
               .number()
               .describe("Number of transactions in this category"),
             totalAmount: zod
-              .number()
+              .string()
               .describe("Total amount for this category"),
           })
           .describe("Statistics for a single category"),
