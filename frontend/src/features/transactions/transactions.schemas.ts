@@ -1,7 +1,8 @@
 /**
  * Transaction schemas with runtime validation using Zod
  *
- * Bridges Orval-generated schemas with application-specific needs
+ * Bridges Orval-generated schemas with application-specific needs.
+ * Follows the same pattern as accounts.schemas.ts.
  */
 import { z } from 'zod';
 import { TransactionType, TransactionSource } from '@/api/generated/models';
@@ -85,18 +86,40 @@ export const transactionListSchema = listTransactionsApiV1TransactionsGetRespons
 export const transactionStatsSchema = getTransactionStatsApiV1TransactionsStatsGetResponse;
 
 /**
- * Transaction Filters Schema (UI-specific)
+ * Transaction Filters Schema (API-aligned)
+ * Matches the ListTransactionsApiV1TransactionsGetParams from Orval
  */
 export const transactionFiltersSchema = z.object({
   profileId: z.string().uuid().optional(),
   accountId: z.string().uuid().optional(),
   categoryId: z.string().uuid().optional(),
-  transactionType: transactionTypeSchema.optional(),
   dateFrom: z.string().optional(),
   dateTo: z.string().optional(),
+  skip: z.number().int().min(0).default(0).optional(),
+  limit: z.number().int().min(1).max(1000).default(20).optional(),
+});
+
+/**
+ * Transaction UI Filters Schema
+ * Extended schema for UI components that support multi-select filters.
+ * Used by TransactionFilterModal.tsx
+ *
+ * Note: types[] and categories[] are UI-only fields that get converted
+ * to API-compatible params in the hook layer.
+ */
+export const transactionUIFiltersSchema = z.object({
+  // Date range
+  dateFrom: z.string().optional(),
+  dateTo: z.string().optional(),
+  // Amount range (UI-only, filtered client-side)
   minAmount: z.number().optional(),
   maxAmount: z.number().optional(),
-  search: z.string().optional(),
-  skip: z.number().int().min(0).default(0).optional(),
-  limit: z.number().int().min(1).max(100).default(20).optional(),
+  // Multi-select arrays for UI
+  types: z.array(z.string()).optional(),
+  categories: z.array(z.string()).optional(),
+  // Single values
+  merchantName: z.string().optional(),
+  accountId: z.string().uuid().optional(),
+  // Allowed accounts constraint (for account-scoped views)
+  allowedAccounts: z.array(z.string().uuid()).optional(),
 });

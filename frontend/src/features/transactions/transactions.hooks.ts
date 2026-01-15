@@ -1,6 +1,6 @@
 /**
  * React Query hooks for Transaction operations
- * Migrated to use new hook factories for better type safety and consistency
+ * Follows the same architecture pattern as accounts.hooks.ts
  */
 import { useQueries } from '@tanstack/react-query';
 import {
@@ -12,6 +12,7 @@ import {
   listTransactionsApiV1TransactionsGet,
   getTransactionStatsApiV1TransactionsStatsGet,
   getGetTransactionStatsApiV1TransactionsStatsGetQueryKey,
+  type listTransactionsApiV1TransactionsGetResponse,
   type CreateTransactionApiV1TransactionsPostMutationResult,
   type UpdateTransactionApiV1TransactionsTransactionIdPatchMutationResult,
   type DeleteTransactionApiV1TransactionsTransactionIdDeleteMutationResult,
@@ -20,8 +21,10 @@ import type {
   TransactionCreate,
   TransactionUpdate,
   TransactionResponse,
+  ListTransactionsApiV1TransactionsGetParams,
 } from '@/api/generated/models';
 import { useProfileContext } from '@/contexts/ProfileContext';
+import { createMultiProfileListHook } from '@/hooks/factories/createMultiProfileListHook';
 import { createGetByIdHook } from '@/hooks/factories/createGetByIdHook';
 import { createCreateMutationHook } from '@/hooks/factories/createCreateMutationHook';
 import { createUpdateMutationHook } from '@/hooks/factories/createUpdateMutationHook';
@@ -33,74 +36,200 @@ import {
   refetchAllQueries,
 } from '@/lib/orval-utils';
 
-import type { TransactionFilters, TransactionStats } from './transactions.types';
+import type {
+  TransactionFilters,
+  TransactionUIFilters,
+  TransactionStats,
+  TransactionList,
+} from './transactions.types';
 import { isTransactionStats } from './transactions.types';
+
+/**
+ * Converts UI filters to API parameters (snake_case)
+ */
+function toApiParams(
+  filters: TransactionFilters | undefined,
+  profileId: string
+): ListTransactionsApiV1TransactionsGetParams {
+  if (!filters) {
+    return { profile_id: profileId };
+  }
+
+  return {
+    profile_id: profileId,
+    account_id: filters.accountId,
+    category_id: filters.categoryId,
+    date_from: filters.dateFrom,
+    date_to: filters.dateTo,
+    skip: filters.skip,
+    limit: filters.limit,
+  };
+}
+
+/**
+ * Base hook for listing transactions across multiple profiles (without filters)
+ * Created using the multi-profile list hook factory
+ *
+ * Note: For filtered queries, we use useTransactionsFiltered which handles
+ * dynamic filter parameters.
+ */
+const useTransactionsBase = createMultiProfileListHook<
+  ListTransactionsApiV1TransactionsGetParams,
+  listTransactionsApiV1TransactionsGetResponse,
+  TransactionResponse
+>({
+  getQueryKey: getListTransactionsApiV1TransactionsGetQueryKey,
+  queryFn: listTransactionsApiV1TransactionsGet,
+  extractItems: (response) => (response.data as TransactionList)?.items ?? [],
+  extractTotal: (response) => (response.data as TransactionList)?.total ?? 0,
+  mapProfileToParams: (profileId) => ({ profile_id: profileId }),
+});
 
 /**
  * Hook to list all transactions with optional filters
  * Fetches transactions from all active profiles and aggregates the results
  *
- * Note: This hook uses manual useQueries implementation due to dynamic filter support
- * which is not yet supported by createMultiProfileListHook
+ * When filters are provided, uses a dynamic query approach.
+ * When no filters, uses the optimized factory-based hook.
  */
 export const useTransactions = (filters?: TransactionFilters) => {
   const { activeProfileIds, isLoading: profileLoading } = useProfileContext();
 
-  // Convert camelCase filters to snake_case for API
-  const apiFilters = filters
+  // For unfiltered queries, use the factory-based hook
+  const baseResult = useTransactionsBase(activeProfileIds, {
+    enabled: !profileLoading && !filters,
+  });
+
+  // For filtered queries, create dynamic queries
+  const filteredQueries = useQueries({
+    queries: filters
+      ? activeProfileIds.map((profileId) => {
+          const params = toApiParams(filters, profileId);
+          return {
+            queryKey: [...getListTransactionsApiV1TransactionsGetQueryKey(params), profileId],
+            queryFn: () => listTransactionsApiV1TransactionsGet(params),
+            enabled: !profileLoading && activeProfileIds.length > 0,
+          };
+        })
+      : [],
+  });
+
+  // If filters are provided, aggregate filtered results
+  if (filters) {
+    const allTransactions = filteredQueries.flatMap((query) => {
+      const data = query.data?.data as TransactionList | undefined;
+      return data?.items ?? [];
+    });
+
+    const totalCount = filteredQueries.reduce((sum, query) => {
+      const data = query.data?.data as TransactionList | undefined;
+      return sum + (data?.total ?? 0);
+    }, 0);
+
+    return {
+      transactions: allTransactions,
+      total: totalCount,
+      isLoading: profileLoading || isAnyQueryLoading(filteredQueries),
+      error: getFirstQueryError(filteredQueries),
+      refetch: () => refetchAllQueries(filteredQueries),
+    };
+  }
+
+  // No filters - use base result
+  return {
+    transactions: baseResult.items,
+    total: baseResult.total,
+    isLoading: baseResult.isLoading || profileLoading,
+    error: baseResult.error,
+    refetch: baseResult.refetch,
+  };
+};
+
+/**
+ * Hook to list transactions with UI filters (supports multi-select)
+ * Applies client-side filtering for UI-specific fields like types[] and categories[]
+ */
+export const useTransactionsWithUIFilters = (uiFilters?: TransactionUIFilters) => {
+  const { activeProfileIds, isLoading: profileLoading } = useProfileContext();
+
+  // Convert UI filters to API-compatible filters
+  const apiFilters: TransactionFilters | undefined = uiFilters
     ? {
-        account_id: filters.accountId,
-        category_id: filters.categoryId,
-        transaction_type: filters.transactionType,
-        date_from: filters.dateFrom,
-        date_to: filters.dateTo,
-        min_amount: filters.minAmount,
-        max_amount: filters.maxAmount,
-        search: filters.search,
-        skip: filters.skip,
-        limit: filters.limit,
+        accountId: uiFilters.accountId,
+        dateFrom: uiFilters.dateFrom,
+        dateTo: uiFilters.dateTo,
+        // Note: categories[] and types[] are filtered client-side
       }
     : undefined;
 
   // Create queries for each active profile
   const queries = useQueries({
-    queries: activeProfileIds.map((profileId) => ({
-      queryKey: getListTransactionsApiV1TransactionsGetQueryKey({
-        ...apiFilters,
-        profile_id: profileId,
-      }),
-      queryFn: () =>
-        listTransactionsApiV1TransactionsGet({
-          ...apiFilters,
-          profile_id: profileId,
-        }),
-      enabled: !profileLoading && activeProfileIds.length > 0,
-    })),
+    queries: activeProfileIds.map((profileId) => {
+      const params = toApiParams(apiFilters, profileId);
+      return {
+        queryKey: [...getListTransactionsApiV1TransactionsGetQueryKey(params), profileId, uiFilters],
+        queryFn: () => listTransactionsApiV1TransactionsGet(params),
+        enabled: !profileLoading && activeProfileIds.length > 0,
+      };
+    }),
   });
 
   // Aggregate results from all profiles
-  const allTransactions = queries.flatMap((query) => {
-    const data = query.data?.data;
-    if (data && 'items' in data) {
-      return data.items || [];
-    }
-    return [];
+  let allTransactions = queries.flatMap((query) => {
+    const data = query.data?.data as TransactionList | undefined;
+    return data?.items ?? [];
   });
 
-  const totalCount = queries.reduce((sum, query) => {
-    const data = query.data?.data;
-    if (data && 'total' in data) {
-      return sum + (data.total || 0);
+  // Apply client-side UI filters
+  if (uiFilters) {
+    // Filter by transaction types (multi-select)
+    if (uiFilters.types && uiFilters.types.length > 0) {
+      allTransactions = allTransactions.filter((txn) =>
+        uiFilters.types!.includes(txn.transactionType)
+      );
     }
-    return sum;
-  }, 0);
+
+    // Filter by categories (multi-select)
+    if (uiFilters.categories && uiFilters.categories.length > 0) {
+      allTransactions = allTransactions.filter(
+        (txn) => txn.categoryId && uiFilters.categories!.includes(txn.categoryId)
+      );
+    }
+
+    // Filter by amount range
+    if (uiFilters.minAmount !== undefined) {
+      allTransactions = allTransactions.filter(
+        (txn) => parseFloat(txn.amount) >= uiFilters.minAmount!
+      );
+    }
+    if (uiFilters.maxAmount !== undefined) {
+      allTransactions = allTransactions.filter(
+        (txn) => parseFloat(txn.amount) <= uiFilters.maxAmount!
+      );
+    }
+
+    // Filter by merchant name (partial match)
+    if (uiFilters.merchantName) {
+      const searchLower = uiFilters.merchantName.toLowerCase();
+      allTransactions = allTransactions.filter(
+        (txn) => txn.merchantName?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Filter by allowed accounts
+    if (uiFilters.allowedAccounts && uiFilters.allowedAccounts.length > 0) {
+      allTransactions = allTransactions.filter((txn) =>
+        uiFilters.allowedAccounts!.includes(txn.accountId)
+      );
+    }
+  }
 
   const isLoading = profileLoading || isAnyQueryLoading(queries);
   const error = getFirstQueryError(queries);
 
   return {
-    transactions: allTransactions as TransactionResponse[],
-    total: totalCount,
+    transactions: allTransactions,
+    total: allTransactions.length,
     isLoading,
     error,
     refetch: () => refetchAllQueries(queries),
@@ -137,7 +266,7 @@ export const useTransaction = (transactionId: string) => {
  * Fetches stats from all active profiles and aggregates the results
  *
  * Note: This hook has custom aggregation logic for financial stats
- * which requires manual implementation
+ * which requires summing monetary values across profiles.
  */
 export const useTransactionStats = (params?: {
   profileId?: string;
@@ -147,25 +276,23 @@ export const useTransactionStats = (params?: {
 }) => {
   const { activeProfileIds, isLoading: profileLoading } = useProfileContext();
 
-  // Convert camelCase to snake_case for API
-  const apiParams = params
-    ? {
-        account_id: params.accountId,
-        date_from: params.dateFrom,
-        date_to: params.dateTo,
-      }
-    : undefined;
-
   // Create queries for each active profile
   const queries = useQueries({
     queries: activeProfileIds.map((profileId) => ({
-      queryKey: getGetTransactionStatsApiV1TransactionsStatsGetQueryKey({
-        ...apiParams,
-        profile_id: profileId,
-      }),
+      queryKey: [
+        ...getGetTransactionStatsApiV1TransactionsStatsGetQueryKey({
+          account_id: params?.accountId,
+          date_from: params?.dateFrom,
+          date_to: params?.dateTo,
+          profile_id: profileId,
+        }),
+        profileId,
+      ],
       queryFn: () =>
         getTransactionStatsApiV1TransactionsStatsGet({
-          ...apiParams,
+          account_id: params?.accountId,
+          date_from: params?.dateFrom,
+          date_to: params?.dateTo,
           profile_id: profileId,
         }),
       enabled: !profileLoading && activeProfileIds.length > 0,
@@ -178,12 +305,15 @@ export const useTransactionStats = (params?: {
       const data = query.data?.data;
       if (isTransactionStats(data)) {
         return {
-          totalIncome:
-            (parseFloat(acc.totalIncome) + parseFloat(data.totalIncome)).toString(),
-          totalExpenses:
-            (parseFloat(acc.totalExpenses) + parseFloat(data.totalExpenses)).toString(),
-          netBalance:
-            (parseFloat(acc.netBalance) + parseFloat(data.netBalance)).toString(),
+          totalIncome: (
+            parseFloat(acc.totalIncome) + parseFloat(data.totalIncome)
+          ).toString(),
+          totalExpenses: (
+            parseFloat(acc.totalExpenses) + parseFloat(data.totalExpenses)
+          ).toString(),
+          netBalance: (
+            parseFloat(acc.netBalance) + parseFloat(data.netBalance)
+          ).toString(),
           transactionCount: acc.transactionCount + data.transactionCount,
           currency: data.currency || 'EUR',
         };
@@ -230,7 +360,7 @@ const useCreateTransactionBase = createCreateMutationHook<
  * Hook to create a new transaction
  */
 export const useCreateTransaction = () => {
-  const { mutate, mutateAsync, isPending, error, reset } = useCreateTransactionBase();
+  const { mutateAsync, isPending, error, reset } = useCreateTransactionBase();
 
   return {
     createTransaction: mutateAsync,
@@ -260,7 +390,7 @@ const useUpdateTransactionBase = createUpdateMutationHook<
  * Hook to update an existing transaction
  */
 export const useUpdateTransaction = () => {
-  const { mutate, mutateAsync, isPending, error, reset } = useUpdateTransactionBase();
+  const { mutateAsync, isPending, error, reset } = useUpdateTransactionBase();
 
   return {
     updateTransaction: mutateAsync,
@@ -288,7 +418,7 @@ const useDeleteTransactionBase = createDeleteMutationHook<
  * Hook to delete a transaction
  */
 export const useDeleteTransaction = () => {
-  const { mutate, mutateAsync, isPending, error, reset } = useDeleteTransactionBase();
+  const { mutateAsync, isPending, error, reset } = useDeleteTransactionBase();
 
   return {
     deleteTransaction: mutateAsync,

@@ -2,11 +2,29 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Download, FileText, Table, FileCode } from 'lucide-react';
-import { Modal, ModalFooter } from '@/components/ui/Modal';
-import { Button } from '@/core/components/atomic/Button';
-import { SelectField } from '@/components/ui/FormField';
-import { Alert } from '@/components/ui/Alert';
-import type { Transaction } from '../types';
+
+// shadcn/ui components
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+
+// Types - using Transaction which is an alias for TransactionResponse
+import type { Transaction } from '../transactions.types';
 
 interface TransactionExportModalProps {
   isOpen: boolean;
@@ -28,7 +46,7 @@ export const TransactionExportModal = ({
   const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const formatOptions = [
+  const formatOptions: { value: ExportFormat; label: string }[] = [
     { value: 'csv', label: `${t('transactions.export.csv')} (.csv)` },
     { value: 'excel', label: `${t('transactions.export.excel')} (.xlsx)` },
     { value: 'pdf', label: `${t('transactions.export.pdf')} (.pdf)` },
@@ -58,11 +76,11 @@ export const TransactionExportModal = ({
     ];
 
     const rows = data.map((txn) => [
-      new Date(txn.date).toLocaleDateString(),
+      new Date(txn.transactionDate).toLocaleDateString(),
       txn.description,
-      txn.type,
-      txn.category || '',
-      txn.amount.toFixed(2),
+      txn.transactionType,
+      txn.categoryId || '',
+      parseFloat(txn.amount).toFixed(2),
       txn.currency,
       txn.merchantName || '',
       txn.notes || '',
@@ -83,15 +101,12 @@ export const TransactionExportModal = ({
   const exportToExcel = (data: Transaction[]) => {
     // For a real implementation, you'd use a library like xlsx or sheetjs
     // For now, we'll use CSV format with .xlsx extension
-    // In production, use: import * as XLSX from 'xlsx';
-
     setError('Excel export requires additional library. Using CSV format instead.');
     exportToCSV(data);
   };
 
-  const exportToPDF = (data: Transaction[]) => {
+  const exportToPDF = () => {
     // For a real implementation, you'd use a library like jsPDF or pdfmake
-    // For now, we'll show an error
     setError('PDF export is not yet implemented. Please use CSV format.');
   };
 
@@ -108,7 +123,7 @@ export const TransactionExportModal = ({
           exportToExcel(transactions);
           break;
         case 'pdf':
-          exportToPDF(transactions);
+          exportToPDF();
           break;
       }
 
@@ -126,71 +141,93 @@ export const TransactionExportModal = ({
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={t('transactions.export.title')}
-      size="sm"
-      footer={
-        <ModalFooter>
-          <Button variant="secondary" onClick={onClose} disabled={isExporting}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>{t('transactions.export.title')}</DialogTitle>
+          <DialogDescription>
+            {t(
+              'transactions.export.description',
+              'Export your transactions to a file for external use.'
+            )}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 py-4">
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+            <p className="text-sm text-foreground">
+              <strong>{transactions.length}</strong> {t('transactions.title').toLowerCase()}{' '}
+              will be exported
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="format">{t('transactions.export.format')}</Label>
+            <Select
+              value={format}
+              onValueChange={(value) => setFormat(value as ExportFormat)}
+            >
+              <SelectTrigger id="format">
+                <SelectValue placeholder="Select format" />
+              </SelectTrigger>
+              <SelectContent>
+                {formatOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
+            {getFormatIcon(format)}
+            <div className="flex-1">
+              <p className="text-sm font-medium">
+                {formatOptions.find((f) => f.value === format)?.label}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {format === 'csv' &&
+                  'Compatible with Excel, Google Sheets, and most spreadsheet applications'}
+                {format === 'excel' &&
+                  'Microsoft Excel format with formatting and formulas'}
+                {format === 'pdf' && 'Printable PDF document with transaction details'}
+              </p>
+            </div>
+          </div>
+
+          {includeFilters && (
+            <div className="text-xs text-muted-foreground p-3 bg-muted/50 rounded border">
+              Note: Current filters will be applied to the exported data
+            </div>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} disabled={isExporting}>
             {t('common.cancel')}
           </Button>
-          <Button
-            variant="primary"
-            onClick={handleExport}
-            isLoading={isExporting}
-            leftIcon={<Download />}
-          >
-            {t('common.export')}
+          <Button onClick={handleExport} disabled={isExporting}>
+            {isExporting ? (
+              <>
+                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                Exporting...
+              </>
+            ) : (
+              <>
+                <Download className="mr-2 h-4 w-4" />
+                {t('common.export')}
+              </>
+            )}
           </Button>
-        </ModalFooter>
-      }
-    >
-      <div className="space-y-4">
-        {error && (
-          <Alert variant="warning" closable onClose={() => setError(null)}>
-            {error}
-          </Alert>
-        )}
-
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-sm text-blue-900">
-            <strong>{transactions.length}</strong> {t('transactions.title').toLowerCase()}{' '}
-            will be exported
-          </p>
-        </div>
-
-        <SelectField
-          label={t('transactions.export.format')}
-          value={format}
-          onChange={(e) => setFormat(e.target.value as ExportFormat)}
-          options={formatOptions}
-          required
-        />
-
-        <div className="flex items-center gap-2 p-3 bg-neutral-50 rounded-lg border border-neutral-200">
-          {getFormatIcon(format)}
-          <div className="flex-1">
-            <p className="text-sm font-medium text-neutral-900">
-              {formatOptions.find((f) => f.value === format)?.label}
-            </p>
-            <p className="text-xs text-neutral-600 mt-0.5">
-              {format === 'csv' &&
-                'Compatible with Excel, Google Sheets, and most spreadsheet applications'}
-              {format === 'excel' &&
-                'Microsoft Excel format with formatting and formulas'}
-              {format === 'pdf' && 'Printable PDF document with transaction details'}
-            </p>
-          </div>
-        </div>
-
-        {includeFilters && (
-          <div className="text-xs text-neutral-600 p-3 bg-neutral-50 rounded border border-neutral-200">
-            Note: Current filters will be applied to the exported data
-          </div>
-        )}
-      </div>
-    </Modal>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
