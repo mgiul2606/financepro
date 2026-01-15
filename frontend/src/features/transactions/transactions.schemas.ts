@@ -20,33 +20,35 @@ import {
  * Transaction Type Enum Schema
  */
 export const transactionTypeSchema = z.enum([
-  TransactionType.bank_transfer,
-  TransactionType.withdrawal,
-  TransactionType.payment,
-  TransactionType.purchase,
-  TransactionType.internal_transfer,
-  TransactionType.income,
-  TransactionType.salary,
-  TransactionType.invoice,
-  TransactionType.asset_purchase,
-  TransactionType.asset_sale,
-  TransactionType.dividend,
-  TransactionType.interest,
-  TransactionType.loan_payment,
-  TransactionType.refund,
-  TransactionType.fee,
-  TransactionType.tax,
-  TransactionType.other,
+  TransactionType.BankTransfer,
+  TransactionType.Withdrawal,
+  TransactionType.Payment,
+  TransactionType.Purchase,
+  TransactionType.InternalTransfer,
+  TransactionType.Income,
+  TransactionType.Salary,
+  TransactionType.Invoice,
+  TransactionType.AssetPurchase,
+  TransactionType.AssetSale,
+  TransactionType.Dividend,
+  TransactionType.Interest,
+  TransactionType.LoanPayment,
+  TransactionType.Refund,
+  TransactionType.Fee,
+  TransactionType.Tax,
+  TransactionType.Other,
 ]);
 
 /**
  * Transaction Source Enum Schema
  */
 export const transactionSourceSchema = z.enum([
-  TransactionSource.manual,
-  TransactionSource.import_csv,
-  TransactionSource.bank_api,
-  TransactionSource.ai_classified,
+  TransactionSource.Manual,
+  TransactionSource.ImportCsv,
+  TransactionSource.ImportOcr,
+  TransactionSource.ImportApi,
+  TransactionSource.BankSync,
+  TransactionSource.Recurring,
 ]);
 
 /**

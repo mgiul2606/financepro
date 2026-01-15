@@ -43,6 +43,7 @@ import type {
   TransactionList,
 } from './transactions.types';
 import { isTransactionStats } from './transactions.types';
+import { transactionStatsSchema } from './transactions.schemas';
 
 /**
  * Converts UI filters to API parameters (snake_case)
@@ -303,19 +304,21 @@ export const useTransactionStats = (params?: {
   const aggregatedStats = queries.reduce(
     (acc, query) => {
       const data = query.data?.data;
-      if (isTransactionStats(data)) {
+      const parsed = transactionStatsSchema.safeParse(data);
+      if (parsed.success) {
+        const parsedData = parsed.data as TransactionStats;
         return {
           totalIncome: (
-            parseFloat(acc.totalIncome) + parseFloat(data.totalIncome)
+            parseFloat(acc.totalIncome) + parseFloat(parsedData.totalIncome)
           ).toString(),
           totalExpenses: (
-            parseFloat(acc.totalExpenses) + parseFloat(data.totalExpenses)
+            parseFloat(acc.totalExpenses) + parseFloat(parsedData.totalExpenses)
           ).toString(),
           netBalance: (
-            parseFloat(acc.netBalance) + parseFloat(data.netBalance)
+            parseFloat(acc.netBalance) + parseFloat(parsedData.netBalance)
           ).toString(),
-          transactionCount: acc.transactionCount + data.transactionCount,
-          currency: data.currency || 'EUR',
+          transactionCount: acc.transactionCount + parsedData.transactionCount,
+          currency: parsedData.currency || 'EUR',
         };
       }
       return acc;

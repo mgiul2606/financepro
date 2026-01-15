@@ -22,7 +22,6 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
 export type TransactionType =
   (typeof TransactionType)[keyof typeof TransactionType];
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const TransactionType = {
   BankTransfer: "bank_transfer",
   Withdrawal: "withdrawal",

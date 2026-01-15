@@ -48,13 +48,8 @@ export type Currency = z.infer<typeof currencySchema>;
  * Helper type guards
  */
 export function isTransactionStats(data: unknown): data is TransactionStats {
-  return (
-    typeof data === 'object' &&
-    data !== null &&
-    'totalIncome' in data &&
-    'totalExpenses' in data &&
-    'netBalance' in data
-  );
+  const parsed = transactionStatsSchema.safeParse(data);
+  return parsed.success;
 }
 
 export function isTransactionList(data: unknown): data is TransactionList {
