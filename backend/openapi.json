@@ -9304,6 +9304,12 @@
             "title": "Transaction Count",
             "description": "Total number of transactions"
           },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "description": "ISO 4217 currency code for the statistics"
+          },
           "categoryBreakdown": {
             "items": {
               "$ref": "#/components/schemas/CategoryStatsItem"
@@ -9319,6 +9325,7 @@
           "totalExpenses",
           "netAmount",
           "transactionCount",
+          "currency",
           "categoryBreakdown"
         ],
         "title": "TransactionStatsResponse",
