@@ -267,7 +267,7 @@ export const TransactionsPage = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                <CurrencyText value={parseFloat(stats.netBalance)} />
+                <CurrencyText value={parseFloat(stats.netAmount)} />
               </div>
             </CardContent>
           </Card>

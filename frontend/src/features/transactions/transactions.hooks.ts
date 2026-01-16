@@ -307,6 +307,23 @@ export const useTransactionStats = (params?: {
       const parsed = transactionStatsSchema.safeParse(data);
       if (parsed.success) {
         const parsedData = parsed.data as TransactionStats;
+
+        // Merge category breakdowns
+        const categoryMap = new Map(
+          acc.categoryBreakdown.map((c) => [c.categoryId, c])
+        );
+        for (const category of parsedData.categoryBreakdown) {
+          const existing = categoryMap.get(category.categoryId);
+          if (existing) {
+            existing.count += category.count;
+            existing.totalAmount = (
+              parseFloat(existing.totalAmount) + parseFloat(category.totalAmount)
+            ).toString();
+          } else {
+            categoryMap.set(category.categoryId, { ...category });
+          }
+        }
+
         return {
           totalIncome: (
             parseFloat(acc.totalIncome) + parseFloat(parsedData.totalIncome)
@@ -314,11 +331,12 @@ export const useTransactionStats = (params?: {
           totalExpenses: (
             parseFloat(acc.totalExpenses) + parseFloat(parsedData.totalExpenses)
           ).toString(),
-          netBalance: (
-            parseFloat(acc.netBalance) + parseFloat(parsedData.netBalance)
+          netAmount: (
+            parseFloat(acc.netAmount) + parseFloat(parsedData.netAmount)
           ).toString(),
           transactionCount: acc.transactionCount + parsedData.transactionCount,
           currency: parsedData.currency || 'EUR',
+          categoryBreakdown: Array.from(categoryMap.values()),
         };
       }
       return acc;
@@ -326,9 +344,14 @@ export const useTransactionStats = (params?: {
     {
       totalIncome: '0',
       totalExpenses: '0',
-      netBalance: '0',
+      netAmount: '0',
       transactionCount: 0,
       currency: 'EUR',
+      categoryBreakdown: [] as Array<{
+        categoryId: string | null;
+        count: number;
+        totalAmount: string;
+      }>,
     }
   );
 
