@@ -8,8 +8,8 @@ import {
   useCreateProfile,
   useUpdateProfile,
   useDeleteProfile,
-} from '../hooks/useProfiles';
-import type { FinancialProfile, FinancialProfileCreate } from '../types';
+} from '../profiles.hooks';
+import type { ProfileResponse as FinancialProfile, ProfileCreate as FinancialProfileCreate } from '../profiles.types';
 import { useTranslation } from 'react-i18next';
 
 export const ProfilesPage: React.FC = () => {

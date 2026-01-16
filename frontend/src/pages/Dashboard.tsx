@@ -9,8 +9,8 @@ import { Spinner } from '@/core/components/atomic/Spinner';
 import { CurrencyText, NumberText, PercentageText } from '@/core/components/atomic';
 import { useNavigate } from 'react-router-dom';
 import { useAccounts } from '@/features/accounts';
-import { useBudgets } from '@/features/budgets/hooks/useBudgets';
-import { useGoals } from '@/features/goals/hooks/useGoals';
+import { useBudgets } from '@/features/budgets';
+import { useGoals } from '@/features/goals';
 
 export const Dashboard = () => {
   const { t } = useTranslation();
