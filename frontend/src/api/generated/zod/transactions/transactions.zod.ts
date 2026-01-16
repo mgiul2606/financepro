@@ -335,6 +335,9 @@ export const getTransactionStatsApiV1TransactionsStatsGetQueryParams =
       .describe("Statistics to this date (inclusive)"),
   });
 
+export const getTransactionStatsApiV1TransactionsStatsGetResponseCurrencyRegExp =
+  new RegExp("^[A-Z]{3}$");
+
 export const getTransactionStatsApiV1TransactionsStatsGetResponse = zod
   .object({
     totalIncome: zod.string().describe("Total income amount"),
@@ -343,6 +346,10 @@ export const getTransactionStatsApiV1TransactionsStatsGetResponse = zod
       .describe("Total expenses amount (absolute value)"),
     netAmount: zod.string().describe("Net amount (income - expenses)"),
     transactionCount: zod.number().describe("Total number of transactions"),
+    currency: zod
+      .string()
+      .regex(getTransactionStatsApiV1TransactionsStatsGetResponseCurrencyRegExp)
+      .describe("ISO 4217 currency code for the statistics"),
     categoryBreakdown: zod
       .array(
         zod

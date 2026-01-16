@@ -271,11 +271,27 @@ async def get_transaction_stats(
 
     category_stats = category_stats.group_by(Transaction.category_id).all()
 
+    # Determine currency based on filters
+    if profile_id:
+        profile = db.query(FinancialProfile).filter(FinancialProfile.id == profile_id).first()
+        currency = profile.default_currency if profile else "EUR"
+    elif account_id:
+        account = db.query(Account).filter(Account.id == account_id).first()
+        currency = account.currency if account else "EUR"
+    else:
+        # Use default profile's currency
+        default_profile = db.query(FinancialProfile).filter(
+            FinancialProfile.user_id == current_user.id,
+            FinancialProfile.is_default == True
+        ).first()
+        currency = default_profile.default_currency if default_profile else "EUR"
+
     return {
         "total_income": str(total_income),
         "total_expenses": str(total_expenses),
         "net_amount": str(net_amount),
         "transaction_count": len(transactions),
+        "currency": currency,
         "category_breakdown": [
             {
                 "category_id": str(stat.category_id) if stat.category_id else None,

@@ -29,6 +29,11 @@ export interface TransactionStatsResponse {
   netAmount: string;
   /** Total number of transactions */
   transactionCount: number;
+  /**
+   * ISO 4217 currency code for the statistics
+   * @pattern ^[A-Z]{3}$
+   */
+  currency: string;
   /** Breakdown of transactions by category */
   categoryBreakdown: CategoryStatsItem[];
 }
