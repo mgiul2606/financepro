@@ -129,8 +129,8 @@ export const TransactionForm = ({
     try {
       if (isEditMode) {
         // In edit mode, build clean update payload with only defined fields
-        const updateData = buildUpdatePayload(data, [
-          'accountId',
+        // Note: accountId is not included as it's not part of TransactionUpdate
+        const updateData = buildUpdatePayload<TransactionUpdate>(data as TransactionUpdate, [
           'transactionType',
           'amount',
           'currency',
