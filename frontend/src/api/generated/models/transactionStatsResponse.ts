@@ -22,11 +22,11 @@ import type { CategoryStatsItem } from "./categoryStatsItem";
  */
 export interface TransactionStatsResponse {
   /** Total income amount */
-  totalIncome: number;
+  totalIncome: string;
   /** Total expenses amount (absolute value) */
-  totalExpenses: number;
+  totalExpenses: string;
   /** Net amount (income - expenses) */
-  netAmount: number;
+  netAmount: string;
   /** Total number of transactions */
   transactionCount: number;
   /** Breakdown of transactions by category */

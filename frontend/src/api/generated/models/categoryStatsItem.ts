@@ -26,5 +26,5 @@ export interface CategoryStatsItem {
   /** Number of transactions in this category */
   count: number;
   /** Total amount for this category */
-  totalAmount: number;
+  totalAmount: string;
 }
