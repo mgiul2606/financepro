@@ -42,7 +42,6 @@ import type {
   TransactionStats,
   TransactionList,
 } from './transactions.types';
-import { isTransactionStats } from './transactions.types';
 import { transactionStatsSchema } from './transactions.schemas';
 
 /**
