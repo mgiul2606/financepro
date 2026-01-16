@@ -13,8 +13,8 @@ import { Modal, ModalFooter } from '@/components/ui/Modal';
 import { Alert } from '@/components/ui/Alert';
 import { useConfirm } from '@/hooks/useConfirm';
 import { GoalForm } from '../components/GoalForm';
-import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal } from '../hooks/useGoals';
-import type { Goal, GoalCreate, GoalUpdate } from '../types';
+import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal } from '../goals.hooks';
+import type { GoalResponse as Goal, GoalCreate, GoalUpdate } from '../goals.types';
 
 export const GoalsPage: React.FC = () => {
   const { t } = useTranslation();

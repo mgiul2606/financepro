@@ -1,8 +1,8 @@
 // Profile Card component
 import React from 'react';
 import { Star, Edit2, Trash2, Building2, Users, User } from 'lucide-react';
-import type { FinancialProfile } from '../types';
-import { ProfileType } from '../types';
+import type { ProfileResponse as FinancialProfile, ProfileType } from '../profiles.types';
+import { PROFILE_TYPE_OPTIONS } from '../profiles.types';
 import { useTranslation } from 'react-i18next';
 
 interface ProfileCardProps {
@@ -24,11 +24,11 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
 
   const getProfileIcon = () => {
     switch (profile.profile_type) {
-      case ProfileType.business:
+      case 'business':
         return <Building2 className="w-5 h-5" />;
-      case ProfileType.family:
+      case 'joint':
         return <Users className="w-5 h-5" />;
-      case ProfileType.personal:
+      case 'personal':
       default:
         return <User className="w-5 h-5" />;
     }
@@ -36,11 +36,11 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
 
   const getProfileTypeLabel = () => {
     switch (profile.profile_type) {
-      case ProfileType.business:
+      case 'business':
         return t('profiles.types.business', 'Business');
-      case ProfileType.family:
-        return t('profiles.types.family', 'Family');
-      case ProfileType.personal:
+      case 'joint':
+        return t('profiles.types.joint', 'Joint');
+      case 'personal':
       default:
         return t('profiles.types.personal', 'Personal');
     }

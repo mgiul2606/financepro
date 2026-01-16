@@ -18,15 +18,6 @@ export {
   useDeleteGoal,
 } from './goals.hooks';
 
-// API
-export {
-  fetchGoals,
-  fetchGoal,
-  createGoal,
-  updateGoal,
-  deleteGoal,
-} from './goals.api';
-
 // Schemas
 export {
   goalCreateSchema,

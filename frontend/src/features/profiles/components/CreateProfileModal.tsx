@@ -2,8 +2,8 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import type { FinancialProfileCreate, FinancialProfile } from '../types';
-import { ProfileType } from '../types';
+import type { ProfileCreate as FinancialProfileCreate, ProfileResponse as FinancialProfile, ProfileType } from '../profiles.types';
+import { PROFILE_TYPE_OPTIONS } from '../profiles.types';
 import { useTranslation } from 'react-i18next';
 
 interface CreateProfileModalProps {
@@ -33,7 +33,7 @@ export const CreateProfileModal: React.FC<CreateProfileModalProps> = ({
       : {
           name: '',
           description: '',
-          profile_type: ProfileType.personal,
+          profile_type: 'personal',
           default_currency: 'EUR',
         },
   });
@@ -119,9 +119,9 @@ export const CreateProfileModal: React.FC<CreateProfileModalProps> = ({
               {...register('profile_type')}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value={ProfileType.personal}>{t('profiles.types.personal', 'Personal')}</option>
-              <option value={ProfileType.family}>{t('profiles.types.family', 'Family')}</option>
-              <option value={ProfileType.business}>{t('profiles.types.business', 'Business')}</option>
+              <option value="personal">{t('profiles.types.personal', 'Personal')}</option>
+              <option value="joint">{t('profiles.types.joint', 'Joint')}</option>
+              <option value="business">{t('profiles.types.business', 'Business')}</option>
             </select>
           </div>
 

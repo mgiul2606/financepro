@@ -19,8 +19,8 @@ import {
   useCreateBudget,
   useUpdateBudget,
   useDeleteBudget,
-} from '../hooks/useBudgets';
-import type { Budget, BudgetCreate, BudgetUpdate } from '../types';
+} from '../budgets.hooks';
+import type { BudgetResponse as Budget, BudgetCreate, BudgetUpdate } from '../budgets.types';
 
 export const BudgetsPage: React.FC = () => {
   const { t } = useTranslation();

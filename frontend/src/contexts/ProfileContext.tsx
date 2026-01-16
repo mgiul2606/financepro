@@ -6,8 +6,8 @@ import {
   useMainProfile,
   useSetMainProfile,
   useCreateProfile,
-} from '../features/profiles/hooks/useProfiles';
-import type { FinancialProfile, FinancialProfileCreate } from '../features/profiles/types';
+} from '@/features/profiles';
+import type { ProfileResponse as FinancialProfile, ProfileCreate as FinancialProfileCreate } from '@/features/profiles';
 
 interface ProfileContextValue {
   // Data

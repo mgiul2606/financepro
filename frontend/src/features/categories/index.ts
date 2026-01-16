@@ -1,6 +1,5 @@
 // features/categories/index.ts
 export { useCategories } from './categories.hooks';
-export { fetchCategories } from './categories.api';
 export {
   categoryResponseSchema,
   categoryListSchema,

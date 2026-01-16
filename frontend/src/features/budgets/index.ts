@@ -19,15 +19,6 @@ export {
   useDeleteBudget,
 } from './budgets.hooks';
 
-// API
-export {
-  fetchBudgets,
-  fetchBudget,
-  createBudget,
-  updateBudget,
-  deleteBudget,
-} from './budgets.api';
-
 // Schemas
 export {
   budgetCreateSchema,
