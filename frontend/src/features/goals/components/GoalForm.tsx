@@ -21,7 +21,12 @@ import {
 } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import type { Goal, GoalCreate, GoalUpdate } from '../types';
+import type { Goal, GoalCreate, GoalUpdate, GoalPriority } from '../goals.types';
+import {
+  GOAL_PRIORITY_OPTIONS,
+  GOAL_CATEGORY_OPTIONS,
+  CURRENCY_OPTIONS,
+} from '../goals.constants';
 
 interface GoalFormProps {
   goal?: Goal;
@@ -40,27 +45,6 @@ export const GoalForm = ({
 }: GoalFormProps) => {
   const { t } = useTranslation();
   const isEditMode = !!goal;
-
-  const PRIORITY_OPTIONS = [
-    { value: 'low', label: t('goals.priorities.low') },
-    { value: 'medium', label: t('goals.priorities.medium') },
-    { value: 'high', label: t('goals.priorities.high') },
-  ];
-
-  const CURRENCY_OPTIONS = [
-    { value: 'EUR', label: t('settings.currencies.EUR') },
-    { value: 'USD', label: t('settings.currencies.USD') },
-    { value: 'GBP', label: t('settings.currencies.GBP') },
-  ];
-
-  const CATEGORY_OPTIONS = [
-    { value: 'Savings', label: t('goals.categories.savings') },
-    { value: 'Investment', label: t('goals.categories.investment') },
-    { value: 'Travel', label: t('goals.categories.travel') },
-    { value: 'Education', label: t('goals.categories.education') },
-    { value: 'Home', label: t('goals.categories.home') },
-    { value: 'Other', label: t('goals.categories.other') },
-  ];
 
   const [formData, setFormData] = useState<GoalCreate>({
     name: goal?.name || '',
@@ -254,7 +238,7 @@ export const GoalForm = ({
             <SelectContent>
               {CURRENCY_OPTIONS.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
-                  {option.label}
+                  {t(option.label)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -303,9 +287,9 @@ export const GoalForm = ({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {PRIORITY_OPTIONS.map((option) => (
+              {GOAL_PRIORITY_OPTIONS.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
-                  {option.label}
+                  {t(option.label)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -324,9 +308,9 @@ export const GoalForm = ({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {CATEGORY_OPTIONS.map((option) => (
+              {GOAL_CATEGORY_OPTIONS.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
-                  {option.label}
+                  {t(option.label)}
                 </SelectItem>
               ))}
             </SelectContent>

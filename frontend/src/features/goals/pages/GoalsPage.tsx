@@ -35,7 +35,7 @@ export const GoalsPage: React.FC = () => {
   // Handlers
   const handleCreate = async (data: GoalCreate) => {
     try {
-      await createMutation.mutateAsync(data);
+      await createMutation.createGoal(data);
       setShowCreateModal(false);
     } catch (error) {
       console.error('Failed to create goal:', error);
@@ -47,7 +47,7 @@ export const GoalsPage: React.FC = () => {
     if (!editingGoal) return;
 
     try {
-      await updateMutation.mutateAsync({ id: editingGoal.id, data });
+      await updateMutation.updateGoal(editingGoal.id, data);
       setEditingGoal(null);
     } catch (error) {
       console.error('Failed to update goal:', error);
@@ -66,7 +66,7 @@ export const GoalsPage: React.FC = () => {
 
     if (confirmed) {
       try {
-        await deleteMutation.mutateAsync(goal.id);
+        await deleteMutation.deleteGoal(goal.id);
       } catch (error) {
         console.error('Failed to delete goal:', error);
       }
@@ -126,7 +126,7 @@ export const GoalsPage: React.FC = () => {
             variant="primary"
             leftIcon={<Plus className="h-4 w-4" />}
             onClick={() => setShowCreateModal(true)}
-            isLoading={createMutation.isPending}
+            isLoading={createMutation.isCreating}
           >
             {t('goals.createGoal')}
           </Button>
@@ -157,15 +157,15 @@ export const GoalsPage: React.FC = () => {
           /* Goals Cards Grid */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {goals?.map((goal) => {
-              const percentage = (parseFloat(goal.current_amount) / parseFloat(goal.target_amount)) * 100;
-              const remaining = parseFloat(goal.target_amount) - parseFloat(goal.current_amount);
-              const daysRemaining = getDaysRemaining(goal.target_date);
+              const percentage = (parseFloat(goal.currentAmount) / parseFloat(goal.targetAmount)) * 100;
+              const remaining = parseFloat(goal.targetAmount) - parseFloat(goal.currentAmount);
+              const daysRemaining = getDaysRemaining(goal.targetDate);
 
               return (
                 <Card key={goal.id} variant="elevated">
                   <CardHeader
                     title={goal.name}
-                    subtitle={goal.goal_type ? t(`goals.categories.${goal.goal_type}`) : t('goals.categories.general')}
+                    subtitle={goal.goalType ? t(`goals.categories.${goal.goalType}`) : t('goals.categories.general')}
                     action={
                       <Badge variant={getPriorityVariant(goal.priority.toString())} size="sm">
                         {goal.priority}
@@ -189,7 +189,7 @@ export const GoalsPage: React.FC = () => {
                       </div>
                       <div className="w-full h-3 bg-neutral-200 rounded-full overflow-hidden">
                         <div
-                          className={`h-full transition-all duration-300 ${getProgressColor(parseFloat(goal.current_amount), parseFloat(goal.target_amount))}`}
+                          className={`h-full transition-all duration-300 ${getProgressColor(parseFloat(goal.currentAmount), parseFloat(goal.targetAmount))}`}
                           style={{ width: `${Math.min(percentage, 100)}%` }}
                         />
                       </div>
@@ -200,13 +200,13 @@ export const GoalsPage: React.FC = () => {
                       <div className="flex justify-between">
                         <span className="text-neutral-600">{t('goals.current')}</span>
                         <span className="font-medium">
-                          <CurrencyText value={parseFloat(goal.current_amount)} currency={goal.currency as any} />
+                          <CurrencyText value={parseFloat(goal.currentAmount)} currency={goal.currency} />
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-neutral-600">{t('goals.target')}</span>
                         <span className="font-medium">
-                          <CurrencyText value={parseFloat(goal.target_amount)} currency={goal.currency as any} />
+                          <CurrencyText value={parseFloat(goal.targetAmount)} currency={goal.currency} />
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -214,13 +214,13 @@ export const GoalsPage: React.FC = () => {
                         <span
                           className={`font-medium ${remaining > 0 ? 'text-blue-600' : 'text-green-600'}`}
                         >
-                          <CurrencyText value={remaining} currency={goal.currency as any} />
+                          <CurrencyText value={remaining} currency={goal.currency} />
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-neutral-600">{t('goals.targetDate')}</span>
                         <span className="font-medium text-xs">
-                          <DateText value={goal.target_date} />
+                          <DateText value={goal.targetDate} />
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -279,13 +279,13 @@ export const GoalsPage: React.FC = () => {
         onClose={() => setShowCreateModal(false)}
         title={t('goals.createGoal')}
         size="md"
-        preventClose={createMutation.isPending}
+        preventClose={createMutation.isCreating}
         footer={
           <ModalFooter>
             <Button
               variant="secondary"
               onClick={() => setShowCreateModal(false)}
-              disabled={createMutation.isPending}
+              disabled={createMutation.isCreating}
             >
               {t('common.cancel')}
             </Button>
@@ -293,7 +293,7 @@ export const GoalsPage: React.FC = () => {
               variant="primary"
               type="submit"
               form="goal-form"
-              isLoading={createMutation.isPending}
+              isLoading={createMutation.isCreating}
             >
               {t('goals.createGoal')}
             </Button>
@@ -302,7 +302,7 @@ export const GoalsPage: React.FC = () => {
       >
         <GoalForm
           onSubmit={handleCreate}
-          isLoading={createMutation.isPending}
+          isLoading={createMutation.isCreating}
           error={createMutation.error ? t('goals.errors.createFailed') : undefined}
           onClearError={createMutation.reset}
         />
@@ -315,13 +315,13 @@ export const GoalsPage: React.FC = () => {
           onClose={() => setEditingGoal(null)}
           title={t('goals.editGoal')}
           size="md"
-          preventClose={updateMutation.isPending}
+          preventClose={updateMutation.isUpdating}
           footer={
             <ModalFooter>
               <Button
                 variant="secondary"
                 onClick={() => setEditingGoal(null)}
-                disabled={updateMutation.isPending}
+                disabled={updateMutation.isUpdating}
               >
                 {t('common.cancel')}
               </Button>
@@ -329,7 +329,7 @@ export const GoalsPage: React.FC = () => {
                 variant="primary"
                 type="submit"
                 form="goal-form"
-                isLoading={updateMutation.isPending}
+                isLoading={updateMutation.isUpdating}
               >
                 {t('common.saveChanges')}
               </Button>
@@ -339,7 +339,7 @@ export const GoalsPage: React.FC = () => {
           <GoalForm
             goal={editingGoal}
             onSubmit={handleUpdate}
-            isLoading={updateMutation.isPending}
+            isLoading={updateMutation.isUpdating}
             error={updateMutation.error ? t('goals.errors.updateFailed') : undefined}
             onClearError={updateMutation.reset}
           />
