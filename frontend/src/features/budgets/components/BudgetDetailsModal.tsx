@@ -9,7 +9,7 @@ import { Badge } from '@/core/components/atomic/Badge';
 import { CurrencyText } from '@/core/components/atomic/CurrencyText';
 import { DataTable, type Column } from '@/core/components/composite/DataTable';
 import { EmptyState } from '@/core/components/composite/EmptyState';
-import type { Budget } from '../types';
+import type { Budget } from '../budgets.types';
 import { useTransactions } from '@/features/transactions/hooks/useTransactions';
 import type { Transaction } from '@/features/transactions/types';
 import type { SupportedCurrency } from '@/utils/currency';

@@ -42,7 +42,7 @@ export const BudgetsPage: React.FC = () => {
   // Handlers
   const handleCreate = async (data: BudgetCreate) => {
     try {
-      await createMutation.mutateAsync(data);
+      await createMutation.createBudget(data);
       setShowCreateModal(false);
     } catch (error) {
       console.error('Failed to create budget:', error);
@@ -54,7 +54,7 @@ export const BudgetsPage: React.FC = () => {
     if (!editingBudget) return;
 
     try {
-      await updateMutation.mutateAsync({ id: editingBudget.id, data });
+      await updateMutation.updateBudget(editingBudget.id, data);
       setEditingBudget(null);
     } catch (error) {
       console.error('Failed to update budget:', error);
@@ -73,7 +73,7 @@ export const BudgetsPage: React.FC = () => {
 
     if (confirmed) {
       try {
-        await deleteMutation.mutateAsync(budget.id);
+        await deleteMutation.deleteBudget(budget.id);
       } catch (error) {
         console.error('Failed to delete budget:', error);
       }
@@ -117,7 +117,7 @@ export const BudgetsPage: React.FC = () => {
             variant="primary"
             leftIcon={<Plus className="h-4 w-4" />}
             onClick={() => setShowCreateModal(true)}
-            isLoading={createMutation.isPending}
+            isLoading={createMutation.isCreating}
           >
             {t('budgets.createBudget')}
           </Button>
@@ -246,13 +246,13 @@ export const BudgetsPage: React.FC = () => {
         onClose={() => setShowCreateModal(false)}
         title={t('budgets.createBudget')}
         size="md"
-        preventClose={createMutation.isPending}
+        preventClose={createMutation.isCreating}
         footer={
           <ModalFooter>
             <Button
               variant="secondary"
               onClick={() => setShowCreateModal(false)}
-              disabled={createMutation.isPending}
+              disabled={createMutation.isCreating}
             >
               {t('common.cancel')}
             </Button>
@@ -260,7 +260,7 @@ export const BudgetsPage: React.FC = () => {
               variant="primary"
               type="submit"
               form="budget-form"
-              isLoading={createMutation.isPending}
+              isLoading={createMutation.isCreating}
             >
               {t('budgets.createBudget')}
             </Button>
@@ -269,7 +269,7 @@ export const BudgetsPage: React.FC = () => {
       >
         <BudgetForm
           onSubmit={handleCreate}
-          isLoading={createMutation.isPending}
+          isLoading={createMutation.isCreating}
           error={createMutation.error ? t('budgets.errors.createFailed') : undefined}
           onClearError={createMutation.reset}
         />
@@ -282,13 +282,13 @@ export const BudgetsPage: React.FC = () => {
           onClose={() => setEditingBudget(null)}
           title={t('budgets.editBudget')}
           size="md"
-          preventClose={updateMutation.isPending}
+          preventClose={updateMutation.isUpdating}
           footer={
             <ModalFooter>
               <Button
                 variant="secondary"
                 onClick={() => setEditingBudget(null)}
-                disabled={updateMutation.isPending}
+                disabled={updateMutation.isUpdating}
               >
                 {t('common.cancel')}
               </Button>
@@ -296,7 +296,7 @@ export const BudgetsPage: React.FC = () => {
                 variant="primary"
                 type="submit"
                 form="budget-form"
-                isLoading={updateMutation.isPending}
+                isLoading={updateMutation.isUpdating}
               >
                 {t('common.saveChanges')}
               </Button>
@@ -306,7 +306,7 @@ export const BudgetsPage: React.FC = () => {
           <BudgetForm
             budget={editingBudget}
             onSubmit={handleUpdate}
-            isLoading={updateMutation.isPending}
+            isLoading={updateMutation.isUpdating}
             error={updateMutation.error ? t('budgets.errors.updateFailed') : undefined}
             onClearError={updateMutation.reset}
           />
