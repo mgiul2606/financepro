@@ -39,8 +39,15 @@ export type {
   BudgetList,
   BudgetFilters,
   PeriodType,
+  BudgetPeriod,
   BudgetCategoryAllocation,
 } from './budgets.types';
 
 // Constants
-export { PERIOD_TYPE_OPTIONS } from './budgets.types';
+export {
+  PERIOD_TYPE_OPTIONS,
+  BUDGET_CATEGORY_OPTIONS,
+  DEFAULT_ALERT_THRESHOLD,
+  BUDGET_STATUS,
+  BUDGET_STATUS_THRESHOLDS,
+} from './budgets.constants';

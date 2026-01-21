@@ -4,7 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { DollarSign, Calendar } from 'lucide-react';
 import { FormField, SelectField } from '@/components/ui/FormField';
 import { Alert } from '@/components/ui/Alert';
-import type { Budget, BudgetCreate, BudgetUpdate, BudgetPeriod } from '../types';
+import type { Budget, BudgetCreate, BudgetUpdate, BudgetPeriod } from '../budgets.types';
+import {
+  PERIOD_TYPE_OPTIONS,
+  BUDGET_CATEGORY_OPTIONS,
+  DEFAULT_ALERT_THRESHOLD,
+} from '../budgets.constants';
 
 interface BudgetFormProps {
   /** Budget to edit (if undefined, form is in create mode) */
@@ -29,24 +34,17 @@ export const BudgetForm = ({
   const { t } = useTranslation();
   const isEditMode = !!budget;
 
-  const PERIOD_OPTIONS = [
-    { value: 'monthly', label: t('budgets.periods.monthly') },
-    { value: 'quarterly', label: t('budgets.periods.quarterly') },
-    { value: 'yearly', label: t('budgets.periods.yearly') },
-    { value: 'custom', label: t('budgets.periods.custom') },
-  ];
+  // Translate period options for display
+  const periodOptions = PERIOD_TYPE_OPTIONS.map((opt) => ({
+    value: opt.value,
+    label: t(opt.label),
+  }));
 
-  const CATEGORY_OPTIONS = [
-    { value: 'Groceries', label: t('budgets.categories.groceries') },
-    { value: 'Transportation', label: t('budgets.categories.transportation') },
-    { value: 'Entertainment', label: t('budgets.categories.entertainment') },
-    { value: 'Healthcare', label: t('budgets.categories.healthcare') },
-    { value: 'Shopping', label: t('budgets.categories.shopping') },
-    { value: 'Dining', label: t('budgets.categories.dining') },
-    { value: 'Utilities', label: t('budgets.categories.utilities') },
-    { value: 'Housing', label: t('budgets.categories.housing') },
-    { value: 'Other', label: t('budgets.categories.other') },
-  ];
+  // Translate category options for display
+  const categoryOptions = BUDGET_CATEGORY_OPTIONS.map((opt) => ({
+    value: opt.value,
+    label: t(opt.label),
+  }));
 
   const [formData, setFormData] = useState<BudgetCreate>({
     name: budget?.name || '',
@@ -55,7 +53,7 @@ export const BudgetForm = ({
     period: (budget?.period as BudgetPeriod) || 'monthly',
     startDate: budget?.startDate || new Date().toISOString().split('T')[0],
     endDate: budget?.endDate || '',
-    alertThreshold: budget?.alertThreshold || 80,
+    alertThreshold: budget?.alertThreshold || DEFAULT_ALERT_THRESHOLD,
   });
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
@@ -70,7 +68,7 @@ export const BudgetForm = ({
         period: budget.period,
         startDate: budget.startDate,
         endDate: budget.endDate,
-        alertThreshold: budget.alertThreshold || 80,
+        alertThreshold: budget.alertThreshold || DEFAULT_ALERT_THRESHOLD,
       });
     }
   }, [budget]);
@@ -123,7 +121,7 @@ export const BudgetForm = ({
         required
         value={formData.category}
         onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-        options={CATEGORY_OPTIONS}
+        options={categoryOptions}
         disabled={isLoading}
         hint={t('budgets.categoryHint')}
       />
@@ -154,7 +152,7 @@ export const BudgetForm = ({
         required
         value={formData.period}
         onChange={(e) => setFormData({ ...formData, period: e.target.value as BudgetPeriod })}
-        options={PERIOD_OPTIONS}
+        options={periodOptions}
         disabled={isLoading}
         hint={t('budgets.periodHint')}
       />
@@ -201,7 +199,7 @@ export const BudgetForm = ({
         step="1"
         value={formData.alertThreshold}
         onChange={(e) =>
-          setFormData({ ...formData, alertThreshold: parseInt(e.target.value) || 80 })
+          setFormData({ ...formData, alertThreshold: parseInt(e.target.value) || DEFAULT_ALERT_THRESHOLD })
         }
         placeholder={t('budgets.alertThresholdPlaceholder')}
         disabled={isLoading}
