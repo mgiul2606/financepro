@@ -62,3 +62,21 @@ export const goalFiltersSchema = z.object({
   skip: z.number().int().min(0).default(0).optional(),
   limit: z.number().int().min(1).max(100).default(20).optional(),
 });
+
+/**
+ * Goal priority schema for form validation
+ * Maps to UI priority display ('low', 'medium', 'high')
+ */
+export const goalPrioritySchema = z.enum(['low', 'medium', 'high']);
+
+/**
+ * Goal category schema for form validation
+ */
+export const goalCategorySchema = z.enum([
+  'Savings',
+  'Investment',
+  'Travel',
+  'Education',
+  'Home',
+  'Other',
+]);
