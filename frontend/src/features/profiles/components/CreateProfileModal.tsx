@@ -1,10 +1,24 @@
-// Create/Edit Profile Modal
-import React from 'react';
-import { X } from 'lucide-react';
+/**
+ * Create/Edit Profile Modal using shadcn/ui Dialog
+ */
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import type { ProfileCreate as FinancialProfileCreate, ProfileResponse as FinancialProfile, ProfileType } from '../profiles.types';
-import { PROFILE_TYPE_OPTIONS } from '../profiles.types';
 import { useTranslation } from 'react-i18next';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import type {
+  ProfileCreate as FinancialProfileCreate,
+  ProfileResponse as FinancialProfile,
+} from '../profiles.types';
+import { PROFILE_TYPE_OPTIONS } from '../profiles.types';
 
 interface CreateProfileModalProps {
   isOpen: boolean;
@@ -14,6 +28,26 @@ interface CreateProfileModalProps {
   isLoading?: boolean;
 }
 
+/**
+ * Profile type labels for i18n
+ */
+const PROFILE_TYPE_LABELS: Record<string, string> = {
+  personal: 'profiles.types.personal',
+  business: 'profiles.types.business',
+  joint: 'profiles.types.joint',
+  investment: 'profiles.types.investment',
+};
+
+/**
+ * Default labels for profile types (fallback)
+ */
+const PROFILE_TYPE_DEFAULTS: Record<string, string> = {
+  personal: 'Personal',
+  business: 'Business',
+  joint: 'Joint',
+  investment: 'Investment',
+};
+
 export const CreateProfileModal: React.FC<CreateProfileModalProps> = ({
   isOpen,
   onClose,
@@ -22,7 +56,12 @@ export const CreateProfileModal: React.FC<CreateProfileModalProps> = ({
   isLoading,
 }) => {
   const { t } = useTranslation();
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<FinancialProfileCreate>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<FinancialProfileCreate>({
     defaultValues: editingProfile
       ? {
           name: editingProfile.name,
@@ -38,46 +77,62 @@ export const CreateProfileModal: React.FC<CreateProfileModalProps> = ({
         },
   });
 
-  if (!isOpen) return null;
+  // Reset form when modal opens/closes or editing profile changes
+  useEffect(() => {
+    if (isOpen) {
+      reset(
+        editingProfile
+          ? {
+              name: editingProfile.name,
+              description: editingProfile.description || '',
+              profile_type: editingProfile.profile_type,
+              default_currency: editingProfile.default_currency,
+            }
+          : {
+              name: '',
+              description: '',
+              profile_type: 'personal',
+              default_currency: 'EUR',
+            }
+      );
+    }
+  }, [isOpen, editingProfile, reset]);
 
   const handleFormSubmit = (data: FinancialProfileCreate) => {
     onSubmit(data);
-    reset();
   };
 
-  const handleClose = () => {
-    reset();
-    onClose();
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      reset();
+      onClose();
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" onClick={handleClose} />
-
-      {/* Modal */}
-      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold">
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>
             {editingProfile
               ? t('profiles.editProfile', 'Edit Profile')
               : t('profiles.createProfile', 'Create New Profile')}
-          </h2>
-          <button
-            onClick={handleClose}
-            className="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+          </DialogTitle>
+          <DialogDescription>
+            {editingProfile
+              ? t('profiles.editProfileDescription', 'Update your financial profile details.')
+              : t('profiles.createProfileDescription', 'Create a new financial profile to organize your finances.')}
+          </DialogDescription>
+        </DialogHeader>
 
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
           {/* Name */}
-          <div>
-            <label className="block text-sm font-medium mb-2">
+          <div className="space-y-2">
+            <label htmlFor="name" className="text-sm font-medium">
               {t('profiles.form.name', 'Profile Name')} *
             </label>
-            <input
+            <Input
+              id="name"
               {...register('name', {
                 required: t('profiles.form.nameRequired', 'Profile name is required'),
                 minLength: {
@@ -89,50 +144,55 @@ export const CreateProfileModal: React.FC<CreateProfileModalProps> = ({
                   message: t('profiles.form.nameMaxLength', 'Name must be less than 100 characters'),
                 },
               })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder={t('profiles.form.namePlaceholder', 'My Personal Finance')}
+              aria-invalid={!!errors.name}
             />
             {errors.name && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name.message}</p>
+              <p className="text-sm text-destructive">{errors.name.message}</p>
             )}
           </div>
 
           {/* Description */}
-          <div>
-            <label className="block text-sm font-medium mb-2">
+          <div className="space-y-2">
+            <label htmlFor="description" className="text-sm font-medium">
               {t('profiles.form.description', 'Description')}
             </label>
             <textarea
+              id="description"
               {...register('description')}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
               placeholder={t('profiles.form.descriptionPlaceholder', 'Optional description...')}
             />
           </div>
 
           {/* Profile Type */}
-          <div>
-            <label className="block text-sm font-medium mb-2">
+          <div className="space-y-2">
+            <label htmlFor="profile_type" className="text-sm font-medium">
               {t('profiles.form.type', 'Profile Type')}
             </label>
             <select
+              id="profile_type"
               {...register('profile_type')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
-              <option value="personal">{t('profiles.types.personal', 'Personal')}</option>
-              <option value="joint">{t('profiles.types.joint', 'Joint')}</option>
-              <option value="business">{t('profiles.types.business', 'Business')}</option>
+              {PROFILE_TYPE_OPTIONS.map((type) => (
+                <option key={type} value={type}>
+                  {t(PROFILE_TYPE_LABELS[type], PROFILE_TYPE_DEFAULTS[type])}
+                </option>
+              ))}
             </select>
           </div>
 
           {/* Currency */}
-          <div>
-            <label className="block text-sm font-medium mb-2">
+          <div className="space-y-2">
+            <label htmlFor="default_currency" className="text-sm font-medium">
               {t('profiles.form.currency', 'Default Currency')}
             </label>
             <select
+              id="default_currency"
               {...register('default_currency')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <option value="EUR">EUR - Euro</option>
               <option value="USD">USD - US Dollar</option>
@@ -144,29 +204,20 @@ export const CreateProfileModal: React.FC<CreateProfileModalProps> = ({
             </select>
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-3 pt-4">
-            <button
-              type="button"
-              onClick={handleClose}
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-            >
+          <DialogFooter className="gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={onClose}>
               {t('common.cancel', 'Cancel')}
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
+            </Button>
+            <Button type="submit" disabled={isLoading}>
               {isLoading
                 ? t('common.saving', 'Saving...')
                 : editingProfile
-                ? t('common.update', 'Update')
-                : t('common.create', 'Create')}
-            </button>
-          </div>
+                  ? t('common.update', 'Update')
+                  : t('common.create', 'Create')}
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };

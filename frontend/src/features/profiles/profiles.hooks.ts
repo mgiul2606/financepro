@@ -1,8 +1,9 @@
 /**
  * React Query hooks for Financial Profile operations
- * Provides optimistic updates and cache management
+ *
+ * Uses hook factories for consistent, DRY mutation hooks.
+ * Provides optimistic updates and cache management.
  */
-import { useQueryClient } from '@tanstack/react-query';
 import {
   useListProfilesApiV1ProfilesGet,
   useGetProfileApiV1ProfilesProfileIdGet,
@@ -13,18 +14,36 @@ import {
   useSetMainProfileApiV1ProfilesMainPatch,
   getListProfilesApiV1ProfilesGetQueryKey,
   getGetMainProfileApiV1ProfilesMainGetQueryKey,
+  type CreateProfileApiV1ProfilesPostMutationResult,
+  type UpdateProfileApiV1ProfilesProfileIdPatchMutationResult,
+  type DeleteProfileApiV1ProfilesProfileIdDeleteMutationResult,
 } from '@/api/generated/financial-profiles/financial-profiles';
+import type {
+  FinancialProfileCreate,
+  FinancialProfileUpdate,
+  FinancialProfileResponse,
+} from '@/api/generated/models';
+import { useQueryClient } from '@tanstack/react-query';
+import { createGetByIdHook } from '@/hooks/factories/createGetByIdHook';
+import { createCreateMutationHook } from '@/hooks/factories/createCreateMutationHook';
+import { createUpdateMutationHook } from '@/hooks/factories/createUpdateMutationHook';
+import { createDeleteMutationHook } from '@/hooks/factories/createDeleteMutationHook';
+import type { ExtractOrvalData } from '@/lib/orval-types';
 
 import type {
   ProfileCreate,
   ProfileUpdate,
   ProfileResponse,
-  MainProfileUpdate,
   ProfileFilters,
+  ProfileList,
+  MainProfileUpdate,
 } from './profiles.types';
 
 /**
  * Hook to list all financial profiles
+ *
+ * Note: Profiles are the parent entity - they don't require multi-profile
+ * aggregation like accounts/transactions. Manual implementation is appropriate.
  */
 export const useProfiles = (filters?: ProfileFilters) => {
   // Convert camelCase to snake_case for API
@@ -39,110 +58,136 @@ export const useProfiles = (filters?: ProfileFilters) => {
   const query = useListProfilesApiV1ProfilesGet(apiFilters);
 
   return {
-    profiles: (query.data?.data?.profiles || []) as ProfileResponse[],
-    total: query.data?.data?.total || 0,
+    profiles: ((query.data?.data as ProfileList)?.profiles ?? []) as ProfileResponse[],
+    total: (query.data?.data as ProfileList)?.total ?? 0,
     isLoading: query.isLoading,
     error: query.error,
     refetch: query.refetch,
   };
 };
+
+/**
+ * Base hook for getting a single profile by ID
+ * Created using the GET by ID hook factory
+ */
+const useProfileBase = createGetByIdHook<
+  { data: FinancialProfileResponse; status: number },
+  FinancialProfileResponse
+>({
+  useQuery: useGetProfileApiV1ProfilesProfileIdGet,
+});
 
 /**
  * Hook to get a single financial profile by ID
  */
 export const useProfile = (profileId: string, enabled = true) => {
-  const query = useGetProfileApiV1ProfilesProfileIdGet(profileId, {
-    query: {
-      enabled: enabled && !!profileId,
-    },
-  });
+  const result = useProfileBase(profileId, { enabled });
 
   return {
-    profile: query.data?.data as ProfileResponse | undefined,
-    isLoading: query.isLoading,
-    error: query.error,
-    refetch: query.refetch,
+    profile: result.data as ProfileResponse | undefined,
+    isLoading: result.isLoading,
+    error: result.error,
+    refetch: result.refetch,
   };
 };
+
+/**
+ * Base hook for creating profiles
+ * Created using the CREATE mutation hook factory
+ */
+const useCreateProfileBase = createCreateMutationHook<
+  CreateProfileApiV1ProfilesPostMutationResult,
+  FinancialProfileCreate
+>({
+  useMutation: useCreateProfileApiV1ProfilesPost,
+  defaultOptions: {
+    invalidateKeys: getListProfilesApiV1ProfilesGetQueryKey(),
+  },
+});
 
 /**
  * Hook to create a new financial profile
  */
 export const useCreateProfile = () => {
-  const queryClient = useQueryClient();
-
-  const mutation = useCreateProfileApiV1ProfilesPost({
-    mutation: {
-      onSuccess: () => {
-        // Invalidate profiles list to refetch
-        queryClient.invalidateQueries({
-          queryKey: getListProfilesApiV1ProfilesGetQueryKey(),
-        });
-      },
-    },
-  });
+  const { mutateAsync, isPending, error, reset } = useCreateProfileBase();
 
   return {
-    createProfile: (data: ProfileCreate) => mutation.mutateAsync({ data }),
-    isCreating: mutation.isPending,
-    error: mutation.error,
-    reset: mutation.reset,
+    createProfile: (data: ProfileCreate) => mutateAsync(data),
+    isCreating: isPending,
+    isPending,
+    error,
+    reset,
   };
 };
+
+/**
+ * Base hook for updating profiles
+ * Created using the UPDATE mutation hook factory
+ */
+const useUpdateProfileBase = createUpdateMutationHook<
+  UpdateProfileApiV1ProfilesProfileIdPatchMutationResult,
+  FinancialProfileUpdate,
+  ExtractOrvalData<UpdateProfileApiV1ProfilesProfileIdPatchMutationResult>,
+  'profileId'
+>({
+  useMutation: useUpdateProfileApiV1ProfilesProfileIdPatch,
+  idParamName: 'profileId',
+  defaultOptions: {
+    invalidateKeys: getListProfilesApiV1ProfilesGetQueryKey(),
+  },
+});
 
 /**
  * Hook to update an existing financial profile
  */
 export const useUpdateProfile = () => {
-  const queryClient = useQueryClient();
-
-  const mutation = useUpdateProfileApiV1ProfilesProfileIdPatch({
-    mutation: {
-      onSuccess: () => {
-        // Invalidate profiles list to refetch
-        queryClient.invalidateQueries({
-          queryKey: getListProfilesApiV1ProfilesGetQueryKey(),
-        });
-      },
-    },
-  });
+  const { mutateAsync, isPending, error, reset } = useUpdateProfileBase();
 
   return {
     updateProfile: (profileId: string, data: ProfileUpdate) =>
-      mutation.mutateAsync({ profileId, data }),
-    isUpdating: mutation.isPending,
-    error: mutation.error,
-    reset: mutation.reset,
+      mutateAsync(profileId, data),
+    isUpdating: isPending,
+    isPending,
+    error,
+    reset,
   };
 };
+
+/**
+ * Base hook for deleting profiles
+ * Created using the DELETE mutation hook factory
+ */
+const useDeleteProfileBase = createDeleteMutationHook<
+  DeleteProfileApiV1ProfilesProfileIdDeleteMutationResult,
+  'profileId'
+>({
+  useMutation: useDeleteProfileApiV1ProfilesProfileIdDelete,
+  idParamName: 'profileId',
+  defaultOptions: {
+    invalidateKeys: getListProfilesApiV1ProfilesGetQueryKey(),
+  },
+});
 
 /**
  * Hook to delete a financial profile
  */
 export const useDeleteProfile = () => {
-  const queryClient = useQueryClient();
-
-  const mutation = useDeleteProfileApiV1ProfilesProfileIdDelete({
-    mutation: {
-      onSuccess: () => {
-        // Invalidate profiles list to refetch
-        queryClient.invalidateQueries({
-          queryKey: getListProfilesApiV1ProfilesGetQueryKey(),
-        });
-      },
-    },
-  });
+  const { mutateAsync, isPending, error, reset } = useDeleteProfileBase();
 
   return {
-    deleteProfile: (profileId: string) => mutation.mutateAsync({ profileId }),
-    isDeleting: mutation.isPending,
-    error: mutation.error,
-    reset: mutation.reset,
+    deleteProfile: (profileId: string) => mutateAsync(profileId),
+    isDeleting: isPending,
+    isPending,
+    error,
+    reset,
   };
 };
 
 /**
  * Hook to get the main financial profile
+ *
+ * Note: Kept as manual implementation - no factory exists for this
+ * specific use case (single main profile query).
  */
 export const useMainProfile = () => {
   const query = useGetMainProfileApiV1ProfilesMainGet();
@@ -157,6 +202,9 @@ export const useMainProfile = () => {
 
 /**
  * Hook to set the main financial profile
+ *
+ * Note: Kept as manual implementation - requires invalidating both
+ * main profile and profiles list queries (custom invalidation logic).
  */
 export const useSetMainProfile = () => {
   const queryClient = useQueryClient();
@@ -178,6 +226,7 @@ export const useSetMainProfile = () => {
   return {
     setMainProfile: (data: MainProfileUpdate) => mutation.mutateAsync({ data }),
     isUpdating: mutation.isPending,
+    isPending: mutation.isPending,
     error: mutation.error,
     reset: mutation.reset,
   };

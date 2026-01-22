@@ -1,11 +1,43 @@
-// Mandatory Profile Creation Modal - Cannot be dismissed until profile is created
+/**
+ * Mandatory Profile Creation Modal using shadcn/ui Dialog
+ * Cannot be dismissed until profile is created
+ */
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { AlertCircle } from 'lucide-react';
-import type { ProfileCreate as FinancialProfileCreate, ProfileType } from '../profiles.types';
-import { PROFILE_TYPE_OPTIONS } from '../profiles.types';
 import { useTranslation } from 'react-i18next';
-import { useProfileContext } from '../../../contexts/ProfileContext';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import type { ProfileCreate as FinancialProfileCreate } from '../profiles.types';
+import { PROFILE_TYPE_OPTIONS } from '../profiles.types';
+import { useProfileContext } from '@/contexts/ProfileContext';
+
+/**
+ * Profile type labels for i18n
+ */
+const PROFILE_TYPE_LABELS: Record<string, string> = {
+  personal: 'profiles.types.personal',
+  business: 'profiles.types.business',
+  joint: 'profiles.types.joint',
+  investment: 'profiles.types.investment',
+};
+
+/**
+ * Default labels for profile types (fallback)
+ */
+const PROFILE_TYPE_DEFAULTS: Record<string, string> = {
+  personal: 'Personal',
+  business: 'Business',
+  joint: 'Joint',
+  investment: 'Investment',
+};
 
 export const MandatoryProfileModal: React.FC = () => {
   const { t } = useTranslation();
@@ -29,44 +61,49 @@ export const MandatoryProfileModal: React.FC = () => {
     },
   });
 
-  if (!showCreateProfileModal || !requiresProfileCreation) return null;
-
   const handleFormSubmit = async (data: FinancialProfileCreate) => {
     await createFirstProfile(data);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop - no click to close */}
-      <div className="absolute inset-0 bg-black/60" />
+  // Determine if modal should be open
+  const isOpen = showCreateProfileModal && requiresProfileCreation;
 
-      {/* Modal */}
-      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
-        {/* Warning Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="flex-shrink-0 w-10 h-10 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
-            <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+  return (
+    <Dialog open={isOpen}>
+      <DialogContent
+        className="sm:max-w-md"
+        showCloseButton={false}
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+      >
+        <DialogHeader>
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0 w-10 h-10 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
+              <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+            </div>
+            <div>
+              <DialogTitle>
+                {t('profiles.mandatory.title', 'Create Your First Profile')}
+              </DialogTitle>
+              <DialogDescription>
+                {t(
+                  'profiles.mandatory.description',
+                  'You need at least one financial profile to use FinancePro.'
+                )}
+              </DialogDescription>
+            </div>
           </div>
-          <div>
-            <h2 className="text-xl font-bold">
-              {t('profiles.mandatory.title', 'Create Your First Profile')}
-            </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {t(
-                'profiles.mandatory.description',
-                'You need at least one financial profile to use FinancePro.'
-              )}
-            </p>
-          </div>
-        </div>
+        </DialogHeader>
 
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
           {/* Name */}
-          <div>
-            <label className="block text-sm font-medium mb-2">
+          <div className="space-y-2">
+            <label htmlFor="mandatory-name" className="text-sm font-medium">
               {t('profiles.form.name', 'Profile Name')} *
             </label>
-            <input
+            <Input
+              id="mandatory-name"
               {...register('name', {
                 required: t('profiles.form.nameRequired', 'Profile name is required'),
                 minLength: {
@@ -78,55 +115,56 @@ export const MandatoryProfileModal: React.FC = () => {
                   message: t('profiles.form.nameMaxLength', 'Name must be less than 100 characters'),
                 },
               })}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder={t('profiles.form.namePlaceholder', 'My Personal Finance')}
               autoFocus
+              aria-invalid={!!errors.name}
             />
             {errors.name && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name.message}</p>
+              <p className="text-sm text-destructive">{errors.name.message}</p>
             )}
           </div>
 
           {/* Description */}
-          <div>
-            <label className="block text-sm font-medium mb-2">
+          <div className="space-y-2">
+            <label htmlFor="mandatory-description" className="text-sm font-medium">
               {t('profiles.form.description', 'Description')}
             </label>
             <textarea
+              id="mandatory-description"
               {...register('description')}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
               placeholder={t('profiles.form.descriptionPlaceholder', 'Optional description...')}
             />
           </div>
 
           {/* Profile Type */}
-          <div>
-            <label className="block text-sm font-medium mb-2">
+          <div className="space-y-2">
+            <label htmlFor="mandatory-profile_type" className="text-sm font-medium">
               {t('profiles.form.type', 'Profile Type')}
             </label>
             <select
+              id="mandatory-profile_type"
               {...register('profile_type')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
-              <option value="personal">
-                {t('profiles.types.personal', 'Personal')}
-              </option>
-              <option value="joint">{t('profiles.types.joint', 'Joint')}</option>
-              <option value="business">
-                {t('profiles.types.business', 'Business')}
-              </option>
+              {PROFILE_TYPE_OPTIONS.map((type) => (
+                <option key={type} value={type}>
+                  {t(PROFILE_TYPE_LABELS[type], PROFILE_TYPE_DEFAULTS[type])}
+                </option>
+              ))}
             </select>
           </div>
 
           {/* Currency */}
-          <div>
-            <label className="block text-sm font-medium mb-2">
+          <div className="space-y-2">
+            <label htmlFor="mandatory-default_currency" className="text-sm font-medium">
               {t('profiles.form.currency', 'Default Currency')}
             </label>
             <select
+              id="mandatory-default_currency"
               {...register('default_currency')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <option value="EUR">EUR - Euro</option>
               <option value="USD">USD - US Dollar</option>
@@ -140,18 +178,19 @@ export const MandatoryProfileModal: React.FC = () => {
 
           {/* Submit Button */}
           <div className="pt-4">
-            <button
+            <Button
               type="submit"
+              className="w-full"
+              size="lg"
               disabled={isCreatingProfile}
-              className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
             >
               {isCreatingProfile
                 ? t('profiles.mandatory.creating', 'Creating profile...')
                 : t('profiles.mandatory.create', 'Create Profile & Continue')}
-            </button>
+            </Button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };

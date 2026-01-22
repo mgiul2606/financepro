@@ -1,7 +1,9 @@
-// features/profiles/index.ts
 /**
  * Public API for profiles feature
  * Exports components, hooks, types, schemas, and API functions
+ *
+ * Pattern follows accounts feature architecture with hook factories
+ * for consistent, DRY, type-safe operations.
  */
 
 // Pages
@@ -39,7 +41,16 @@ export {
   databaseTypeSchema,
 } from './profiles.schemas';
 
-// Types
+// Types - Using Orval-generated types for API compatibility
+export type {
+  FinancialProfileCreate,
+  FinancialProfileUpdate,
+  FinancialProfileResponse,
+  FinancialProfileListResponse,
+  MainProfileUpdate as OrvalMainProfileUpdate,
+} from '@/api/generated/models';
+
+// Types - Local aliases derived from Zod schemas for UI and validation
 export type {
   ProfileCreate,
   ProfileUpdate,
