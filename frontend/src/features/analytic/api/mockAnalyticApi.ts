@@ -1,6 +1,10 @@
-// Mock Analytic API Service
-
-import {
+/**
+ * Mock Analytic API Service
+ *
+ * Provides mock data for development and testing.
+ * Replace these calls with actual API integration when available.
+ */
+import type {
   AnalyticOverview,
   TimeSeriesData,
   CategoryBreakdown,
@@ -10,7 +14,7 @@ import {
   FinancialReport,
   SubcategoryBreakdown,
   AnalyticFilters,
-} from '../types';
+} from '../analytic.types';
 
 // Helper to generate dates
 const generateDates = (days: number): string[] => {
