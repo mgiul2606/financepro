@@ -1,6 +1,12 @@
+/**
+ * Overview Stats Component
+ *
+ * Displays analytics overview statistics in a grid of stat cards.
+ */
 import { TrendingUp, TrendingDown, DollarSign, CreditCard, Target, Calendar } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '@/core/components/atomic/Card';
-import type { AnalyticOverview } from '../types';
+import type { AnalyticOverview } from '../analytic.types';
 
 export interface OverviewStatsProps {
   overview: AnalyticOverview;
@@ -12,16 +18,18 @@ interface StatCardProps {
   value: string;
   change?: number;
   trend?: 'up' | 'down';
-  color?: string;
+  color?: 'blue' | 'green' | 'red' | 'purple';
 }
 
+const colorClasses = {
+  blue: 'bg-blue-100 text-blue-600',
+  green: 'bg-green-100 text-green-600',
+  red: 'bg-red-100 text-red-600',
+  purple: 'bg-purple-100 text-purple-600',
+} as const;
+
 const StatCard: React.FC<StatCardProps> = ({ icon, label, value, change, trend, color = 'blue' }) => {
-  const colorClasses = {
-    blue: 'bg-blue-100 text-blue-600',
-    green: 'bg-green-100 text-green-600',
-    red: 'bg-red-100 text-red-600',
-    purple: 'bg-purple-100 text-purple-600',
-  };
+  const { t } = useTranslation();
 
   return (
     <Card variant="elevated" className="h-full">
@@ -44,11 +52,13 @@ const StatCard: React.FC<StatCardProps> = ({ icon, label, value, change, trend, 
                 {change > 0 ? '+' : ''}
                 {change.toFixed(1)}%
               </span>
-              <span className="text-xs text-neutral-500">vs precedente</span>
+              <span className="text-xs text-neutral-500">
+                {t('analytics.vsPrevious')}
+              </span>
             </div>
           )}
         </div>
-        <div className={`p-3 rounded-lg ${colorClasses[color as keyof typeof colorClasses]}`}>
+        <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
           {icon}
         </div>
       </div>
@@ -57,36 +67,38 @@ const StatCard: React.FC<StatCardProps> = ({ icon, label, value, change, trend, 
 };
 
 export const OverviewStats: React.FC<OverviewStatsProps> = ({ overview }) => {
+  const { t } = useTranslation();
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard
         icon={<DollarSign className="h-6 w-6" />}
-        label="Totale Speso"
-        value={`€${overview.totalSpent.toLocaleString()}`}
+        label={t('analytics.totalSpent')}
+        value={overview.totalSpent.toLocaleString()}
         change={overview.comparisonToPrevious.spent}
         trend={overview.comparisonToPrevious.spent < 0 ? 'down' : 'up'}
         color="red"
       />
       <StatCard
         icon={<CreditCard className="h-6 w-6" />}
-        label="Totale Entrate"
-        value={`€${overview.totalIncome.toLocaleString()}`}
+        label={t('analytics.totalIncome')}
+        value={overview.totalIncome.toLocaleString()}
         change={overview.comparisonToPrevious.income}
         trend={overview.comparisonToPrevious.income > 0 ? 'up' : 'down'}
         color="green"
       />
       <StatCard
         icon={<Target className="h-6 w-6" />}
-        label="Bilancio Netto"
-        value={`€${overview.netBalance.toLocaleString()}`}
+        label={t('analytics.netBalance')}
+        value={overview.netBalance.toLocaleString()}
         change={overview.comparisonToPrevious.balance}
         trend={overview.comparisonToPrevious.balance > 0 ? 'up' : 'down'}
         color={overview.netBalance > 0 ? 'green' : 'red'}
       />
       <StatCard
         icon={<Calendar className="h-6 w-6" />}
-        label="Media Giornaliera"
-        value={`€${overview.averageDaily.toFixed(2)}`}
+        label={t('analytics.dailyAverage')}
+        value={overview.averageDaily.toFixed(2)}
         color="purple"
       />
     </div>

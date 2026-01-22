@@ -1,8 +1,16 @@
+/**
+ * Report Card Component
+ *
+ * Displays a financial report summary in a card format.
+ */
 import { FileText, Download, TrendingUp, TrendingDown } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardHeader, CardBody, CardFooter } from '@/core/components/atomic/Card';
 import { Badge } from '@/core/components/atomic/Badge';
 import { Button } from '@/core/components/atomic/Button';
-import type { FinancialReport } from '../types';
+import type { FinancialReport } from '../analytic.types';
+import type { ReportTypeValue } from '../analytic.constants';
+import { REPORT_TYPE_OPTIONS } from '../analytic.constants';
 import { format } from 'date-fns';
 
 export interface ReportCardProps {
@@ -11,14 +19,13 @@ export interface ReportCardProps {
   onDownload?: () => void;
 }
 
-const reportTypeLabels = {
-  monthly: 'Mensile',
-  quarterly: 'Trimestrale',
-  yearly: 'Annuale',
-  custom: 'Personalizzato',
+const getReportTypeLabel = (type: ReportTypeValue): string => {
+  const option = REPORT_TYPE_OPTIONS.find((o) => o.value === type);
+  return option?.label ?? 'analytics.reportTypes.unknown';
 };
 
 export const ReportCard: React.FC<ReportCardProps> = ({ report, onView, onDownload }) => {
+  const { t } = useTranslation();
   const savingsRate = report.summary.savingsRate;
   const isPositive = report.summary.netSavings > 0;
 
@@ -33,7 +40,7 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onView, onDownlo
         }
         action={
           <Badge variant="primary" size="sm">
-            {reportTypeLabels[report.type]}
+            {t(getReportTypeLabel(report.type))}
           </Badge>
         }
       />
@@ -46,15 +53,15 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onView, onDownlo
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-neutral-600 mb-1">Entrate</p>
+              <p className="text-xs text-neutral-600 mb-1">{t('analytics.income')}</p>
               <p className="text-lg font-semibold text-green-600">
-                €{report.summary.totalIncome.toLocaleString()}
+                {report.summary.totalIncome.toLocaleString()}
               </p>
             </div>
             <div>
-              <p className="text-xs text-neutral-600 mb-1">Uscite</p>
+              <p className="text-xs text-neutral-600 mb-1">{t('analytics.expenses')}</p>
               <p className="text-lg font-semibold text-red-600">
-                €{report.summary.totalExpenses.toLocaleString()}
+                {report.summary.totalExpenses.toLocaleString()}
               </p>
             </div>
           </div>
@@ -62,13 +69,13 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onView, onDownlo
           <div className="bg-neutral-50 rounded-lg p-3">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-neutral-600 mb-1">Risparmio Netto</p>
+                <p className="text-xs text-neutral-600 mb-1">{t('analytics.netSavings')}</p>
                 <p className={`text-xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                  {isPositive ? '+' : ''}€{report.summary.netSavings.toLocaleString()}
+                  {isPositive ? '+' : ''}{report.summary.netSavings.toLocaleString()}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-xs text-neutral-600 mb-1">Tasso Risparmio</p>
+                <p className="text-xs text-neutral-600 mb-1">{t('analytics.savingsRate')}</p>
                 <div className="flex items-center gap-1">
                   {isPositive ? (
                     <TrendingUp className="h-4 w-4 text-green-600" />
@@ -85,11 +92,11 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onView, onDownlo
 
           {report.insights.length > 0 && (
             <div className="space-y-2">
-              <p className="text-xs font-medium text-neutral-700">Insights principali:</p>
+              <p className="text-xs font-medium text-neutral-700">{t('analytics.keyInsights')}:</p>
               <ul className="space-y-1">
                 {report.insights.slice(0, 2).map((insight, index) => (
                   <li key={index} className="text-xs text-neutral-600 flex items-start gap-2">
-                    <span className="text-blue-600">•</span>
+                    <span className="text-blue-600">-</span>
                     <span>{insight}</span>
                   </li>
                 ))}
@@ -100,7 +107,7 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onView, onDownlo
       </CardBody>
       <CardFooter align="between">
         <Button variant="ghost" size="sm" onClick={onView}>
-          Visualizza
+          {t('common.view')}
         </Button>
         {report.downloadUrl && (
           <Button
@@ -109,7 +116,7 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onView, onDownlo
             leftIcon={<Download className="h-4 w-4" />}
             onClick={onDownload}
           >
-            Download
+            {t('common.download')}
           </Button>
         )}
       </CardFooter>

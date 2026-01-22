@@ -1,30 +1,23 @@
-// features/analytic/components/AnalyticsFilterModal.tsx
+/**
+ * Analytics Filter Modal Component
+ *
+ * Modal for filtering analytics data by date range, categories, and amount.
+ */
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Filter } from 'lucide-react';
 import { Modal, ModalFooter } from '@/components/ui/Modal';
 import { Button } from '@/core/components/atomic/Button';
 import { FormField } from '@/components/ui/FormField';
-
-export interface AnalyticsFilters {
-  dateFrom: string;
-  dateTo: string;
-  categories?: string[];
-  minAmount?: number;
-  maxAmount?: number;
-}
+import type { AnalyticFilters } from '../analytic.types';
+import { ANALYTIC_CATEGORY_OPTIONS } from '../analytic.constants';
 
 interface AnalyticsFilterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onApply: (filters: AnalyticsFilters) => void;
-  initialFilters: AnalyticsFilters;
+  onApply: (filters: AnalyticFilters) => void;
+  initialFilters: AnalyticFilters;
 }
-
-const CATEGORIES = [
-  'Salary', 'Groceries', 'Rent', 'Transport', 'Entertainment',
-  'Healthcare', 'Shopping', 'Utilities', 'Other'
-];
 
 export const AnalyticsFilterModal = ({
   isOpen,
@@ -33,7 +26,7 @@ export const AnalyticsFilterModal = ({
   initialFilters,
 }: AnalyticsFilterModalProps) => {
   const { t } = useTranslation();
-  const [filters, setFilters] = useState<AnalyticsFilters>(initialFilters);
+  const [filters, setFilters] = useState<AnalyticFilters>(initialFilters);
 
   useEffect(() => {
     setFilters(initialFilters);
@@ -45,7 +38,7 @@ export const AnalyticsFilterModal = ({
   };
 
   const handleReset = () => {
-    const defaultFilters: AnalyticsFilters = {
+    const defaultFilters: AnalyticFilters = {
       dateFrom: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       dateTo: new Date().toISOString().split('T')[0],
     };
@@ -54,7 +47,7 @@ export const AnalyticsFilterModal = ({
 
   const handleCategoryToggle = (category: string) => {
     setFilters((prev) => {
-      const categories = prev.categories || [];
+      const categories = prev.categories ?? [];
       const newCategories = categories.includes(category)
         ? categories.filter((c) => c !== category)
         : [...categories, category];
@@ -92,13 +85,13 @@ export const AnalyticsFilterModal = ({
             <FormField
               label={t('transactions.filters.from')}
               type="date"
-              value={filters.dateFrom}
+              value={filters.dateFrom ?? ''}
               onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
             />
             <FormField
               label={t('transactions.filters.to')}
               type="date"
-              value={filters.dateTo}
+              value={filters.dateTo ?? ''}
               onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
             />
           </div>
@@ -107,14 +100,14 @@ export const AnalyticsFilterModal = ({
         {/* Amount Range */}
         <div className="space-y-2">
           <h4 className="text-sm font-semibold text-neutral-700">
-            Amount Range
+            {t('transactions.filters.amountRange', 'Amount Range')}
           </h4>
           <div className="grid grid-cols-2 gap-3">
             <FormField
               label={t('transactions.filters.minAmount')}
               type="number"
               step="0.01"
-              value={filters.minAmount || ''}
+              value={filters.minAmount ?? ''}
               onChange={(e) =>
                 setFilters({
                   ...filters,
@@ -127,7 +120,7 @@ export const AnalyticsFilterModal = ({
               label={t('transactions.filters.maxAmount')}
               type="number"
               step="0.01"
-              value={filters.maxAmount || ''}
+              value={filters.maxAmount ?? ''}
               onChange={(e) =>
                 setFilters({
                   ...filters,
@@ -145,18 +138,18 @@ export const AnalyticsFilterModal = ({
             {t('transactions.filters.selectCategories')}
           </h4>
           <div className="flex flex-wrap gap-2">
-            {CATEGORIES.map((category) => (
+            {ANALYTIC_CATEGORY_OPTIONS.map((option) => (
               <button
-                key={category}
+                key={option.value}
                 type="button"
-                onClick={() => handleCategoryToggle(category)}
+                onClick={() => handleCategoryToggle(option.value)}
                 className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
-                  filters.categories?.includes(category)
+                  filters.categories?.includes(option.value)
                     ? 'bg-blue-100 border-blue-500 text-blue-700'
                     : 'bg-white border-neutral-300 text-neutral-700 hover:border-neutral-400'
                 }`}
               >
-                {category}
+                {t(option.label)}
               </button>
             ))}
           </div>

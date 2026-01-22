@@ -17,7 +17,7 @@ import {
   useAnomalies,
   useRecurringPatterns,
   useReports,
-} from '../hooks/useAnalytics';
+} from '../analytic.hooks';
 import { OverviewStats } from '../components/OverviewStats';
 import { AnomalyCard } from '../components/AnomalyCard';
 import { RecurringPatternCard } from '../components/RecurringPatternCard';
@@ -45,14 +45,14 @@ export const AnalyticPage = () => {
     categories: selectedCategory ? [selectedCategory] : undefined,
   }), [filters, selectedCategory]);
 
-  // Fetch data
-  const { data: overview, isLoading: overviewLoading } = useAnalyticOverview(filters);
-  const { data: timeSeriesData, isLoading: timeSeriesLoading } = useTimeSeriesData(timeSeriesFilters);
-  const { data: categories, isLoading: categoriesLoading } = useCategoryBreakdown(filters);
-  const { data: merchants, isLoading: merchantsLoading } = useMerchantAnalysis(filters);
-  const { data: anomalies, isLoading: anomaliesLoading } = useAnomalies(filters);
-  const { data: patterns, isLoading: patternsLoading } = useRecurringPatterns(filters);
-  const { data: reports, isLoading: reportsLoading } = useReports(filters);
+  // Fetch data using centralized hooks
+  const { overview, isLoading: overviewLoading } = useAnalyticOverview(filters);
+  const { timeSeries: timeSeriesData, isLoading: timeSeriesLoading } = useTimeSeriesData(timeSeriesFilters);
+  const { categories, isLoading: categoriesLoading } = useCategoryBreakdown(filters);
+  const { merchants, isLoading: merchantsLoading } = useMerchantAnalysis(filters);
+  const { anomalies, isLoading: anomaliesLoading } = useAnomalies(filters);
+  const { patterns, isLoading: patternsLoading } = useRecurringPatterns(filters);
+  const { reports, isLoading: reportsLoading } = useReports(filters);
 
   // Calculate selected index for PieChart highlighting
   const selectedCategoryIndex = useMemo(() => {
