@@ -2,7 +2,7 @@ import { Lightbulb, CheckCircle2, X, ChevronRight } from 'lucide-react';
 import { Card, CardHeader, CardBody, CardFooter } from '@/core/components/atomic/Card';
 import { Badge } from '@/core/components/atomic/Badge';
 import { Button } from '@/core/components/atomic/Button';
-import type { OptimizationSuggestion } from '../types';
+import type { OptimizationSuggestion } from '../optimization.types';
 
 export interface SuggestionCardProps {
   suggestion: OptimizationSuggestion;
