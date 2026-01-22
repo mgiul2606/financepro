@@ -1,16 +1,32 @@
-// Profiles management page
+/**
+ * Profiles management page
+ */
 import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ProfileCard } from '../components/ProfileCard';
 import { CreateProfileModal } from '../components/CreateProfileModal';
-import { useProfileContext } from '../../../contexts/ProfileContext';
+import { useProfileContext } from '@/contexts/ProfileContext';
 import {
   useCreateProfile,
   useUpdateProfile,
   useDeleteProfile,
 } from '../profiles.hooks';
-import type { ProfileResponse as FinancialProfile, ProfileCreate as FinancialProfileCreate } from '../profiles.types';
-import { useTranslation } from 'react-i18next';
+import type {
+  ProfileResponse as FinancialProfile,
+  ProfileCreate as FinancialProfileCreate,
+} from '../profiles.types';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export const ProfilesPage: React.FC = () => {
   const { t } = useTranslation();
@@ -24,14 +40,16 @@ export const ProfilesPage: React.FC = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProfile, setEditingProfile] = useState<FinancialProfile | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [profileToDelete, setProfileToDelete] = useState<string | null>(null);
 
-  const createMutation = useCreateProfile();
-  const updateMutation = useUpdateProfile();
-  const deleteMutation = useDeleteProfile();
+  const { createProfile, isCreating } = useCreateProfile();
+  const { updateProfile, isUpdating } = useUpdateProfile();
+  const { deleteProfile, isDeleting } = useDeleteProfile();
 
   const handleCreateProfile = async (data: FinancialProfileCreate) => {
     try {
-      await createMutation.mutateAsync(data);
+      await createProfile(data);
       setIsModalOpen(false);
       refreshProfiles();
     } catch (error) {
@@ -43,10 +61,7 @@ export const ProfilesPage: React.FC = () => {
     if (!editingProfile) return;
 
     try {
-      await updateMutation.mutateAsync({
-        profileId: editingProfile.id,
-        data,
-      });
+      await updateProfile(editingProfile.id, data);
       setIsModalOpen(false);
       setEditingProfile(null);
       refreshProfiles();
@@ -55,17 +70,28 @@ export const ProfilesPage: React.FC = () => {
     }
   };
 
-  const handleDeleteProfile = async (profileId: string) => {
-    if (!confirm(t('profiles.confirmDelete', 'Are you sure you want to delete this profile?'))) {
-      return;
-    }
+  const handleDeleteClick = (profileId: string) => {
+    setProfileToDelete(profileId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!profileToDelete) return;
 
     try {
-      await deleteMutation.mutateAsync(profileId);
+      await deleteProfile(profileToDelete);
       refreshProfiles();
     } catch (error) {
       console.error('Error deleting profile:', error);
+    } finally {
+      setDeleteDialogOpen(false);
+      setProfileToDelete(null);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setProfileToDelete(null);
   };
 
   const handleSetMain = async (profileId: string) => {
@@ -90,7 +116,7 @@ export const ProfilesPage: React.FC = () => {
   if (profilesLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">{t('common.loading', 'Loading...')}</div>
+        <div className="text-muted-foreground">{t('common.loading', 'Loading...')}</div>
       </div>
     );
   }
@@ -103,26 +129,23 @@ export const ProfilesPage: React.FC = () => {
           <h1 className="text-2xl font-bold mb-2">
             {t('profiles.title', 'Financial Profiles')}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-muted-foreground">
             {t(
               'profiles.subtitle',
               'Manage your financial profiles. Each profile has its own accounts, transactions, and budgets.'
             )}
           </p>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="w-5 h-5" />
+        <Button onClick={() => setIsModalOpen(true)}>
+          <Plus className="w-4 h-4 mr-2" />
           {t('profiles.createNew', 'Create Profile')}
-        </button>
+        </Button>
       </div>
 
       {/* Info Card */}
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
         <h3 className="font-medium mb-2">{t('profiles.info.title', 'About Profiles')}</h3>
-        <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
+        <ul className="text-sm text-muted-foreground space-y-1">
           <li>
             • {t('profiles.info.main', 'Main profile is used by default for new transactions, budgets, and goals')}
           </li>
@@ -141,16 +164,13 @@ export const ProfilesPage: React.FC = () => {
       {/* Profiles Grid */}
       {profiles.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-500 dark:text-gray-400 mb-4">
+          <p className="text-muted-foreground mb-4">
             {t('profiles.noProfilesMessage', 'No profiles yet. Create your first profile to get started.')}
           </p>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="w-5 h-5" />
+          <Button onClick={() => setIsModalOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
             {t('profiles.createFirst', 'Create Your First Profile')}
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -161,7 +181,7 @@ export const ProfilesPage: React.FC = () => {
               isMain={profile.id === mainProfileId}
               onSetMain={() => handleSetMain(profile.id)}
               onEdit={() => handleEditProfile(profile)}
-              onDelete={() => handleDeleteProfile(profile.id)}
+              onDelete={() => handleDeleteClick(profile.id)}
             />
           ))}
         </div>
@@ -173,8 +193,39 @@ export const ProfilesPage: React.FC = () => {
         onClose={handleCloseModal}
         onSubmit={editingProfile ? handleUpdateProfile : handleCreateProfile}
         editingProfile={editingProfile}
-        isLoading={createMutation.isPending || updateMutation.isPending}
+        isLoading={isCreating || isUpdating}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t('profiles.deleteDialog.title', 'Delete Profile')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t(
+                'profiles.deleteDialog.description',
+                'Are you sure you want to delete this profile? This action cannot be undone. All accounts, transactions, and data associated with this profile will be permanently removed.'
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelDelete}>
+              {t('common.cancel', 'Cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting
+                ? t('common.deleting', 'Deleting...')
+                : t('common.delete', 'Delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
