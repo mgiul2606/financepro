@@ -2,7 +2,7 @@ import { Target, CheckCircle2, Circle, TrendingUp } from 'lucide-react';
 import { Card, CardHeader, CardBody, CardFooter } from '@/core/components/atomic/Card';
 import { Badge } from '@/core/components/atomic/Badge';
 import { Button } from '@/core/components/atomic/Button';
-import type { SavingsStrategy } from '../types';
+import type { SavingsStrategy } from '../optimization.types';
 
 export interface SavingsStrategyCardProps {
   strategy: SavingsStrategy;

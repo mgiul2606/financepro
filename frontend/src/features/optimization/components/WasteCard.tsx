@@ -2,7 +2,7 @@ import { AlertCircle, Trash2, TrendingDown } from 'lucide-react';
 import { Card, CardHeader, CardBody, CardFooter } from '@/core/components/atomic/Card';
 import { Badge } from '@/core/components/atomic/Badge';
 import { Button } from '@/core/components/atomic/Button';
-import type { WasteDetection } from '../types';
+import type { WasteDetection } from '../optimization.types';
 import { format } from 'date-fns';
 
 export interface WasteCardProps {

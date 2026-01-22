@@ -14,7 +14,7 @@ import {
   useAlternatives,
   useImplementSuggestion,
   useDismissSuggestion,
-} from '../hooks/useOptimization';
+} from '../optimization.hooks';
 import { SuggestionCard } from '../components/SuggestionCard';
 import { WasteCard } from '../components/WasteCard';
 import { SavingsStrategyCard } from '../components/SavingsStrategyCard';
@@ -25,12 +25,12 @@ export const OptimizationPage = () => {
   const [activeTab, setActiveTab] = useState('overview');
 
   // Fetch data
-  const { data: overview, isLoading: overviewLoading } = useOptimizationOverview();
-  const { data: suggestions, isLoading: suggestionsLoading } = useOptimizationSuggestions();
-  const { data: wasteDetections, isLoading: wasteLoading } = useWasteDetections();
-  const { data: duplicates, isLoading: duplicatesLoading } = useDuplicateServices();
-  const { data: strategies, isLoading: strategiesLoading } = useSavingsStrategies();
-  const { data: alternatives, isLoading: alternativesLoading } = useAlternatives();
+  const { overview, isLoading: overviewLoading } = useOptimizationOverview();
+  const { suggestions, isLoading: suggestionsLoading } = useOptimizationSuggestions();
+  const { wasteDetections, isLoading: wasteLoading } = useWasteDetections();
+  const { duplicateServices: duplicates, isLoading: duplicatesLoading } = useDuplicateServices();
+  const { strategies, isLoading: strategiesLoading } = useSavingsStrategies();
+  const { alternatives, isLoading: alternativesLoading } = useAlternatives();
 
   const implementSuggestion = useImplementSuggestion();
   const dismissSuggestion = useDismissSuggestion();

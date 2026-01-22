@@ -1,15 +1,14 @@
 // Mock Optimization API Service
 
-import {
+import type {
   OptimizationOverview,
   OptimizationSuggestion,
   WasteDetection,
   DuplicateService,
   SavingsStrategy,
-  OptimizationImpact,
   AlternativeRecommendation,
   CashFlowOptimization,
-} from '../types';
+} from '../optimization.types';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
