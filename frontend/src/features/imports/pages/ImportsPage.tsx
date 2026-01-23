@@ -1,108 +1,62 @@
-// src/features/imports/pages/ImportsPage.tsx
-import { useState } from 'react';
-import { Upload, FileText, CheckCircle, AlertCircle } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
-import { Button } from '@/core/components/atomic/Button';
-import { Badge } from '@/core/components/atomic/Badge';
-import { DataTable, type Column } from '@/core/components/composite/DataTable';
+import { useProfileContext } from '@/contexts/ProfileContext';
+import { ImportUploadZone } from '../components/ImportUploadZone';
+import { ImportJobsTable } from '../components/ImportJobsTable';
+import { useImports, useCreateImport, useDeleteImport } from '../imports.hooks';
 
-interface ImportJob {
-  id: string;
-  filename: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  recordsTotal: number;
-  recordsProcessed: number;
-  errors: number;
-  createdAt: string;
-}
-
+/**
+ * Imports page component
+ * Allows users to upload CSV/Excel files and view import history
+ */
 export const ImportsPage = () => {
   const { t } = useTranslation();
-  const [dragActive, setDragActive] = useState(false);
+  const { activeProfileIds } = useProfileContext();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [importJobs] = useState<ImportJob[]>([]);
 
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
-    } else if (e.type === 'dragleave') {
-      setDragActive(false);
+  // Hooks for data fetching and mutations
+  const { imports, total, isLoading, error: fetchError, refetch } = useImports();
+  const { uploadFile, isUploading, error: uploadError, reset: resetUpload } = useCreateImport();
+  const { deleteImport, isDeleting } = useDeleteImport();
+
+  const handleFileSelect = useCallback((file: File) => {
+    resetUpload();
+    setSelectedFile(file);
+  }, [resetUpload]);
+
+  const handleUpload = useCallback(async () => {
+    if (!selectedFile || activeProfileIds.length === 0) return;
+
+    try {
+      await uploadFile({
+        file: selectedFile,
+        profileId: activeProfileIds[0],
+        skipDuplicates: true,
+      });
+      setSelectedFile(null);
+      refetch();
+    } catch (err) {
+      // Error is handled by the hook
     }
-  };
+  }, [selectedFile, activeProfileIds, uploadFile, refetch]);
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setSelectedFile(e.dataTransfer.files[0]);
+  const handleCancel = useCallback(() => {
+    setSelectedFile(null);
+    resetUpload();
+  }, [resetUpload]);
+
+  const handleDelete = useCallback(async (jobId: string) => {
+    try {
+      await deleteImport(jobId, false);
+    } catch (err) {
+      // Error is handled by the hook
     }
-  };
+  }, [deleteImport]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
-    }
-  };
-
-  const columns: Column<ImportJob>[] = [
-    {
-      key: 'filename',
-      label: t('imports.filename'),
-      render: (job) => (
-        <div className="flex items-center gap-2">
-          <FileText className="h-4 w-4 text-gray-500" />
-          <span className="font-medium">{job.filename}</span>
-        </div>
-      ),
-    },
-    {
-      key: 'status',
-      label: t('imports.status'),
-      render: (job) => (
-        <Badge
-          variant={
-            job.status === 'completed'
-              ? 'success'
-              : job.status === 'failed'
-                ? 'danger'
-                : job.status === 'processing'
-                  ? 'warning'
-                  : 'info'
-          }
-        >
-          {job.status}
-        </Badge>
-      ),
-    },
-    {
-      key: 'progress',
-      label: t('imports.progress'),
-      render: (job) => (
-        <span>
-          {job.recordsProcessed} / {job.recordsTotal}
-        </span>
-      ),
-    },
-    {
-      key: 'errors',
-      label: t('imports.errors'),
-      render: (job) => (
-        <span className={job.errors > 0 ? 'text-red-600' : 'text-green-600'}>
-          {job.errors}
-        </span>
-      ),
-    },
-    {
-      key: 'createdAt',
-      label: t('imports.date'),
-      render: (job) => new Date(job.createdAt).toLocaleDateString(),
-    },
-  ];
+  const uploadErrorMessage = uploadError instanceof Error ? uploadError.message : null;
 
   return (
     <div className="p-8">
@@ -118,59 +72,14 @@ export const ImportsPage = () => {
           subtitle={t('imports.uploadDescription')}
         />
         <CardBody>
-          <div
-            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-              dragActive
-                ? 'border-blue-500 bg-blue-50'
-                : 'border-gray-300 hover:border-gray-400'
-            }`}
-            onDragEnter={handleDrag}
-            onDragLeave={handleDrag}
-            onDragOver={handleDrag}
-            onDrop={handleDrop}
-          >
-            <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600 mb-2">
-              {t('imports.dragAndDrop')}
-            </p>
-            <p className="text-sm text-gray-500 mb-4">
-              {t('imports.supportedFormats')}
-            </p>
-            <input
-              type="file"
-              accept=".csv,.xlsx,.xls"
-              onChange={handleFileChange}
-              className="hidden"
-              id="file-upload"
-            />
-            <label htmlFor="file-upload">
-              <Button variant="secondary" as="span">
-                {t('imports.selectFile')}
-              </Button>
-            </label>
-          </div>
-
-          {selectedFile && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <FileText className="h-5 w-5 text-gray-500" />
-                <div>
-                  <p className="font-medium">{selectedFile.name}</p>
-                  <p className="text-sm text-gray-500">
-                    {(selectedFile.size / 1024).toFixed(2)} KB
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="ghost" onClick={() => setSelectedFile(null)}>
-                  {t('common.cancel')}
-                </Button>
-                <Button variant="primary">
-                  {t('imports.startImport')}
-                </Button>
-              </div>
-            </div>
-          )}
+          <ImportUploadZone
+            onFileSelect={handleFileSelect}
+            onUpload={handleUpload}
+            onCancel={handleCancel}
+            selectedFile={selectedFile}
+            isUploading={isUploading}
+            error={uploadErrorMessage}
+          />
         </CardBody>
       </Card>
 
@@ -178,14 +87,23 @@ export const ImportsPage = () => {
       <Card variant="bordered">
         <CardHeader
           title={t('imports.importHistory')}
-          subtitle={t('imports.recentImports')}
+          subtitle={t('imports.recentImports', { count: total })}
         />
         <CardBody>
-          {importJobs.length > 0 ? (
-            <DataTable
-              data={importJobs}
-              columns={columns}
-              keyExtractor={(job) => job.id}
+          {isLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto" />
+              <p className="text-gray-500 mt-4">{t('common.loading')}</p>
+            </div>
+          ) : fetchError ? (
+            <div className="text-center py-8">
+              <p className="text-red-500">{t('imports.errors.loadFailed')}</p>
+            </div>
+          ) : imports.length > 0 ? (
+            <ImportJobsTable
+              jobs={imports}
+              onDelete={handleDelete}
+              isDeleting={isDeleting}
             />
           ) : (
             <div className="text-center py-8">
