@@ -10,7 +10,7 @@ import {
   HelpCircle,
   type LucideIcon,
 } from 'lucide-react';
-import type { AssetType, ValuationMethod } from './assets.types';
+import type { AssetType } from './assets.types';
 
 /**
  * Available currency options for assets

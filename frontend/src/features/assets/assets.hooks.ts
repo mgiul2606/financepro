@@ -28,7 +28,7 @@
 
 import { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import type { AssetResponse, AssetCreate, AssetUpdate, AssetList } from './assets.types';
+import type { AssetResponse, AssetCreate, AssetUpdate } from './assets.types';
 
 // Query key for cache invalidation
 export const ASSETS_QUERY_KEY = ['assets'] as const;
@@ -286,7 +286,8 @@ export const useDeleteAsset = () => {
   const queryClient = useQueryClient();
 
   const deleteAsset = useCallback(
-    async (assetId: string): Promise<void> => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async (_assetId: string): Promise<void> => {
       setIsDeleting(true);
       setError(null);
 
