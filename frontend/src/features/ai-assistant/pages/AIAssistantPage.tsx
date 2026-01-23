@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
-import { Card, CardBody } from '@/core/components/atomic/Card';
-import { Badge } from '@/core/components/atomic/Badge';
-import { Button } from '@/core/components/atomic/Button';
-import { Spinner } from '@/core/components/atomic/Spinner';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Loader2, Bot, Sparkles, MessageCircle, FileText } from 'lucide-react';
 import {
   useChat,
   useQuickQueries,
@@ -12,12 +12,12 @@ import {
   useClassifyTransactions,
   useConfirmClassification,
   useRejectClassification,
-} from '../hooks/useAIAssistant';
+} from '../ai-assistant.hooks';
 import { ChatMessage } from '../components/ChatMessage';
 import { ChatInput } from '../components/ChatInput';
 import { ExpenseClassifier } from '../components/ExpenseClassifier';
-import { Bot, Sparkles, MessageCircle, FileText } from 'lucide-react';
-import type { TransactionToClassify, ClassificationBatch } from '../types';
+import type { TransactionToClassify, ClassificationBatch } from '../ai-assistant.types';
+import { cn } from '@/lib/utils';
 
 type TabType = 'chat' | 'classification';
 
@@ -77,7 +77,7 @@ export const AIAssistantPage = () => {
   ];
 
   return (
-    <div className="flex flex-col h-screen bg-neutral-50">
+    <div className="flex h-screen flex-col bg-muted/50">
       {/* Header */}
       <PageHeader
         title={t('aiAssistant.title')}
@@ -85,29 +85,27 @@ export const AIAssistantPage = () => {
         breadcrumbs={[{ label: t('nav.dashboard'), href: '/' }, { label: t('aiAssistant.title') }]}
         actions={
           activeTab === 'chat' && messages.length > 0 ? (
-            <button
-              onClick={clearMessages}
-              className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
-            >
+            <Button variant="ghost" size="sm" onClick={clearMessages}>
               {t('aiAssistant.newConversation')}
-            </button>
+            </Button>
           ) : null
         }
       />
 
       {/* Tabs */}
-      <div className="border-b border-neutral-200 bg-white">
+      <div className="border-b border-border bg-background">
         <div className="px-6">
           <div className="flex gap-1">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                className={cn(
+                  'flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors',
                   activeTab === tab.id
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-neutral-600 hover:text-neutral-900 hover:border-neutral-300'
-                }`}
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-muted-foreground hover:border-border hover:text-foreground'
+                )}
               >
                 {tab.icon}
                 {tab.label}
@@ -118,44 +116,44 @@ export const AIAssistantPage = () => {
       </div>
 
       {/* Tab Content */}
-      <div className="flex-1 overflow-hidden flex flex-col">
+      <div className="flex flex-1 flex-col overflow-hidden">
         {activeTab === 'chat' && (
           <>
             {/* Chat Container */}
             <div className="flex-1 overflow-y-auto p-6">
               {showWelcome ? (
-                <div className="max-w-3xl mx-auto space-y-8">
+                <div className="mx-auto max-w-3xl space-y-8">
                   {/* Welcome Message */}
-                  <div className="text-center py-8">
-                    <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full mb-4">
+                  <div className="py-8 text-center">
+                    <div className="mb-4 inline-flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-blue-600">
                       <Bot className="h-10 w-10 text-white" />
                     </div>
-                    <h2 className="text-2xl font-bold text-neutral-900 mb-2">
+                    <h2 className="mb-2 text-2xl font-bold text-foreground">
                       {t('aiAssistant.welcomeTitle')}
                     </h2>
-                    <p className="text-neutral-600 max-w-xl mx-auto">
+                    <p className="mx-auto max-w-xl text-muted-foreground">
                       {t('aiAssistant.welcomeMessage')}
                     </p>
                   </div>
 
                   {/* Quick Queries */}
                   <div>
-                    <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center gap-2">
+                    <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-muted-foreground">
                       <Sparkles className="h-4 w-4" />
                       {t('aiAssistant.frequentQuestions')}
                     </h3>
                     {queriesLoading ? (
-                      <Spinner size="sm" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                         {quickQueries?.map((query) => (
                           <button
                             key={query.id}
                             onClick={() => handleQuickQuery(query.query)}
-                            className="flex items-center gap-3 p-4 bg-white border border-neutral-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all text-left group"
+                            className="group flex items-center gap-3 rounded-lg border border-border bg-card p-4 text-left transition-all hover:border-primary hover:shadow-md"
                           >
                             <span className="text-2xl">{query.icon}</span>
-                            <span className="text-sm font-medium text-neutral-900 group-hover:text-blue-600">
+                            <span className="text-sm font-medium text-foreground group-hover:text-primary">
                               {query.label}
                             </span>
                           </button>
@@ -166,35 +164,41 @@ export const AIAssistantPage = () => {
 
                   {/* Capabilities */}
                   <div>
-                    <h3 className="text-sm font-semibold text-neutral-700 mb-3">
+                    <h3 className="mb-3 text-sm font-semibold text-muted-foreground">
                       {t('aiAssistant.whatCanIDo')}
                     </h3>
                     {capabilitiesLoading ? (
-                      <Spinner size="sm" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         {capabilities?.map((capability) => (
-                          <Card key={capability.id} variant="bordered" hoverable>
-                            <CardBody>
+                          <Card
+                            key={capability.id}
+                            className="transition-shadow hover:shadow-md"
+                          >
+                            <CardContent className="pt-6">
                               <div className="flex items-start gap-3">
                                 <span className="text-3xl">{capability.icon}</span>
                                 <div className="flex-1">
-                                  <h4 className="font-semibold text-neutral-900 mb-1">
+                                  <h4 className="mb-1 font-semibold text-foreground">
                                     {capability.title}
                                   </h4>
-                                  <p className="text-sm text-neutral-600 mb-3">
+                                  <p className="mb-3 text-sm text-muted-foreground">
                                     {capability.description}
                                   </p>
                                   <div className="space-y-1">
                                     {capability.examples.slice(0, 2).map((example, index) => (
-                                      <p key={index} className="text-xs text-neutral-500 italic">
+                                      <p
+                                        key={index}
+                                        className="text-xs italic text-muted-foreground"
+                                      >
                                         "{example}"
                                       </p>
                                     ))}
                                   </div>
                                 </div>
                               </div>
-                            </CardBody>
+                            </CardContent>
                           </Card>
                         ))}
                       </div>
@@ -202,12 +206,12 @@ export const AIAssistantPage = () => {
                   </div>
 
                   {/* Tips */}
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h4 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                  <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950">
+                    <h4 className="mb-2 flex items-center gap-2 font-semibold text-blue-900 dark:text-blue-100">
                       <Sparkles className="h-4 w-4" />
                       {t('aiAssistant.tipsTitle')}
                     </h4>
-                    <ul className="space-y-2 text-sm text-blue-800">
+                    <ul className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
                       <li className="flex items-start gap-2">
                         <span>•</span>
                         <span>{t('aiAssistant.tip1')}</span>
@@ -228,7 +232,7 @@ export const AIAssistantPage = () => {
                   </div>
                 </div>
               ) : (
-                <div className="max-w-4xl mx-auto">
+                <div className="mx-auto max-w-4xl">
                   {/* Messages */}
                   <div className="space-y-4">
                     {messages.map((message) => (
@@ -242,18 +246,18 @@ export const AIAssistantPage = () => {
                     {/* Typing Indicator */}
                     {isTyping && (
                       <div className="flex gap-3">
-                        <div className="flex-shrink-0 h-8 w-8 rounded-full bg-purple-600 flex items-center justify-center">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-purple-600">
                           <Bot className="h-5 w-5 text-white" />
                         </div>
-                        <div className="bg-white border border-neutral-200 rounded-lg px-4 py-3">
+                        <div className="rounded-lg border border-border bg-card px-4 py-3">
                           <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce" />
+                            <div className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground" />
                             <div
-                              className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce"
+                              className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground"
                               style={{ animationDelay: '0.2s' }}
                             />
                             <div
-                              className="w-2 h-2 bg-neutral-400 rounded-full animate-bounce"
+                              className="h-2 w-2 animate-bounce rounded-full bg-muted-foreground"
                               style={{ animationDelay: '0.4s' }}
                             />
                           </div>
@@ -268,26 +272,25 @@ export const AIAssistantPage = () => {
             </div>
 
             {/* Chat Input */}
-            <div className="border-t border-neutral-200 bg-white">
-              <div className="max-w-4xl mx-auto">
+            <div className="border-t border-border bg-background">
+              <div className="mx-auto max-w-4xl">
                 <ChatInput onSend={handleSendMessage} disabled={isTyping} />
               </div>
             </div>
 
             {/* Quick Queries Bar (when chatting) */}
             {messages.length > 0 && quickQueries && (
-              <div className="border-t border-neutral-200 bg-neutral-50 p-3">
-                <div className="max-w-4xl mx-auto">
+              <div className="border-t border-border bg-muted/50 p-3">
+                <div className="mx-auto max-w-4xl">
                   <div className="flex items-center gap-2 overflow-x-auto">
-                    <span className="text-xs font-medium text-neutral-600 whitespace-nowrap">
+                    <span className="whitespace-nowrap text-xs font-medium text-muted-foreground">
                       {t('aiAssistant.suggestions')}
                     </span>
                     {quickQueries.slice(0, 4).map((query) => (
                       <Badge
                         key={query.id}
                         variant="secondary"
-                        size="sm"
-                        className="cursor-pointer hover:bg-neutral-300 transition-colors whitespace-nowrap"
+                        className="cursor-pointer whitespace-nowrap transition-colors hover:bg-secondary/80"
                         onClick={() => handleQuickQuery(query.query)}
                       >
                         {query.icon} {query.label}
@@ -302,7 +305,7 @@ export const AIAssistantPage = () => {
 
         {activeTab === 'classification' && (
           <div className="flex-1 overflow-y-auto p-6">
-            <div className="max-w-6xl mx-auto">
+            <div className="mx-auto max-w-6xl">
               <ExpenseClassifier
                 onClassify={handleClassify}
                 onConfirmClassification={handleConfirmClassification}
