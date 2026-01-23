@@ -32,7 +32,10 @@ import {
 import { buildUpdatePayload } from '@/lib/form-utils';
 import type { z } from 'zod';
 
-type AssetFormData = z.infer<typeof assetFormSchema>;
+// Input type: what we provide to the form (before Zod transforms)
+type AssetFormInput = z.input<typeof assetFormSchema>;
+// Output type: validated data after Zod transforms
+type AssetFormData = z.output<typeof assetFormSchema>;
 
 // Boolean options for isLiquid field
 const IS_LIQUID_OPTIONS = [
@@ -109,7 +112,8 @@ export const AssetForm = ({
   };
 
   // Initialize form with react-hook-form and zod
-  const form = useForm<AssetFormData>({
+  // Use AssetFormInput for form state (pre-transform), AssetFormData for validated output
+  const form = useForm<AssetFormInput>({
     resolver: zodResolver(assetFormSchema),
     defaultValues: getDefaultValues(),
   });
