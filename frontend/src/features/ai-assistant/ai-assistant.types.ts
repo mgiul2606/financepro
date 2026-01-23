@@ -1,3 +1,9 @@
+/**
+ * AI Assistant Type Definitions
+ *
+ * All types are derived from Zod schemas for runtime validation consistency.
+ * This file serves as the single source of truth for AI Assistant types.
+ */
 import { z } from 'zod';
 import {
   classificationRequestSchema,
@@ -11,32 +17,56 @@ import {
   assistantActionSchema,
   aiInsightSchema,
   chatMessageSchema,
+  chatMessageMetadataSchema,
   quickQuerySchema,
+  quickQueryCategorySchema,
   assistantCapabilitySchema,
   aiServiceStatusSchema,
+  transactionToClassifySchema,
+  classificationSchema,
+  alternativeCategorySchema,
+  classificationResultUISchema,
+  classificationBatchSchema,
+  explanationRequestSchema,
+  explanationTypeSchema,
+  assistantResponseSchema,
+  chartDataSchema,
+  chartDataItemSchema,
 } from './ai-assistant.schemas';
 
-/**
- * Type definitions for AI Assistant
- */
-
-// Backend API Types
+// Backend API Types (derived from schemas)
 export type ClassificationRequest = z.infer<typeof classificationRequestSchema>;
 export type ClassificationResult = z.infer<typeof classificationResultSchema>;
 export type ChatMessageRequest = z.infer<typeof chatMessageRequestSchema>;
 export type ChatMessageResponse = z.infer<typeof chatMessageResponseSchema>;
 export type OptimizationInsightsRequest = z.infer<typeof optimizationInsightsRequestSchema>;
 
-// Frontend UI Types
+// Frontend UI Types (derived from schemas)
 export type MessageRole = z.infer<typeof messageRoleSchema>;
 export type MessageType = z.infer<typeof messageTypeSchema>;
 export type ActionType = z.infer<typeof actionTypeSchema>;
 export type AssistantAction = z.infer<typeof assistantActionSchema>;
 export type AIInsight = z.infer<typeof aiInsightSchema>;
 export type ChatMessage = z.infer<typeof chatMessageSchema>;
+export type ChatMessageMetadata = z.infer<typeof chatMessageMetadataSchema>;
 export type QuickQuery = z.infer<typeof quickQuerySchema>;
+export type QuickQueryCategory = z.infer<typeof quickQueryCategorySchema>;
 export type AssistantCapability = z.infer<typeof assistantCapabilitySchema>;
 export type AIServiceStatus = z.infer<typeof aiServiceStatusSchema>;
+export type ChartData = z.infer<typeof chartDataSchema>;
+export type ChartDataItem = z.infer<typeof chartDataItemSchema>;
+
+// Transaction Classification Types (derived from schemas)
+export type TransactionToClassify = z.infer<typeof transactionToClassifySchema>;
+export type Classification = z.infer<typeof classificationSchema>;
+export type AlternativeCategory = z.infer<typeof alternativeCategorySchema>;
+export type ClassificationResultUI = z.infer<typeof classificationResultUISchema>;
+export type ClassificationBatch = z.infer<typeof classificationBatchSchema>;
+
+// Explanation Types (derived from schemas)
+export type ExplanationType = z.infer<typeof explanationTypeSchema>;
+export type ExplanationRequest = z.infer<typeof explanationRequestSchema>;
+export type AssistantResponse = z.infer<typeof assistantResponseSchema>;
 
 // Re-export types from backend API for convenience
 export type {
@@ -48,52 +78,3 @@ export type {
   SavingsSummaryResponse,
   TagSuggestions,
 } from '@/api/generated/models';
-
-// Additional UI-specific types
-export interface TransactionToClassify {
-  id: string;
-  amount: number;
-  description: string;
-  merchant?: string;
-  date: string;
-  accountId: string;
-}
-
-export interface Classification {
-  category: string;
-  subcategory?: string;
-  confidence: number;
-  tags?: string[];
-  explanation?: string;
-  confirmedByUser?: boolean;
-}
-
-export interface AlternativeCategory {
-  category: string;
-  subcategory?: string;
-  confidence: number;
-}
-
-export interface ClassificationBatch {
-  results: Array<{
-    transactionId: string;
-    classification: Classification;
-    alternativeCategories?: AlternativeCategory[];
-  }>;
-  averageConfidence: number;
-}
-
-export interface ExplanationRequest {
-  transactionId?: string;
-  category?: string;
-  anomalyId?: string;
-  type: 'classification' | 'anomaly' | 'prediction' | 'suggestion';
-}
-
-export interface AssistantResponse {
-  message: string;
-  type: MessageType;
-  suggestions?: string[];
-  actions?: AssistantAction[];
-  data?: any;
-}

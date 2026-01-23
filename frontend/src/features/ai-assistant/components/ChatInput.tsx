@@ -1,6 +1,8 @@
 import { useState, useRef, FormEvent } from 'react';
 import { Send, Mic } from 'lucide-react';
-import { Button } from '@/core/components/atomic/Button';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 
 export interface ChatInputProps {
   onSend: (message: string) => void;
@@ -43,10 +45,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="border-t border-neutral-200 bg-white p-4">
+    <form onSubmit={handleSubmit} className="border-t border-border bg-background p-4">
       <div className="flex items-end gap-2">
-        <div className="flex-1 relative">
-          <textarea
+        <div className="relative flex-1">
+          <Textarea
             ref={textareaRef}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -55,34 +57,33 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             placeholder={placeholder}
             disabled={disabled}
             rows={1}
-            className="w-full resize-none rounded-lg border border-neutral-300 px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-neutral-100 disabled:cursor-not-allowed transition-all"
-            style={{ maxHeight: '150px', minHeight: '48px' }}
+            className={cn(
+              'min-h-[48px] max-h-[150px] resize-none pr-12',
+              disabled && 'cursor-not-allowed opacity-50'
+            )}
           />
-          <button
+          <Button
             type="button"
-            className="absolute right-3 bottom-3 text-neutral-400 hover:text-neutral-600 transition-colors"
+            variant="ghost"
+            size="icon-sm"
+            className="absolute bottom-2 right-2 text-muted-foreground hover:text-foreground"
             title="Messaggio vocale (prossimamente)"
             disabled
           >
-            <Mic className="h-5 w-5" />
-          </button>
+            <Mic className="h-4 w-4" />
+          </Button>
         </div>
-        <Button
-          type="submit"
-          variant="primary"
-          size="md"
-          disabled={!message.trim() || disabled}
-          leftIcon={<Send className="h-4 w-4" />}
-        >
+        <Button type="submit" disabled={!message.trim() || disabled}>
+          <Send className="mr-2 h-4 w-4" />
           Invia
         </Button>
       </div>
-      <div className="mt-2 text-xs text-neutral-500">
-        <kbd className="px-1.5 py-0.5 bg-neutral-100 border border-neutral-300 rounded text-xs">
+      <div className="mt-2 text-xs text-muted-foreground">
+        <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-xs">
           Enter
         </kbd>{' '}
         per inviare,{' '}
-        <kbd className="px-1.5 py-0.5 bg-neutral-100 border border-neutral-300 rounded text-xs">
+        <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-xs">
           Shift + Enter
         </kbd>{' '}
         per andare a capo
