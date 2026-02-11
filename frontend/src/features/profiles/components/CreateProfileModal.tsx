@@ -66,14 +66,14 @@ export const CreateProfileModal: React.FC<CreateProfileModalProps> = ({
       ? {
           name: editingProfile.name,
           description: editingProfile.description || '',
-          profile_type: editingProfile.profile_type,
-          default_currency: editingProfile.default_currency,
+          profileType: editingProfile.profileType,
+          defaultCurrency: editingProfile.defaultCurrency,
         }
       : {
           name: '',
           description: '',
-          profile_type: 'personal',
-          default_currency: 'EUR',
+          profileType: 'personal',
+          defaultCurrency: 'EUR',
         },
   });
 
@@ -85,14 +85,14 @@ export const CreateProfileModal: React.FC<CreateProfileModalProps> = ({
           ? {
               name: editingProfile.name,
               description: editingProfile.description || '',
-              profile_type: editingProfile.profile_type,
-              default_currency: editingProfile.default_currency,
+              profileType: editingProfile.profileType,
+              defaultCurrency: editingProfile.defaultCurrency,
             }
           : {
               name: '',
               description: '',
-              profile_type: 'personal',
-              default_currency: 'EUR',
+              profileType: 'personal',
+              defaultCurrency: 'EUR',
             }
       );
     }
@@ -168,12 +168,12 @@ export const CreateProfileModal: React.FC<CreateProfileModalProps> = ({
 
           {/* Profile Type */}
           <div className="space-y-2">
-            <label htmlFor="profile_type" className="text-sm font-medium">
+            <label htmlFor="profileType" className="text-sm font-medium">
               {t('profiles.form.type', 'Profile Type')}
             </label>
             <select
-              id="profile_type"
-              {...register('profile_type')}
+              id="profileType"
+              {...register('profileType')}
               className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {PROFILE_TYPE_OPTIONS.map((type) => (
@@ -186,12 +186,12 @@ export const CreateProfileModal: React.FC<CreateProfileModalProps> = ({
 
           {/* Currency */}
           <div className="space-y-2">
-            <label htmlFor="default_currency" className="text-sm font-medium">
+            <label htmlFor="defaultCurrency" className="text-sm font-medium">
               {t('profiles.form.currency', 'Default Currency')}
             </label>
             <select
-              id="default_currency"
-              {...register('default_currency')}
+              id="defaultCurrency"
+              {...register('defaultCurrency')}
               className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <option value="EUR">EUR - Euro</option>
