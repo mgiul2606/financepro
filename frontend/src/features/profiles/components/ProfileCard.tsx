@@ -1,8 +1,7 @@
 // Profile Card component
 import React from 'react';
 import { Star, Edit2, Trash2, Building2, Users, User } from 'lucide-react';
-import type { ProfileResponse as FinancialProfile, ProfileType } from '../profiles.types';
-import { PROFILE_TYPE_OPTIONS } from '../profiles.types';
+import type { ProfileResponse as FinancialProfile } from '../profiles.types';
 import { useTranslation } from 'react-i18next';
 
 interface ProfileCardProps {
@@ -57,7 +56,7 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
             <div className="flex items-center gap-2">
               <h3 className="text-lg font-semibold">{profile.name}</h3>
               {isMain && (
-                <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" title={t('profiles.mainProfile', 'Main Profile')} />
+                <span title={t('profiles.mainProfile', 'Main Profile')}><Star className="w-4 h-4 text-yellow-500 fill-yellow-500" /></span>
               )}
             </div>
             <p className="text-sm text-gray-500 dark:text-gray-400">{getProfileTypeLabel()}</p>
