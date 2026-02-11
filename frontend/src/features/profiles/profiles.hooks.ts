@@ -46,16 +46,7 @@ import type {
  * aggregation like accounts/transactions. Manual implementation is appropriate.
  */
 export const useProfiles = (filters?: ProfileFilters) => {
-  // Convert camelCase to snake_case for API
-  const apiFilters = filters
-    ? {
-        skip: filters.skip,
-        limit: filters.limit,
-        is_active: filters.isActive,
-      }
-    : undefined;
-
-  const query = useListProfilesApiV1ProfilesGet(apiFilters);
+  const query = useListProfilesApiV1ProfilesGet();
 
   return {
     profiles: ((query.data?.data as ProfileList)?.profiles ?? []) as ProfileResponse[],
