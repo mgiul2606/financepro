@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DollarSign, Calendar } from 'lucide-react';
 import { FormField, SelectField } from '@/components/ui/FormField';
-import { Alert } from '@/components/ui/Alert';
+import { Alert } from '@/components/ui/alert';
 import type { Budget, BudgetCreate, BudgetUpdate, BudgetPeriod } from '../budgets.types';
 import {
   PERIOD_TYPE_OPTIONS,

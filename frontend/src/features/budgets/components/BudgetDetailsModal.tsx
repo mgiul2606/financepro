@@ -44,8 +44,8 @@ export const BudgetDetailsModal = ({
     if (!allTransactions) return [];
 
     return allTransactions.filter((txn: Transaction) => {
-      // Only expense transactions
-      if (txn.transactionType !== 'expense') return false;
+      // Only purchase transactions
+      if (txn.transactionType !== 'purchase') return false;
 
       // Match category
       if (!txn.categoryId || !budgetCategoryIds.includes(txn.categoryId)) return false;

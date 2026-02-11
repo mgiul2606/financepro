@@ -49,9 +49,10 @@ const useBudgetsBase = createMultiProfileListHook<
  * Hook to list all budgets
  * Fetches budgets from all active profiles and aggregates the results
  *
- * @param filters - Optional filters for the budget list (reserved for future use)
+ * @param _filters - Optional filters for the budget list (reserved for future use)
  */
-export const useBudgets = (filters?: BudgetFilters) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const useBudgets = (_filters?: BudgetFilters) => {
   const { activeProfileIds, isLoading: profileLoading } = useProfileContext();
 
   const result = useBudgetsBase(activeProfileIds, {

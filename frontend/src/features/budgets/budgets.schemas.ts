@@ -15,10 +15,10 @@ import {
 } from '@/api/generated/zod/budgets/budgets.zod';
 
 export const periodTypeSchema = z.enum([
-  PeriodType.monthly,
-  PeriodType.quarterly,
-  PeriodType.yearly,
-  PeriodType.custom,
+  PeriodType.Monthly,
+  PeriodType.Quarterly,
+  PeriodType.Yearly,
+  PeriodType.Custom,
 ]);
 
 export const budgetCategoryAllocationSchema = z.object({

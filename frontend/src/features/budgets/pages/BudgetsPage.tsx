@@ -9,8 +9,8 @@ import { Badge } from '@/core/components/atomic/Badge';
 import { CurrencyText, PercentageText, DateText } from '@/core/components/atomic';
 import { EmptyState } from '@/core/components/composite/EmptyState';
 import { Spinner } from '@/core/components/atomic/Spinner';
-import { Modal, ModalFooter } from '@/components/ui/Modal';
-import { Alert } from '@/components/ui/Alert';
+import { Dialog, DialogFooter } from '@/components/ui/dialog';
+import { Alert } from '@/components/ui/alert';
 import { useConfirm } from '@/hooks/useConfirm';
 import { BudgetForm } from '../components/BudgetForm';
 import { BudgetDetailsModal } from '../components/BudgetDetailsModal';
@@ -241,14 +241,14 @@ export const BudgetsPage: React.FC = () => {
       </div>
 
       {/* Create Modal */}
-      <Modal
+      <Dialog
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         title={t('budgets.createBudget')}
         size="md"
         preventClose={createMutation.isCreating}
         footer={
-          <ModalFooter>
+          <DialogFooter>
             <Button
               variant="secondary"
               onClick={() => setShowCreateModal(false)}
@@ -264,7 +264,7 @@ export const BudgetsPage: React.FC = () => {
             >
               {t('budgets.createBudget')}
             </Button>
-          </ModalFooter>
+          </DialogFooter>
         }
       >
         <BudgetForm
@@ -273,18 +273,17 @@ export const BudgetsPage: React.FC = () => {
           error={createMutation.error ? t('budgets.errors.createFailed') : undefined}
           onClearError={createMutation.reset}
         />
-      </Modal>
-
+      </Dialog>
       {/* Edit Modal */}
       {editingBudget && (
-        <Modal
+        <Dialog
           isOpen={true}
           onClose={() => setEditingBudget(null)}
           title={t('budgets.editBudget')}
           size="md"
           preventClose={updateMutation.isUpdating}
           footer={
-            <ModalFooter>
+            <DialogFooter>
               <Button
                 variant="secondary"
                 onClick={() => setEditingBudget(null)}
@@ -300,7 +299,7 @@ export const BudgetsPage: React.FC = () => {
               >
                 {t('common.saveChanges')}
               </Button>
-            </ModalFooter>
+            </DialogFooter>
           }
         >
           <BudgetForm
@@ -310,7 +309,7 @@ export const BudgetsPage: React.FC = () => {
             error={updateMutation.error ? t('budgets.errors.updateFailed') : undefined}
             onClearError={updateMutation.reset}
           />
-        </Modal>
+        </Dialog>
       )}
     </div>
   );
