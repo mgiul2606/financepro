@@ -113,7 +113,7 @@ export const AssetForm = ({
 
   // Initialize form with react-hook-form and zod
   // Use AssetFormInput for form state (pre-transform), AssetFormData for validated output
-  const form = useForm<AssetFormInput>({
+  const form = useForm<AssetFormInput, unknown, AssetFormData>({
     resolver: zodResolver(assetFormSchema),
     defaultValues: getDefaultValues(),
   });

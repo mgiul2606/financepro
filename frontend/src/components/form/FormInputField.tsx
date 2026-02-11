@@ -30,7 +30,7 @@ interface FormInputFieldProps<TFieldValues extends FieldValues> {
   /** Optional description/hint text */
   description?: string;
   /** Input type (default: 'text') */
-  type?: 'text' | 'number' | 'email' | 'password' | 'tel' | 'url';
+  type?: 'text' | 'number' | 'email' | 'password' | 'tel' | 'url' | 'date';
   /** Max length for text inputs */
   maxLength?: number;
   /** Step for number inputs */
