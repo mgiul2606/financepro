@@ -214,7 +214,7 @@ export const BudgetsPage: React.FC = () => {
                         variant="ghost"
                         size="sm"
                         leftIcon={<Edit size={16} />}
-                        onClick={() => setEditingBudget({ ...budget, rolloverEnabled: budget.rolloverEnabled ?? false })}
+                        onClick={() => setEditingBudget({ ...budget, rolloverEnabled: budget.rolloverEnabled ?? false, isActive: budget.isActive ?? true })}
                         fullWidth
                       >
                         {t('common.edit')}
