@@ -22,10 +22,10 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
   const { t } = useTranslation();
 
   const getProfileIcon = () => {
-    switch (profile.profile_type) {
+    switch (profile.profileType) {
       case 'business':
         return <Building2 className="w-5 h-5" />;
-      case 'joint':
+      case 'family':
         return <Users className="w-5 h-5" />;
       case 'personal':
       default:
@@ -34,11 +34,11 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
   };
 
   const getProfileTypeLabel = () => {
-    switch (profile.profile_type) {
+    switch (profile.profileType) {
       case 'business':
         return t('profiles.types.business', 'Business');
-      case 'joint':
-        return t('profiles.types.joint', 'Joint');
+      case 'family':
+        return t('profiles.types.family', 'Family');
       case 'personal':
       default:
         return t('profiles.types.personal', 'Personal');
@@ -88,11 +88,11 @@ export const ProfileCard: React.FC<ProfileCardProps> = ({
       <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-4">
         <div className="flex items-center gap-1">
           <span className="font-medium">{t('profiles.currency', 'Currency')}:</span>
-          <span>{profile.default_currency}</span>
+          <span>{profile.defaultCurrency}</span>
         </div>
         <div className="flex items-center gap-1">
-          <span className={`w-2 h-2 rounded-full ${profile.is_active ? 'bg-green-500' : 'bg-red-500'}`} />
-          <span>{profile.is_active ? t('profiles.active', 'Active') : t('profiles.inactive', 'Inactive')}</span>
+          <span className={`w-2 h-2 rounded-full ${profile.isActive ? 'bg-green-500' : 'bg-red-500'}`} />
+          <span>{profile.isActive ? t('profiles.active', 'Active') : t('profiles.inactive', 'Inactive')}</span>
         </div>
       </div>
 

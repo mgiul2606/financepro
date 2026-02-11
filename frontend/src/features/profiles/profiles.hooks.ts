@@ -45,7 +45,8 @@ import type {
  * Note: Profiles are the parent entity - they don't require multi-profile
  * aggregation like accounts/transactions. Manual implementation is appropriate.
  */
-export const useProfiles = (filters?: ProfileFilters) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const useProfiles = (_filters?: ProfileFilters) => {
   const query = useListProfilesApiV1ProfilesGet();
 
   return {

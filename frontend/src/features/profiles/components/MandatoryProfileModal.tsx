@@ -79,7 +79,7 @@ export const MandatoryProfileModal: React.FC = () => {
       >
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className="flex-shrink-0 w-10 h-10 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
+            <div className="shrink-0 w-10 h-10 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
               <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
             </div>
             <div>
@@ -145,7 +145,7 @@ export const MandatoryProfileModal: React.FC = () => {
             </label>
             <select
               id="mandatory-profile_type"
-              {...register('profile_type')}
+              {...register('profileType')}
               className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {PROFILE_TYPE_OPTIONS.map((type) => (
@@ -163,7 +163,7 @@ export const MandatoryProfileModal: React.FC = () => {
             </label>
             <select
               id="mandatory-default_currency"
-              {...register('default_currency')}
+              {...register('defaultCurrency')}
               className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <option value="EUR">EUR - Euro</option>
