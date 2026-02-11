@@ -1,6 +1,6 @@
 // features/budgets/pages/BudgetsPage.tsx
 import { useState } from 'react';
-import { Plus, AlertCircle, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, AlertCircle, Edit, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardBody, CardFooter } from '@/core/components/atomic/Card';
@@ -9,11 +9,10 @@ import { Badge } from '@/core/components/atomic/Badge';
 import { CurrencyText, PercentageText, DateText } from '@/core/components/atomic';
 import { EmptyState } from '@/core/components/composite/EmptyState';
 import { Spinner } from '@/core/components/atomic/Spinner';
-import { Dialog, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Alert } from '@/components/ui/alert';
 import { useConfirm } from '@/hooks/useConfirm';
 import { BudgetForm } from '../components/BudgetForm';
-import { BudgetDetailsModal } from '../components/BudgetDetailsModal';
 import {
   useBudgets,
   useCreateBudget,
@@ -28,7 +27,6 @@ export const BudgetsPage: React.FC = () => {
 
   // State
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [viewingBudget, setViewingBudget] = useState<Budget | null>(null);
   const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
 
   // Data fetching
@@ -40,9 +38,9 @@ export const BudgetsPage: React.FC = () => {
   const deleteMutation = useDeleteBudget();
 
   // Handlers
-  const handleCreate = async (data: BudgetCreate) => {
+  const handleCreate = async (data: BudgetCreate | BudgetUpdate) => {
     try {
-      await createMutation.createBudget(data);
+      await createMutation.createBudget(data as BudgetCreate);
       setShowCreateModal(false);
     } catch (error) {
       console.error('Failed to create budget:', error);
@@ -62,13 +60,13 @@ export const BudgetsPage: React.FC = () => {
     }
   };
 
-  const handleDelete = async (budget: Budget) => {
+  const handleDelete = async (budget: Pick<Budget, 'id' | 'name'>) => {
     const confirmed = await confirm({
       title: t('budgets.deleteBudget'),
       message: t('budgets.deleteConfirm', { name: budget.name }),
       confirmText: t('common.delete'),
       variant: 'danger',
-      confirmButtonVariant: 'danger',
+      confirmButtonVariant: 'destructive',
     });
 
     if (confirmed) {
@@ -127,7 +125,7 @@ export const BudgetsPage: React.FC = () => {
       <div className="flex-1 overflow-y-auto p-6">
         {/* Error Alert */}
         {loadError && (
-          <Alert variant="error" closable className="mb-6">
+          <Alert variant="destructive" className="mb-6">
             {t('budgets.errors.loadFailed')}
           </Alert>
         )}
@@ -148,14 +146,14 @@ export const BudgetsPage: React.FC = () => {
           /* Budget Cards Grid */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {budgets?.map((budget) => {
-              const percentage = (parseFloat(budget.total_spent || '0') / parseFloat(budget.total_amount)) * 100;
-              const remaining = parseFloat(budget.total_amount) - parseFloat(budget.total_spent || '0');
+              const percentage = (parseFloat(budget.totalSpent ?? '0') / parseFloat(budget.totalAmount)) * 100;
+              const remaining = parseFloat(budget.totalAmount) - parseFloat(budget.totalSpent ?? '0');
 
               return (
                 <Card key={budget.id} variant="elevated">
                   <CardHeader
                     title={budget.name}
-                    subtitle={budget.period_type}
+                    subtitle={budget.periodType}
                     action={
                       <Badge variant={getBadgeVariant(percentage)} size="sm">
                         <PercentageText value={percentage} decimals={0} />
@@ -169,12 +167,12 @@ export const BudgetsPage: React.FC = () => {
                       <div className="flex justify-between text-sm mb-2">
                         <span className="text-neutral-600">{t('budgets.spent')}</span>
                         <span className="font-semibold">
-                          <CurrencyText value={parseFloat(budget.total_spent || '0')} />
+                          <CurrencyText value={parseFloat(budget.totalSpent ?? '0')} />
                         </span>
                       </div>
                       <div className="w-full h-2 bg-neutral-200 rounded-full overflow-hidden">
                         <div
-                          className={`h-full transition-all duration-300 ${getProgressColor(parseFloat(budget.total_spent || '0'), parseFloat(budget.total_amount))}`}
+                          className={`h-full transition-all duration-300 ${getProgressColor(parseFloat(budget.totalSpent ?? '0'), parseFloat(budget.totalAmount))}`}
                           style={{ width: `${Math.min(percentage, 100)}%` }}
                         />
                       </div>
@@ -185,7 +183,7 @@ export const BudgetsPage: React.FC = () => {
                       <div className="flex justify-between">
                         <span className="text-neutral-600">{t('budgets.amount')}</span>
                         <span className="font-medium">
-                          <CurrencyText value={parseFloat(budget.total_amount)} />
+                          <CurrencyText value={parseFloat(budget.totalAmount)} />
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -198,12 +196,12 @@ export const BudgetsPage: React.FC = () => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-neutral-600">{t('budgets.period')}</span>
-                        <span className="font-medium capitalize">{budget.period_type}</span>
+                        <span className="font-medium capitalize">{budget.periodType}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-neutral-600">{t('budgets.dates')}</span>
                         <span className="font-medium text-xs">
-                          <DateText value={budget.start_date} /> - <DateText value={budget.end_date} />
+                          <DateText value={budget.startDate} />{budget.endDate && <> - <DateText value={budget.endDate} /></>}
                         </span>
                       </div>
                     </div>
@@ -216,7 +214,7 @@ export const BudgetsPage: React.FC = () => {
                         variant="ghost"
                         size="sm"
                         leftIcon={<Edit size={16} />}
-                        onClick={() => setEditingBudget(budget)}
+                        onClick={() => setEditingBudget({ ...budget, rolloverEnabled: budget.rolloverEnabled ?? false })}
                         fullWidth
                       >
                         {t('common.edit')}
@@ -242,12 +240,21 @@ export const BudgetsPage: React.FC = () => {
 
       {/* Create Modal */}
       <Dialog
-        isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        title={t('budgets.createBudget')}
-        size="md"
-        preventClose={createMutation.isCreating}
-        footer={
+        open={showCreateModal}
+        onOpenChange={(open) => {
+          if (!open && !createMutation.isCreating) setShowCreateModal(false);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('budgets.createBudget')}</DialogTitle>
+          </DialogHeader>
+          <BudgetForm
+            onSubmit={handleCreate}
+            isLoading={createMutation.isCreating}
+            error={createMutation.error ? t('budgets.errors.createFailed') : undefined}
+            onClearError={createMutation.reset}
+          />
           <DialogFooter>
             <Button
               variant="secondary"
@@ -265,52 +272,48 @@ export const BudgetsPage: React.FC = () => {
               {t('budgets.createBudget')}
             </Button>
           </DialogFooter>
-        }
-      >
-        <BudgetForm
-          onSubmit={handleCreate}
-          isLoading={createMutation.isCreating}
-          error={createMutation.error ? t('budgets.errors.createFailed') : undefined}
-          onClearError={createMutation.reset}
-        />
+        </DialogContent>
       </Dialog>
+
       {/* Edit Modal */}
-      {editingBudget && (
-        <Dialog
-          isOpen={true}
-          onClose={() => setEditingBudget(null)}
-          title={t('budgets.editBudget')}
-          size="md"
-          preventClose={updateMutation.isUpdating}
-          footer={
-            <DialogFooter>
-              <Button
-                variant="secondary"
-                onClick={() => setEditingBudget(null)}
-                disabled={updateMutation.isUpdating}
-              >
-                {t('common.cancel')}
-              </Button>
-              <Button
-                variant="primary"
-                type="submit"
-                form="budget-form"
-                isLoading={updateMutation.isUpdating}
-              >
-                {t('common.saveChanges')}
-              </Button>
-            </DialogFooter>
-          }
-        >
-          <BudgetForm
-            budget={editingBudget}
-            onSubmit={handleUpdate}
-            isLoading={updateMutation.isUpdating}
-            error={updateMutation.error ? t('budgets.errors.updateFailed') : undefined}
-            onClearError={updateMutation.reset}
-          />
-        </Dialog>
-      )}
+      <Dialog
+        open={!!editingBudget}
+        onOpenChange={(open) => {
+          if (!open && !updateMutation.isUpdating) setEditingBudget(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('budgets.editBudget')}</DialogTitle>
+          </DialogHeader>
+          {editingBudget && (
+            <BudgetForm
+              budget={editingBudget}
+              onSubmit={handleUpdate}
+              isLoading={updateMutation.isUpdating}
+              error={updateMutation.error ? t('budgets.errors.updateFailed') : undefined}
+              onClearError={updateMutation.reset}
+            />
+          )}
+          <DialogFooter>
+            <Button
+              variant="secondary"
+              onClick={() => setEditingBudget(null)}
+              disabled={updateMutation.isUpdating}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="primary"
+              type="submit"
+              form="budget-form"
+              isLoading={updateMutation.isUpdating}
+            >
+              {t('common.saveChanges')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
