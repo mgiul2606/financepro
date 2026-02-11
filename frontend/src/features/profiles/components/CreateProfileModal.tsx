@@ -66,8 +66,8 @@ export const CreateProfileModal: React.FC<CreateProfileModalProps> = ({
       ? {
           name: editingProfile.name,
           description: editingProfile.description || '',
-          profile_type: editingProfile.profile_type,
-          default_currency: editingProfile.default_currency,
+          profile_type: editingProfile.profileType,
+          default_currency: editingProfile.defaultCurrency,
         }
       : {
           name: '',
@@ -85,8 +85,8 @@ export const CreateProfileModal: React.FC<CreateProfileModalProps> = ({
           ? {
               name: editingProfile.name,
               description: editingProfile.description || '',
-              profile_type: editingProfile.profile_type,
-              default_currency: editingProfile.default_currency,
+              profile_type: editingProfile.profileType,
+              default_currency: editingProfile.defaultCurrency,
             }
           : {
               name: '',
@@ -173,7 +173,7 @@ export const CreateProfileModal: React.FC<CreateProfileModalProps> = ({
             </label>
             <select
               id="profile_type"
-              {...register('profile_type')}
+              {...register('profileType')}
               className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {PROFILE_TYPE_OPTIONS.map((type) => (
@@ -191,7 +191,7 @@ export const CreateProfileModal: React.FC<CreateProfileModalProps> = ({
             </label>
             <select
               id="default_currency"
-              {...register('default_currency')}
+              {...register('defaultCurrency')}
               className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <option value="EUR">EUR - Euro</option>

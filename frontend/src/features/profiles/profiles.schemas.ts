@@ -19,19 +19,17 @@ import {
  * Profile Type Enum Schema
  */
 export const profileTypeSchema = z.enum([
-  ProfileType.personal,
-  ProfileType.business,
-  ProfileType.joint,
-  ProfileType.investment,
+  ProfileType.Personal,
+  ProfileType.Business,
+  ProfileType.Family,
 ]);
 
 /**
  * Database Type Enum Schema
  */
 export const databaseTypeSchema = z.enum([
-  DatabaseType.primary,
-  DatabaseType.secondary,
-  DatabaseType.encrypted,
+  DatabaseType.Mssql,
+  DatabaseType.Postgresql,
 ]);
 
 /**

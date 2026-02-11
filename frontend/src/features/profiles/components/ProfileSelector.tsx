@@ -95,11 +95,11 @@ export const ProfileSelector: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium truncate text-gray-900 dark:text-white">{profile.name}</span>
                           {isMain && (
-                            <Star className="w-3 h-3 text-yellow-500 fill-yellow-500 flex-shrink-0" />
+                            <Star className="w-3 h-3 text-yellow-500 fill-yellow-500 shrink-0" />
                           )}
                         </div>
                         <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {profile.profile_type || 'personal'} • {profile.default_currency || 'USD'}
+                          {profile.profileType || 'personal'} • {profile.defaultCurrency || 'USD'}
                         </span>
                       </div>
 
