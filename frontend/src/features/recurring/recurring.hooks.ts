@@ -21,7 +21,6 @@ import type {
   RecurringTransaction,
   RecurringTransactionCreate,
   RecurringTransactionUpdate,
-  RecurringTransactionList,
   RecurringFilters,
   RecurringSummary,
   RecurringOccurrence,
@@ -60,7 +59,7 @@ const MOCK_RECURRING: RecurringTransaction[] = [];
  * });
  * ```
  */
-export const useRecurring = (_filters?: RecurringFilters) => {
+export const useRecurring = (filters?: RecurringFilters) => {
   const { activeProfileIds, isLoading: profileLoading } = useProfileContext();
 
   // Placeholder implementation - returns empty array
@@ -70,10 +69,33 @@ export const useRecurring = (_filters?: RecurringFilters) => {
 
   const recurring = useMemo(() => {
     // Filter mock data by active profiles
-    return MOCK_RECURRING.filter((r) =>
+    let result = MOCK_RECURRING.filter((r) =>
       activeProfileIds.includes(r.profileId)
     );
-  }, [activeProfileIds]);
+
+    if (filters) {
+      if (filters.profileId) {
+        result = result.filter((r) => r.profileId === filters.profileId);
+      }
+      if (filters.accountId) {
+        result = result.filter((r) => r.accountId === filters.accountId);
+      }
+      if (filters.categoryId) {
+        result = result.filter((r) => r.categoryId === filters.categoryId);
+      }
+      if (filters.transactionType) {
+        result = result.filter((r) => r.transactionType === filters.transactionType);
+      }
+      if (filters.frequency) {
+        result = result.filter((r) => r.frequency === filters.frequency);
+      }
+      if (filters.isActive !== undefined) {
+        result = result.filter((r) => r.isActive === filters.isActive);
+      }
+    }
+
+    return result;
+  }, [activeProfileIds, filters]);
 
   const refetch = useCallback(() => {
     // TODO: Implement actual refetch when backend exists
@@ -148,13 +170,13 @@ export const useCreateRecurring = () => {
   const [error, setError] = useState<Error | null>(null);
 
   const createRecurring = useCallback(
-    async (_data: RecurringTransactionCreate): Promise<RecurringTransaction> => {
+    async (data: RecurringTransactionCreate): Promise<RecurringTransaction> => {
       setIsCreating(true);
       setError(null);
 
       try {
         // TODO: Replace with actual API call
-        console.warn('useCreateRecurring: Backend API not implemented');
+        console.warn(`useCreateRecurring: Backend API not implemented (name: ${data.name})`);
         throw new Error('Backend API not implemented. Please implement recurring endpoints first.');
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Unknown error');
@@ -204,15 +226,15 @@ export const useUpdateRecurring = () => {
 
   const updateRecurring = useCallback(
     async (
-      _recurringId: string,
-      _data: RecurringTransactionUpdate
+      recurringId: string,
+      data: RecurringTransactionUpdate
     ): Promise<RecurringTransaction> => {
       setIsUpdating(true);
       setError(null);
 
       try {
         // TODO: Replace with actual API call
-        console.warn('useUpdateRecurring: Backend API not implemented');
+        console.warn(`useUpdateRecurring: Backend API not implemented (id: ${recurringId}, fields: ${Object.keys(data).join(', ')})`);
         throw new Error('Backend API not implemented. Please implement recurring endpoints first.');
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Unknown error');
@@ -258,13 +280,13 @@ export const useDeleteRecurring = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const deleteRecurring = useCallback(async (_recurringId: string): Promise<void> => {
+  const deleteRecurring = useCallback(async (recurringId: string): Promise<void> => {
     setIsDeleting(true);
     setError(null);
 
     try {
       // TODO: Replace with actual API call
-      console.warn('useDeleteRecurring: Backend API not implemented');
+      console.warn(`useDeleteRecurring: Backend API not implemented (id: ${recurringId})`);
       throw new Error('Backend API not implemented. Please implement recurring endpoints first.');
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Unknown error');
@@ -329,12 +351,12 @@ export const useSkipOccurrence = () => {
   const [error, setError] = useState<Error | null>(null);
 
   const skipOccurrence = useCallback(
-    async (_occurrenceId: string, _reason?: string): Promise<void> => {
+    async (occurrenceId: string, reason?: string): Promise<void> => {
       setIsSkipping(true);
       setError(null);
 
       try {
-        console.warn('useSkipOccurrence: Backend API not implemented');
+        console.warn(`useSkipOccurrence: Backend API not implemented (occurrenceId: ${occurrenceId}, reason: ${reason ?? 'none'})`);
         throw new Error('Backend API not implemented');
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Unknown error');
@@ -369,12 +391,12 @@ export const useOverrideOccurrence = () => {
   const [error, setError] = useState<Error | null>(null);
 
   const overrideOccurrence = useCallback(
-    async (_occurrenceId: string, _newAmount: number): Promise<void> => {
+    async (occurrenceId: string, newAmount: number): Promise<void> => {
       setIsOverriding(true);
       setError(null);
 
       try {
-        console.warn('useOverrideOccurrence: Backend API not implemented');
+        console.warn(`useOverrideOccurrence: Backend API not implemented (occurrenceId: ${occurrenceId}, newAmount: ${newAmount})`);
         throw new Error('Backend API not implemented');
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Unknown error');
