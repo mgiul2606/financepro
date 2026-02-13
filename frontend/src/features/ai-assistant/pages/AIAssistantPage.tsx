@@ -125,7 +125,7 @@ export const AIAssistantPage = () => {
                 <div className="mx-auto max-w-3xl space-y-8">
                   {/* Welcome Message */}
                   <div className="py-8 text-center">
-                    <div className="mb-4 inline-flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-purple-600 to-blue-600">
+                    <div className="mb-4 inline-flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-br from-purple-600 to-blue-600">
                       <Bot className="h-10 w-10 text-white" />
                     </div>
                     <h2 className="mb-2 text-2xl font-bold text-foreground">

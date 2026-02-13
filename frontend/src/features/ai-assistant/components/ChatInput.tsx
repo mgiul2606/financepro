@@ -58,7 +58,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             disabled={disabled}
             rows={1}
             className={cn(
-              'min-h-[48px] max-h-[150px] resize-none pr-12',
+              'min-h-12 max-h-[150px] resize-none pr-12',
               disabled && 'cursor-not-allowed opacity-50'
             )}
           />

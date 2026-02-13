@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Upload, Sparkles, CheckCircle, Loader2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ClassificationCard } from './ClassificationCard';
 import type { TransactionToClassify, ClassificationBatch } from '../ai-assistant.types';
 

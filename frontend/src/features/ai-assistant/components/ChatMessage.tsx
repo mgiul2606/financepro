@@ -1,7 +1,7 @@
 import { User, Bot, Lightbulb } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { PieChart, LineChart } from '@/core/components/composite/charts';
 import type { ChatMessage as ChatMessageType, ChartDataItem } from '../ai-assistant.types';
