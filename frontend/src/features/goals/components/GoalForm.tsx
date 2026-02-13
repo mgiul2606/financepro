@@ -28,6 +28,28 @@ import {
   CURRENCY_OPTIONS,
 } from '../goals.constants';
 
+interface GoalFormData {
+  name: string;
+  description: string;
+  targetAmount: string;
+  currency: string;
+  targetDate: string;
+  priority: GoalPriority;
+  category: string;
+}
+
+const PRIORITY_TO_NUMBER: Record<GoalPriority, number> = {
+  low: 3,
+  medium: 5,
+  high: 8,
+};
+
+const numberToPriority = (n: number): GoalPriority => {
+  if (n <= 3) return 'low';
+  if (n <= 7) return 'medium';
+  return 'high';
+};
+
 interface GoalFormProps {
   goal?: Goal;
   onSubmit: (data: GoalCreate | GoalUpdate) => Promise<void>;
@@ -46,14 +68,14 @@ export const GoalForm = ({
   const { t } = useTranslation();
   const isEditMode = !!goal;
 
-  const [formData, setFormData] = useState<GoalCreate>({
+  const [formData, setFormData] = useState<GoalFormData>({
     name: goal?.name || '',
     description: goal?.description || '',
-    targetAmount: goal?.targetAmount || 0,
+    targetAmount: goal?.targetAmount || '',
     currency: goal?.currency || 'EUR',
     targetDate: goal?.targetDate || '',
-    priority: (goal?.priority) || 'medium',
-    category: goal?.category || 'Savings',
+    priority: goal?.priority != null ? numberToPriority(goal.priority) : 'medium',
+    category: 'Savings',
   });
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -66,13 +88,13 @@ export const GoalForm = ({
         targetAmount: goal.targetAmount,
         currency: goal.currency,
         targetDate: goal.targetDate,
-        priority: goal.priority,
-        category: goal.category || 'Savings',
+        priority: numberToPriority(goal.priority),
+        category: 'Savings',
       });
     }
   }, [goal]);
 
-  const validateField = (name: string, value: any): string => {
+  const validateField = (name: string, value: string): string => {
     switch (name) {
       case 'name':
         if (!value || value.trim().length === 0) {
@@ -83,7 +105,7 @@ export const GoalForm = ({
         }
         break;
       case 'targetAmount':
-        if (!value || value <= 0) {
+        if (!value || Number(value) <= 0) {
           return t('goals.errors.targetAmountPositive');
         }
         break;
@@ -96,7 +118,7 @@ export const GoalForm = ({
     return '';
   };
 
-  const handleFieldChange = (name: string, value: any) => {
+  const handleFieldChange = (name: keyof GoalFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
     
     const error = validateField(name, value);
@@ -117,7 +139,7 @@ export const GoalForm = ({
     // Validate all fields
     const errors: Record<string, string> = {};
     Object.keys(formData).forEach((key) => {
-      const error = validateField(key, formData[key as keyof GoalCreate]);
+      const error = validateField(key, formData[key as keyof GoalFormData] as string);
       if (error) {
         errors[key] = error;
       }
@@ -130,14 +152,20 @@ export const GoalForm = ({
     }
 
     try {
-      await onSubmit(formData);
+      const { category: _category, priority, ...rest } = formData;
+      const submitData = {
+        ...rest,
+        description: rest.description || undefined,
+        priority: PRIORITY_TO_NUMBER[priority],
+      };
+      await onSubmit(submitData as GoalCreate | GoalUpdate);
     } catch (err) {
       console.error('Form submission error:', err);
     }
   };
 
   const progressPercentage = goal
-    ? Math.min((goal.currentAmount / goal.targetAmount) * 100, 100)
+    ? Math.min((parseFloat(goal.currentAmount) / parseFloat(goal.targetAmount)) * 100, 100)
     : 0;
 
   return (
@@ -211,7 +239,7 @@ export const GoalForm = ({
             min="0.01"
             value={formData.targetAmount || ''}
             onChange={(e) =>
-              handleFieldChange('targetAmount', parseFloat(e.target.value) || 0)
+              handleFieldChange('targetAmount', e.target.value)
             }
             placeholder="0.00"
             disabled={isLoading}
@@ -331,7 +359,7 @@ export const GoalForm = ({
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">{t('goals.saved')}</span>
                 <span className="font-medium">
-                  {goal.currency} {goal.currentAmount.toFixed(2)} / {goal.targetAmount.toFixed(2)}
+                  {goal.currency} {parseFloat(goal.currentAmount).toFixed(2)} / {parseFloat(goal.targetAmount).toFixed(2)}
                 </span>
               </div>
               <Progress value={progressPercentage} className="h-2" />
@@ -339,7 +367,7 @@ export const GoalForm = ({
                 <span>{progressPercentage.toFixed(1)}%</span>
                 <span>
                   {t('budgets.remaining')}: {goal.currency}{' '}
-                  {(goal.targetAmount - goal.currentAmount).toFixed(2)}
+                  {(parseFloat(goal.targetAmount) - parseFloat(goal.currentAmount)).toFixed(2)}
                 </span>
               </div>
             </div>
