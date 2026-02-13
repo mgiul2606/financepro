@@ -1,7 +1,9 @@
 // src/hooks/useConfirm.ts
 import { useContext, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ConfirmContext } from '@/components/ConfirmDialog/ConfirmProvider';
+import { ConfirmContext, ConfirmProvider } from '@/components/ConfirmDialog/ConfirmProvider';
+
+export { ConfirmProvider };
 
 export const useConfirm = () => {
   const context = useContext(ConfirmContext);
