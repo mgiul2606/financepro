@@ -35,7 +35,7 @@ export const AnalyticPage = () => {
   });
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const handleCategoryClick = (dataPoint: PieChartDataPoint, _index: number) => {
+  const handleCategoryClick = (dataPoint: PieChartDataPoint) => {
     setSelectedCategory((prev) => (prev === dataPoint.name ? null : dataPoint.name));
   };
 
@@ -59,16 +59,6 @@ export const AnalyticPage = () => {
     if (!selectedCategory || !categories) return undefined;
     return categories.findIndex((c) => c.category === selectedCategory);
   }, [selectedCategory, categories]);
-
-  const tabs = [
-    { id: 'overview', label: t('analytics.overview') },
-    { id: 'trends', label: t('analytics.trends') },
-    { id: 'categories', label: t('analytics.categories') },
-    { id: 'merchants', label: t('analytics.merchants') },
-    { id: 'anomalies', label: t('analytics.anomalies') },
-    { id: 'patterns', label: t('analytics.patterns') },
-    { id: 'reports', label: t('analytics.reports') },
-  ];
 
   return (
     <div className="min-h-screen bg-neutral-50">
