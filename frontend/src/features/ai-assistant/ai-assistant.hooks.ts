@@ -194,12 +194,17 @@ export const useChat = () => {
           conversationId,
         });
 
+        const responseData = response.data;
+        if (!('content' in responseData)) {
+          throw new Error('Unexpected response format');
+        }
+
         // Convert backend response to frontend message format
         const assistantMessage: ChatMessage = {
           id: crypto.randomUUID(),
           role: 'assistant',
           type: 'text',
-          content: response.data.content,
+          content: responseData.content,
           timestamp: new Date().toISOString(),
         };
 
