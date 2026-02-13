@@ -152,11 +152,13 @@ export const GoalForm = ({
     }
 
     try {
-      const { category: _category, priority, ...rest } = formData;
       const submitData = {
-        ...rest,
-        description: rest.description || undefined,
-        priority: PRIORITY_TO_NUMBER[priority],
+        name: formData.name,
+        description: formData.description || undefined,
+        targetAmount: formData.targetAmount,
+        currency: formData.currency,
+        targetDate: formData.targetDate,
+        priority: PRIORITY_TO_NUMBER[formData.priority],
       };
       await onSubmit(submitData as GoalCreate | GoalUpdate);
     } catch (err) {
