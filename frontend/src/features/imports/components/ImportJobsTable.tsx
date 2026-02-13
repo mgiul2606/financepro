@@ -88,7 +88,7 @@ export const ImportJobsTable = ({
       ),
     },
     ...(onDelete ? [{
-      key: 'actions' as keyof ImportJobResponse,
+      key: 'actions',
       label: '',
       render: (job: ImportJobResponse) => (
         <Button

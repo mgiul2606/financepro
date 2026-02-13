@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 import { Badge } from '@/core/components/atomic/Badge';
-import { ImportStatus } from '@/api/generated/models';
 import { STATUS_VARIANT_MAP, STATUS_LABEL_MAP } from '../imports.constants';
 
 interface ImportStatusBadgeProps {
@@ -15,7 +14,7 @@ interface ImportStatusBadgeProps {
 export const ImportStatusBadge = ({ status, className }: ImportStatusBadgeProps) => {
   const { t } = useTranslation();
 
-  const variant = STATUS_VARIANT_MAP[status] ?? 'default';
+  const variant = STATUS_VARIANT_MAP[status] ?? 'secondary';
   const labelKey = STATUS_LABEL_MAP[status] ?? status;
 
   return (
