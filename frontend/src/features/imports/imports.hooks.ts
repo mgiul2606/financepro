@@ -1,7 +1,7 @@
 /**
  * React Query hooks for Import operations
  */
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   useGetImportJobApiV1ImportsJobIdGet,
   useImportCsvApiV1ImportsPost,
@@ -10,8 +10,6 @@ import {
   getListImportJobsApiV1ImportsGetQueryKey,
   listImportJobsApiV1ImportsGet,
   type listImportJobsApiV1ImportsGetResponse,
-  type ImportCsvApiV1ImportsPostMutationResult,
-  type DeleteImportJobApiV1ImportsJobIdDeleteMutationResult,
 } from '@/api/generated/imports/imports';
 import type {
   ImportJobResponse,
@@ -25,7 +23,6 @@ import type {
 import { useProfileContext } from '@/contexts/ProfileContext';
 import { createMultiProfileListHook } from '@/hooks/factories/createMultiProfileListHook';
 import { createGetByIdHook } from '@/hooks/factories/createGetByIdHook';
-import type { ExtractOrvalData } from '@/lib/orval-types';
 
 /**
  * Base hook for listing import jobs across multiple profiles
