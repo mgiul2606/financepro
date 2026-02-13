@@ -62,7 +62,7 @@ export const CreateAccountModal = ({ isOpen, onClose, onCreated }: CreateAccount
 
   return (
     <Modal
-      isOpen={isOpen}
+      open={isOpen}
       onClose={onClose}
       title="Create New Account"
       size="md"

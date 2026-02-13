@@ -91,7 +91,7 @@ export const EditAccountModal = ({ account, isOpen, onClose, onUpdated }: EditAc
 
   return (
     <Modal
-      isOpen={isOpen}
+      open={isOpen}
       onClose={onClose}
       title="Edit Account"
       size="md"
