@@ -95,8 +95,11 @@ async def create_profile(
     Returns:
         Created financial profile with generated ID
     """
+    profile_data = profile_in.model_dump(
+        exclude={"database_connection_string", "database_type"}
+    )
     profile = FinancialProfile(
-        **profile_in.model_dump(),
+        **profile_data,
         user_id=current_user.id
     )
     db.add(profile)
@@ -268,7 +271,10 @@ async def update_profile(
     profile = children_for(db, User, FinancialProfile, current_user.id, profile_id)
 
     # Update only provided fields
-    update_data = profile_in.model_dump(exclude_unset=True)
+    update_data = profile_in.model_dump(
+        exclude_unset=True,
+        exclude={"database_connection_string", "database_type"}
+    )
     for field, value in update_data.items():
         setattr(profile, field, value)
 
