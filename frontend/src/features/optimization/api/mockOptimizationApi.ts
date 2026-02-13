@@ -380,6 +380,7 @@ export const mockOptimizationApi = {
     };
   },
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   dismissSuggestion: async (_id: string): Promise<void> => {
     await delay(400);
   },
