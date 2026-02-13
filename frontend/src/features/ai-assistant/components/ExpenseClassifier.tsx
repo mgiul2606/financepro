@@ -19,7 +19,7 @@ export const ExpenseClassifier: React.FC<ExpenseClassifierProps> = ({
   onClassify,
   onConfirmClassification,
   onRejectClassification,
-  isLoading = false,
+  isLoading: _isLoading = false,
 }) => {
   const [transactions, setTransactions] = useState<TransactionToClassify[]>(
     initialTransactions || []

@@ -5,12 +5,6 @@
  */
 import { z } from 'zod';
 
-// Import auto-generated Zod schemas from Orval where available
-import {
-  classifyTransactionApiV1AiAiClassifyTransactionPostBody,
-  sendChatMessageApiV1AiAiChatMessagePostBody,
-} from '@/api/generated/zod/ai-services/ai-services.zod';
-
 // Backend API Request/Response Schemas
 export const classificationRequestSchema = z.object({
   transactionId: z.string().uuid(),
