@@ -48,7 +48,7 @@ Componente modale con gestione avanzata di stati e interazioni.
 import { Modal, ModalFooter } from '@/components/ui';
 
 <Modal
-  isOpen={isOpen}
+  open={isOpen}
   onClose={handleClose}
   title="Titolo Modal"
   size="md"
