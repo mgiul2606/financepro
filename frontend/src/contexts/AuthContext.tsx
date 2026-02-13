@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import api from '../services/api';
 
 interface User {
-  id: number;
+  id: string;
   email: string;
   created_at: string;
 }
@@ -62,12 +62,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     const response = await api.post('/api/v1/auth/login', { email, password });
-    const { access_token } = response.data;
+    const accessToken = response.data.accessToken ?? response.data.access_token;
 
-    localStorage.setItem('token', access_token);
-    setToken(access_token);
+    if (!accessToken) {
+      throw new Error('Missing access token in login response');
+    }
 
-    await fetchUserData(access_token);
+    localStorage.setItem('token', accessToken);
+    setToken(accessToken);
+
+    await fetchUserData(accessToken);
   };
 
   const register = async (email: string, password: string) => {
