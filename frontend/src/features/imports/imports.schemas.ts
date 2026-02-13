@@ -97,7 +97,7 @@ export const importFileSchema = z.object({
 export const importStatusInfoSchema = z.object({
   status: importStatusSchema,
   label: z.string(),
-  variant: z.enum(['success', 'danger', 'warning', 'info', 'default']),
+  variant: z.enum(['success', 'danger', 'warning', 'info', 'secondary']),
 });
 
 /**
