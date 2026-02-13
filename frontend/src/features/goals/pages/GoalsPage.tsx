@@ -9,8 +9,8 @@ import { Badge } from '@/core/components/atomic/Badge';
 import { CurrencyText, PercentageText, DateText } from '@/core/components/atomic';
 import { EmptyState } from '@/core/components/composite/EmptyState';
 import { Spinner } from '@/core/components/atomic/Spinner';
-import { Modal, ModalFooter } from '@/components/ui/Modal';
-import { Alert } from '@/components/ui/Alert';
+import { Dialog, DialogFooter } from '@/components/ui/dialog';
+import { Alert } from '@/components/ui/alert';
 import { useConfirm } from '@/hooks/useConfirm';
 import { GoalForm } from '../components/GoalForm';
 import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal } from '../goals.hooks';
@@ -274,14 +274,14 @@ export const GoalsPage: React.FC = () => {
       </div>
 
       {/* Create Modal */}
-      <Modal
+      <Dialog
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         title={t('goals.createGoal')}
         size="md"
         preventClose={createMutation.isCreating}
         footer={
-          <ModalFooter>
+          <DialogFooter>
             <Button
               variant="secondary"
               onClick={() => setShowCreateModal(false)}
@@ -297,7 +297,7 @@ export const GoalsPage: React.FC = () => {
             >
               {t('goals.createGoal')}
             </Button>
-          </ModalFooter>
+          </DialogFooter>
         }
       >
         <GoalForm
@@ -306,18 +306,18 @@ export const GoalsPage: React.FC = () => {
           error={createMutation.error ? t('goals.errors.createFailed') : undefined}
           onClearError={createMutation.reset}
         />
-      </Modal>
+      </Dialog>
 
       {/* Edit Modal */}
       {editingGoal && (
-        <Modal
+        <Dialog
           isOpen={true}
           onClose={() => setEditingGoal(null)}
           title={t('goals.editGoal')}
           size="md"
           preventClose={updateMutation.isUpdating}
           footer={
-            <ModalFooter>
+            <DialogFooter>
               <Button
                 variant="secondary"
                 onClick={() => setEditingGoal(null)}
@@ -333,7 +333,7 @@ export const GoalsPage: React.FC = () => {
               >
                 {t('common.saveChanges')}
               </Button>
-            </ModalFooter>
+            </DialogFooter>
           }
         >
           <GoalForm
@@ -343,7 +343,7 @@ export const GoalsPage: React.FC = () => {
             error={updateMutation.error ? t('goals.errors.updateFailed') : undefined}
             onClearError={updateMutation.reset}
           />
-        </Modal>
+        </Dialog>
       )}
     </div>
   );

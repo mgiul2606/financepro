@@ -15,21 +15,23 @@ import {
 } from '@/api/generated/zod/financial-goals/financial-goals.zod';
 
 export const goalTypeSchema = z.enum([
-  GoalType.savings,
-  GoalType.debt_reduction,
-  GoalType.investment,
-  GoalType.purchase,
-  GoalType.emergency_fund,
-  GoalType.retirement,
-  GoalType.custom,
+  GoalType.Car,
+  GoalType.Custom,
+  GoalType.DebtPayoff,
+  GoalType.Education,
+  GoalType.EmergencyFund,
+  GoalType.House,
+  GoalType.Investment,
+  GoalType.Retirement,
+  GoalType.Vacation
 ]);
 
 export const goalStatusSchema = z.enum([
-  GoalStatus.not_started,
-  GoalStatus.in_progress,
-  GoalStatus.completed,
-  GoalStatus.paused,
-  GoalStatus.cancelled,
+  GoalStatus.Active,
+  GoalStatus.Cancelled,
+  GoalStatus.Completed,
+  GoalStatus.Paused,
+  GoalStatus.Cancelled
 ]);
 
 /**

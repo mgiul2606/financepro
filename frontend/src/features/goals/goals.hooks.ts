@@ -49,9 +49,10 @@ const useGoalsBase = createMultiProfileListHook<
  * Hook to list all goals
  * Fetches goals from all active profiles and aggregates the results
  *
- * @param filters - Optional filters for the goals query
+ * @param _filters - Optional filters for the goals query
  */
-export const useGoals = (filters?: GoalFilters) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const useGoals = (_filters?: GoalFilters) => {
   const { activeProfileIds, isLoading: profileLoading } = useProfileContext();
 
   const result = useGoalsBase(activeProfileIds, {
