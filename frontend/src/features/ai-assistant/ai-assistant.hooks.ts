@@ -82,16 +82,12 @@ export const useAIStatus = () => {
 /**
  * Hook to list all conversations
  */
-export const useConversations = (filters?: {
-  financial_profile_id?: string;
-  skip?: number;
-  limit?: number;
-}) => {
-  const query = useListConversationsApiV1AiAiChatConversationsGet(filters);
+export const useConversations = () => {
+  const query = useListConversationsApiV1AiAiChatConversationsGet();
 
   return {
-    conversations: query.data?.data?.items || [],
-    total: query.data?.data?.total || 0,
+    conversations: query.data?.data || [],
+    total: query.data?.data?.length || 0,
     isLoading: query.isLoading,
     error: query.error,
     refetch: query.refetch,
@@ -203,7 +199,7 @@ export const useChat = () => {
           id: crypto.randomUUID(),
           role: 'assistant',
           type: 'text',
-          content: response.data.response,
+          content: response.data.content,
           timestamp: new Date().toISOString(),
         };
 
@@ -281,7 +277,7 @@ export const useTrainClassificationModel = () => {
   });
 
   return {
-    trainModel: (data: { financial_profile_id: string }) =>
+    trainModel: (data: { financialProfileId: string }) =>
       mutation.mutateAsync({ data }),
     isTraining: mutation.isPending,
     error: mutation.error,
@@ -356,8 +352,7 @@ export const useOptimizationInsights = () => {
 export const useSpendingPatterns = (
   financialProfileId: string,
   params?: {
-    months_back?: number;
-    min_frequency?: number;
+    lookback_days?: number;
   }
 ) => {
   const query = useGetSpendingPatternsApiV1AiAiOptimizePatternsFinancialProfileIdGet(
@@ -377,14 +372,10 @@ export const useSpendingPatterns = (
  * Hook to get savings summary
  */
 export const useSavingsSummary = (
-  financialProfileId: string,
-  params?: {
-    months_back?: number;
-  }
+  financialProfileId: string
 ) => {
   const query = useGetSavingsSummaryApiV1AiAiOptimizeSavingsSummaryFinancialProfileIdGet(
-    financialProfileId,
-    params
+    financialProfileId
   );
 
   return {

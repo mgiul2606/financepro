@@ -70,11 +70,11 @@ export type AssistantResponse = z.infer<typeof assistantResponseSchema>;
 
 // Re-export types from backend API for convenience
 export type {
-  ClassificationMetricsResponse,
-  ConversationResponse,
-  ConversationListResponse,
-  OptimizationInsightsResponse,
-  SpendingPattern,
-  SavingsSummaryResponse,
-  TagSuggestions,
+  ClassificationMetrics,
+  ConversationDetail,
+  ConversationListItem,
+  OptimizationResponse,
+  SpendingPatternSchema,
+  SavingsSummary,
+  SuggestedTag,
 } from '@/api/generated/models';
