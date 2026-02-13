@@ -22,6 +22,7 @@ import type {
  * Time series data point for charts
  */
 export interface TimeSeriesData {
+  [key: string]: string | number;
   date: string;
   income: number;
   expenses: number;
