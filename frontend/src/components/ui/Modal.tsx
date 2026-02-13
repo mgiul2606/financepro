@@ -16,7 +16,7 @@ const sizeClasses = {
 } as const;
 
 interface ModalProps {
-  isOpen: boolean;
+  open: boolean;
   onClose: () => void;
   title?: string;
   size?: keyof typeof sizeClasses;
@@ -26,7 +26,7 @@ interface ModalProps {
 }
 
 export const Modal: React.FC<ModalProps> = ({
-  isOpen,
+  open,
   onClose,
   title,
   size = 'md',
@@ -36,7 +36,7 @@ export const Modal: React.FC<ModalProps> = ({
 }) => {
   return (
     <Dialog
-      open={isOpen}
+      open={open}
       onOpenChange={(open) => {
         if (!open && !preventClose) {
           onClose();

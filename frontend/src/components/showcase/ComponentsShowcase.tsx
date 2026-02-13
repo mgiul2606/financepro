@@ -175,7 +175,7 @@ const ComponentsShowcaseContent = () => {
           </button>
 
           <Modal
-            isOpen={showModal}
+            open={showModal}
             onClose={() => setShowModal(false)}
             title="Example Modal"
             size="md"

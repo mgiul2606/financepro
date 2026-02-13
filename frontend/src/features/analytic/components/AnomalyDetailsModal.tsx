@@ -68,7 +68,7 @@ export const AnomalyDetailsModal = ({
 
   return (
     <Modal
-      isOpen={isOpen}
+      open={isOpen}
       onClose={onClose}
       title={t('analytics.anomalyDetails')}
       size="md"

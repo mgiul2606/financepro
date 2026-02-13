@@ -57,7 +57,7 @@ export const AnalyticsFilterModal = ({
 
   return (
     <Modal
-      isOpen={isOpen}
+      open={isOpen}
       onClose={onClose}
       title={t('analytics.filters')}
       size="md"
