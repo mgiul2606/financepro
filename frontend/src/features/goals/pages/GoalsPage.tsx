@@ -274,7 +274,7 @@ export const GoalsPage: React.FC = () => {
       </div>
 
       {/* Create Modal */}
-      <Modal
+      <Dialog
         open={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         title={t('goals.createGoal')}
@@ -310,7 +310,7 @@ export const GoalsPage: React.FC = () => {
 
       {/* Edit Modal */}
       {editingGoal && (
-        <Modal
+        <Dialog
           open={true}
           onClose={() => setEditingGoal(null)}
           title={t('goals.editGoal')}
