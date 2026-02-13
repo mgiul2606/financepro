@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { Upload, FileText, X, AlertCircle } from 'lucide-react';
+import { Upload, FileText, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/core/components/atomic/Button';
 import { FILE_ACCEPT, MAX_FILE_SIZE, MAX_FILE_SIZE_DISPLAY, SUPPORTED_FORMATS } from '../imports.constants';
@@ -138,7 +138,7 @@ export const ImportUploadZone = ({
       {/* Error Display */}
       {displayError && (
         <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700">
-          <AlertCircle className="h-5 w-5 flex-shrink-0" />
+          <AlertCircle className="h-5 w-5 shrink-0" />
           <span className="text-sm">{displayError}</span>
         </div>
       )}

@@ -38,6 +38,7 @@ export const ImportsPage = () => {
       });
       setSelectedFile(null);
       refetch();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       // Error is handled by the hook
     }
@@ -51,6 +52,7 @@ export const ImportsPage = () => {
   const handleDelete = useCallback(async (jobId: string) => {
     try {
       await deleteImport(jobId, false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       // Error is handled by the hook
     }
