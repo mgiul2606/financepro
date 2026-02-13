@@ -9,7 +9,8 @@ import { Badge } from '@/core/components/atomic/Badge';
 import { CurrencyText, PercentageText, DateText } from '@/core/components/atomic';
 import { EmptyState } from '@/core/components/composite/EmptyState';
 import { Spinner } from '@/core/components/atomic/Spinner';
-import { Dialog, DialogFooter } from '@/components/ui/dialog';
+import { Modal } from '@/components/ui/Modal';
+import { DialogFooter } from '@/components/ui/dialog';
 import { Alert } from '@/components/ui/alert';
 import { useConfirm } from '@/hooks/useConfirm';
 import { GoalForm } from '../components/GoalForm';
@@ -274,7 +275,7 @@ export const GoalsPage: React.FC = () => {
       </div>
 
       {/* Create Modal */}
-      <Dialog
+      <Modal
         open={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         title={t('goals.createGoal')}
@@ -306,11 +307,11 @@ export const GoalsPage: React.FC = () => {
           error={createMutation.error ? t('goals.errors.createFailed') : undefined}
           onClearError={createMutation.reset}
         />
-      </Dialog>
+      </Modal>
 
       {/* Edit Modal */}
       {editingGoal && (
-        <Dialog
+        <Modal
           open={true}
           onClose={() => setEditingGoal(null)}
           title={t('goals.editGoal')}
@@ -343,7 +344,7 @@ export const GoalsPage: React.FC = () => {
             error={updateMutation.error ? t('goals.errors.updateFailed') : undefined}
             onClearError={updateMutation.reset}
           />
-        </Dialog>
+        </Modal>
       )}
     </div>
   );
