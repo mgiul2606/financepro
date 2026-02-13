@@ -15,6 +15,8 @@ import { useConfirm } from '@/hooks/useConfirm';
 import { GoalForm } from '../components/GoalForm';
 import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal } from '../goals.hooks';
 import type { GoalResponse as Goal, GoalCreate, GoalUpdate } from '../goals.types';
+import type { BadgeVariant } from '@/core/components/atomic/Badge';
+import type { SupportedCurrency } from '@/utils/currency';
 
 export const GoalsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -33,9 +35,9 @@ export const GoalsPage: React.FC = () => {
   const deleteMutation = useDeleteGoal();
 
   // Handlers
-  const handleCreate = async (data: GoalCreate) => {
+  const handleCreate = async (data: GoalCreate | GoalUpdate) => {
     try {
-      await createMutation.createGoal(data);
+      await createMutation.createGoal(data as GoalCreate);
       setShowCreateModal(false);
     } catch (error) {
       console.error('Failed to create goal:', error);
@@ -43,11 +45,11 @@ export const GoalsPage: React.FC = () => {
     }
   };
 
-  const handleUpdate = async (data: GoalUpdate) => {
+  const handleUpdate = async (data: GoalCreate | GoalUpdate) => {
     if (!editingGoal) return;
 
     try {
-      await updateMutation.updateGoal(editingGoal.id, data);
+      await updateMutation.updateGoal(editingGoal.id, data as GoalUpdate);
       setEditingGoal(null);
     } catch (error) {
       console.error('Failed to update goal:', error);
@@ -61,7 +63,7 @@ export const GoalsPage: React.FC = () => {
       message: t('goals.deleteConfirm', { name: goal.name }),
       confirmText: t('common.delete'),
       variant: 'danger',
-      confirmButtonVariant: 'danger',
+      confirmButtonVariant: 'destructive',
     });
 
     if (confirmed) {
@@ -82,16 +84,14 @@ export const GoalsPage: React.FC = () => {
     return 'bg-gray-400';
   };
 
-  const getPriorityVariant = (priority: string) => {
+  const getPriorityVariant = (priority: string): BadgeVariant => {
     switch (priority) {
       case 'high':
-        return 'danger' as const;
+        return 'danger';
       case 'medium':
-        return 'warning' as const;
-      case 'low':
-        return 'default' as const;
+        return 'warning';
       default:
-        return 'default' as const;
+        return 'secondary';
     }
   };
 
@@ -136,7 +136,7 @@ export const GoalsPage: React.FC = () => {
       <div className="flex-1 overflow-y-auto p-6">
         {/* Error Alert */}
         {loadError && (
-          <Alert variant="error" closable className="mb-6">
+          <Alert variant="destructive" className="mb-6">
             {t('goals.errors.loadFailed')}
           </Alert>
         )}
@@ -200,13 +200,13 @@ export const GoalsPage: React.FC = () => {
                       <div className="flex justify-between">
                         <span className="text-neutral-600">{t('goals.current')}</span>
                         <span className="font-medium">
-                          <CurrencyText value={parseFloat(goal.currentAmount)} currency={goal.currency} />
+                          <CurrencyText value={parseFloat(goal.currentAmount)} currency={goal.currency as SupportedCurrency} />
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-neutral-600">{t('goals.target')}</span>
                         <span className="font-medium">
-                          <CurrencyText value={parseFloat(goal.targetAmount)} currency={goal.currency} />
+                          <CurrencyText value={parseFloat(goal.targetAmount)} currency={goal.currency as SupportedCurrency} />
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -214,7 +214,7 @@ export const GoalsPage: React.FC = () => {
                         <span
                           className={`font-medium ${remaining > 0 ? 'text-blue-600' : 'text-green-600'}`}
                         >
-                          <CurrencyText value={remaining} currency={goal.currency} />
+                          <CurrencyText value={remaining} currency={goal.currency as SupportedCurrency} />
                         </span>
                       </div>
                       <div className="flex justify-between">
