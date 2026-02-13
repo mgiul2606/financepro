@@ -380,7 +380,7 @@ export const mockOptimizationApi = {
     };
   },
 
-  dismissSuggestion: async (id: string): Promise<void> => {
+  dismissSuggestion: async (_id: string): Promise<void> => {
     await delay(400);
   },
 };

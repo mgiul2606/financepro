@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
-import { Tabs } from '@/core/components/atomic/Tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/core/components/atomic/Tabs';
 import { Spinner } from '@/core/components/atomic/Spinner';
 import { Button } from '@/core/components/atomic/Button';
 import {
@@ -28,7 +28,7 @@ export const OptimizationPage = () => {
   const { overview, isLoading: overviewLoading } = useOptimizationOverview();
   const { suggestions, isLoading: suggestionsLoading } = useOptimizationSuggestions();
   const { wasteDetections, isLoading: wasteLoading } = useWasteDetections();
-  const { duplicateServices: duplicates, isLoading: duplicatesLoading } = useDuplicateServices();
+  const { duplicateServices: duplicates } = useDuplicateServices();
   const { strategies, isLoading: strategiesLoading } = useSavingsStrategies();
   const { alternatives, isLoading: alternativesLoading } = useAlternatives();
 
@@ -69,11 +69,15 @@ export const OptimizationPage = () => {
           </Button>
         }
         tabs={
-          <Tabs
-            tabs={tabs}
-            activeTab={activeTab}
-            onChange={setActiveTab}
-          />
+          <Tabs defaultValue="overview" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList>
+              {tabs.map((tab) => (
+                <TabsTrigger key={tab.id} value={tab.id}>
+                  {tab.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
         }
       />
 
