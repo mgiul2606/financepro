@@ -90,7 +90,7 @@ export const WasteCard: React.FC<WasteCardProps> = ({ waste, onTakeAction }) => 
 
           <div className="bg-orange-100 border border-orange-300 rounded-lg p-3">
             <div className="flex items-start gap-2">
-              <AlertCircle className="h-4 w-4 text-orange-700 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="h-4 w-4 text-orange-700 shrink-0 mt-0.5" />
               <p className="text-sm text-orange-900">{waste.recommendation}</p>
             </div>
           </div>

@@ -49,9 +49,9 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
         title={
           <div className="flex items-start gap-2">
             {suggestion.status === 'implemented' ? (
-              <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+              <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
             ) : (
-              <Lightbulb className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <Lightbulb className="h-5 w-5 text-yellow-600 shrink-0 mt-0.5" />
             )}
             <span className="flex-1">{suggestion.title}</span>
           </div>
@@ -89,7 +89,7 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <div className="flex items-start gap-2">
-              <Lightbulb className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+              <Lightbulb className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
               <div>
                 <p className="text-xs font-medium text-blue-900 mb-1">AI Insight</p>
                 <p className="text-sm text-blue-800">{suggestion.aiExplanation}</p>

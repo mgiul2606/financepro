@@ -78,7 +78,7 @@ export const SavingsStrategyCard: React.FC<SavingsStrategyCardProps> = ({
             </div>
           )}
 
-          <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-3">
+          <div className="bg-linear-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <p className="text-xs text-neutral-600 mb-1">Risparmio Mensile</p>
@@ -136,9 +136,9 @@ export const SavingsStrategyCard: React.FC<SavingsStrategyCardProps> = ({
                 {strategy.steps.map((step) => (
                   <div key={step.order} className="flex items-start gap-2">
                     {step.completed ? (
-                      <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
+                      <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0 mt-0.5" />
                     ) : (
-                      <Circle className="h-4 w-4 text-neutral-400 flex-shrink-0 mt-0.5" />
+                      <Circle className="h-4 w-4 text-neutral-400 shrink-0 mt-0.5" />
                     )}
                     <span
                       className={`text-sm ${

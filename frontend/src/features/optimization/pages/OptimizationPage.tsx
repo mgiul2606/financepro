@@ -168,7 +168,7 @@ export const OptimizationPage = () => {
 
                 {/* Quick Actions */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Card variant="bordered" className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+                  <Card variant="bordered" className="bg-linear-to-br from-green-50 to-emerald-50 border-green-200">
                     <CardBody>
                       <div className="text-center py-4">
                         <div className="inline-flex p-3 bg-green-100 rounded-full mb-3">
@@ -185,7 +185,7 @@ export const OptimizationPage = () => {
                     </CardBody>
                   </Card>
 
-                  <Card variant="bordered" className="bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200">
+                  <Card variant="bordered" className="bg-linear-to-br from-blue-50 to-cyan-50 border-blue-200">
                     <CardBody>
                       <div className="text-center py-4">
                         <div className="inline-flex p-3 bg-blue-100 rounded-full mb-3">
@@ -202,7 +202,7 @@ export const OptimizationPage = () => {
                     </CardBody>
                   </Card>
 
-                  <Card variant="bordered" className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
+                  <Card variant="bordered" className="bg-linear-to-br from-purple-50 to-pink-50 border-purple-200">
                     <CardBody>
                       <div className="text-center py-4">
                         <div className="inline-flex p-3 bg-purple-100 rounded-full mb-3">
