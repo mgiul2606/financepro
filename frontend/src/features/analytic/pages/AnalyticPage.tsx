@@ -35,7 +35,7 @@ export const AnalyticPage = () => {
   });
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const handleCategoryClick = (dataPoint: PieChartDataPoint, index: number) => {
+  const handleCategoryClick = (dataPoint: PieChartDataPoint, _index: number) => {
     setSelectedCategory((prev) => (prev === dataPoint.name ? null : dataPoint.name));
   };
 
@@ -91,9 +91,9 @@ export const AnalyticPage = () => {
         }
         tabs={
           <Tabs
-            tabs={tabs}
-            activeTab={activeTab}
-            onChange={setActiveTab}
+            defaultValue="overview"
+            value={activeTab}
+            onValueChange={setActiveTab}
           />
         }
       />
@@ -288,7 +288,7 @@ export const AnalyticPage = () => {
                     <Spinner />
                   ) : categories ? (
                     <BarChart
-                      data={categories}
+                      data={categories.map((c) => ({ category: c.category, amount: c.amount }))}
                       xAxisKey="category"
                       bars={[{ dataKey: 'amount', name: t('analytics.amount') }]}
                       height={350}
