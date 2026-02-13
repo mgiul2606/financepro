@@ -84,7 +84,7 @@ export const AnomalyCard: React.FC<AnomalyCardProps> = ({ anomaly, onViewDetails
 
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
             <div className="flex items-start gap-2">
-              <AlertTriangle className="h-4 w-4 text-orange-600 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="h-4 w-4 text-orange-600 shrink-0 mt-0.5" />
               <p className="text-sm text-orange-900">{anomaly.explanation}</p>
             </div>
           </div>

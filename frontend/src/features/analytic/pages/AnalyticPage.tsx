@@ -5,7 +5,7 @@ import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
 import { Tabs } from '@/core/components/atomic/Tabs';
 import { Spinner } from '@/core/components/atomic/Spinner';
 import { Button } from '@/core/components/atomic/Button';
-import { CurrencyText, NumberText } from '@/core/components/atomic';
+import { CurrencyText } from '@/core/components/atomic';
 import { formatCurrency } from '@/utils/currency';
 import { usePreferences } from '@/contexts/PreferencesContext';
 import { LineChart, PieChart, BarChart, PieChartDataPoint } from '@/core/components/composite/charts';
