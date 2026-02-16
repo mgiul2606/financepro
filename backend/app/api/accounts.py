@@ -20,10 +20,10 @@ from app.schemas.account import (
 from app.api.dependencies import get_current_user
 
 def validate_profile_ids(db: Session, current_user: User, profile_ids: list[UUID]) -> list[UUID]:
-    return children_for(db, User, FinancialProfile, current_user, profile_ids, transform=lambda o: o.id)
+    return children_for(db, User, FinancialProfile, current_user.id, profile_ids, transform=lambda o: o.id)
 
 def validate_profile_id(db: Session, current_user: User, profile_id: UUID) -> UUID:
-    return children_for(db, User, FinancialProfile, current_user, profile_id, transform=lambda o: o.id)
+    return children_for(db, User, FinancialProfile, current_user.id, profile_id, transform=lambda o: o.id)
 
 def get_accounts(db: Session, current_user: User, profile_ids: list[FinancialProfile]) -> list[Account]:
     valid_profile_ids: list[UUID] = validate_profile_ids(db, current_user, profile_ids)
