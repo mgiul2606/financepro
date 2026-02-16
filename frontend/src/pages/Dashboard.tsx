@@ -23,7 +23,7 @@ export const Dashboard = () => {
   const { goals, isLoading: goalsLoading } = useGoals();
 
   // Calculate stats
-  const totalBalance = accounts.reduce((sum: number, acc) => sum + parseFloat(acc.currentBalance || '0'), 0);
+  const totalBalance = accounts?.reduce((sum: number, acc) => sum + parseFloat(acc?.currentBalance || '0'), 0) ?? 0;
   const totalBudget = budgets?.reduce((sum: number, b) => sum + parseFloat(b.totalAmount || '0'), 0) || 0;
   const totalBudgetSpent = budgets?.reduce((sum: number, b) => sum + parseFloat(b.totalSpent || '0'), 0) || 0;
   const activeGoals = goals?.filter((g) => g.status === 'active').length || 0;
