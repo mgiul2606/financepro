@@ -8,10 +8,10 @@ import { GoalType, GoalStatus } from '@/api/generated/models';
 
 // Import auto-generated Zod schemas from Orval
 import {
-  createGoalApiV1GoalsPostBody,
-  updateGoalApiV1GoalsGoalIdPatchBody,
-  getGoalApiV1GoalsGoalIdGetResponse,
-  listGoalsApiV1GoalsGetResponse,
+  CreateGoalApiV1GoalsPostBody,
+  UpdateGoalApiV1GoalsGoalIdPatchBody,
+  GetGoalApiV1GoalsGoalIdGetResponse,
+  ListGoalsApiV1GoalsGetResponse,
 } from '@/api/generated/zod/financial-goals/financial-goals.zod';
 
 export const goalTypeSchema = z.enum([
@@ -38,23 +38,23 @@ export const goalStatusSchema = z.enum([
  * Goal Create Schema
  * Base schema from Orval
  */
-export const goalCreateSchema = createGoalApiV1GoalsPostBody;
+export const goalCreateSchema = CreateGoalApiV1GoalsPostBody;
 
 /**
  * Goal Update Schema
  * Base schema from Orval for partial updates
  */
-export const goalUpdateSchema = updateGoalApiV1GoalsGoalIdPatchBody;
+export const goalUpdateSchema = UpdateGoalApiV1GoalsGoalIdPatchBody;
 
 /**
  * Goal Response Schema
  */
-export const goalResponseSchema = getGoalApiV1GoalsGoalIdGetResponse;
+export const goalResponseSchema = GetGoalApiV1GoalsGoalIdGetResponse;
 
 /**
  * Goal List Response Schema
  */
-export const goalListSchema = listGoalsApiV1GoalsGetResponse;
+export const goalListSchema = ListGoalsApiV1GoalsGetResponse;
 
 export const goalFiltersSchema = z.object({
   profileId: z.string().uuid().optional(),

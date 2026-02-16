@@ -8,10 +8,10 @@ import { PeriodType } from '@/api/generated/models';
 
 // Import auto-generated Zod schemas from Orval
 import {
-  createBudgetApiV1BudgetsPostBody,
-  updateBudgetApiV1BudgetsBudgetIdPatchBody,
-  getBudgetApiV1BudgetsBudgetIdGetResponse,
-  listBudgetsApiV1BudgetsGetResponse,
+  CreateBudgetApiV1BudgetsPostBody,
+  UpdateBudgetApiV1BudgetsBudgetIdPatchBody,
+  GetBudgetApiV1BudgetsBudgetIdGetResponse,
+  ListBudgetsApiV1BudgetsGetResponse,
 } from '@/api/generated/zod/budgets/budgets.zod';
 
 export const periodTypeSchema = z.enum([
@@ -30,23 +30,23 @@ export const budgetCategoryAllocationSchema = z.object({
  * Budget Create Schema
  * Base schema from Orval
  */
-export const budgetCreateSchema = createBudgetApiV1BudgetsPostBody;
+export const budgetCreateSchema = CreateBudgetApiV1BudgetsPostBody;
 
 /**
  * Budget Update Schema
  * Base schema from Orval for partial updates
  */
-export const budgetUpdateSchema = updateBudgetApiV1BudgetsBudgetIdPatchBody;
+export const budgetUpdateSchema = UpdateBudgetApiV1BudgetsBudgetIdPatchBody;
 
 /**
  * Budget Response Schema
  */
-export const budgetResponseSchema = getBudgetApiV1BudgetsBudgetIdGetResponse;
+export const budgetResponseSchema = GetBudgetApiV1BudgetsBudgetIdGetResponse;
 
 /**
  * Budget List Response Schema
  */
-export const budgetListSchema = listBudgetsApiV1BudgetsGetResponse;
+export const budgetListSchema = ListBudgetsApiV1BudgetsGetResponse;
 
 /**
  * Budget Filters Schema (UI-specific)

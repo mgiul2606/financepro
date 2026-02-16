@@ -12,11 +12,11 @@ import { AccountType } from '@/api/generated/models';
 
 // Import auto-generated Zod schemas from Orval
 import {
-  createAccountApiV1AccountsPostBody,
-  updateAccountApiV1AccountsAccountIdPutBody,
-  getAccountApiV1AccountsAccountIdGetResponse,
-  getAccountBalanceApiV1AccountsAccountIdBalanceGetResponse,
-  listAccountsApiV1AccountsGetResponse,
+  CreateAccountApiV1AccountsPostBody,
+  UpdateAccountApiV1AccountsAccountIdPutBody,
+  GetAccountApiV1AccountsAccountIdGetResponse,
+  GetAccountBalanceApiV1AccountsAccountIdBalanceGetResponse,
+  ListAccountsApiV1AccountsGetResponse,
 } from '@/api/generated/zod/accounts/accounts.zod';
 
 /**
@@ -46,29 +46,29 @@ export const currencySchema = z
  * Account Create Schema
  * Base schema from Orval with custom validation messages
  */
-export const accountCreateSchema = createAccountApiV1AccountsPostBody;
+export const accountCreateSchema = CreateAccountApiV1AccountsPostBody;
 
 /**
  * Account Update Schema
  * Base schema from Orval for partial updates
  */
-export const accountUpdateSchema = updateAccountApiV1AccountsAccountIdPutBody;
+export const accountUpdateSchema = UpdateAccountApiV1AccountsAccountIdPutBody;
 
 /**
  * Account Response Schema
  * Validates data returned from the API
  */
-export const accountResponseSchema = getAccountApiV1AccountsAccountIdGetResponse;
+export const accountResponseSchema = GetAccountApiV1AccountsAccountIdGetResponse;
 
 /**
  * Account Balance Schema
  */
-export const accountBalanceSchema = getAccountBalanceApiV1AccountsAccountIdBalanceGetResponse;
+export const accountBalanceSchema = GetAccountBalanceApiV1AccountsAccountIdBalanceGetResponse;
 
 /**
  * Account List Response Schema
  */
-export const accountListSchema = listAccountsApiV1AccountsGetResponse;
+export const accountListSchema = ListAccountsApiV1AccountsGetResponse;
 
 /**
  * Account Query Filters Schema
