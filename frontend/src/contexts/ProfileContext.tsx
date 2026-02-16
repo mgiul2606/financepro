@@ -84,7 +84,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [queryClient]);
 
   // Filter only active profiles
-  const profiles = profilesList.filter((p) => p.is_active);
+  const profiles = profilesList.filter((p) => p.isActive);
   const isLoading = profilesLoading || mainProfileLoading;
   const isError = false; // TODO: Add error handling
 
@@ -93,8 +93,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Update local state when main profile data changes
   useEffect(() => {
-    if (mainProfileData?.main_profile_id) {
-      setMainProfileId(mainProfileData.main_profile_id);
+    if (mainProfileData?.id) {
+      setMainProfileId(mainProfileData.id);
     }
   }, [mainProfileData]);
 
@@ -113,16 +113,16 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setIsInitialized(true);
     } else {
       // Has profiles - check for active ones
-      const activeProfiles = profilesList.filter((p) => p.is_active);
+      const activeProfiles = profilesList.filter((p) => p.isActive);
 
       if (activeProfiles.length === 0) {
         // All profiles are inactive - show creation modal
         setShowCreateProfileModal(true);
         setIsInitialized(true);
-      } else if (mainProfileData?.main_profile_id) {
+      } else if (mainProfileData?.id) {
         // Has profiles and main profile - select it
-        setActiveProfileIdsState([mainProfileData.main_profile_id]);
-        setMainProfileId(mainProfileData.main_profile_id);
+        setActiveProfileIdsState([mainProfileData.id]);
+        setMainProfileId(mainProfileData.id);
         setIsInitialized(true);
       } else {
         // Has profiles but no main - select first active one and set it as main in backend
@@ -132,7 +132,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setIsInitialized(true);
 
         // Set as main profile in backend (fire and forget, we've already set local state)
-        setMainProfileMutation.setMainProfile({ main_profile_id: firstProfile.id })
+        setMainProfileMutation.setMainProfile({ mainProfileId: firstProfile.id })
           .then(() => refetchMainProfile())
           .catch((error) => {
             console.error('Failed to set initial main profile:', error);
@@ -160,7 +160,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const newProfile = await createProfileMutation.createProfile(data);
       if (newProfile) {
         // Set as main profile
-        await setMainProfileMutation.mutateAsync({ main_profile_id: newProfile.id });
+        await setMainProfileMutation.setMainProfile({ mainProfileId: newProfile.id });
         // Refresh data
         await refetchProfiles();
         await refetchMainProfile();
@@ -177,7 +177,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const setMainProfile = useCallback(
     async (profileId: string) => {
       setMainProfileId(profileId);
-      await setMainProfileMutation.mutateAsync({ main_profile_id: profileId });
+      await setMainProfileMutation.setMainProfile({ mainProfileId: profileId });
       await refetchMainProfile();
     },
     [setMainProfileMutation, refetchMainProfile]
@@ -236,6 +236,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   return <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useProfileContext = (): ProfileContextValue => {
   const context = useContext(ProfileContext);
   if (!context) {
