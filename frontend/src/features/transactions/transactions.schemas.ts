@@ -9,11 +9,11 @@ import { TransactionType, TransactionSource } from '@/api/generated/models';
 
 // Import auto-generated Zod schemas from Orval
 import {
-  createTransactionApiV1TransactionsPostBody,
-  updateTransactionApiV1TransactionsTransactionIdPatchBody,
-  getTransactionApiV1TransactionsTransactionIdGetResponse,
-  listTransactionsApiV1TransactionsGetResponse,
-  getTransactionStatsApiV1TransactionsStatsGetResponse,
+  CreateTransactionApiV1TransactionsPostBody,
+  UpdateTransactionApiV1TransactionsTransactionIdPatchBody,
+  GetTransactionApiV1TransactionsTransactionIdGetResponse,
+  ListTransactionsApiV1TransactionsGetResponse,
+  GetTransactionStatsApiV1TransactionsStatsGetResponse,
 } from '@/api/generated/zod/transactions/transactions.zod';
 
 /**
@@ -64,28 +64,28 @@ export const currencySchema = z
  * Transaction Create Schema
  * Base schema from Orval
  */
-export const transactionCreateSchema = createTransactionApiV1TransactionsPostBody;
+export const transactionCreateSchema = CreateTransactionApiV1TransactionsPostBody;
 
 /**
  * Transaction Update Schema
  * Base schema from Orval for partial updates
  */
-export const transactionUpdateSchema = updateTransactionApiV1TransactionsTransactionIdPatchBody;
+export const transactionUpdateSchema = UpdateTransactionApiV1TransactionsTransactionIdPatchBody;
 
 /**
  * Transaction Response Schema
  */
-export const transactionResponseSchema = getTransactionApiV1TransactionsTransactionIdGetResponse;
+export const transactionResponseSchema = GetTransactionApiV1TransactionsTransactionIdGetResponse;
 
 /**
  * Transaction List Response Schema
  */
-export const transactionListSchema = listTransactionsApiV1TransactionsGetResponse;
+export const transactionListSchema = ListTransactionsApiV1TransactionsGetResponse;
 
 /**
  * Transaction Stats Schema
  */
-export const transactionStatsSchema = getTransactionStatsApiV1TransactionsStatsGetResponse;
+export const transactionStatsSchema = GetTransactionStatsApiV1TransactionsStatsGetResponse;
 
 /**
  * Transaction Filters Schema (API-aligned)

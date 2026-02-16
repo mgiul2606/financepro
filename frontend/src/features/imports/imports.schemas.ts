@@ -12,12 +12,12 @@ import { ImportStatus } from '@/api/generated/models';
 
 // Import auto-generated Zod schemas from Orval
 import {
-  listImportJobsApiV1ImportsGetQueryParams,
-  listImportJobsApiV1ImportsGetResponse,
-  importCsvApiV1ImportsPostBody,
-  previewImportApiV1ImportsPreviewPostBody,
-  previewImportApiV1ImportsPreviewPostResponse,
-  getImportJobApiV1ImportsJobIdGetResponse,
+  ListImportJobsApiV1ImportsGetQueryParams,
+  ListImportJobsApiV1ImportsGetResponse,
+  ImportCsvApiV1ImportsPostBody,
+  PreviewImportApiV1ImportsPreviewPostBody,
+  PreviewImportApiV1ImportsPreviewPostResponse,
+  GetImportJobApiV1ImportsJobIdGetResponse,
 } from '@/api/generated/zod/imports/imports.zod';
 
 /**
@@ -40,37 +40,37 @@ export const importFileFormatSchema = z.enum(['csv', 'xlsx', 'xls']);
  * Import Job Response Schema
  * Validates data returned from the API for a single import job
  */
-export const importJobResponseSchema = getImportJobApiV1ImportsJobIdGetResponse;
+export const importJobResponseSchema = GetImportJobApiV1ImportsJobIdGetResponse;
 
 /**
  * Import Job List Response Schema
  * Validates data returned from the API for list of import jobs
  */
-export const importJobListSchema = listImportJobsApiV1ImportsGetResponse;
+export const importJobListSchema = ListImportJobsApiV1ImportsGetResponse;
 
 /**
  * Import Query Filters Schema
  * Base schema from Orval for filtering import jobs
  */
-export const importFiltersSchema = listImportJobsApiV1ImportsGetQueryParams;
+export const importFiltersSchema = ListImportJobsApiV1ImportsGetQueryParams;
 
 /**
  * Import CSV Body Schema
  * Validates the request body for CSV import
  */
-export const importCsvSchema = importCsvApiV1ImportsPostBody;
+export const importCsvSchema = ImportCsvApiV1ImportsPostBody;
 
 /**
  * Import Preview Body Schema
  * Validates the request body for previewing an import
  */
-export const importPreviewSchema = previewImportApiV1ImportsPreviewPostBody;
+export const importPreviewSchema = PreviewImportApiV1ImportsPreviewPostBody;
 
 /**
  * Import Preview Response Schema
  * Validates the response from import preview
  */
-export const importPreviewResponseSchema = previewImportApiV1ImportsPreviewPostResponse;
+export const importPreviewResponseSchema = PreviewImportApiV1ImportsPreviewPostResponse;
 
 /**
  * Import File Validation Schema

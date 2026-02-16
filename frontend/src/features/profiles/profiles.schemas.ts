@@ -8,11 +8,11 @@ import { ProfileType, DatabaseType } from '@/api/generated/models';
 
 // Import auto-generated Zod schemas from Orval
 import {
-  createProfileApiV1ProfilesPostBody,
-  updateProfileApiV1ProfilesProfileIdPatchBody,
-  getProfileApiV1ProfilesProfileIdGetResponse,
-  listProfilesApiV1ProfilesGetResponse,
-  setMainProfileApiV1ProfilesMainPatchBody,
+  CreateProfileApiV1ProfilesPostBody,
+  UpdateProfileApiV1ProfilesProfileIdPatchBody,
+  GetProfileApiV1ProfilesProfileIdGetResponse,
+  ListProfilesApiV1ProfilesGetResponse,
+  SetMainProfileApiV1ProfilesMainPatchBody,
 } from '@/api/generated/zod/financial-profiles/financial-profiles.zod';
 
 /**
@@ -36,28 +36,28 @@ export const databaseTypeSchema = z.enum([
  * Profile Create Schema
  * Base schema from Orval
  */
-export const profileCreateSchema = createProfileApiV1ProfilesPostBody;
+export const profileCreateSchema = CreateProfileApiV1ProfilesPostBody;
 
 /**
  * Profile Update Schema
  * Base schema from Orval for partial updates
  */
-export const profileUpdateSchema = updateProfileApiV1ProfilesProfileIdPatchBody;
+export const profileUpdateSchema = UpdateProfileApiV1ProfilesProfileIdPatchBody;
 
 /**
  * Profile Response Schema
  */
-export const profileResponseSchema = getProfileApiV1ProfilesProfileIdGetResponse;
+export const profileResponseSchema = GetProfileApiV1ProfilesProfileIdGetResponse;
 
 /**
  * Profile List Response Schema
  */
-export const profileListSchema = listProfilesApiV1ProfilesGetResponse;
+export const profileListSchema = ListProfilesApiV1ProfilesGetResponse;
 
 /**
  * Main Profile Update Schema
  */
-export const mainProfileUpdateSchema = setMainProfileApiV1ProfilesMainPatchBody;
+export const mainProfileUpdateSchema = SetMainProfileApiV1ProfilesMainPatchBody;
 
 /**
  * Profile Filters Schema (UI-specific)
