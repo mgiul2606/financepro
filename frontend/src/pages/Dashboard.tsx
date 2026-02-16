@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAccounts } from '@/features/accounts';
 import { useBudgets } from '@/features/budgets';
 import { useGoals } from '@/features/goals';
+import type { SupportedCurrency } from '@/utils/currency';
 
 export const Dashboard = () => {
   const { t } = useTranslation();
@@ -22,12 +23,12 @@ export const Dashboard = () => {
   const { goals, isLoading: goalsLoading } = useGoals();
 
   // Calculate stats
-  const totalBalance = accounts.reduce((sum: number, acc) => sum + parseFloat(acc.current_balance || '0'), 0);
-  const totalBudget = budgets?.reduce((sum: number, b: any) => sum + parseFloat(b.total_amount || '0'), 0) || 0;
-  const totalBudgetSpent = budgets?.reduce((sum: number, b: any) => sum + parseFloat(b.total_spent || '0'), 0) || 0;
-  const activeGoals = goals?.filter((g: any) => g.status === 'in_progress').length || 0;
+  const totalBalance = accounts.reduce((sum: number, acc) => sum + parseFloat(acc.currentBalance || '0'), 0);
+  const totalBudget = budgets?.reduce((sum: number, b) => sum + parseFloat(b.totalAmount || '0'), 0) || 0;
+  const totalBudgetSpent = budgets?.reduce((sum: number, b) => sum + parseFloat(b.totalSpent || '0'), 0) || 0;
+  const activeGoals = goals?.filter((g) => g.status === 'active').length || 0;
   const totalGoalProgress =
-    goals?.reduce((sum: number, g: any) => sum + ((parseFloat(g.current_amount) || 0) / (parseFloat(g.target_amount) || 1)) * 100, 0) || 0;
+    goals?.reduce((sum: number, g) => sum + ((parseFloat(g.currentAmount) || 0) / (parseFloat(g.targetAmount) || 1)) * 100, 0) || 0;
   const avgGoalProgress = goals && goals.length > 0 ? totalGoalProgress / goals.length : 0;
 
   const isLoading = accountsLoading || budgetsLoading || goalsLoading;
@@ -144,8 +145,8 @@ export const Dashboard = () => {
           <CardBody className="pt-0">
             <div className="space-y-3">
               {accounts.slice(0, 3).map((account) => {
-                const balance = parseFloat(account.current_balance);
-                const initial = parseFloat(account.initial_balance);
+                const balance = parseFloat(account.currentBalance);
+                const initial = parseFloat(account.initialBalance);
                 const change = balance - initial;
 
                 return (
@@ -165,7 +166,7 @@ export const Dashboard = () => {
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-gray-900">
-                        <CurrencyText value={balance} currency={account.currency as any} />
+                        <CurrencyText value={balance} currency={account.currency as SupportedCurrency} />
                       </p>
                       <div className="flex items-center gap-1 text-xs">
                         {change >= 0 ? (
@@ -204,8 +205,8 @@ export const Dashboard = () => {
           />
           <CardBody className="pt-0">
             <div className="space-y-3">
-              {budgets?.slice(0, 3).map((budget: any) => {
-                const percentage = ((parseFloat(budget.total_spent || '0')) / (parseFloat(budget.total_amount) || 1)) * 100;
+              {budgets?.slice(0, 3).map((budget) => {
+                const percentage = ((parseFloat(budget.totalSpent || '0')) / (parseFloat(budget.totalAmount) || 1)) * 100;
                 return (
                   <div
                     key={budget.id}
@@ -215,7 +216,7 @@ export const Dashboard = () => {
                     <div className="flex items-center justify-between mb-2">
                       <div>
                         <p className="font-medium text-gray-900">{budget.name}</p>
-                        <p className="text-xs text-gray-500">{budget.period_type}</p>
+                        <p className="text-xs text-gray-500">{budget.periodType}</p>
                       </div>
                       <Badge
                         variant={
@@ -261,8 +262,8 @@ export const Dashboard = () => {
           />
           <CardBody className="pt-0">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {goals?.slice(0, 4).map((goal: any) => {
-                const percentage = ((goal.current_amount || 0) / (goal.target_amount || 1)) * 100;
+              {goals?.slice(0, 4).map((goal) => {
+                const percentage = ((parseFloat(goal.currentAmount) || 0) / (parseFloat(goal.targetAmount) || 1)) * 100;
                 return (
                   <div
                     key={goal.id}
@@ -272,7 +273,7 @@ export const Dashboard = () => {
                     <div className="flex items-center justify-between mb-3">
                       <div>
                         <p className="font-medium text-gray-900">{goal.name}</p>
-                        <p className="text-xs text-gray-500">{goal.goal_type}</p>
+                        <p className="text-xs text-gray-500">{goal.goalType}</p>
                       </div>
                       <Badge variant={goal.status === 'completed' ? 'success' : 'info'} size="sm">
                         {goal.status}
@@ -293,10 +294,10 @@ export const Dashboard = () => {
                       </div>
                       <div className="flex justify-between text-xs text-gray-500">
                         <span>
-                          <CurrencyText value={goal.current_amount || 0} currency={goal.currency} options={{ maximumFractionDigits: 0 }} />
+                          <CurrencyText value={parseFloat(goal.currentAmount) || 0} currency={goal.currency as SupportedCurrency} options={{ maximumFractionDigits: 0 }} />
                         </span>
                         <span>
-                          <CurrencyText value={goal.target_amount || 0} currency={goal.currency} options={{ maximumFractionDigits: 0 }} />
+                          <CurrencyText value={parseFloat(goal.targetAmount) || 0} currency={goal.currency as SupportedCurrency} options={{ maximumFractionDigits: 0 }} />
                         </span>
                       </div>
                     </div>
