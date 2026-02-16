@@ -19,13 +19,13 @@ from app.schemas.account import (
 )
 from app.api.dependencies import get_current_user
 
-def validate_profile_ids(db: Session, current_user: User, profile_ids: list[UUID]) -> list[UUID]:
+def validate_profile_ids(db: Session, current_user: User, profile_ids: list[UUID] | None) -> list[UUID]:
     return children_for(db, User, FinancialProfile, current_user.id, profile_ids, transform=lambda o: o.id)
 
 def validate_profile_id(db: Session, current_user: User, profile_id: UUID) -> UUID:
     return children_for(db, User, FinancialProfile, current_user.id, profile_id, transform=lambda o: o.id)
 
-def get_accounts(db: Session, current_user: User, profile_ids: list[FinancialProfile]) -> list[Account]:
+def get_accounts(db: Session, current_user: User, profile_ids: list[UUID] | None) -> list[Account]:
     valid_profile_ids: list[UUID] = validate_profile_ids(db, current_user, profile_ids)
     return children_for(db, FinancialProfile, Account, valid_profile_ids)
 
@@ -67,7 +67,7 @@ router = APIRouter()
 async def list_accounts(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
-    profile_ids: Annotated[list[UUID], Query(description="List of currently active financial profile IDs")],
+    profile_ids: Annotated[list[UUID] | None, Query(description="List of currently active financial profile IDs")] = None,
 ) -> AccountList:
     """
     List all accounts for the current user's **selected** profiles.
