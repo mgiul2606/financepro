@@ -35,8 +35,8 @@ const useImportJobsBase = createMultiProfileListHook<
 >({
   getQueryKey: getListImportJobsApiV1ImportsGetQueryKey,
   queryFn: listImportJobsApiV1ImportsGet,
-  extractItems: (response) => (response.data as ImportJobListResponse)?.items,
-  extractTotal: (response) => (response.data as ImportJobListResponse)?.total,
+  extractItems: (response) => (response.data as ImportJobListResponse)?.items ?? [],
+  extractTotal: (response) => (response.data as ImportJobListResponse)?.total ?? 0,
   mapProfileToParams: (profileId) => ({ profile_id: profileId }),
 });
 

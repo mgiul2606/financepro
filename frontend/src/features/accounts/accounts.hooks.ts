@@ -41,8 +41,8 @@ const useAccountsBase = createMultiProfileListHook<
 >({
   getQueryKey: getListAccountsApiV1AccountsGetQueryKey,
   queryFn: listAccountsApiV1AccountsGet,
-  extractItems: (response) => (response.data as AccountList)?.accounts,
-  extractTotal: (response) => (response.data as AccountList)?.total,
+  extractItems: (response) => (response.data as AccountList)?.accounts ?? [],
+  extractTotal: (response) => (response.data as AccountList)?.total ?? 0,
 });
 
 /**

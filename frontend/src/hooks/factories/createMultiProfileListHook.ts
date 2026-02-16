@@ -10,8 +10,6 @@
 import { useQueries } from '@tanstack/react-query';
 import type { QueryKey } from '@tanstack/react-query';
 import {
-  extractQueriesData,
-  sumQueriesTotal,
   isAnyQueryLoading,
   getFirstQueryError,
   refetchAllQueries,
@@ -284,14 +282,20 @@ export function createMultiProfileListHook<
       }),
     });
 
+    // Filter successful queries and pass the full response to extractors
+    const successfulResponses = queries
+      .filter((q) => q.isSuccess && q.data != null)
+      .map((q) => q.data as TResponse);
+
     // Aggregate items from all successful queries
-    const items = extractQueriesData(queries).flatMap((response) =>
-      extractItems(response as TResponse)
+    const items = successfulResponses.flatMap(
+      (response) => extractItems(response) ?? []
     );
 
     // Aggregate totals from all successful queries
-    const total = sumQueriesTotal(queries, (response) =>
-      extractTotal(response as TResponse)
+    const total = successfulResponses.reduce(
+      (sum, response) => sum + (extractTotal(response) ?? 0),
+      0
     );
 
     // Compute loading and error states
