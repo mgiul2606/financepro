@@ -71,18 +71,28 @@ export const TransactionsPage = () => {
   const confirm = useConfirm();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Filter and modal states
-  const [filters, setFilters] = useState<TransactionUIFilters>({});
+  // Filter and modal states - initialize accountId from URL on first render
+  const [filters, setFilters] = useState<TransactionUIFilters>(() => {
+    const accountId = searchParams.get('account_id');
+    return accountId ? { accountId } : {};
+  });
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [deletingTransactionId, setDeletingTransactionId] = useState<string | null>(null);
 
-  // Initialize filters from URL query parameters
+  // Sync accountId filter when URL changes (e.g., browser back/forward)
   useEffect(() => {
     const accountId = searchParams.get('account_id');
-    if (accountId) {
-      setFilters((prev) => ({ ...prev, accountId }));
-    }
+    setFilters((prev) => {
+      if (accountId) {
+        return { ...prev, accountId };
+      }
+      if (prev.accountId) {
+        const { accountId: _, ...rest } = prev;
+        return rest;
+      }
+      return prev;
+    });
   }, [searchParams]);
 
   // Data fetching using the UI-aware hook
