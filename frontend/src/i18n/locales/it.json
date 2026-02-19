@@ -182,6 +182,9 @@
       "selectCategories": "Seleziona Categorie",
       "selectTypes": "Seleziona Tipi",
       "merchantName": "Nome Esercente",
+      "selectAccount": "Conto",
+      "loadingAccounts": "Caricamento conti...",
+      "noAccounts": "Nessun conto disponibile",
       "apply": "Applica Filtri",
       "reset": "Reimposta Filtri",
       "clear": "Cancella Tutto"

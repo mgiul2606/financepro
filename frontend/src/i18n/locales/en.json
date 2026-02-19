@@ -182,6 +182,9 @@
       "selectCategories": "Select Categories",
       "selectTypes": "Select Types",
       "merchantName": "Merchant Name",
+      "selectAccount": "Account",
+      "loadingAccounts": "Loading accounts...",
+      "noAccounts": "No accounts available",
       "apply": "Apply Filters",
       "reset": "Reset Filters",
       "clear": "Clear All"

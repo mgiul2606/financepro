@@ -21,6 +21,7 @@ import { toggleArrayField } from '@/utils/toggleArrayField';
 import { removeEmptyFilters } from '@/utils/filters';
 import { TransactionType } from '@/api/generated/models';
 import { useCategories } from '@/features/categories';
+import { useAccounts } from '@/features/accounts';
 
 // Types - using the unified type from transactions.types
 import type { TransactionUIFilters } from '../transactions.types';
@@ -40,6 +41,7 @@ export const TransactionFilterModal = ({
 }: TransactionFilterModalProps) => {
   const { t } = useTranslation();
   const { categories, isLoading: categoriesLoading } = useCategories();
+  const { accounts, isLoading: accountsLoading } = useAccounts();
 
   const [filters, setFilters] = useState<TransactionUIFilters>(initialFilters || {});
 
@@ -208,6 +210,42 @@ export const TransactionFilterModal = ({
               onChange={(e) => setFilters({ ...filters, merchantName: e.target.value })}
               placeholder={t('transactions.merchantPlaceholder')}
             />
+          </div>
+
+          {/* Account */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-foreground">
+              {t('transactions.filters.selectAccount')}
+            </h4>
+            {accountsLoading ? (
+              <div className="text-sm text-muted-foreground">{t('transactions.filters.loadingAccounts')}</div>
+            ) : accounts && accounts.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {accounts.map((account) => (
+                  <button
+                    key={account.id}
+                    type="button"
+                    onClick={() =>
+                      setFilters({
+                        ...filters,
+                        accountId: filters.accountId === account.id ? undefined : account.id,
+                      })
+                    }
+                    className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                      filters.accountId === account.id
+                        ? 'bg-primary/10 border-primary text-primary'
+                        : 'bg-background border-border text-foreground hover:border-primary/50'
+                    }`}
+                  >
+                    {account.name}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="text-sm text-muted-foreground">
+                {t('transactions.filters.noAccounts')}
+              </div>
+            )}
           </div>
         </div>
 
