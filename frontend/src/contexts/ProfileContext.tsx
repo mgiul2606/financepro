@@ -85,11 +85,17 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Filter only active profiles
   const profiles = profilesList.filter((p) => p.isActive);
-  const isLoading = profilesLoading || mainProfileLoading;
+  // Raw loading state: only tracks whether the API queries are still in-flight.
+  // Used by the initialization effect to avoid a deadlock with isInitialized.
+  const queriesLoading = profilesLoading || mainProfileLoading;
+  // Public loading state: also true while activeProfileIds haven't been set yet.
+  // This prevents downstream hooks from seeing profileLoading=false with
+  // activeProfileIds=[] and briefly rendering an empty state.
+  const isLoading = queriesLoading || !isInitialized;
   const isError = false; // TODO: Add error handling
 
   // Check if user needs to create a profile (only after data is loaded)
-  const requiresProfileCreation = !isLoading && isInitialized && profiles.length === 0;
+  const requiresProfileCreation = !queriesLoading && isInitialized && profiles.length === 0;
 
   // Update local state when main profile data changes
   useEffect(() => {
@@ -101,8 +107,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Initialize: when profiles are loaded, set up initial state
   // Use profilesList to check if data actually arrived (not just loading finished)
   useEffect(() => {
-    // Wait for both queries to finish loading
-    if (isLoading || isInitialized) {
+    // Wait for both queries to finish loading (use raw state to avoid deadlock)
+    if (queriesLoading || isInitialized) {
       return;
     }
 
@@ -139,14 +145,14 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
           });
       }
     }
-  }, [isLoading, isInitialized, profilesList, mainProfileData, setMainProfileMutation, refetchMainProfile]);
+  }, [queriesLoading, isInitialized, profilesList, mainProfileData, setMainProfileMutation, refetchMainProfile]);
 
   // Auto-show modal when profiles become empty (e.g., after deletion)
   useEffect(() => {
-    if (isInitialized && profiles.length === 0 && !isLoading) {
+    if (isInitialized && profiles.length === 0 && !queriesLoading) {
       setShowCreateProfileModal(true);
     }
-  }, [isInitialized, profiles.length, isLoading]);
+  }, [isInitialized, profiles.length, queriesLoading]);
 
   // Get active profile objects
   const activeProfiles = profiles.filter((p) => activeProfileIds.includes(p.id));
