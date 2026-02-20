@@ -65,6 +65,7 @@ import type { SupportedCurrency } from '@/utils/currency';
 import { TransactionForm } from '..';
 import { TransactionFilterModal } from '../components/TransactionFilterModal';
 import { TransactionExportModal } from '../components/TransactionExportModal';
+import { getApiErrorMessage } from '@/lib/form-utils';
 
 export const TransactionsPage = () => {
   const { t } = useTranslation();
@@ -428,7 +429,7 @@ export const TransactionsPage = () => {
           <TransactionForm
             onSubmit={crud.handleCreate}
             isLoading={crud.isCreating}
-            error={crud.createError ? t('transactions.errors.createFailed') : undefined}
+            error={crud.createError ? getApiErrorMessage(crud.createError, t('transactions.errors.createFailed')) : undefined}
             onClearError={crud.resetCreate}
           />
 
@@ -479,7 +480,7 @@ export const TransactionsPage = () => {
               transaction={crud.editingEntity}
               onSubmit={crud.handleUpdate}
               isLoading={crud.isUpdating}
-              error={crud.updateError ? t('transactions.errors.updateFailed') : undefined}
+              error={crud.updateError ? getApiErrorMessage(crud.updateError, t('transactions.errors.updateFailed')) : undefined}
               onClearError={crud.resetUpdate}
             />
           )}

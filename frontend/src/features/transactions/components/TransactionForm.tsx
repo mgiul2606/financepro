@@ -159,7 +159,11 @@ export const TransactionForm = ({
 
         await (onSubmit as (data: TransactionCreate) => Promise<void>)(createData);
       }
-    } catch (err) {
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: unknown; status?: number } };
+      if (axiosErr?.response?.data) {
+        console.error('Form submission error (server response):', JSON.stringify(axiosErr.response.data));
+      }
       console.error('Form submission error:', err);
     }
   };
