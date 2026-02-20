@@ -12,6 +12,27 @@ export function safeFieldValue(value: string | null | undefined): string {
 }
 
 /**
+ * Extracts a human-readable error message from an API error (typically AxiosError).
+ * Handles FastAPI/Pydantic validation error format: { detail: [{ msg, loc, ... }] }
+ */
+export function getApiErrorMessage(error: unknown, fallback: string): string {
+  const err = error as { response?: { data?: { detail?: unknown } } };
+  const detail = err?.response?.data?.detail;
+  if (Array.isArray(detail) && detail.length > 0) {
+    return detail
+      .map((d: { msg?: string; loc?: string[] }) => {
+        const field = d.loc?.filter((l) => l !== 'body').join('.') || '';
+        return field ? `${field}: ${d.msg}` : d.msg;
+      })
+      .join('; ');
+  }
+  if (typeof detail === 'string') {
+    return detail;
+  }
+  return fallback;
+}
+
+/**
  * Builds a clean update payload by removing undefined and empty string values
  * This ensures only fields with actual values are sent in update requests
  *

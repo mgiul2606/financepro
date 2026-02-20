@@ -28,7 +28,7 @@ class TransactionBase(CamelCaseModel):
     )
     amount: Decimal = Field(
         ...,
-        decimal_places=30,
+        decimal_places=2,
         description="Transaction amount",
         examples=[50.00, 1250.75, -99.99]
     )
