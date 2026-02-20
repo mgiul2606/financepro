@@ -141,6 +141,13 @@ export const TransactionForm = ({
           'notes',
         ]);
 
+        // Convert amount from string to number (form stores it as string via .toString())
+        if (updateData.amount !== undefined && updateData.amount !== null) {
+          updateData.amount = typeof updateData.amount === 'string'
+            ? parseFloat(updateData.amount)
+            : updateData.amount;
+        }
+
         await (onSubmit as (data: TransactionUpdate) => Promise<void>)(updateData);
       } else {
         // In create mode, send all fields

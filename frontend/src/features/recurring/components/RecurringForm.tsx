@@ -204,6 +204,17 @@ export const RecurringForm = ({
           'isActive',
           'autoCreate',
         ]);
+
+        // Ensure numeric fields are sent as numbers, not strings
+        const numericFields = ['amount', 'interval', 'minAmount', 'maxAmount'] as const;
+        for (const field of numericFields) {
+          if (updateData[field] !== undefined && updateData[field] !== null) {
+            updateData[field] = typeof updateData[field] === 'string'
+              ? parseFloat(updateData[field] as string)
+              : updateData[field];
+          }
+        }
+
         await (onSubmit as (data: RecurringTransactionUpdate) => Promise<void>)(updateData);
       } else {
         await (onSubmit as (data: RecurringTransactionCreate) => Promise<void>)(
