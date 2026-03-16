@@ -106,7 +106,7 @@ Location: `backend/app/schemas/*.py` + `backend/app/models/enums.py`
 ✅ **MANDATORY:**
 - Import types only from `@/api/generated/models`
 - Use React Query hooks from `@/api/generated/{domain}`
-- Use snake_case field names matching backend API
+- Use camelCase field names matching the API JSON responses (backend serializes via alias_generator=to_camel)
 - Regenerate before every build/dev (pre-hooks)
 
 ### Automation
@@ -279,7 +279,7 @@ mutate(data);  // data is TransactionCreate
 - **Solution:** Check backend validation rules, update frontend validation to match
 
 **Problem:** Field names don't match between FE/BE
-- **Solution:** Use snake_case in frontend to match backend exactly
+- **Solution:** Use camelCase in frontend to match the API JSON responses (backend serializes via alias_generator=to_camel)
 
 ## References
 

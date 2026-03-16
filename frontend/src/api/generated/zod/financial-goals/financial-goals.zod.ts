@@ -234,9 +234,6 @@ export const createGoalApiV1GoalsPostBodyCurrentAmountOneMin = 0;
 
 export const createGoalApiV1GoalsPostBodyCurrentAmountDefault = `0.00`;
 export const createGoalApiV1GoalsPostBodyAutoAllocateDefault = false;
-export const createGoalApiV1GoalsPostBodyMilestonesOneItemNameMax = 255;
-
-export const createGoalApiV1GoalsPostBodyMilestonesOneItemTargetAmountOneExclusiveMin = 0;
 
 export const CreateGoalApiV1GoalsPostBody = zod
   .object({
@@ -310,33 +307,7 @@ export const CreateGoalApiV1GoalsPostBody = zod
       .default(createGoalApiV1GoalsPostBodyAutoAllocateDefault)
       .describe("Enable automatic allocation"),
     milestones: zod
-      .union([
-        zod.array(
-          zod
-            .object({
-              name: zod
-                .string()
-                .min(1)
-                .max(createGoalApiV1GoalsPostBodyMilestonesOneItemNameMax)
-                .describe("Milestone name"),
-              targetAmount: zod
-                .union([
-                  zod
-                    .number()
-                    .gt(
-                      createGoalApiV1GoalsPostBodyMilestonesOneItemTargetAmountOneExclusiveMin,
-                    ),
-                  zod.string(),
-                ])
-                .describe("Target amount for this milestone"),
-              targetDate: zod.iso
-                .date()
-                .describe("Target date for this milestone"),
-            })
-            .describe("Schema for creating a new milestone for a goal."),
-        ),
-        zod.null(),
-      ])
+      .union([zod.array(zod.unknown()), zod.null()])
       .optional()
       .describe("Optional milestones for this goal"),
   })

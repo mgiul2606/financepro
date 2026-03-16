@@ -342,40 +342,8 @@ export const GetTransactionStatsApiV1TransactionsStatsGetQueryParams =
       .describe("Statistics to this date (inclusive)"),
   });
 
-export const getTransactionStatsApiV1TransactionsStatsGetResponseCurrencyRegExp =
-  new RegExp("^[A-Z]{3}$");
-
-export const GetTransactionStatsApiV1TransactionsStatsGetResponse = zod
-  .object({
-    totalIncome: zod.string().describe("Total income amount"),
-    totalExpenses: zod
-      .string()
-      .describe("Total expenses amount (absolute value)"),
-    netAmount: zod.string().describe("Net amount (income - expenses)"),
-    transactionCount: zod.number().describe("Total number of transactions"),
-    currency: zod
-      .string()
-      .regex(getTransactionStatsApiV1TransactionsStatsGetResponseCurrencyRegExp)
-      .describe("ISO 4217 currency code for the statistics"),
-    categoryBreakdown: zod
-      .array(
-        zod
-          .object({
-            categoryId: zod
-              .union([zod.uuid(), zod.null()])
-              .describe("Category identifier (null for uncategorized)"),
-            count: zod
-              .number()
-              .describe("Number of transactions in this category"),
-            totalAmount: zod
-              .string()
-              .describe("Total amount for this category"),
-          })
-          .describe("Statistics for a single category"),
-      )
-      .describe("Breakdown of transactions by category"),
-  })
-  .describe("Transaction statistics response with category breakdown");
+export const GetTransactionStatsApiV1TransactionsStatsGetResponse =
+  zod.unknown();
 
 /**
  * Retrieve a specific transaction by its ID

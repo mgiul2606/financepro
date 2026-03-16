@@ -15,7 +15,6 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { DatabaseType } from "./databaseType";
 import type { ProfileType } from "./profileType";
 import type { EntityWithId } from "../../../hooks/useCrudModal";
 
@@ -43,17 +42,10 @@ export interface FinancialProfileResponse extends EntityWithId {
   id: string;
   /** Owner user ID */
   userId: string;
-  /** Database connection string (encrypted) */
-  databaseConnectionString?: string | null;
-  /** Database type for distributed storage */
-  databaseType?: DatabaseType | null;
   /** Whether the profile is currently active */
   isActive: boolean;
   /** Profile creation timestamp (UTC) */
   createdAt: string;
   /** Last update timestamp (UTC) */
   updatedAt: string;
-  /** Check if the profile's database is currently available.
-Profiles without custom database are always available. */
-  readonly isAvailable: boolean;
 }

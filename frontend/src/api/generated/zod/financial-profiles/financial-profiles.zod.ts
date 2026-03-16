@@ -62,21 +62,6 @@ export const ListProfilesApiV1ProfilesGetResponse = zod
               .describe("ISO 4217 currency code (3 uppercase letters)"),
             id: zod.uuid().describe("Unique financial profile identifier"),
             userId: zod.uuid().describe("Owner user ID"),
-            databaseConnectionString: zod
-              .union([zod.string(), zod.null()])
-              .optional()
-              .describe("Database connection string (encrypted)"),
-            databaseType: zod
-              .union([
-                zod
-                  .enum(["postgresql", "mssql"])
-                  .describe(
-                    "Deprecated: Supported database types for distributed storage",
-                  ),
-                zod.null(),
-              ])
-              .optional()
-              .describe("Database type for distributed storage"),
             isActive: zod
               .boolean()
               .describe("Whether the profile is currently active"),
@@ -86,11 +71,6 @@ export const ListProfilesApiV1ProfilesGetResponse = zod
             updatedAt: zod.iso
               .datetime({})
               .describe("Last update timestamp (UTC)"),
-            isAvailable: zod
-              .boolean()
-              .describe(
-                "Check if the profile's database is currently available.\nProfiles without custom database are always available.",
-              ),
           })
           .describe(
             "Complete financial profile schema returned by API endpoints.\nIncludes all fields including computed is_available field.",
@@ -134,27 +114,8 @@ export const CreateProfileApiV1ProfilesPostBody = zod
       .regex(createProfileApiV1ProfilesPostBodyDefaultCurrencyRegExp)
       .default(createProfileApiV1ProfilesPostBodyDefaultCurrencyDefault)
       .describe("ISO 4217 currency code (3 uppercase letters)"),
-    databaseConnectionString: zod
-      .union([zod.string(), zod.null()])
-      .optional()
-      .describe(
-        "Connection string for distributed database (will be encrypted)",
-      ),
-    databaseType: zod
-      .union([
-        zod
-          .enum(["postgresql", "mssql"])
-          .describe(
-            "Deprecated: Supported database types for distributed storage",
-          ),
-        zod.null(),
-      ])
-      .optional()
-      .describe("Type of database for distributed storage (PostgreSQL, MSSQL)"),
   })
-  .describe(
-    "Schema for creating a new financial profile.\nOptionally includes database connection settings for distributed storage.",
-  );
+  .describe("Schema for creating a new financial profile.");
 
 /**
  * @summary Get Main Profile
@@ -228,31 +189,11 @@ export const GetProfileApiV1ProfilesProfileIdGetResponse = zod
       .describe("ISO 4217 currency code (3 uppercase letters)"),
     id: zod.uuid().describe("Unique financial profile identifier"),
     userId: zod.uuid().describe("Owner user ID"),
-    databaseConnectionString: zod
-      .union([zod.string(), zod.null()])
-      .optional()
-      .describe("Database connection string (encrypted)"),
-    databaseType: zod
-      .union([
-        zod
-          .enum(["postgresql", "mssql"])
-          .describe(
-            "Deprecated: Supported database types for distributed storage",
-          ),
-        zod.null(),
-      ])
-      .optional()
-      .describe("Database type for distributed storage"),
     isActive: zod.boolean().describe("Whether the profile is currently active"),
     createdAt: zod.iso
       .datetime({})
       .describe("Profile creation timestamp (UTC)"),
     updatedAt: zod.iso.datetime({}).describe("Last update timestamp (UTC)"),
-    isAvailable: zod
-      .boolean()
-      .describe(
-        "Check if the profile's database is currently available.\nProfiles without custom database are always available.",
-      ),
   })
   .describe(
     "Complete financial profile schema returned by API endpoints.\nIncludes all fields including computed is_available field.",
@@ -307,21 +248,6 @@ export const UpdateProfileApiV1ProfilesProfileIdPatchBody = zod
       ])
       .optional()
       .describe("Updated default currency"),
-    databaseConnectionString: zod
-      .union([zod.string(), zod.null()])
-      .optional()
-      .describe("Updated database connection string"),
-    databaseType: zod
-      .union([
-        zod
-          .enum(["postgresql", "mssql"])
-          .describe(
-            "Deprecated: Supported database types for distributed storage",
-          ),
-        zod.null(),
-      ])
-      .optional()
-      .describe("Updated database type"),
     isActive: zod
       .union([zod.boolean(), zod.null()])
       .optional()
@@ -366,31 +292,11 @@ export const UpdateProfileApiV1ProfilesProfileIdPatchResponse = zod
       .describe("ISO 4217 currency code (3 uppercase letters)"),
     id: zod.uuid().describe("Unique financial profile identifier"),
     userId: zod.uuid().describe("Owner user ID"),
-    databaseConnectionString: zod
-      .union([zod.string(), zod.null()])
-      .optional()
-      .describe("Database connection string (encrypted)"),
-    databaseType: zod
-      .union([
-        zod
-          .enum(["postgresql", "mssql"])
-          .describe(
-            "Deprecated: Supported database types for distributed storage",
-          ),
-        zod.null(),
-      ])
-      .optional()
-      .describe("Database type for distributed storage"),
     isActive: zod.boolean().describe("Whether the profile is currently active"),
     createdAt: zod.iso
       .datetime({})
       .describe("Profile creation timestamp (UTC)"),
     updatedAt: zod.iso.datetime({}).describe("Last update timestamp (UTC)"),
-    isAvailable: zod
-      .boolean()
-      .describe(
-        "Check if the profile's database is currently available.\nProfiles without custom database are always available.",
-      ),
   })
   .describe(
     "Complete financial profile schema returned by API endpoints.\nIncludes all fields including computed is_available field.",

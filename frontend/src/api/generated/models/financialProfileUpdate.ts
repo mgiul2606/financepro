@@ -15,7 +15,6 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { DatabaseType } from "./databaseType";
 import type { ProfileType } from "./profileType";
 
 /**
@@ -31,10 +30,6 @@ export interface FinancialProfileUpdate {
   profileType?: ProfileType | null;
   /** Updated default currency */
   defaultCurrency?: string | null;
-  /** Updated database connection string */
-  databaseConnectionString?: string | null;
-  /** Updated database type */
-  databaseType?: DatabaseType | null;
   /** Whether the profile is active */
   isActive?: boolean | null;
 }

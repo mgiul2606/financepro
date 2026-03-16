@@ -176,8 +176,8 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onDelete }) => {
             <p className="text-gray-600 text-sm mt-1">{profile.description}</p>
           )}
         </div>
-        <span className={`px-2 py-1 rounded text-xs font-medium ${profileTypeColors[profile.profile_type]}`}>
-          {profileTypeLabels[profile.profile_type]}
+        <span className={`px-2 py-1 rounded text-xs font-medium ${profileTypeColors[profile.profileType]}`}>
+          {profileTypeLabels[profile.profileType]}
         </span>
       </div>
 
@@ -185,17 +185,17 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ profile, onDelete }) => {
       <div className="space-y-2 mb-4">
         <div className="flex justify-between text-sm">
           <span className="text-gray-500">Currency:</span>
-          <span className="font-medium">{profile.default_currency}</span>
+          <span className="font-medium">{profile.defaultCurrency}</span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-gray-500">Status:</span>
-          <span className={profile.is_available ? 'text-green-600' : 'text-red-600'}>
-            {profile.is_available ? '● Available' : '○ Unavailable'}
+          <span className={profile.isActive ? 'text-green-600' : 'text-red-600'}>
+            {profile.isActive ? '● Available' : '○ Unavailable'}
           </span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-gray-500">Created:</span>
-          <span>{new Date(profile.created_at).toLocaleDateString()}</span>
+          <span>{new Date(profile.createdAt).toLocaleDateString()}</span>
         </div>
       </div>
 
@@ -237,8 +237,8 @@ const CreateProfileModal: React.FC<CreateProfileModalProps> = ({
   const [formData, setFormData] = useState<FinancialProfileCreate>({
     name: '',
     description: '',
-    profile_type: 'personal',
-    default_currency: 'EUR',
+    profileType: 'personal',
+    defaultCurrency: 'EUR',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -296,8 +296,8 @@ const CreateProfileModal: React.FC<CreateProfileModalProps> = ({
             </label>
             <select
               required
-              value={formData.profile_type}
-              onChange={(e) => handleChange('profile_type', e.target.value as any)}
+              value={formData.profileType}
+              onChange={(e) => handleChange('profileType', e.target.value as any)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="personal">Personal</option>
@@ -313,8 +313,8 @@ const CreateProfileModal: React.FC<CreateProfileModalProps> = ({
             </label>
             <select
               required
-              value={formData.default_currency}
-              onChange={(e) => handleChange('default_currency', e.target.value)}
+              value={formData.defaultCurrency}
+              onChange={(e) => handleChange('defaultCurrency', e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="EUR">EUR - Euro</option>

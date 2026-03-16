@@ -20,5 +20,5 @@ export type ListAccountsApiV1AccountsGetParams = {
   /**
    * List of currently active financial profile IDs
    */
-  profile_ids: string[];
+  profile_ids?: string[] | null;
 };

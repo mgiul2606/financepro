@@ -4,7 +4,7 @@
  * Bridges Orval-generated schemas with application-specific needs
  */
 import { z } from 'zod';
-import { ProfileType, DatabaseType } from '@/api/generated/models';
+import { ProfileType } from '@/api/generated/models';
 
 // Import auto-generated Zod schemas from Orval
 import {
@@ -22,14 +22,6 @@ export const profileTypeSchema = z.enum([
   ProfileType.Personal,
   ProfileType.Business,
   ProfileType.Family,
-]);
-
-/**
- * Database Type Enum Schema
- */
-export const databaseTypeSchema = z.enum([
-  DatabaseType.Mssql,
-  DatabaseType.Postgresql,
 ]);
 
 /**

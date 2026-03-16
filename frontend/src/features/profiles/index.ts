@@ -38,7 +38,6 @@ export {
   profileFiltersSchema,
   mainProfileUpdateSchema,
   profileTypeSchema,
-  databaseTypeSchema,
 } from './profiles.schemas';
 
 // Types - Using Orval-generated types for API compatibility
@@ -60,8 +59,7 @@ export type {
   ProfileFilters,
   MainProfileUpdate,
   ProfileType,
-  DatabaseType,
 } from './profiles.types';
 
 // Constants
-export { PROFILE_TYPE_OPTIONS, DATABASE_TYPE_OPTIONS } from './profiles.types';
+export { PROFILE_TYPE_OPTIONS } from './profiles.types';

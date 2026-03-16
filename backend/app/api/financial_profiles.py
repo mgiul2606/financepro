@@ -40,12 +40,9 @@ router = APIRouter()
                                 "description": "My personal financial tracking",
                                 "profile_type": "personal",
                                 "default_currency": "EUR",
-                                "database_connection_string": None,
-                                "database_type": None,
                                 "is_active": True,
                                 "created_at": "2025-01-15T10:30:00Z",
-                                "updated_at": "2025-01-20T14:22:00Z",
-                                "is_available": True
+                                "updated_at": "2025-01-20T14:22:00Z"
                             }
                         ],
                         "total": 1
@@ -95,9 +92,7 @@ async def create_profile(
     Returns:
         Created financial profile with generated ID
     """
-    profile_data = profile_in.model_dump(
-        exclude={"database_connection_string", "database_type"}
-    )
+    profile_data = profile_in.model_dump()
     profile = FinancialProfile(
         **profile_data,
         user_id=current_user.id
@@ -273,7 +268,6 @@ async def update_profile(
     # Update only provided fields
     update_data = profile_in.model_dump(
         exclude_unset=True,
-        exclude={"database_connection_string", "database_type"}
     )
     for field, value in update_data.items():
         setattr(profile, field, value)
