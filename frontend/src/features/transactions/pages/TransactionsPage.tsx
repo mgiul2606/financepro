@@ -211,12 +211,12 @@ export const TransactionsPage = () => {
       </div>
 
       {/* Error Alert */}
-      {loadError && (
+      {loadError ? (
         <Alert variant="destructive">
           <AlertTitle>{t('common.error')}</AlertTitle>
           <AlertDescription>{t('transactions.errors.loadFailed')}</AlertDescription>
         </Alert>
-      )}
+      ) : null}
 
       {/* Active Filters Banner */}
       {activeFiltersCount > 0 && (

@@ -13,7 +13,6 @@ import {
   UpdateTransactionApiV1TransactionsTransactionIdPatchBody,
   GetTransactionApiV1TransactionsTransactionIdGetResponse,
   ListTransactionsApiV1TransactionsGetResponse,
-  GetTransactionStatsApiV1TransactionsStatsGetResponse,
 } from '@/api/generated/zod/transactions/transactions.zod';
 
 /**
@@ -84,8 +83,26 @@ export const transactionListSchema = ListTransactionsApiV1TransactionsGetRespons
 
 /**
  * Transaction Stats Schema
+ *
+ * The auto-generated Orval Zod schema resolves to `zod.unknown()` because the
+ * backend endpoint returns a plain dict without a response_model.  We define the
+ * shape explicitly here so that `TransactionStats` (derived via `z.infer`) is
+ * fully typed.
  */
-export const transactionStatsSchema = GetTransactionStatsApiV1TransactionsStatsGetResponse;
+export const transactionStatsSchema = z.object({
+  totalIncome: z.string(),
+  totalExpenses: z.string(),
+  netAmount: z.string(),
+  transactionCount: z.number(),
+  currency: z.string(),
+  categoryBreakdown: z.array(
+    z.object({
+      categoryId: z.string().nullable(),
+      count: z.number(),
+      totalAmount: z.string(),
+    })
+  ),
+});
 
 /**
  * Transaction Filters Schema (API-aligned)

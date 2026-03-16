@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-nocheck — Example file with intentional type mismatches for demonstration
 /**
  * EXAMPLE FILE - Demonstrates how to use the hook factories
  *
@@ -173,7 +173,8 @@ const useAccountsWithParamsBase = createMultiProfileListHook<
   AccountResponse
 >({
   getQueryKey: getListAccountsApiV1AccountsGetQueryKey,
-  queryFn: listAccountsApiV1AccountsGet as any, // Cast needed due to extended params
+  queryFn: (params: AccountParamsWithProfile, options?: RequestInit) =>
+    listAccountsApiV1AccountsGet(params, options),
   extractItems: (response) => response.data.accounts,
   extractTotal: (response) => response.data.total,
   mapProfileToParams: (profileId) => ({
