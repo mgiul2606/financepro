@@ -202,8 +202,7 @@
                       "default_currency": "EUR",
                       "is_active": true,
                       "created_at": "2025-01-15T10:30:00Z",
-                      "updated_at": "2025-01-20T14:22:00Z",
-                      "is_available": true
+                      "updated_at": "2025-01-20T14:22:00Z"
                     }
                   ],
                   "total": 1
@@ -531,13 +530,20 @@
           {
             "name": "profile_ids",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "format": "uuid"
-              },
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "description": "List of currently active financial profile IDs",
               "title": "Profile Ids"
             },
@@ -1409,9 +1415,7 @@
             "description": "Statistics retrieved successfully",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TransactionStatsResponse"
-                }
+                "schema": {}
               }
             }
           },
@@ -5201,9 +5205,7 @@
           "categoryAllocations": {
             "anyOf": [
               {
-                "items": {
-                  "$ref": "#/components/schemas/BudgetCategoryCreate"
-                },
+                "items": {},
                 "type": "array"
               },
               {
@@ -5667,9 +5669,7 @@
             "title": "Is Over Budget"
           },
           "category_breakdown": {
-            "items": {
-              "$ref": "#/components/schemas/BudgetCategoryResponse"
-            },
+            "items": {},
             "type": "array",
             "title": "Category Breakdown"
           }
@@ -6487,15 +6487,6 @@
         "title": "ConversationListItem",
         "description": "A conversation in the list"
       },
-      "DatabaseType": {
-        "type": "string",
-        "enum": [
-          "postgresql",
-          "mssql"
-        ],
-        "title": "DatabaseType",
-        "description": "Deprecated: Supported database types for distributed storage"
-      },
       "ExpenseAnalysisResponse": {
         "properties": {
           "total_expenses": {
@@ -6679,9 +6670,7 @@
           "milestones": {
             "anyOf": [
               {
-                "items": {
-                  "$ref": "#/components/schemas/GoalMilestoneCreate"
-                },
+                "items": {},
                 "type": "array"
               },
               {
@@ -7124,29 +7113,6 @@
               "USD",
               "GBP"
             ]
-          },
-          "databaseConnectionString": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Databaseconnectionstring",
-            "description": "Connection string for distributed database (will be encrypted)"
-          },
-          "databaseType": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/DatabaseType"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Type of database for distributed storage (PostgreSQL, MSSQL)"
           }
         },
         "type": "object",
@@ -7154,7 +7120,7 @@
           "name"
         ],
         "title": "FinancialProfileCreate",
-        "description": "Schema for creating a new financial profile.\nOptionally includes database connection settings for distributed storage.",
+        "description": "Schema for creating a new financial profile.",
         "example": {
           "default_currency": "EUR",
           "description": "My personal financial tracking",
@@ -7193,7 +7159,6 @@
               "description": "My personal financial tracking",
               "id": "550e8400-e29b-41d4-a716-446655440000",
               "is_active": true,
-              "is_available": true,
               "name": "Personal Finance",
               "profile_type": "personal",
               "updated_at": "2025-01-20T14:22:00Z",
@@ -7258,29 +7223,6 @@
             "title": "Userid",
             "description": "Owner user ID"
           },
-          "databaseConnectionString": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Databaseconnectionstring",
-            "description": "Database connection string (encrypted)"
-          },
-          "databaseType": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/DatabaseType"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Database type for distributed storage"
-          },
           "isActive": {
             "type": "boolean",
             "title": "Isactive",
@@ -7297,12 +7239,6 @@
             "format": "date-time",
             "title": "Updatedat",
             "description": "Last update timestamp (UTC)"
-          },
-          "isAvailable": {
-            "type": "boolean",
-            "title": "Isavailable",
-            "description": "Check if the profile's database is currently available.\nProfiles without custom database are always available.",
-            "readOnly": true
           }
         },
         "type": "object",
@@ -7312,8 +7248,7 @@
           "userId",
           "isActive",
           "createdAt",
-          "updatedAt",
-          "isAvailable"
+          "updatedAt"
         ],
         "title": "FinancialProfileResponse",
         "description": "Complete financial profile schema returned by API endpoints.\nIncludes all fields including computed is_available field.",
@@ -7323,7 +7258,6 @@
           "description": "My personal financial tracking",
           "id": "550e8400-e29b-41d4-a716-446655440000",
           "is_active": true,
-          "is_available": true,
           "name": "Personal Finance",
           "profile_type": "personal",
           "updated_at": "2025-01-20T14:22:00Z",
@@ -7381,29 +7315,6 @@
             ],
             "title": "Defaultcurrency",
             "description": "Updated default currency"
-          },
-          "databaseConnectionString": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Databaseconnectionstring",
-            "description": "Updated database connection string"
-          },
-          "databaseType": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/DatabaseType"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Updated database type"
           },
           "isActive": {
             "anyOf": [
@@ -9281,90 +9192,6 @@
           "transaction_type": "purchase",
           "updated_at": "2025-01-15T10:30:00Z"
         }
-      },
-      "TransactionStatsResponse": {
-        "properties": {
-          "totalIncome": {
-            "type": "string",
-            "title": "Total Income",
-            "description": "Total income amount"
-          },
-          "totalExpenses": {
-            "type": "string",
-            "title": "Total Expenses",
-            "description": "Total expenses amount (absolute value)"
-          },
-          "netAmount": {
-            "type": "string",
-            "title": "Net Amount",
-            "description": "Net amount (income - expenses)"
-          },
-          "transactionCount": {
-            "type": "integer",
-            "title": "Transaction Count",
-            "description": "Total number of transactions"
-          },
-          "currency": {
-            "type": "string",
-            "pattern": "^[A-Z]{3}$",
-            "title": "Currency",
-            "description": "ISO 4217 currency code for the statistics"
-          },
-          "categoryBreakdown": {
-            "items": {
-              "$ref": "#/components/schemas/CategoryStatsItem"
-            },
-            "type": "array",
-            "title": "Category Breakdown",
-            "description": "Breakdown of transactions by category"
-          }
-        },
-        "type": "object",
-        "required": [
-          "totalIncome",
-          "totalExpenses",
-          "netAmount",
-          "transactionCount",
-          "currency",
-          "categoryBreakdown"
-        ],
-        "title": "TransactionStatsResponse",
-        "description": "Transaction statistics response with category breakdown"
-      },
-      "CategoryStatsItem": {
-        "properties": {
-          "categoryId": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Category Id",
-            "description": "Category identifier (null for uncategorized)"
-          },
-          "count": {
-            "type": "integer",
-            "title": "Count",
-            "description": "Number of transactions in this category"
-          },
-          "totalAmount": {
-            "type": "string",
-            "title": "Total Amount",
-            "description": "Total amount for this category"
-          }
-        },
-        "type": "object",
-        "required": [
-          "categoryId",
-          "count",
-          "totalAmount"
-        ],
-        "title": "CategoryStatsItem",
-        "description": "Statistics for a single category"
       },
       "TransactionSource": {
         "type": "string",

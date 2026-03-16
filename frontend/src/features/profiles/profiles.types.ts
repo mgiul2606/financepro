@@ -7,7 +7,6 @@ import {
   profileFiltersSchema,
   mainProfileUpdateSchema,
   profileTypeSchema,
-  databaseTypeSchema,
 } from './profiles.schemas';
 
 /**
@@ -27,7 +26,6 @@ export type ProfileList = z.infer<typeof profileListSchema>;
 
 // Utility types
 export type ProfileType = z.infer<typeof profileTypeSchema>;
-export type DatabaseType = z.infer<typeof databaseTypeSchema>;
 
 /**
  * Profile type options for UI select components
@@ -37,13 +35,4 @@ export const PROFILE_TYPE_OPTIONS = [
   'business',
   'joint',
   'investment',
-] as const;
-
-/**
- * Database type options
- */
-export const DATABASE_TYPE_OPTIONS = [
-  'primary',
-  'secondary',
-  'encrypted',
 ] as const;

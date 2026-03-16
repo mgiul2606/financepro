@@ -1,11 +1,11 @@
 # app/schemas/financial_profile.py
 
 from app.schemas.base import CamelCaseModel
-from pydantic import Field, ConfigDict, computed_field
+from pydantic import Field, ConfigDict
 from datetime import datetime
 from typing import Optional, List
 from uuid import UUID
-from app.models import ProfileType, DatabaseType
+from app.models import ProfileType
 
 
 class FinancialProfileBase(CamelCaseModel):
@@ -39,16 +39,7 @@ class FinancialProfileBase(CamelCaseModel):
 class FinancialProfileCreate(FinancialProfileBase):
     """
     Schema for creating a new financial profile.
-    Optionally includes database connection settings for distributed storage.
     """
-    database_connection_string: Optional[str] = Field(
-        None,
-        description="Connection string for distributed database (will be encrypted)"
-    )
-    database_type: Optional[DatabaseType] = Field(
-        None,
-        description="Type of database for distributed storage (PostgreSQL, MSSQL)"
-    )
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -56,9 +47,7 @@ class FinancialProfileCreate(FinancialProfileBase):
                 "name": "Personal Finance",
                 "description": "My personal financial tracking",
                 "profile_type": "personal",
-                "default_currency": "EUR",
-                "database_connection_string": None,
-                "database_type": None
+                "default_currency": "EUR"
             }
         }
     )
@@ -88,14 +77,6 @@ class FinancialProfileUpdate(CamelCaseModel):
         pattern="^[A-Z]{3}$",
         description="Updated default currency"
     )
-    database_connection_string: Optional[str] = Field(
-        None,
-        description="Updated database connection string"
-    )
-    database_type: Optional[DatabaseType] = Field(
-        None,
-        description="Updated database type"
-    )
     is_active: Optional[bool] = Field(
         None,
         description="Whether the profile is active"
@@ -118,29 +99,9 @@ class FinancialProfileResponse(FinancialProfileBase):
     """
     id: UUID = Field(..., description="Unique financial profile identifier")
     user_id: UUID = Field(..., description="Owner user ID")
-    database_connection_string: Optional[str] = Field(
-        None,
-        description="Database connection string (encrypted)"
-    )
-    database_type: Optional[DatabaseType] = Field(
-        None,
-        description="Database type for distributed storage"
-    )
     is_active: bool = Field(..., description="Whether the profile is currently active")
     created_at: datetime = Field(..., description="Profile creation timestamp (UTC)")
     updated_at: datetime = Field(..., description="Last update timestamp (UTC)")
-
-    @computed_field
-    @property
-    def is_available(self) -> bool:
-        """
-        Check if the profile's database is currently available.
-        Profiles without custom database are always available.
-        """
-        if not self.database_connection_string:
-            return True
-        # TODO: Implement actual database connectivity check
-        return True
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -152,12 +113,9 @@ class FinancialProfileResponse(FinancialProfileBase):
                 "description": "My personal financial tracking",
                 "profile_type": "personal",
                 "default_currency": "EUR",
-                "database_connection_string": None,
-                "database_type": None,
                 "is_active": True,
                 "created_at": "2025-01-15T10:30:00Z",
-                "updated_at": "2025-01-20T14:22:00Z",
-                "is_available": True
+                "updated_at": "2025-01-20T14:22:00Z"
             }
         }
     )
@@ -184,12 +142,9 @@ class FinancialProfileListResponse(CamelCaseModel):
                         "description": "My personal financial tracking",
                         "profile_type": "personal",
                         "default_currency": "EUR",
-                        "database_connection_string": None,
-                        "database_type": None,
                         "is_active": True,
                         "created_at": "2025-01-15T10:30:00Z",
-                        "updated_at": "2025-01-20T14:22:00Z",
-                        "is_available": True
+                        "updated_at": "2025-01-20T14:22:00Z"
                     }
                 ],
                 "total": 1

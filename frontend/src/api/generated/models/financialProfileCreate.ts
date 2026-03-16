@@ -15,12 +15,10 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import type { DatabaseType } from "./databaseType";
 import type { ProfileType } from "./profileType";
 
 /**
  * Schema for creating a new financial profile.
-Optionally includes database connection settings for distributed storage.
  */
 export interface FinancialProfileCreate {
   /**
@@ -38,8 +36,4 @@ export interface FinancialProfileCreate {
    * @pattern ^[A-Z]{3}$
    */
   defaultCurrency?: string;
-  /** Connection string for distributed database (will be encrypted) */
-  databaseConnectionString?: string | null;
-  /** Type of database for distributed storage (PostgreSQL, MSSQL) */
-  databaseType?: DatabaseType | null;
 }

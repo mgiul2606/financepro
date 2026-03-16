@@ -170,8 +170,6 @@ export const createBudgetApiV1BudgetsPostBodyAlertThresholdPercentDefault = 80;
 export const createBudgetApiV1BudgetsPostBodyAlertThresholdPercentMin = 0;
 export const createBudgetApiV1BudgetsPostBodyAlertThresholdPercentMax = 100;
 
-export const createBudgetApiV1BudgetsPostBodyCategoryAllocationsOneItemAllocatedAmountOneMin = 0;
-
 export const CreateBudgetApiV1BudgetsPostBody = zod
   .object({
     name: zod
@@ -218,24 +216,7 @@ export const CreateBudgetApiV1BudgetsPostBody = zod
       .default(createBudgetApiV1BudgetsPostBodyAlertThresholdPercentDefault)
       .describe("Percentage of budget to trigger alerts (0-100)"),
     categoryAllocations: zod
-      .union([
-        zod.array(
-          zod
-            .object({
-              categoryId: zod.uuid(),
-              allocatedAmount: zod.union([
-                zod
-                  .number()
-                  .min(
-                    createBudgetApiV1BudgetsPostBodyCategoryAllocationsOneItemAllocatedAmountOneMin,
-                  ),
-                zod.string(),
-              ]),
-            })
-            .describe("Schema for budget category allocation"),
-        ),
-        zod.null(),
-      ])
+      .union([zod.array(zod.unknown()), zod.null()])
       .optional()
       .describe("Optional category allocations for this budget"),
   })
@@ -554,9 +535,6 @@ export const GetBudgetUsageApiV1BudgetsBudgetIdUsageGetParams = zod.object({
   budget_id: zod.uuid(),
 });
 
-export const getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponseCategoryBreakdownItemSpentAmountDefault = `0.00`;
-export const getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponseCategoryBreakdownItemPercentageUsedDefault = 0;
-
 export const GetBudgetUsageApiV1BudgetsBudgetIdUsageGetResponse = zod.object({
   budgetId: zod.string(),
   budgetName: zod.string(),
@@ -567,26 +545,7 @@ export const GetBudgetUsageApiV1BudgetsBudgetIdUsageGetResponse = zod.object({
   alertThresholdPercent: zod.number(),
   isOverThreshold: zod.boolean(),
   isOverBudget: zod.boolean(),
-  categoryBreakdown: zod.array(
-    zod
-      .object({
-        id: zod.uuid(),
-        budgetId: zod.uuid(),
-        categoryId: zod.uuid(),
-        allocatedAmount: zod.string(),
-        spentAmount: zod
-          .string()
-          .default(
-            getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponseCategoryBreakdownItemSpentAmountDefault,
-          ),
-        percentageUsed: zod
-          .number()
-          .default(
-            getBudgetUsageApiV1BudgetsBudgetIdUsageGetResponseCategoryBreakdownItemPercentageUsedDefault,
-          ),
-      })
-      .describe("Schema for budget category response"),
-  ),
+  categoryBreakdown: zod.array(zod.unknown()),
 });
 
 /**

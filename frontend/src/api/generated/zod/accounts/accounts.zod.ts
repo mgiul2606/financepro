@@ -23,7 +23,8 @@ import * as zod from "zod";
  */
 export const ListAccountsApiV1AccountsGetQueryParams = zod.object({
   profile_ids: zod
-    .array(zod.uuid())
+    .union([zod.array(zod.uuid()), zod.null()])
+    .optional()
     .describe("List of currently active financial profile IDs"),
 });
 

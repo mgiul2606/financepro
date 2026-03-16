@@ -80,7 +80,7 @@ export type listAccountsApiV1AccountsGetResponse =
   | listAccountsApiV1AccountsGetResponseError;
 
 export const getListAccountsApiV1AccountsGetUrl = (
-  params: ListAccountsApiV1AccountsGetParams,
+  params?: ListAccountsApiV1AccountsGetParams,
 ) => {
   const normalizedParams = new URLSearchParams();
 
@@ -98,7 +98,7 @@ export const getListAccountsApiV1AccountsGetUrl = (
 };
 
 export const listAccountsApiV1AccountsGet = async (
-  params: ListAccountsApiV1AccountsGetParams,
+  params?: ListAccountsApiV1AccountsGetParams,
   options?: RequestInit,
 ): Promise<listAccountsApiV1AccountsGetResponse> => {
   return customInstance<listAccountsApiV1AccountsGetResponse>(
@@ -120,7 +120,7 @@ export const getListAccountsApiV1AccountsGetQueryOptions = <
   TData = Awaited<ReturnType<typeof listAccountsApiV1AccountsGet>>,
   TError = void | HTTPValidationError,
 >(
-  params: ListAccountsApiV1AccountsGetParams,
+  params?: ListAccountsApiV1AccountsGetParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -158,7 +158,7 @@ export function useListAccountsApiV1AccountsGet<
   TData = Awaited<ReturnType<typeof listAccountsApiV1AccountsGet>>,
   TError = void | HTTPValidationError,
 >(
-  params: ListAccountsApiV1AccountsGetParams,
+  params: undefined | ListAccountsApiV1AccountsGetParams,
   options: {
     query: Partial<
       UseQueryOptions<
@@ -185,7 +185,7 @@ export function useListAccountsApiV1AccountsGet<
   TData = Awaited<ReturnType<typeof listAccountsApiV1AccountsGet>>,
   TError = void | HTTPValidationError,
 >(
-  params: ListAccountsApiV1AccountsGetParams,
+  params?: ListAccountsApiV1AccountsGetParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -212,7 +212,7 @@ export function useListAccountsApiV1AccountsGet<
   TData = Awaited<ReturnType<typeof listAccountsApiV1AccountsGet>>,
   TError = void | HTTPValidationError,
 >(
-  params: ListAccountsApiV1AccountsGetParams,
+  params?: ListAccountsApiV1AccountsGetParams,
   options?: {
     query?: Partial<
       UseQueryOptions<
@@ -235,7 +235,7 @@ export function useListAccountsApiV1AccountsGet<
   TData = Awaited<ReturnType<typeof listAccountsApiV1AccountsGet>>,
   TError = void | HTTPValidationError,
 >(
-  params: ListAccountsApiV1AccountsGetParams,
+  params?: ListAccountsApiV1AccountsGetParams,
   options?: {
     query?: Partial<
       UseQueryOptions<

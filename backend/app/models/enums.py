@@ -278,14 +278,3 @@ class NotificationStatus(str, enum.Enum):
     READ = "read"
     ARCHIVED = "archived"
     DISMISSED = "dismissed"
-
-
-# ============================================================================
-# LEGACY COMPATIBILITY - Remove after migration
-# ============================================================================
-
-# Keep for backward compatibility during migration
-class DatabaseType(str, enum.Enum):
-    """Deprecated: Supported database types for distributed storage"""
-    POSTGRESQL = "postgresql"
-    MSSQL = "mssql"
