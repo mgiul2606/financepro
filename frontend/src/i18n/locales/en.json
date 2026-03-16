@@ -26,7 +26,13 @@
     "no": "No",
     "saveChanges": "Save Changes",
     "processing": "Processing...",
-    "loadingEntity": "Loading {{entity}}..."
+    "loadingEntity": "Loading {{entity}}...",
+    "retry": "Retry",
+    "errorLoadingData": "Failed to load data",
+    "errorLoadingDataDesc": "An error occurred while loading. Please try again.",
+    "creating": "Creating...",
+    "saving": "Saving...",
+    "deleting": "Deleting..."
   },
   "confirm": {
     "defaultTitle": "Confirm Action",
@@ -199,6 +205,12 @@
       "success": "Transactions exported successfully",
       "error": "Failed to export transactions"
     },
+    "noMatchingTransactions": "No transactions match your filters",
+    "adjustFilters": "Try adjusting your filter criteria",
+    "clearFilters": "Clear Filters",
+    "filtersActive": "{{count}} filter active",
+    "filtersActiveMany": "{{count}} filters active",
+    "showingOfTotal": "Showing <strong>{{showing}}</strong> of <strong>{{total}}</strong>",
     "errors": {
       "createFailed": "Failed to create transaction. Please try again.",
       "updateFailed": "Failed to update transaction. Please try again.",
@@ -394,7 +406,16 @@
     "noSuggestionsYet": "No suggestions at the moment",
     "viewAll": "View All",
     "filteringBy": "Filtering by category",
-    "clearFilter": "Clear filter"
+    "clearFilter": "Clear filter",
+    "noPatterns": "No recurring patterns detected",
+    "noPatternsDesc": "No recurring transactions have been identified yet.",
+    "noReports": "No reports available",
+    "noReportsDesc": "Reports will be automatically generated when there is enough data.",
+    "noDataAvailable": "No data available",
+    "noDataAvailableDesc": "There is no data to analyze for this period yet.",
+    "errors": {
+      "loadFailed": "Failed to load analytics data. Please try again later."
+    }
   },
   "aiAssistant": {
     "title": "AI Assistant",
@@ -593,6 +614,10 @@
     "quickStats": "Quick Stats",
     "viewAll": "View All",
     "loadingDashboard": "Loading dashboard...",
+    "errorLoading": "Failed to load dashboard data. Please try again later.",
+    "noAccountsYetDesc": "Go to Accounts to add your first account",
+    "noBudgetsYetDesc": "Go to Budgets to create one",
+    "noGoalsYetDesc": "Go to Goals to get started",
     "totalBalance": "Total Balance",
     "accountsCount": "accounts",
     "budgetStatus": "Budget Status",

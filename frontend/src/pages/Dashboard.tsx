@@ -1,5 +1,5 @@
 // src/pages/Dashboard.tsx
-import { Wallet, Target, PiggyBank, TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Wallet, Target, PiggyBank, TrendingUp, ArrowUpRight, ArrowDownRight, AlertCircle, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
@@ -18,9 +18,9 @@ export const Dashboard = () => {
   const navigate = useNavigate();
 
   // Fetch data
-  const { accounts, isLoading: accountsLoading } = useAccounts();
-  const { budgets, isLoading: budgetsLoading } = useBudgets();
-  const { goals, isLoading: goalsLoading } = useGoals();
+  const { accounts, isLoading: accountsLoading, error: accountsError, refetch: refetchAccounts } = useAccounts();
+  const { budgets, isLoading: budgetsLoading, error: budgetsError, refetch: refetchBudgets } = useBudgets();
+  const { goals, isLoading: goalsLoading, error: goalsError, refetch: refetchGoals } = useGoals();
 
   // Calculate stats
   const totalBalance = accounts?.reduce((sum: number, acc) => sum + parseFloat(acc?.currentBalance || '0'), 0) ?? 0;
@@ -32,6 +32,7 @@ export const Dashboard = () => {
   const avgGoalProgress = goals && goals.length > 0 ? totalGoalProgress / goals.length : 0;
 
   const isLoading = accountsLoading || budgetsLoading || goalsLoading;
+  const hasError = accountsError || budgetsError || goalsError;
 
   if (isLoading) {
     return (
@@ -39,6 +40,29 @@ export const Dashboard = () => {
         <div className="text-center">
           <Spinner size="lg" />
           <p className="mt-4 text-gray-600">{t('dashboard.loadingDashboard')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (hasError && !accounts?.length && !budgets?.length && !goals?.length) {
+    return (
+      <div className="p-8 flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('common.errorLoadingData')}</h3>
+          <p className="text-sm text-gray-600 mb-6">{t('dashboard.errorLoading')}</p>
+          <Button
+            variant="primary"
+            leftIcon={<RefreshCw className="h-4 w-4" />}
+            onClick={() => {
+              refetchAccounts();
+              refetchBudgets();
+              refetchGoals();
+            }}
+          >
+            {t('common.retry')}
+          </Button>
         </div>
       </div>
     );
@@ -186,7 +210,14 @@ export const Dashboard = () => {
                 );
               })}
               {accounts.length === 0 && (
-                <p className="text-sm text-gray-500 text-center py-4">{t('dashboard.noAccountsYet')}</p>
+                <div className="text-center py-6">
+                  <Wallet className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500">{t('dashboard.noAccountsYet')}</p>
+                  <p className="text-xs text-gray-400 mt-1">{t('dashboard.noAccountsYetDesc')}</p>
+                  <Button variant="ghost" size="sm" className="mt-2" onClick={() => navigate('/accounts')}>
+                    {t('accounts.createAccount')}
+                  </Button>
+                </div>
               )}
             </div>
           </CardBody>
@@ -243,7 +274,14 @@ export const Dashboard = () => {
                 );
               })}
               {(!budgets || budgets.length === 0) && (
-                <p className="text-sm text-gray-500 text-center py-4">{t('dashboard.noBudgetsYet')}</p>
+                <div className="text-center py-6">
+                  <PiggyBank className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500">{t('dashboard.noBudgetsYet')}</p>
+                  <p className="text-xs text-gray-400 mt-1">{t('dashboard.noBudgetsYetDesc')}</p>
+                  <Button variant="ghost" size="sm" className="mt-2" onClick={() => navigate('/budgets')}>
+                    {t('budgets.createBudget')}
+                  </Button>
+                </div>
               )}
             </div>
           </CardBody>
@@ -305,7 +343,14 @@ export const Dashboard = () => {
                 );
               })}
               {(!goals || goals.length === 0) && (
-                <p className="text-sm text-gray-500 text-center py-4 col-span-2">{t('dashboard.noGoalsYet')}</p>
+                <div className="text-center py-6 col-span-2">
+                  <Target className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500">{t('dashboard.noGoalsYet')}</p>
+                  <p className="text-xs text-gray-400 mt-1">{t('dashboard.noGoalsYetDesc')}</p>
+                  <Button variant="ghost" size="sm" className="mt-2" onClick={() => navigate('/goals')}>
+                    {t('goals.createGoal')}
+                  </Button>
+                </div>
               )}
             </div>
           </CardBody>

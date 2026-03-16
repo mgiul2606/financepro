@@ -12,6 +12,7 @@ import {
   Edit,
   Trash2,
   MoreVertical,
+  RefreshCw,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -97,7 +98,7 @@ export const TransactionsPage = () => {
   }, [searchParams]);
 
   // Data fetching using the UI-aware hook
-  const { transactions, isLoading, error: loadError } = useTransactionsWithUIFilters(filters);
+  const { transactions, isLoading, error: loadError, refetch } = useTransactionsWithUIFilters(filters);
   const { stats } = useTransactionStats();
 
   // Mutations
@@ -213,8 +214,16 @@ export const TransactionsPage = () => {
       {/* Error Alert */}
       {loadError ? (
         <Alert variant="destructive">
-          <AlertTitle>{t('common.error')}</AlertTitle>
-          <AlertDescription>{t('transactions.errors.loadFailed')}</AlertDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <AlertTitle>{t('common.error')}</AlertTitle>
+              <AlertDescription>{t('transactions.errors.loadFailed')}</AlertDescription>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              {t('common.retry')}
+            </Button>
+          </div>
         </Alert>
       ) : null}
 
@@ -225,17 +234,17 @@ export const TransactionsPage = () => {
             <div className="flex items-center gap-2">
               <Filter className="h-5 w-5 text-blue-600" />
               <span className="text-sm font-semibold text-blue-900">
-                {activeFiltersCount} {t('common.filter').toLowerCase()}
-                {activeFiltersCount > 1 ? 's' : ''} active
+                {activeFiltersCount > 1
+                  ? t('transactions.filtersActiveMany', { count: activeFiltersCount })
+                  : t('transactions.filtersActive', { count: activeFiltersCount })}
               </span>
             </div>
             <Button variant="ghost" size="sm" onClick={handleClearFilters}>
-              Clear Filters
+              {t('transactions.clearFilters')}
             </Button>
           </div>
           <div className="text-sm text-blue-800">
-            Showing <strong>{filteredTransactions.length}</strong> of{' '}
-            <strong>{transactions?.length || 0}</strong> {t('transactions.title').toLowerCase()}
+            <strong>{filteredTransactions.length}</strong> / <strong>{transactions?.length || 0}</strong> {t('transactions.title').toLowerCase()}
           </div>
         </div>
       )}
@@ -294,12 +303,12 @@ export const TransactionsPage = () => {
             </div>
             <h3 className="mt-6 text-lg font-semibold">
               {activeFiltersCount > 0
-                ? 'No transactions match your filters'
+                ? t('transactions.noMatchingTransactions')
                 : t('transactions.noTransactions')}
             </h3>
             <p className="mt-2 text-center text-sm text-muted-foreground max-w-sm">
               {activeFiltersCount > 0
-                ? 'Try adjusting your filter criteria'
+                ? t('transactions.adjustFilters')
                 : t('transactions.noTransactionsDesc')}
             </p>
             <Button
@@ -309,7 +318,7 @@ export const TransactionsPage = () => {
               className="mt-6"
             >
               {activeFiltersCount > 0 ? (
-                <>Clear Filters</>
+                <>{t('transactions.clearFilters')}</>
               ) : (
                 <>
                   <Plus className="mr-2 h-4 w-4" />

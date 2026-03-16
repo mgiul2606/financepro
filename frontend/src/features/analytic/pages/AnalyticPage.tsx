@@ -22,7 +22,8 @@ import { OverviewStats } from '../components/OverviewStats';
 import { AnomalyCard } from '../components/AnomalyCard';
 import { RecurringPatternCard } from '../components/RecurringPatternCard';
 import { ReportCard } from '../components/ReportCard';
-import { Filter, Download, Calendar, X } from 'lucide-react';
+import { Filter, Download, Calendar, X, RefreshCw, FileText, BarChart3 } from 'lucide-react';
+import { Alert } from '@/components/ui/alert';
 import { format } from 'date-fns';
 
 export const AnalyticPage = () => {
@@ -46,7 +47,7 @@ export const AnalyticPage = () => {
   }), [filters, selectedCategory]);
 
   // Fetch data using centralized hooks
-  const { overview, isLoading: overviewLoading } = useAnalyticOverview(filters);
+  const { overview, isLoading: overviewLoading, error: overviewError, refetch: refetchOverview } = useAnalyticOverview(filters);
   const { timeSeries: timeSeriesData, isLoading: timeSeriesLoading } = useTimeSeriesData(timeSeriesFilters);
   const { categories, isLoading: categoriesLoading } = useCategoryBreakdown(filters);
   const { merchants, isLoading: merchantsLoading } = useMerchantAnalysis(filters);
@@ -105,6 +106,15 @@ export const AnalyticPage = () => {
               <div className="flex justify-center py-12">
                 <Spinner size="lg" label={t('analytics.loadingOverview')} />
               </div>
+            ) : overviewError ? (
+              <Alert variant="destructive">
+                <div className="flex items-center justify-between">
+                  <span>{t('analytics.errors.loadFailed')}</span>
+                  <Button variant="ghost" size="sm" leftIcon={<RefreshCw className="h-4 w-4" />} onClick={() => refetchOverview()}>
+                    {t('common.retry')}
+                  </Button>
+                </div>
+              </Alert>
             ) : overview ? (
               <>
                 <OverviewStats overview={overview} />
@@ -216,7 +226,17 @@ export const AnalyticPage = () => {
                   </Card>
                 </div>
               </>
-            ) : null}
+            ) : (
+              <Card variant="elevated">
+                <CardBody>
+                  <div className="text-center py-12">
+                    <BarChart3 className="h-12 w-12 text-neutral-300 mx-auto mb-4" />
+                    <p className="text-lg font-medium text-neutral-900">{t('analytics.noDataAvailable')}</p>
+                    <p className="text-sm text-neutral-600 mt-2">{t('analytics.noDataAvailableDesc')}</p>
+                  </div>
+                </CardBody>
+              </Card>
+            )}
           </div>
         )}
 
@@ -228,7 +248,7 @@ export const AnalyticPage = () => {
               <CardBody>
                 {timeSeriesLoading ? (
                   <Spinner />
-                ) : timeSeriesData ? (
+                ) : timeSeriesData && timeSeriesData.length > 0 ? (
                   <LineChart
                     data={timeSeriesData}
                     xAxisKey="date"
@@ -242,7 +262,12 @@ export const AnalyticPage = () => {
                     formatYAxis={(value) => formatCurrency(value, preferences.currency, preferences.locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                     formatTooltip={(value) => formatCurrency(value, preferences.currency, preferences.locale)}
                   />
-                ) : null}
+                ) : (
+                  <div className="text-center py-12">
+                    <BarChart3 className="h-10 w-10 text-neutral-300 mx-auto mb-3" />
+                    <p className="text-neutral-600">{t('analytics.noDataAvailable')}</p>
+                  </div>
+                )}
               </CardBody>
             </Card>
           </div>
@@ -352,7 +377,7 @@ export const AnalyticPage = () => {
               <CardBody>
                 {merchantsLoading ? (
                   <Spinner />
-                ) : merchants ? (
+                ) : merchants && merchants.length > 0 ? (
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead className="border-b-2 border-neutral-200 bg-neutral-50">
@@ -387,7 +412,12 @@ export const AnalyticPage = () => {
                       </tbody>
                     </table>
                   </div>
-                ) : null}
+                ) : (
+                  <div className="text-center py-12">
+                    <BarChart3 className="h-10 w-10 text-neutral-300 mx-auto mb-3" />
+                    <p className="text-neutral-600">{t('analytics.noDataAvailable')}</p>
+                  </div>
+                )}
               </CardBody>
             </Card>
           </div>
@@ -467,7 +497,17 @@ export const AnalyticPage = () => {
                   <RecurringPatternCard key={pattern.id} pattern={pattern} />
                 ))}
               </div>
-            ) : null}
+            ) : (
+              <Card variant="elevated">
+                <CardBody>
+                  <div className="text-center py-12">
+                    <BarChart3 className="h-12 w-12 text-neutral-300 mx-auto mb-4" />
+                    <p className="text-lg font-medium text-neutral-900">{t('analytics.noPatterns')}</p>
+                    <p className="text-sm text-neutral-600 mt-2">{t('analytics.noPatternsDesc')}</p>
+                  </div>
+                </CardBody>
+              </Card>
+            )}
           </div>
         )}
 
@@ -505,7 +545,17 @@ export const AnalyticPage = () => {
                   />
                 ))}
               </div>
-            ) : null}
+            ) : (
+              <Card variant="elevated">
+                <CardBody>
+                  <div className="text-center py-12">
+                    <FileText className="h-12 w-12 text-neutral-300 mx-auto mb-4" />
+                    <p className="text-lg font-medium text-neutral-900">{t('analytics.noReports')}</p>
+                    <p className="text-sm text-neutral-600 mt-2">{t('analytics.noReportsDesc')}</p>
+                  </div>
+                </CardBody>
+              </Card>
+            )}
           </div>
         )}
       </div>
