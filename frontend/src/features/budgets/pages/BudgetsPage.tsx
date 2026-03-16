@@ -1,6 +1,6 @@
 // features/budgets/pages/BudgetsPage.tsx
 import { useState } from 'react';
-import { Plus, AlertCircle, Edit, Trash2 } from 'lucide-react';
+import { Plus, AlertCircle, Edit, Trash2, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardBody, CardFooter } from '@/core/components/atomic/Card';
@@ -30,7 +30,7 @@ export const BudgetsPage: React.FC = () => {
   const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
 
   // Data fetching
-  const { budgets, isLoading, error: loadError } = useBudgets();
+  const { budgets, isLoading, error: loadError, refetch } = useBudgets();
 
   // Mutations
   const createMutation = useCreateBudget();
@@ -126,7 +126,12 @@ export const BudgetsPage: React.FC = () => {
         {/* Error Alert */}
         {loadError && (
           <Alert variant="destructive" className="mb-6">
-            {t('budgets.errors.loadFailed')}
+            <div className="flex items-center justify-between">
+              <span>{t('budgets.errors.loadFailed')}</span>
+              <Button variant="ghost" size="sm" leftIcon={<RefreshCw className="h-4 w-4" />} onClick={() => refetch()}>
+                {t('common.retry')}
+              </Button>
+            </div>
           </Alert>
         )}
 

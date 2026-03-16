@@ -1,7 +1,7 @@
 // features/accounts/pages/AccountsPage.tsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlusCircle, Wallet, TrendingUp, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { PlusCircle, Wallet, TrendingUp, MoreVertical, Edit, Trash2, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 // shadcn/ui components
@@ -45,7 +45,7 @@ export const AccountsPage = () => {
   const [deletingAccountId, setDeletingAccountId] = useState<string | null>(null);
 
   // Data fetching
-  const { accounts, isLoading, error: loadError } = useAccounts();
+  const { accounts, isLoading, error: loadError, refetch } = useAccounts();
 
   // Mutations
   const { createAccount, isCreating, error: createError, reset: resetCreate } = useCreateAccount();
@@ -172,8 +172,16 @@ export const AccountsPage = () => {
       {/* Error Alert */}
       {loadError && (
         <Alert variant="destructive">
-          <AlertTitle>{t('common.error')}</AlertTitle>
-          <AlertDescription>{t('accounts.errors.loadFailed')}</AlertDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <AlertTitle>{t('common.error')}</AlertTitle>
+              <AlertDescription>{t('accounts.errors.loadFailed')}</AlertDescription>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              {t('common.retry')}
+            </Button>
+          </div>
         </Alert>
       )}
 

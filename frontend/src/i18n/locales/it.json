@@ -26,7 +26,13 @@
     "no": "No",
     "saveChanges": "Salva Modifiche",
     "processing": "Elaborazione...",
-    "loadingEntity": "Caricamento {{entity}}..."
+    "loadingEntity": "Caricamento {{entity}}...",
+    "retry": "Riprova",
+    "errorLoadingData": "Impossibile caricare i dati",
+    "errorLoadingDataDesc": "Si è verificato un errore durante il caricamento. Riprova.",
+    "creating": "Creazione...",
+    "saving": "Salvataggio...",
+    "deleting": "Eliminazione..."
   },
   "confirm": {
     "defaultTitle": "Conferma Azione",
@@ -199,6 +205,12 @@
       "success": "Transazioni esportate con successo",
       "error": "Impossibile esportare le transazioni"
     },
+    "noMatchingTransactions": "Nessuna transazione corrisponde ai filtri",
+    "adjustFilters": "Prova a modificare i criteri di filtro",
+    "clearFilters": "Cancella Filtri",
+    "filtersActive": "{{count}} filtro attivo",
+    "filtersActiveMany": "{{count}} filtri attivi",
+    "showingOfTotal": "Visualizzando <strong>{{showing}}</strong> di <strong>{{total}}</strong>",
     "errors": {
       "createFailed": "Impossibile creare la transazione. Riprova.",
       "updateFailed": "Impossibile aggiornare la transazione. Riprova.",
@@ -394,7 +406,16 @@
     "noSuggestionsYet": "Nessun suggerimento al momento",
     "viewAll": "Vedi Tutti",
     "filteringBy": "Filtro per categoria",
-    "clearFilter": "Rimuovi filtro"
+    "clearFilter": "Rimuovi filtro",
+    "noPatterns": "Nessun pattern ricorrente rilevato",
+    "noPatternsDesc": "Al momento non abbiamo rilevato transazioni ricorrenti.",
+    "noReports": "Nessun report disponibile",
+    "noReportsDesc": "I report verranno generati automaticamente quando ci saranno abbastanza dati.",
+    "noDataAvailable": "Nessun dato disponibile",
+    "noDataAvailableDesc": "Non ci sono ancora dati da analizzare per questo periodo.",
+    "errors": {
+      "loadFailed": "Impossibile caricare i dati analitici. Riprova più tardi."
+    }
   },
   "aiAssistant": {
     "title": "Assistente AI",
@@ -593,6 +614,10 @@
     "quickStats": "Statistiche Rapide",
     "viewAll": "Vedi Tutto",
     "loadingDashboard": "Caricamento dashboard...",
+    "errorLoading": "Impossibile caricare i dati della dashboard. Riprova più tardi.",
+    "noAccountsYetDesc": "Vai alla sezione Conti per aggiungere il tuo primo conto",
+    "noBudgetsYetDesc": "Vai alla sezione Budget per crearne uno",
+    "noGoalsYetDesc": "Vai alla sezione Obiettivi per iniziare",
     "totalBalance": "Saldo Totale",
     "accountsCount": "conti",
     "budgetStatus": "Stato Budget",

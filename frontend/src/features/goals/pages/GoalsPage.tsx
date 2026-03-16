@@ -1,6 +1,6 @@
 // features/goals/pages/GoalsPage.tsx
 import { useState } from 'react';
-import { Plus, Target, Edit, Trash2, TrendingUp } from 'lucide-react';
+import { Plus, Target, Edit, Trash2, TrendingUp, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardBody, CardFooter } from '@/core/components/atomic/Card';
@@ -28,7 +28,7 @@ export const GoalsPage: React.FC = () => {
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
 
   // Data fetching
-  const { goals, isLoading, error: loadError } = useGoals();
+  const { goals, isLoading, error: loadError, refetch } = useGoals();
 
   // Mutations
   const createMutation = useCreateGoal();
@@ -138,7 +138,12 @@ export const GoalsPage: React.FC = () => {
         {/* Error Alert */}
         {loadError && (
           <Alert variant="destructive" className="mb-6">
-            {t('goals.errors.loadFailed')}
+            <div className="flex items-center justify-between">
+              <span>{t('goals.errors.loadFailed')}</span>
+              <Button variant="ghost" size="sm" leftIcon={<RefreshCw className="h-4 w-4" />} onClick={() => refetch()}>
+                {t('common.retry')}
+              </Button>
+            </div>
           </Alert>
         )}
 
