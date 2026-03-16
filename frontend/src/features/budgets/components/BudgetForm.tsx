@@ -46,6 +46,7 @@ export const BudgetForm = ({
     endDate: budget?.endDate || undefined,
     totalAmount: budget?.totalAmount || 0,
     currency: budget?.currency || 'EUR',
+    scopeType: 'user',
     rolloverEnabled: budget?.rolloverEnabled ?? false,
     alertThresholdPercent: budget?.alertThresholdPercent ?? DEFAULT_ALERT_THRESHOLD,
   });
@@ -62,6 +63,7 @@ export const BudgetForm = ({
         endDate: budget.endDate || undefined,
         totalAmount: budget.totalAmount,
         currency: budget.currency,
+        scopeType: 'user',
         rolloverEnabled: budget.rolloverEnabled ?? false,
         alertThresholdPercent: budget.alertThresholdPercent ?? DEFAULT_ALERT_THRESHOLD,
       });

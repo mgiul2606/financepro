@@ -8,6 +8,5 @@ export {
   useDiscardConfirm,
   useSaveConfirm,
   ConfirmProvider,
-  simpleConfirm
 } from './useConfirm';
-export type { ConfirmOptions } from './useConfirm';
+export type { ConfirmOptions } from '@/components/ConfirmDialog/types';

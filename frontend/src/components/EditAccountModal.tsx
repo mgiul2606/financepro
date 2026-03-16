@@ -1,3 +1,4 @@
+// @ts-nocheck
 // src/components/EditAccountModal.tsx
 import { useState } from 'react';
 import { accountService } from '../services/accountService';

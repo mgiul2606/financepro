@@ -13,9 +13,6 @@ import {
   useUpdateCategoryApiV1CategoriesCategoryIdPut,
   useDeleteCategoryApiV1CategoriesCategoryIdDelete,
   getListCategoriesApiV1CategoriesGetQueryKey,
-  type CreateCategoryApiV1CategoriesPostMutationResult,
-  type UpdateCategoryApiV1CategoriesCategoryIdPutMutationResult,
-  type DeleteCategoryApiV1CategoriesCategoryIdDeleteMutationResult,
 } from '@/api/generated/categories/categories';
 import type {
   CategoryResponse,

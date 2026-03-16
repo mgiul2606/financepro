@@ -47,7 +47,7 @@ const mockOverview: AnalyticOverview = {
   },
 };
 
-const mockTimeSeriesData: TimeSeriesData[] = generateDates(30).map((date, index) => ({
+const mockTimeSeriesData: TimeSeriesData[] = generateDates(30).map((date, _index) => ({
   date,
   income: Math.random() * 300 + 100,
   expenses: Math.random() * 200 + 50,
@@ -299,7 +299,7 @@ const mockSubcategoryBreakdown: SubcategoryBreakdown[] = [
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const mockAnalyticApi = {
-  getOverview: async (filters?: AnalyticFilters): Promise<AnalyticOverview> => {
+  getOverview: async (_filters?: AnalyticFilters): Promise<AnalyticOverview> => {
     await delay(500);
     return mockOverview;
   },
@@ -316,36 +316,36 @@ export const mockAnalyticApi = {
     return mockTimeSeriesData;
   },
 
-  getCategoryBreakdown: async (filters?: AnalyticFilters): Promise<CategoryBreakdown[]> => {
+  getCategoryBreakdown: async (_filters?: AnalyticFilters): Promise<CategoryBreakdown[]> => {
     await delay(500);
     return mockCategoryBreakdown;
   },
 
   getSubcategoryBreakdown: async (
     category: string,
-    filters?: AnalyticFilters
+    _filters?: AnalyticFilters
   ): Promise<SubcategoryBreakdown> => {
     await delay(500);
     const found = mockSubcategoryBreakdown.find((s) => s.category === category);
     return found || mockSubcategoryBreakdown[0];
   },
 
-  getMerchantAnalysis: async (filters?: AnalyticFilters): Promise<MerchantAnalysis[]> => {
+  getMerchantAnalysis: async (_filters?: AnalyticFilters): Promise<MerchantAnalysis[]> => {
     await delay(550);
     return mockMerchantAnalysis;
   },
 
-  getAnomalies: async (filters?: AnalyticFilters): Promise<AnomalyDetection[]> => {
+  getAnomalies: async (_filters?: AnalyticFilters): Promise<AnomalyDetection[]> => {
     await delay(700);
     return mockAnomalies;
   },
 
-  getRecurringPatterns: async (filters?: AnalyticFilters): Promise<RecurringPattern[]> => {
+  getRecurringPatterns: async (_filters?: AnalyticFilters): Promise<RecurringPattern[]> => {
     await delay(650);
     return mockRecurringPatterns;
   },
 
-  getReports: async (filters?: AnalyticFilters): Promise<FinancialReport[]> => {
+  getReports: async (_filters?: AnalyticFilters): Promise<FinancialReport[]> => {
     await delay(600);
     return mockReports;
   },

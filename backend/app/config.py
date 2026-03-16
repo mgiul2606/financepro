@@ -258,7 +258,7 @@ class Settings(BaseSettings):
     database: DatabaseSettings = Field(default_factory=DatabaseSettings)
     security: SecuritySettings = Field(default_factory=SecuritySettings)
     cors: CORSSettings = Field(default_factory=CORSSettings)
-    features: FeatureFlags = Field(default_factory=FeatureFlags)
+    feature: FeatureFlags = Field(default_factory=FeatureFlags)
     rate_limit: RateLimitSettings = Field(default_factory=RateLimitSettings)
     
     # Logging
@@ -329,4 +329,4 @@ def get_database_url() -> str:
 
 def is_feature_enabled(feature: str) -> bool:
     """Check if a feature is enabled"""
-    return getattr(settings.features, f"enable_{feature}", False)
+    return getattr(settings.feature, f"enable_{feature}", False)

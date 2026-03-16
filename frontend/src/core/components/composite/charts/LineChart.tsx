@@ -7,9 +7,14 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  TooltipProps,
 } from 'recharts';
 import { clsx } from 'clsx';
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; color: string }>;
+  label?: string | number;
+}
 
 export interface LineChartDataPoint {
   [key: string]: string | number;
@@ -59,14 +64,14 @@ export const LineChart: React.FC<LineChartProps> = ({
   formatYAxis,
   formatTooltip,
 }) => {
-  const CustomTooltip = ({ active, payload, label }: TooltipProps<any, any>) => {
+  const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white border border-neutral-200 rounded-lg shadow-lg p-3">
           <p className="text-sm font-medium text-neutral-900 mb-2">
             {formatXAxis ? formatXAxis(label) : label}
           </p>
-          {payload.map((entry, index) => (
+          {payload.map((entry: any, index: number) => (
             <div key={index} className="flex items-center gap-2 text-sm">
               <div
                 className="w-3 h-3 rounded-full"
@@ -100,7 +105,7 @@ export const LineChart: React.FC<LineChartProps> = ({
             tickFormatter={formatYAxis}
             stroke="#d1d5db"
           />
-          {showTooltip && <Tooltip content={<CustomTooltip />} />}
+          {showTooltip && <Tooltip content={CustomTooltip} />}
           {showLegend && (
             <Legend
               wrapperStyle={{ fontSize: '14px', paddingTop: '10px' }}
