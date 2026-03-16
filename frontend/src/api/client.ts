@@ -17,7 +17,7 @@ export const customInstance = <T>(
   const requestConfig: AxiosRequestConfig = {
     url: config,
     method: options?.method as AxiosRequestConfig['method'],
-    signal: options?.signal as any,
+    signal: options?.signal as AbortSignal | undefined,
   };
 
   // Convert headers from HeadersInit to plain object

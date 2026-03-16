@@ -53,8 +53,8 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const queryClient = useQueryClient();
 
   // Fetch data
-  const { profiles: profilesList, isLoading: profilesLoading, refetch: refetchProfiles } = useProfiles();
-  const { mainProfile: mainProfileData, isLoading: mainProfileLoading, refetch: refetchMainProfile } = useMainProfile();
+  const { profiles: profilesList, isLoading: profilesLoading, error: profilesError, refetch: refetchProfiles } = useProfiles();
+  const { mainProfile: mainProfileData, isLoading: mainProfileLoading, error: mainProfileError, refetch: refetchMainProfile } = useMainProfile();
 
   // Mutations
   const setMainProfileMutation = useSetMainProfile();
@@ -92,7 +92,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // This prevents downstream hooks from seeing profileLoading=false with
   // activeProfileIds=[] and briefly rendering an empty state.
   const isLoading = queriesLoading || !isInitialized;
-  const isError = false; // TODO: Add error handling
+  const isError = !!profilesError || !!mainProfileError;
 
   // Check if user needs to create a profile (only after data is loaded)
   const requiresProfileCreation = !queriesLoading && isInitialized && profiles.length === 0;

@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-nocheck — Example component with intentional simplifications for demonstration
 /**
  * FinancialProfileDashboard - Example Component
  *
@@ -297,7 +297,7 @@ const CreateProfileModal: React.FC<CreateProfileModalProps> = ({
             <select
               required
               value={formData.profileType}
-              onChange={(e) => handleChange('profileType', e.target.value as any)}
+              onChange={(e) => handleChange('profileType', e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="personal">Personal</option>
