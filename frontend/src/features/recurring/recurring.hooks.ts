@@ -1,19 +1,16 @@
 /**
  * React Query hooks for Recurring Transaction operations
  *
- * NOTE: Backend API for recurring transactions does not exist yet.
- * These hooks are PLACEHOLDERS that return empty/mock data.
+ * MIGRATION STATUS: NO BACKEND ENDPOINTS AVAILABLE
+ * As of 2026-03-16, the OpenAPI spec does not include any /recurring endpoints.
+ * The backend has models and services (recurring_service.py) but they are not
+ * exposed via FastAPI routes yet. These hooks remain as placeholders returning
+ * empty/mock data until the backend endpoints are added to the API.
  *
- * TODO: When backend is implemented:
- * 1. Generate Orval types and hooks from OpenAPI spec
- * 2. Import Orval-generated hooks:
- *    - useGetRecurringApiV1RecurringIdGet
- *    - useCreateRecurringApiV1RecurringPost
- *    - useUpdateRecurringApiV1RecurringIdPut
- *    - useDeleteRecurringApiV1RecurringIdDelete
- *    - getListRecurringApiV1RecurringGetQueryKey
- *    - listRecurringApiV1RecurringGet
- * 3. Follow accounts.hooks.ts pattern with factory functions
+ * When backend endpoints become available:
+ * 1. Run `npm run generate:api` to regenerate Orval hooks
+ * 2. Replace placeholder implementations with Orval-generated hooks
+ * 3. Follow the accounts.hooks.ts pattern with factory functions
  */
 import { useState, useCallback, useMemo } from 'react';
 import { useProfileContext } from '@/contexts/ProfileContext';
