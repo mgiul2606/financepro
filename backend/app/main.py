@@ -182,9 +182,9 @@ async def health_check():
             "database": "healthy" if db_healthy else "unhealthy"
         },
         "features": {
-            "ai_classification": settings.features.enable_ai_classification,
-            "vector_search": settings.features.enable_vector_search,
-            "analytics": settings.features.enable_analytics,
+            "ai_classification": settings.feature.enable_ai_classification,
+            "vector_search": settings.feature.enable_vector_search,
+            "analytics": settings.feature.enable_analytics,
         }
     }
 

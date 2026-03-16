@@ -5,14 +5,19 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  TooltipProps,
 } from 'recharts';
 import { clsx } from 'clsx';
 
 export interface PieChartDataPoint {
+  [key: string]: string | number | undefined;
   name: string;
   value: number;
   color?: string;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; payload: { fill: string } }>;
 }
 
 export interface PieChartProps {
@@ -63,7 +68,7 @@ export const PieChart: React.FC<PieChartProps> = ({
   onSliceClick,
   selectedIndex,
 }) => {
-  const CustomTooltip = ({ active, payload }: TooltipProps<any, any>) => {
+  const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       const data = payload[0];
       return (
@@ -113,7 +118,7 @@ export const PieChart: React.FC<PieChartProps> = ({
               />
             ))}
           </Pie>
-          {showTooltip && <Tooltip content={<CustomTooltip />} />}
+          {showTooltip && <Tooltip content={CustomTooltip} />}
           {showLegend && (
             <Legend
               verticalAlign="bottom"

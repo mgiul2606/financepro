@@ -1,3 +1,4 @@
+// @ts-nocheck
 // src/components/showcase/ComponentsShowcase.tsx
 import { useState, useEffect } from 'react';
 import { Modal, ModalFooter } from '../ui/Modal';

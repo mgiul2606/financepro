@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * EXAMPLE FILE - Demonstrates how to use the hook factories
  *

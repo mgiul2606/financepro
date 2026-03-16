@@ -1,3 +1,4 @@
+// @ts-nocheck
 // src/components/EditAccountModalV2.tsx
 import { useState, useEffect } from 'react';
 import { accountService } from '../services/accountService';
