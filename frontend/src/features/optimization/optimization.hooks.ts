@@ -1,9 +1,15 @@
 /**
  * Optimization hooks
  *
- * React Query hooks for the optimization feature.
- * Since this is a frontend-only feature, hooks use mockOptimizationApi
- * instead of Orval-generated API functions.
+ * MIGRATION STATUS: NO MATCHING BACKEND ENDPOINTS (2026-03-16)
+ * The backend has AI optimization endpoints under /ai/ai/optimize/* but they
+ * serve different data (optimization insights, spending patterns, savings summary)
+ * which are already consumed by features/ai-assistant/ai-assistant.hooks.ts.
+ *
+ * This feature's data model (suggestions, waste detection, duplicate services,
+ * savings strategies, alternatives, cashflow optimization) has no corresponding
+ * backend endpoints. These hooks use mockOptimizationApi until matching backend
+ * endpoints are implemented.
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { mockOptimizationApi } from './api/mockOptimizationApi';

@@ -1,29 +1,16 @@
 /**
  * React Query hooks for Asset operations
  *
- * PLACEHOLDER IMPLEMENTATION:
- * These hooks use mock data because the Orval-generated API hooks
- * are not yet available. When the backend API is implemented and
- * Orval generates the hooks, replace the placeholder implementations
- * with the real hook factory patterns.
+ * MIGRATION STATUS: NO BACKEND ENDPOINTS AVAILABLE
+ * As of 2026-03-16, the OpenAPI spec does not include any /assets endpoints.
+ * The backend has asset models but no API routes are exposed yet.
+ * These hooks remain as placeholders returning empty/mock data until
+ * the backend endpoints are added to the API and Orval hooks are generated.
  *
- * TODO: Replace with real implementations when API is available:
- *
- * import {
- *   useGetAssetApiV1AssetsAssetIdGet,
- *   useCreateAssetApiV1AssetsPost,
- *   useUpdateAssetApiV1AssetsAssetIdPut,
- *   useDeleteAssetApiV1AssetsAssetIdDelete,
- *   getListAssetsApiV1AssetsGetQueryKey,
- *   listAssetsApiV1AssetsGet,
- * } from '@/api/generated/assets/assets';
- *
- * Then use hook factories:
- * - createMultiProfileListHook for useAssets
- * - createGetByIdHook for useAsset
- * - createCreateMutationHook for useCreateAsset
- * - createUpdateMutationHook for useUpdateAsset
- * - createDeleteMutationHook for useDeleteAsset
+ * When backend endpoints become available:
+ * 1. Run `npm run generate:api` to regenerate Orval hooks
+ * 2. Replace placeholder implementations with Orval-generated hooks
+ * 3. Follow the accounts.hooks.ts pattern with factory functions
  */
 
 import { useState, useCallback } from 'react';

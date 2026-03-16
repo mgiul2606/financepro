@@ -1,11 +1,24 @@
 /**
  * React Query hooks for Analytics operations
  *
- * Note: Since there are no Orval-generated hooks for analytics yet,
- * these hooks use the mock API. When API becomes available, replace
- * mockAnalyticApi calls with Orval hooks following the accounts pattern.
+ * MIGRATION STATUS (2026-03-16):
+ * - useAnalyticOverview: MIGRATED to real API (expenses + income endpoints)
+ * - useCategoryBreakdown: MIGRATED to real API (expenses endpoint byCategory)
+ * - useTimeSeriesData: MIGRATED to real API (cash flow endpoint periodSummaries)
+ * - useSpendingTrends: MIGRATED to real API (trends endpoint)
+ * - useMerchantAnalysis: MOCK - no backend endpoint
+ * - useAnomalies: MOCK - no backend endpoint
+ * - useRecurringPatterns: MOCK - no backend endpoint
+ * - useReports/useReport/useGenerateReport: MOCK - no backend endpoint
+ * - useSubcategoryBreakdown: MOCK - no backend endpoint
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  useAnalyzeExpensesApiV1AnalysisExpensesGet,
+  useAnalyzeIncomeApiV1AnalysisIncomeGet,
+  useGetCashFlowApiV1AnalysisCashFlowGet,
+  useGetSpendingTrendsApiV1AnalysisTrendsGet,
+} from '@/api/generated/analysis/analysis';
 import { mockAnalyticApi } from './api/mockAnalyticApi';
 import { ANALYTIC_STALE_TIMES } from './analytic.constants';
 import type {
@@ -22,13 +35,9 @@ import type {
 import type { ReportTypeValue } from './analytic.constants';
 
 // ============================================================================
-// Query Keys
+// Query Keys (for hooks still using mocks)
 // ============================================================================
 
-/**
- * Centralized query key factory for analytics
- * Following React Query best practices for key management
- */
 export const analyticKeys = {
   all: ['analytics'] as const,
   overview: (filters?: AnalyticFilters) => [...analyticKeys.all, 'overview', filters] as const,
@@ -44,76 +53,158 @@ export const analyticKeys = {
 } as const;
 
 // ============================================================================
-// Overview & Summary Hooks
+// Overview & Summary Hooks — MIGRATED TO REAL API
 // ============================================================================
 
 /**
  * Hook to fetch analytics overview/summary data
+ * Uses real backend: GET /api/v1/analysis/expenses + GET /api/v1/analysis/income
  */
 export const useAnalyticOverview = (filters?: AnalyticFilters) => {
-  const query = useQuery<AnalyticOverview>({
-    queryKey: analyticKeys.overview(filters),
-    queryFn: () => mockAnalyticApi.getOverview(filters),
-    staleTime: ANALYTIC_STALE_TIMES.overview,
-  });
+  const startDate = filters?.dateFrom ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const endDate = filters?.dateTo ?? new Date().toISOString().split('T')[0];
+
+  const expenseQuery = useAnalyzeExpensesApiV1AnalysisExpensesGet(
+    { start_date: startDate, end_date: endDate },
+    { query: { staleTime: ANALYTIC_STALE_TIMES.overview } },
+  );
+
+  const incomeQuery = useAnalyzeIncomeApiV1AnalysisIncomeGet(
+    { start_date: startDate, end_date: endDate },
+    { query: { staleTime: ANALYTIC_STALE_TIMES.overview } },
+  );
+
+  const isLoading = expenseQuery.isLoading || incomeQuery.isLoading;
+  const isError = expenseQuery.isError || incomeQuery.isError;
+  const error = expenseQuery.error || incomeQuery.error;
+
+  // Map backend responses to the AnalyticOverview shape expected by UI
+  const overview: AnalyticOverview | undefined =
+    expenseQuery.data?.data && incomeQuery.data?.data
+      ? {
+          period: {
+            from: expenseQuery.data.data.periodStart,
+            to: expenseQuery.data.data.periodEnd,
+          },
+          totalSpent: expenseQuery.data.data.totalExpenses,
+          totalIncome: incomeQuery.data.data.totalIncome,
+          netBalance: incomeQuery.data.data.totalIncome - expenseQuery.data.data.totalExpenses,
+          transactionCount:
+            expenseQuery.data.data.transactionCount + incomeQuery.data.data.transactionCount,
+          topCategory:
+            expenseQuery.data.data.byCategory.length > 0
+              ? expenseQuery.data.data.byCategory.reduce((max, cat) =>
+                  cat.totalAmount > max.totalAmount ? cat : max,
+                ).categoryName
+              : '-',
+          averageDaily:
+            expenseQuery.data.data.totalExpenses /
+            Math.max(
+              1,
+              Math.ceil(
+                (new Date(endDate).getTime() - new Date(startDate).getTime()) /
+                  (1000 * 60 * 60 * 24),
+              ),
+            ),
+          comparisonToPrevious: {
+            spent: 0,
+            income: 0,
+            balance: 0,
+          },
+        }
+      : undefined;
+
+  const refetch = () => {
+    expenseQuery.refetch();
+    incomeQuery.refetch();
+  };
 
   return {
-    overview: query.data,
-    isLoading: query.isLoading,
-    isError: query.isError,
-    error: query.error,
-    refetch: query.refetch,
+    overview,
+    isLoading,
+    isError,
+    error,
+    refetch,
   };
 };
 
 // ============================================================================
-// Time Series & Trends Hooks
+// Time Series & Trends Hooks — MIGRATED TO REAL API
 // ============================================================================
 
 /**
  * Hook to fetch time series data for charts
+ * Uses real backend: GET /api/v1/analysis/cash-flow
  */
 export const useTimeSeriesData = (filters?: AnalyticFilters) => {
-  const query = useQuery<TimeSeriesData[]>({
-    queryKey: analyticKeys.timeSeries(filters),
-    queryFn: () => mockAnalyticApi.getTimeSeriesData(filters),
-    staleTime: ANALYTIC_STALE_TIMES.timeSeries,
-  });
+  const cashFlowQuery = useGetCashFlowApiV1AnalysisCashFlowGet(
+    { months: 1 },
+    { query: { staleTime: ANALYTIC_STALE_TIMES.timeSeries } },
+  );
+
+  // Map PeriodSummary[] to TimeSeriesData[] expected by the UI
+  const timeSeries: TimeSeriesData[] =
+    cashFlowQuery.data?.data?.periodSummaries?.map((ps) => ({
+      date: ps.period,
+      income: ps.totalIncome,
+      expenses: ps.totalExpenses,
+      balance: ps.netFlow,
+    })) ?? [];
 
   return {
-    timeSeries: query.data ?? [],
-    isLoading: query.isLoading,
-    isError: query.isError,
-    error: query.error,
-    refetch: query.refetch,
+    timeSeries,
+    isLoading: cashFlowQuery.isLoading,
+    isError: cashFlowQuery.isError,
+    error: cashFlowQuery.error,
+    refetch: cashFlowQuery.refetch,
   };
 };
 
 // ============================================================================
-// Category Analysis Hooks
+// Category Analysis Hooks — MIGRATED TO REAL API
 // ============================================================================
 
 /**
  * Hook to fetch category breakdown data
+ * Uses real backend: GET /api/v1/analysis/expenses (byCategory field)
  */
 export const useCategoryBreakdown = (filters?: AnalyticFilters) => {
-  const query = useQuery<CategoryBreakdown[]>({
-    queryKey: analyticKeys.categories(filters),
-    queryFn: () => mockAnalyticApi.getCategoryBreakdown(filters),
-    staleTime: ANALYTIC_STALE_TIMES.categories,
-  });
+  const startDate = filters?.dateFrom ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const endDate = filters?.dateTo ?? new Date().toISOString().split('T')[0];
+
+  const expenseQuery = useAnalyzeExpensesApiV1AnalysisExpensesGet(
+    { start_date: startDate, end_date: endDate },
+    { query: { staleTime: ANALYTIC_STALE_TIMES.categories } },
+  );
+
+  // Default colors for categories
+  const CATEGORY_COLORS = [
+    '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6',
+    '#06b6d4', '#ec4899', '#64748b', '#f97316', '#14b8a6',
+  ];
+
+  // Map CategorySpending[] to CategoryBreakdown[] expected by UI
+  const categories: CategoryBreakdown[] =
+    expenseQuery.data?.data?.byCategory?.map((cat, index) => ({
+      category: cat.categoryName,
+      amount: cat.totalAmount,
+      percentage: cat.percentage,
+      transactionCount: cat.transactionCount,
+      color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
+    })) ?? [];
 
   return {
-    categories: query.data ?? [],
-    isLoading: query.isLoading,
-    isError: query.isError,
-    error: query.error,
-    refetch: query.refetch,
+    categories,
+    isLoading: expenseQuery.isLoading,
+    isError: expenseQuery.isError,
+    error: expenseQuery.error,
+    refetch: expenseQuery.refetch,
   };
 };
 
 /**
  * Hook to fetch subcategory breakdown for a specific category
+ * MOCK — no backend endpoint for subcategory drill-down
  */
 export const useSubcategoryBreakdown = (category: string, filters?: AnalyticFilters) => {
   const query = useQuery<SubcategoryBreakdown>({
@@ -133,11 +224,12 @@ export const useSubcategoryBreakdown = (category: string, filters?: AnalyticFilt
 };
 
 // ============================================================================
-// Merchant Analysis Hooks
+// Merchant Analysis Hooks — MOCK (no backend endpoint)
 // ============================================================================
 
 /**
  * Hook to fetch merchant analysis data
+ * MOCK — no backend endpoint for merchant-level analysis
  */
 export const useMerchantAnalysis = (filters?: AnalyticFilters) => {
   const query = useQuery<MerchantAnalysis[]>({
@@ -156,11 +248,12 @@ export const useMerchantAnalysis = (filters?: AnalyticFilters) => {
 };
 
 // ============================================================================
-// Anomaly Detection Hooks
+// Anomaly Detection Hooks — MOCK (no backend endpoint)
 // ============================================================================
 
 /**
  * Hook to fetch detected anomalies
+ * MOCK — no backend endpoint for anomaly detection
  */
 export const useAnomalies = (filters?: AnalyticFilters) => {
   const query = useQuery<AnomalyDetection[]>({
@@ -179,11 +272,12 @@ export const useAnomalies = (filters?: AnalyticFilters) => {
 };
 
 // ============================================================================
-// Recurring Patterns Hooks
+// Recurring Patterns Hooks — MOCK (no backend endpoint)
 // ============================================================================
 
 /**
  * Hook to fetch recurring transaction patterns
+ * MOCK — no backend endpoint for recurring pattern detection
  */
 export const useRecurringPatterns = (filters?: AnalyticFilters) => {
   const query = useQuery<RecurringPattern[]>({
@@ -202,11 +296,12 @@ export const useRecurringPatterns = (filters?: AnalyticFilters) => {
 };
 
 // ============================================================================
-// Reports Hooks
+// Reports Hooks — MOCK (no backend endpoint)
 // ============================================================================
 
 /**
  * Hook to fetch list of financial reports
+ * MOCK — no backend endpoint for report management
  */
 export const useReports = (filters?: AnalyticFilters) => {
   const query = useQuery<FinancialReport[]>({
@@ -226,6 +321,7 @@ export const useReports = (filters?: AnalyticFilters) => {
 
 /**
  * Hook to fetch a single report by ID
+ * MOCK — no backend endpoint for report management
  */
 export const useReport = (id: string) => {
   const query = useQuery<FinancialReport>({
@@ -246,7 +342,7 @@ export const useReport = (id: string) => {
 
 /**
  * Hook to generate a new financial report
- * Note: When API is available, this will use mutation factory
+ * MOCK — no backend endpoint for report generation
  */
 export const useGenerateReport = () => {
   const queryClient = useQueryClient();

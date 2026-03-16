@@ -1,8 +1,20 @@
 /**
  * AI Assistant React Query Hooks
  *
- * Consolidated hooks for AI Assistant operations.
- * Combines Orval-generated API hooks with custom UI logic.
+ * MIGRATION STATUS (2026-03-16):
+ * MIGRATED to real API via Orval-generated hooks:
+ * - useAIStatus, useConversations, useConversation, useSendChatMessage,
+ *   useDeleteConversation, useClassifyTransaction, useTrainClassificationModel,
+ *   useClassificationMetrics, useSuggestTags, useOptimizationInsights,
+ *   useSpendingPatterns, useSavingsSummary
+ *
+ * MOCK (no backend endpoints for batch operations):
+ * - useClassifyTransactions (batch classification)
+ * - useConfirmClassification
+ * - useRejectClassification
+ *
+ * UI-only (static data from constants):
+ * - useQuickQueries, useCapabilities
  */
 import { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
