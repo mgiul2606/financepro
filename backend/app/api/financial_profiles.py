@@ -126,15 +126,9 @@ async def get_main_profile(
         )
     ).first()
     
-    if not default_profile:
-        raise HTTPException(
-            status_code=500,
-            detail="Default profile not found for user"
-        )
-    
     return MainProfileResponse(
         user_id=current_user.id,
-        main_profile_id=default_profile.id
+        main_profile_id=default_profile.id if default_profile else None
     )
 
 

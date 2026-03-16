@@ -62,8 +62,8 @@ class FinancialGoalCreate(FinancialGoalBase):
     User-level goal with scope support.
     """
     scope_type: str = Field(
-        default="USER",
-        description="Scope type: USER, PROFILE, or MULTI_PROFILE"
+        default="user",
+        description="Scope type: user, profile, or multi_profile"
     )
     scope_profile_ids: Optional[list[UUID]] = Field(
         None,

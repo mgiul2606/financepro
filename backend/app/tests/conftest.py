@@ -22,7 +22,7 @@ def test_settings():
             secret_key="test-secret-key",
             access_token_expire_minutes=5,
         ),
-        features=FeatureFlags(
+        feature=FeatureFlags(
             enable_ai_classification=False,  # Disable AI in tests
             enable_vector_search=False,
         ),

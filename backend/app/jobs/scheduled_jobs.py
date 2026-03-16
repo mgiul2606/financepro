@@ -23,12 +23,10 @@ from typing import Dict, Any, Optional
 import logging
 
 from app.db.database import SessionLocal
-from app.services.v2 import (
-    RecurringTransactionService,
-    ExchangeRateService,
-    BudgetService,
-    GoalService
-)
+from app.services.recurring_service import RecurringTransactionService
+from app.services.exchange_rate_service import ExchangeRateService
+from app.services.budget_service import BudgetService
+from app.services.goal_service import GoalService
 from app.core.rls import RLSService
 from app.models import Notification, NotificationStatus
 

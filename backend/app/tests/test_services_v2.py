@@ -17,11 +17,11 @@ from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
 # Import services
-from app.services.v2.budget_service import BudgetService
-from app.services.v2.goal_service import GoalService
-from app.services.v2.import_service import ImportService
-from app.services.v2.exchange_rate_service import ExchangeRateService
-from app.services.v2.recurring_service import RecurringTransactionService
+from app.services.budget_service import BudgetService
+from app.services.goal_service import GoalService
+from app.services.import_service import ImportService
+from app.services.exchange_rate_service import ExchangeRateService
+from app.services.recurring_service import RecurringTransactionService
 
 # Import models and enums
 from app.models.enums import (
@@ -189,7 +189,7 @@ class TestGoalServiceUnit:
 
     def test_calculate_months_remaining(self):
         """Test month calculation."""
-        from app.services.v2.goal_service import GoalService
+        from app.services.goal_service import GoalService
 
         # Create minimal mock
         mock_db = MagicMock()
@@ -205,7 +205,7 @@ class TestGoalServiceUnit:
 
     def test_calculate_expected_progress(self):
         """Test expected progress calculation."""
-        from app.services.v2.goal_service import GoalService
+        from app.services.goal_service import GoalService
 
         mock_db = MagicMock()
         mock_rls = MagicMock()
@@ -227,7 +227,7 @@ class TestImportServiceUnit:
 
     def test_parse_date_formats(self):
         """Test date parsing with various formats."""
-        from app.services.v2.import_service import ImportService
+        from app.services.import_service import ImportService
 
         mock_db = MagicMock()
         mock_rls = MagicMock()
@@ -241,7 +241,7 @@ class TestImportServiceUnit:
 
     def test_parse_amount_formats(self):
         """Test amount parsing with various formats."""
-        from app.services.v2.import_service import ImportService
+        from app.services.import_service import ImportService
 
         mock_db = MagicMock()
         mock_rls = MagicMock()
@@ -256,7 +256,7 @@ class TestImportServiceUnit:
 
     def test_get_default_mapping(self):
         """Test default field mapping."""
-        from app.services.v2.import_service import ImportService
+        from app.services.import_service import ImportService
 
         mock_db = MagicMock()
         mock_rls = MagicMock()
@@ -270,7 +270,7 @@ class TestImportServiceUnit:
 
     def test_suggest_mapping(self):
         """Test automatic mapping suggestion."""
-        from app.services.v2.import_service import ImportService
+        from app.services.import_service import ImportService
 
         mock_db = MagicMock()
         mock_rls = MagicMock()
@@ -286,7 +286,7 @@ class TestImportServiceUnit:
 
     def test_preview_csv(self):
         """Test CSV preview functionality."""
-        from app.services.v2.import_service import ImportService
+        from app.services.import_service import ImportService
 
         mock_db = MagicMock()
         mock_rls = MagicMock()
@@ -308,7 +308,7 @@ class TestRecurringServiceUnit:
 
     def test_calculate_next_occurrence_daily(self):
         """Test daily frequency calculation."""
-        from app.services.v2.recurring_service import RecurringTransactionService
+        from app.services.recurring_service import RecurringTransactionService
 
         mock_db = MagicMock()
         service = RecurringTransactionService(mock_db)
@@ -324,7 +324,7 @@ class TestRecurringServiceUnit:
 
     def test_calculate_next_occurrence_monthly(self):
         """Test monthly frequency calculation."""
-        from app.services.v2.recurring_service import RecurringTransactionService
+        from app.services.recurring_service import RecurringTransactionService
 
         mock_db = MagicMock()
         service = RecurringTransactionService(mock_db)
@@ -340,7 +340,7 @@ class TestRecurringServiceUnit:
 
     def test_calculate_amount_fixed(self):
         """Test fixed amount calculation."""
-        from app.services.v2.recurring_service import RecurringTransactionService
+        from app.services.recurring_service import RecurringTransactionService
 
         mock_db = MagicMock()
         service = RecurringTransactionService(mock_db)
@@ -354,7 +354,7 @@ class TestRecurringServiceUnit:
 
     def test_calculate_amount_seasonal(self):
         """Test seasonal amount calculation."""
-        from app.services.v2.recurring_service import RecurringTransactionService
+        from app.services.recurring_service import RecurringTransactionService
 
         mock_db = MagicMock()
         service = RecurringTransactionService(mock_db)
