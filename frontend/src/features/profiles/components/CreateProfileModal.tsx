@@ -194,13 +194,13 @@ export const CreateProfileModal: React.FC<CreateProfileModalProps> = ({
               {...register('defaultCurrency')}
               className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
-              <option value="EUR">EUR - Euro</option>
-              <option value="USD">USD - US Dollar</option>
-              <option value="GBP">GBP - British Pound</option>
-              <option value="JPY">JPY - Japanese Yen</option>
-              <option value="CHF">CHF - Swiss Franc</option>
-              <option value="CAD">CAD - Canadian Dollar</option>
-              <option value="AUD">AUD - Australian Dollar</option>
+              <option value="EUR">{t('profiles.currencies.EUR')}</option>
+              <option value="USD">{t('profiles.currencies.USD')}</option>
+              <option value="GBP">{t('profiles.currencies.GBP')}</option>
+              <option value="JPY">{t('profiles.currencies.JPY')}</option>
+              <option value="CHF">{t('profiles.currencies.CHF')}</option>
+              <option value="CAD">{t('profiles.currencies.CAD')}</option>
+              <option value="AUD">{t('profiles.currencies.AUD')}</option>
             </select>
           </div>
 

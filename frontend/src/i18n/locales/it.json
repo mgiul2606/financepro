@@ -114,6 +114,14 @@
     "change": "Variazione",
     "totalBalance": "Saldo totale",
     "viewTransactions": "Vedi Transazioni",
+    "totalAccounts": "Conti Totali",
+    "activeAccounts": "Conti attivi",
+    "acrossAllAccounts": "Su tutti i conti",
+    "averageBalance": "Saldo Medio",
+    "perAccount": "Per conto",
+    "createAccountDesc": "Crea un nuovo conto per tracciare le tue finanze.",
+    "editAccountDesc": "Aggiorna le informazioni e le impostazioni del conto.",
+    "openMenu": "Apri menu",
     "status": {
       "overdrawn": "Scoperto",
       "lowBalance": "Saldo Basso",
@@ -205,6 +213,9 @@
       "success": "Transazioni esportate con successo",
       "error": "Impossibile esportare le transazioni"
     },
+    "createTransactionDesc": "Aggiungi una nuova transazione al tuo conto.",
+    "editTransactionDesc": "Aggiorna le informazioni della transazione.",
+    "openMenu": "Apri menu",
     "noMatchingTransactions": "Nessuna transazione corrisponde ai filtri",
     "adjustFilters": "Prova a modificare i criteri di filtro",
     "clearFilters": "Cancella Filtri",
@@ -432,7 +443,17 @@
     "tip2": "Puoi chiedere spiegazioni sui suggerimenti di ottimizzazione",
     "tip3": "Usa il linguaggio naturale, comprendo anche domande complesse",
     "tip4": "Posso aiutarti a creare budget, obiettivi e analizzare anomalie",
-    "suggestions": "Suggerimenti:"
+    "suggestions": "Suggerimenti:",
+    "inputPlaceholder": "Scrivi il tuo messaggio...",
+    "send": "Invia",
+    "voiceMessageComingSoon": "Messaggio vocale (prossimamente)",
+    "enterToSend": "per inviare,",
+    "shiftEnterNewLine": "per andare a capo",
+    "balance": "Saldo",
+    "forecast": "Previsione",
+    "confidence": "Confidenza:",
+    "factorsConsidered": "Fattori considerati:",
+    "openMenu": "Apri menu"
   },
   "optimization": {
     "title": "Ottimizzazione",
@@ -659,6 +680,8 @@
     "createProfile": "Crea Nuovo Profilo",
     "editProfile": "Modifica Profilo",
     "manageProfiles": "Gestisci Profili",
+    "editProfileDescription": "Aggiorna i dettagli del tuo profilo finanziario.",
+    "createProfileDescription": "Crea un nuovo profilo finanziario per organizzare le tue finanze.",
     "mainProfile": "Profilo Principale",
     "setAsMain": "Imposta come Principale",
     "confirmDelete": "Sei sicuro di voler eliminare questo profilo?",
@@ -668,7 +691,9 @@
     "types": {
       "personal": "Personale",
       "family": "Famiglia",
-      "business": "Business"
+      "business": "Business",
+      "joint": "Condiviso",
+      "investment": "Investimento"
     },
     "form": {
       "name": "Nome Profilo",
@@ -687,6 +712,70 @@
       "multiple": "Puoi selezionare più profili per analisi e statistiche",
       "types": "Ogni profilo può essere di tipo Personale, Famiglia o Business",
       "currency": "Ogni profilo ha la propria valuta predefinita"
+    },
+    "currencies": {
+      "EUR": "EUR - Euro",
+      "USD": "USD - Dollaro USA",
+      "GBP": "GBP - Sterlina Britannica",
+      "JPY": "JPY - Yen Giapponese",
+      "CHF": "CHF - Franco Svizzero",
+      "CAD": "CAD - Dollaro Canadese",
+      "AUD": "AUD - Dollaro Australiano"
     }
+  },
+  "imports": {
+    "title": "Importa Dati",
+    "subtitle": "Importa transazioni da fonti esterne",
+    "uploadFile": "Carica File",
+    "uploadDescription": "Carica file CSV o Excel contenenti le tue transazioni",
+    "dragAndDrop": "Trascina e rilascia il tuo file qui, oppure clicca per sfogliare",
+    "supportedFormats": "Formati supportati: CSV, XLSX, XLS",
+    "selectFile": "Seleziona File",
+    "startImport": "Avvia Importazione",
+    "importHistory": "Cronologia Importazioni",
+    "recentImports": "Le tue importazioni recenti",
+    "noImportsYet": "Nessuna importazione",
+    "uploadToStart": "Carica un file per importare i tuoi dati",
+    "filename": "Nome File",
+    "status": "Stato",
+    "progress": "Progresso",
+    "errors": "Errori",
+    "date": "Data"
+  },
+  "assets": {
+    "title": "Patrimonio",
+    "subtitle": "Traccia le tue proprietà, veicoli e investimenti",
+    "addAsset": "Aggiungi Bene",
+    "totalValue": "Valore Totale",
+    "totalGain": "Guadagno/Perdita Totale",
+    "assetCount": "Beni Totali",
+    "yourAssets": "I Tuoi Beni",
+    "manageAssets": "Gestisci e traccia il valore dei tuoi beni",
+    "noAssetsYet": "Nessun bene tracciato",
+    "addFirstAsset": "Aggiungi il tuo primo bene per iniziare a tracciare",
+    "purchased": "Acquistato"
+  },
+  "recurring": {
+    "title": "Transazioni Ricorrenti",
+    "subtitle": "Gestisci le tue entrate e uscite ricorrenti",
+    "addRecurring": "Aggiungi Ricorrente",
+    "monthlyIncome": "Entrate Mensili",
+    "monthlyExpenses": "Uscite Mensili",
+    "netMonthly": "Netto Mensile",
+    "yourRecurring": "Le Tue Transazioni Ricorrenti",
+    "manageRecurring": "Gestisci pagamenti e entrate ricorrenti",
+    "noRecurringYet": "Nessuna transazione ricorrente",
+    "addFirstRecurring": "Aggiungi la tua prima transazione ricorrente",
+    "name": "Nome",
+    "amount": "Importo",
+    "frequency": "Frequenza",
+    "nextDate": "Prossima Data",
+    "status": "Stato",
+    "active": "Attiva",
+    "paused": "In Pausa",
+    "daily": "Giornaliera",
+    "weekly": "Settimanale",
+    "monthly": "Mensile",
+    "yearly": "Annuale"
   }
 }

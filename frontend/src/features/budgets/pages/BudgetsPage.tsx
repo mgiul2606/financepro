@@ -109,7 +109,7 @@ export const BudgetsPage: React.FC = () => {
       <PageHeader
         title={t('budgets.title')}
         subtitle={t('budgets.subtitle')}
-        breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: t('budgets.title') }]}
+        breadcrumbs={[{ label: t('nav.dashboard'), href: '/dashboard' }, { label: t('budgets.title') }]}
         actions={
           <Button
             variant="primary"

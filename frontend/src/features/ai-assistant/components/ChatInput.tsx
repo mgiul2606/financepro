@@ -1,5 +1,6 @@
 import { useState, useRef, FormEvent } from 'react';
 import { Send, Mic } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
@@ -13,9 +14,11 @@ export interface ChatInputProps {
 export const ChatInput: React.FC<ChatInputProps> = ({
   onSend,
   disabled = false,
-  placeholder = 'Scrivi il tuo messaggio...',
+  placeholder,
 }) => {
+  const { t } = useTranslation();
   const [message, setMessage] = useState('');
+  const resolvedPlaceholder = placeholder ?? t('aiAssistant.inputPlaceholder');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = (e: FormEvent) => {
@@ -54,7 +57,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
             onInput={handleInput}
-            placeholder={placeholder}
+            placeholder={resolvedPlaceholder}
             disabled={disabled}
             rows={1}
             className={cn(
@@ -67,7 +70,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             variant="ghost"
             size="icon-sm"
             className="absolute bottom-2 right-2 text-muted-foreground hover:text-foreground"
-            title="Messaggio vocale (prossimamente)"
+            title={t('aiAssistant.voiceMessageComingSoon')}
             disabled
           >
             <Mic className="h-4 w-4" />
@@ -75,18 +78,18 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         </div>
         <Button type="submit" disabled={!message.trim() || disabled}>
           <Send className="mr-2 h-4 w-4" />
-          Invia
+          {t('aiAssistant.send')}
         </Button>
       </div>
       <div className="mt-2 text-xs text-muted-foreground">
         <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-xs">
           Enter
         </kbd>{' '}
-        per inviare,{' '}
+        {t('aiAssistant.enterToSend')}{' '}
         <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-xs">
           Shift + Enter
         </kbd>{' '}
-        per andare a capo
+        {t('aiAssistant.shiftEnterNewLine')}
       </div>
     </form>
   );

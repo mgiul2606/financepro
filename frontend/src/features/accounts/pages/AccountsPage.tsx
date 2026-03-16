@@ -217,7 +217,7 @@ export const AccountsPage = () => {
                 <CurrencyText value={calculateTotalBalance()} />
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                {t('accounts.acrossAllAccounts', 'Across all accounts')}
+                {t('accounts.acrossAllAccounts')}
               </p>
             </CardContent>
           </Card>
@@ -226,7 +226,7 @@ export const AccountsPage = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                {t('accounts.averageBalance', 'Average Balance')}
+                {t('accounts.averageBalance')}
               </CardTitle>
               <PlusCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -237,7 +237,7 @@ export const AccountsPage = () => {
                 />
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                {t('accounts.perAccount', 'Per account')}
+                {t('accounts.perAccount')}
               </p>
             </CardContent>
           </Card>
@@ -305,7 +305,7 @@ export const AccountsPage = () => {
                           disabled={deletingAccountId === account.id}
                         >
                           <MoreVertical className="h-4 w-4" />
-                          <span className="sr-only">Open menu</span>
+                          <span className="sr-only">{t('accounts.openMenu')}</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
@@ -401,7 +401,7 @@ export const AccountsPage = () => {
           <DialogHeader>
             <DialogTitle>{t('accounts.createAccount')}</DialogTitle>
             <DialogDescription>
-              {t('accounts.createAccountDesc', 'Create a new account to track your finances.')}
+              {t('accounts.createAccountDesc')}
             </DialogDescription>
           </DialogHeader>
 
@@ -451,7 +451,7 @@ export const AccountsPage = () => {
           <DialogHeader>
             <DialogTitle>{t('accounts.editAccount')}</DialogTitle>
             <DialogDescription>
-              {t('accounts.editAccountDesc', 'Update account information and settings.')}
+              {t('accounts.editAccountDesc')}
             </DialogDescription>
           </DialogHeader>
 

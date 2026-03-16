@@ -121,7 +121,7 @@ export const GoalsPage: React.FC = () => {
       <PageHeader
         title={t('goals.title')}
         subtitle={t('goals.subtitle')}
-        breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: t('goals.title') }]}
+        breadcrumbs={[{ label: t('nav.dashboard'), href: '/dashboard' }, { label: t('goals.title') }]}
         actions={
           <Button
             variant="primary"

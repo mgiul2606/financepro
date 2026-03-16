@@ -363,7 +363,7 @@ export const TransactionsPage = () => {
                           {format(new Date(transaction.transactionDate), 'MMM dd, yyyy')}
                         </span>
                         {transaction.merchantName && <span>• {transaction.merchantName}</span>}
-                        {transaction.categoryId && <span>• Category: {transaction.categoryId}</span>}
+                        {transaction.categoryId && <span>• {t('transactions.category')}: {transaction.categoryId}</span>}
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
@@ -387,7 +387,7 @@ export const TransactionsPage = () => {
                             disabled={deletingTransactionId === transaction.id}
                           >
                             <MoreVertical className="h-4 w-4" />
-                            <span className="sr-only">Open menu</span>
+                            <span className="sr-only">{t('transactions.openMenu')}</span>
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
@@ -431,7 +431,7 @@ export const TransactionsPage = () => {
           <DialogHeader>
             <DialogTitle>{t('transactions.createTransaction')}</DialogTitle>
             <DialogDescription>
-              {t('transactions.createTransactionDesc', 'Add a new transaction to your account.')}
+              {t('transactions.createTransactionDesc')}
             </DialogDescription>
           </DialogHeader>
 
@@ -480,7 +480,7 @@ export const TransactionsPage = () => {
           <DialogHeader>
             <DialogTitle>{t('transactions.editTransaction')}</DialogTitle>
             <DialogDescription>
-              {t('transactions.editTransactionDesc', 'Update transaction information.')}
+              {t('transactions.editTransactionDesc')}
             </DialogDescription>
           </DialogHeader>
 

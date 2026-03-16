@@ -1,4 +1,5 @@
 import { User, Bot, Lightbulb } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -19,6 +20,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   onSuggestionClick,
   onActionClick,
 }) => {
+  const { t } = useTranslation();
   const isUser = message.role === 'user';
   const isAssistant = message.role === 'assistant';
 
@@ -99,7 +101,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                   <LineChart
                     data={message.metadata.chartData.data}
                     xAxisKey="month"
-                    lines={[{ dataKey: 'balance', name: 'Saldo', stroke: 'hsl(var(--primary))' }]}
+                    lines={[{ dataKey: 'balance', name: t('aiAssistant.balance'), stroke: 'hsl(var(--primary))' }]}
                     height={250}
                     formatYAxis={(value) => `€${value}`}
                     formatTooltip={(value) => `€${value.toFixed(2)}`}
@@ -152,7 +154,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
-                        Previsione
+                        {t('aiAssistant.forecast')}
                       </span>
                       <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
                         €{message.metadata.chartData.prediction.expected.toFixed(2)}
@@ -164,7 +166,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-blue-700 dark:text-blue-300">
-                        Confidenza:
+                        {t('aiAssistant.confidence')}
                       </span>
                       <Progress
                         value={message.metadata.chartData.prediction.confidence * 100}
@@ -179,7 +181,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                 {message.metadata.chartData.factors && (
                   <div className="mt-3">
                     <p className="mb-2 text-xs font-medium text-blue-900 dark:text-blue-100">
-                      Fattori considerati:
+                      {t('aiAssistant.factorsConsidered')}
                     </p>
                     <ul className="space-y-1">
                       {message.metadata.chartData.factors.map((factor: string, i: number) => (
