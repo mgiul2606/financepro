@@ -446,6 +446,55 @@ class GoalMilestoneUpdate(CamelCaseModel):
     )
 
 
+class GoalContributionCreate(CamelCaseModel):
+    """
+    Schema for creating a new contribution to a goal.
+    """
+    amount: Decimal = Field(
+        ...,
+        gt=0,
+        decimal_places=2,
+        description="Contribution amount (must be positive)"
+    )
+    contribution_date: date = Field(
+        ...,
+        description="Date of the contribution"
+    )
+    transaction_id: Optional[UUID] = Field(
+        None,
+        description="Optional linked transaction ID"
+    )
+    notes: Optional[str] = Field(
+        None,
+        description="Optional notes for this contribution"
+    )
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "amount": 500.00,
+                "contribution_date": "2026-03-25",
+                "notes": "Monthly savings"
+            }
+        }
+    )
+
+
+class GoalContributionResponse(CamelCaseModel):
+    """
+    Schema for goal contribution response.
+    """
+    id: UUID = Field(..., description="Unique contribution identifier")
+    goal_id: UUID = Field(..., description="ID of the parent goal")
+    transaction_id: Optional[UUID] = Field(None, description="Linked transaction ID")
+    amount: Decimal = Field(..., description="Contribution amount")
+    contribution_date: date = Field(..., description="Date of the contribution")
+    notes: Optional[str] = Field(None, description="Notes")
+    created_at: datetime = Field(..., description="Creation timestamp")
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class GoalSummary(CamelCaseModel):
     """
     Schema for goals summary and analytics.

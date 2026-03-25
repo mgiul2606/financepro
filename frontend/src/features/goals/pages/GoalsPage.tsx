@@ -13,8 +13,10 @@ import { Modal } from '@/components/ui/Modal';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Alert } from '@/components/ui/alert';
 import { useConfirm } from '@/hooks/useConfirm';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { GoalForm } from '../components/GoalForm';
-import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal } from '../goals.hooks';
+import { GoalContributionForm } from '../components/GoalContributionForm';
+import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal, useAddGoalContribution } from '../goals.hooks';
 import type { GoalResponse as Goal, GoalCreate, GoalUpdate } from '../goals.types';
 import type { BadgeVariant } from '@/core/components/atomic/Badge';
 import type { SupportedCurrency } from '@/utils/currency';
@@ -26,6 +28,7 @@ export const GoalsPage: React.FC = () => {
   // State
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
+  const [contributionGoal, setContributionGoal] = useState<Goal | null>(null);
 
   // Data fetching
   const { goals, isLoading, error: loadError, refetch } = useGoals();
@@ -34,6 +37,7 @@ export const GoalsPage: React.FC = () => {
   const createMutation = useCreateGoal();
   const updateMutation = useUpdateGoal();
   const deleteMutation = useDeleteGoal();
+  const contributionMutation = useAddGoalContribution();
 
   // Handlers
   const handleCreate = async (data: GoalCreate | GoalUpdate) => {
@@ -247,7 +251,7 @@ export const GoalsPage: React.FC = () => {
                         variant="ghost"
                         size="sm"
                         leftIcon={<TrendingUp size={16} />}
-                        onClick={() => console.log('Add contribution:', goal.id)}
+                        onClick={() => setContributionGoal(goal)}
                         fullWidth
                       >
                         {t('common.add')}
@@ -351,6 +355,45 @@ export const GoalsPage: React.FC = () => {
           />
         </Modal>
       )}
+
+      {/* Contribution Modal */}
+      <Dialog
+        open={!!contributionGoal}
+        onOpenChange={(open) => {
+          if (!open && !contributionMutation.isAdding) {
+            setContributionGoal(null);
+            contributionMutation.reset();
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {t('goals.contribution.title')}
+              {contributionGoal && ` — ${contributionGoal.name}`}
+            </DialogTitle>
+          </DialogHeader>
+          {contributionGoal && (
+            <GoalContributionForm
+              onSubmit={async (data) => {
+                await contributionMutation.addContribution({
+                  goalId: contributionGoal.id,
+                  data: {
+                    amount: data.amount,
+                    contributionDate: data.contributionDate,
+                    notes: data.notes,
+                  },
+                });
+                setContributionGoal(null);
+                contributionMutation.reset();
+              }}
+              isLoading={contributionMutation.isAdding}
+              error={contributionMutation.error ? t('goals.contribution.addFailed') : undefined}
+              onClearError={contributionMutation.reset}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -327,6 +327,17 @@
       "other": "Altro",
       "general": "Generale"
     },
+    "contribution": {
+      "title": "Aggiungi Contributo",
+      "amount": "Importo",
+      "date": "Data",
+      "notes": "Note",
+      "notesPlaceholder": "Note opzionali per questo contributo",
+      "add": "Aggiungi Contributo",
+      "addFailed": "Impossibile aggiungere il contributo. Riprova.",
+      "amountRequired": "Inserisci un importo valido maggiore di 0",
+      "dateRequired": "Seleziona una data"
+    },
     "errors": {
       "createFailed": "Impossibile creare l'obiettivo. Riprova.",
       "updateFailed": "Impossibile aggiornare l'obiettivo. Riprova.",
@@ -687,6 +698,95 @@
       "multiple": "Puoi selezionare più profili per analisi e statistiche",
       "types": "Ogni profilo può essere di tipo Personale, Famiglia o Business",
       "currency": "Ogni profilo ha la propria valuta predefinita"
+    }
+  },
+  "assets": {
+    "title": "Asset",
+    "subtitle": "Gestisci proprietà, veicoli e investimenti",
+    "addAsset": "Aggiungi Asset",
+    "createAsset": "Aggiungi Asset",
+    "editAsset": "Modifica Asset",
+    "deleteAsset": "Elimina Asset",
+    "deleteConfirm": "Sei sicuro di voler eliminare \"{{name}}\"? Questa azione non può essere annullata.",
+    "totalValue": "Valore Totale",
+    "totalGain": "Guadagno/Perdita Totale",
+    "assetCount": "Numero Asset",
+    "totalAssets": "asset totali",
+    "acrossAllAssets": "su tutti gli asset",
+    "sinceAcquisition": "dall'acquisizione",
+    "noAssets": "Nessun asset tracciato",
+    "noAssetsDesc": "Aggiungi il tuo primo asset per iniziare a tracciare il tuo portafoglio",
+    "createAssetDesc": "Aggiungi un nuovo asset al tuo portafoglio",
+    "editAssetDesc": "Aggiorna i dettagli dell'asset",
+    "types": {
+      "real_estate": "Immobile",
+      "vehicle": "Veicolo",
+      "stock": "Azione",
+      "bond": "Obbligazione",
+      "fund": "Fondo",
+      "etf": "ETF",
+      "precious_metal": "Metallo Prezioso",
+      "crypto": "Criptovaluta",
+      "artwork": "Opera d'Arte",
+      "jewelry": "Gioielleria",
+      "watch": "Orologio",
+      "other": "Altro"
+    },
+    "valuationMethods": {
+      "manual": "Manuale",
+      "market_quote": "Quotazione di Mercato",
+      "range": "Intervallo",
+      "comparative": "Comparativa",
+      "appraisal": "Perizia Professionale"
+    },
+    "errors": {
+      "loadFailed": "Impossibile caricare gli asset",
+      "createFailed": "Impossibile creare l'asset",
+      "updateFailed": "Impossibile aggiornare l'asset",
+      "deleteFailed": "Impossibile eliminare l'asset"
+    }
+  },
+  "recurring": {
+    "title": "Transazioni Ricorrenti",
+    "subtitle": "Gestisci le tue entrate e uscite ricorrenti",
+    "addRecurring": "Aggiungi Ricorrente",
+    "createRecurring": "Crea Transazione Ricorrente",
+    "createRecurringDesc": "Imposta una nuova transazione ricorrente",
+    "editRecurring": "Modifica Transazione Ricorrente",
+    "editRecurringDesc": "Aggiorna i dettagli della transazione ricorrente",
+    "deleteRecurring": "Elimina Transazione Ricorrente",
+    "deleteConfirm": "Sei sicuro di voler eliminare \"{{name}}\"?",
+    "monthlyIncome": "Entrate Mensili",
+    "monthlyExpenses": "Uscite Mensili",
+    "netMonthly": "Netto Mensile",
+    "monthlyEquivalent": "Equivalente mensile",
+    "projectedCashFlow": "flusso di cassa previsto",
+    "activeRecurring": "{{count}} attive",
+    "pausedRecurring": "{{count}} in pausa",
+    "noRecurringYet": "Nessuna transazione ricorrente",
+    "addFirstRecurring": "Aggiungi la tua prima transazione ricorrente",
+    "name": "Nome",
+    "amount": "Importo",
+    "nextDate": "Prossima",
+    "daysUntil": "tra {{days}}g",
+    "pause": "Pausa",
+    "resume": "Riprendi",
+    "paused": "In pausa",
+    "frequency": {
+      "daily": "Giornaliera",
+      "weekly": "Settimanale",
+      "biweekly": "Bisettimanale",
+      "monthly": "Mensile",
+      "quarterly": "Trimestrale",
+      "semiannually": "Semestrale",
+      "yearly": "Annuale",
+      "custom": "Personalizzata",
+      "every": "Ogni {{interval}} {{frequency}}"
+    },
+    "errors": {
+      "loadFailed": "Impossibile caricare le transazioni ricorrenti",
+      "createFailed": "Impossibile creare la transazione ricorrente",
+      "updateFailed": "Impossibile aggiornare la transazione ricorrente"
     }
   }
 }

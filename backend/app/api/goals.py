@@ -26,7 +26,9 @@ from app.schemas.goal import (
     FinancialGoalUpdate,
     FinancialGoalResponse,
     GoalMilestoneCreate,
-    GoalMilestoneResponse
+    GoalMilestoneResponse,
+    GoalContributionCreate,
+    GoalContributionResponse,
 )
 from pydantic import BaseModel
 
@@ -328,16 +330,16 @@ async def get_goal_progress(
 
 @router.post(
     "/{goal_id}/contributions",
-    response_model=GoalMilestoneResponse,
+    response_model=GoalContributionResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Add contribution",
     description="Add a contribution to a goal"
 )
 async def add_contribution(
     goal_id: UUID,
-    contribution_in: GoalMilestoneCreate,
+    contribution_in: GoalContributionCreate,
     service: Annotated[GoalService, Depends(get_goal_service)]
-) -> GoalMilestoneResponse:
+) -> GoalContributionResponse:
     """Add contribution to goal."""
     try:
         contribution = service.add_contribution(
@@ -348,7 +350,7 @@ async def add_contribution(
             notes=contribution_in.notes
         )
 
-        return GoalMilestoneResponse(
+        return GoalContributionResponse(
             id=contribution.id,
             goal_id=contribution.goal_id,
             transaction_id=contribution.transaction_id,
@@ -364,7 +366,7 @@ async def add_contribution(
 
 @router.get(
     "/{goal_id}/contributions",
-    response_model=List[GoalMilestoneResponse],
+    response_model=List[GoalContributionResponse],
     summary="List contributions",
     description="List all contributions for a goal"
 )
@@ -375,7 +377,7 @@ async def list_contributions(
     end_date: Optional[date] = Query(None),
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0)
-) -> List[GoalMilestoneResponse]:
+) -> List[GoalContributionResponse]:
     """List contributions for a goal."""
     try:
         contributions = service.get_contributions(
@@ -387,7 +389,7 @@ async def list_contributions(
         )
 
         return [
-            GoalMilestoneResponse(
+            GoalContributionResponse(
                 id=c.id,
                 goal_id=c.goal_id,
                 transaction_id=c.transaction_id,

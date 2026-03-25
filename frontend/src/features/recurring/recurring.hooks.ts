@@ -1,426 +1,251 @@
 /**
  * React Query hooks for Recurring Transaction operations
  *
- * MIGRATION STATUS: NO BACKEND ENDPOINTS AVAILABLE
- * As of 2026-03-16, the OpenAPI spec does not include any /recurring endpoints.
- * The backend has models and services (recurring_service.py) but they are not
- * exposed via FastAPI routes yet. These hooks remain as placeholders returning
- * empty/mock data until the backend endpoints are added to the API.
- *
- * When backend endpoints become available:
- * 1. Run `npm run generate:api` to regenerate Orval hooks
- * 2. Replace placeholder implementations with Orval-generated hooks
- * 3. Follow the accounts.hooks.ts pattern with factory functions
+ * Uses direct API calls via the axios instance.
+ * Transforms backend camelCase field names to match frontend types.
  */
-import { useState, useCallback, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMemo, useCallback } from 'react';
+import { api } from '@/services/api';
 import { useProfileContext } from '@/contexts/ProfileContext';
 import type {
   RecurringTransaction,
   RecurringTransactionCreate,
   RecurringTransactionUpdate,
-  RecurringFilters,
   RecurringSummary,
-  RecurringOccurrence,
 } from './recurring.types';
 import { FREQUENCY_DAYS } from './recurring.constants';
 
-// ============================================================================
-// PLACEHOLDER DATA - Remove when backend is implemented
-// ============================================================================
+// Query key for cache invalidation
+export const RECURRING_QUERY_KEY = ['recurring'] as const;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type BackendRecurring = Record<string, any>;
 
 /**
- * Mock data for development/preview purposes
- * TODO: Remove when backend API is available
+ * Map backend response fields to frontend type fields.
+ * Backend uses CamelCaseModel which serializes snake_case → camelCase,
+ * but some field names differ from what the frontend expects.
  */
-const MOCK_RECURRING: RecurringTransaction[] = [];
-
-// ============================================================================
-// LIST HOOKS
-// ============================================================================
+function mapBackendToFrontend(item: BackendRecurring): RecurringTransaction {
+  return {
+    id: item.id,
+    name: item.name,
+    description: item.description ?? null,
+    amount: Number(item.baseAmount),
+    currency: item.currency,
+    frequency: item.frequency,
+    interval: item.interval ?? 1,
+    startDate: item.startDate,
+    endDate: item.endDate ?? null,
+    nextOccurrence: item.nextOccurrenceDate ?? null,
+    lastOccurrence: null,
+    accountId: item.accountId,
+    categoryId: item.categoryId ?? null,
+    transactionType: item.transactionType,
+    amountModel: item.amountModel ?? 'fixed',
+    minAmount: item.amountMin != null ? Number(item.amountMin) : null,
+    maxAmount: item.amountMax != null ? Number(item.amountMax) : null,
+    formula: item.formula ?? null,
+    isActive: item.isActive ?? true,
+    autoCreate: item.autoCreate ?? false,
+    profileId: item.financialProfileId,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+  };
+}
 
 /**
- * Hook to list all recurring transactions
- * Fetches from all active profiles and aggregates results
- *
- * TODO: Replace with factory-based implementation when backend exists:
- * ```typescript
- * const useRecurringBase = createMultiProfileListHook<
- *   ListRecurringApiV1RecurringGetParams,
- *   listRecurringApiV1RecurringGetResponse,
- *   RecurringTransaction
- * >({
- *   getQueryKey: getListRecurringApiV1RecurringGetQueryKey,
- *   queryFn: listRecurringApiV1RecurringGet,
- *   extractItems: (response) => response.data.items,
- *   extractTotal: (response) => response.data.total,
- * });
- * ```
+ * Map frontend create payload to backend field names.
  */
-export const useRecurring = (filters?: RecurringFilters) => {
+function mapCreateToBackend(
+  data: RecurringTransactionCreate,
+  profileId: string
+): Record<string, unknown> {
+  return {
+    financialProfileId: profileId,
+    accountId: data.accountId,
+    categoryId: data.categoryId,
+    name: data.name,
+    description: data.description,
+    transactionType: data.transactionType,
+    amountModel: data.amountModel ?? 'fixed',
+    baseAmount: data.amount,
+    amountMin: data.minAmount,
+    amountMax: data.maxAmount,
+    formula: data.formula,
+    currency: data.currency,
+    frequency: data.frequency,
+    interval: data.interval ?? 1,
+    startDate: data.startDate,
+    endDate: data.endDate,
+    isActive: data.isActive ?? true,
+    autoCreate: data.autoCreate ?? false,
+  };
+}
+
+/**
+ * Map frontend update payload to backend field names.
+ */
+function mapUpdateToBackend(data: RecurringTransactionUpdate): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  if (data.name !== undefined) result.name = data.name;
+  if (data.description !== undefined) result.description = data.description;
+  if (data.accountId !== undefined) result.accountId = data.accountId;
+  if (data.categoryId !== undefined) result.categoryId = data.categoryId;
+  if (data.transactionType !== undefined) result.transactionType = data.transactionType;
+  if (data.amountModel !== undefined) result.amountModel = data.amountModel;
+  if (data.amount !== undefined) result.baseAmount = data.amount;
+  if (data.minAmount !== undefined) result.amountMin = data.minAmount;
+  if (data.maxAmount !== undefined) result.amountMax = data.maxAmount;
+  if (data.formula !== undefined) result.formula = data.formula;
+  if (data.currency !== undefined) result.currency = data.currency;
+  if (data.frequency !== undefined) result.frequency = data.frequency;
+  if (data.interval !== undefined) result.interval = data.interval;
+  if (data.startDate !== undefined) result.startDate = data.startDate;
+  if (data.endDate !== undefined) result.endDate = data.endDate;
+  if (data.isActive !== undefined) result.isActive = data.isActive;
+  if (data.autoCreate !== undefined) result.autoCreate = data.autoCreate;
+  return result;
+}
+
+/**
+ * Hook to list all recurring transactions across active profiles
+ */
+export const useRecurring = () => {
   const { activeProfileIds, isLoading: profileLoading } = useProfileContext();
 
-  // Placeholder implementation - returns empty array
-  // TODO: Replace with actual API call
-  const [isLoading] = useState(false);
-  const [error] = useState<Error | null>(null);
+  const query = useQuery({
+    queryKey: [...RECURRING_QUERY_KEY, activeProfileIds],
+    queryFn: async () => {
+      const results = await Promise.all(
+        activeProfileIds.map((profileId) =>
+          api.get<{ items: BackendRecurring[]; total: number }>('/api/v1/recurring/', {
+            params: { profile_id: profileId },
+          })
+        )
+      );
 
-  const recurring = useMemo(() => {
-    // Filter mock data by active profiles
-    let result = MOCK_RECURRING.filter((r) =>
-      activeProfileIds.includes(r.profileId)
-    );
-
-    if (filters) {
-      if (filters.profileId) {
-        result = result.filter((r) => r.profileId === filters.profileId);
-      }
-      if (filters.accountId) {
-        result = result.filter((r) => r.accountId === filters.accountId);
-      }
-      if (filters.categoryId) {
-        result = result.filter((r) => r.categoryId === filters.categoryId);
-      }
-      if (filters.transactionType) {
-        result = result.filter((r) => r.transactionType === filters.transactionType);
-      }
-      if (filters.frequency) {
-        result = result.filter((r) => r.frequency === filters.frequency);
-      }
-      if (filters.isActive !== undefined) {
-        result = result.filter((r) => r.isActive === filters.isActive);
-      }
-    }
-
-    return result;
-  }, [activeProfileIds, filters]);
-
-  const refetch = useCallback(() => {
-    // TODO: Implement actual refetch when backend exists
-    console.warn('useRecurring.refetch: Backend API not implemented');
-  }, []);
+      const allItems = results.flatMap((res) => res.data.items ?? []);
+      return allItems.map(mapBackendToFrontend);
+    },
+    enabled: !profileLoading && activeProfileIds.length > 0,
+  });
 
   return {
-    recurring,
-    total: recurring.length,
-    isLoading: isLoading || profileLoading,
-    error,
-    refetch,
+    recurring: query.data ?? [],
+    total: query.data?.length ?? 0,
+    isLoading: query.isLoading || profileLoading,
+    error: query.error,
+    refetch: query.refetch,
   };
 };
 
 /**
  * Hook to get a single recurring transaction by ID
- *
- * TODO: Replace with factory-based implementation:
- * ```typescript
- * const useRecurringBase = createGetByIdHook<
- *   { data: RecurringTransaction; status: number },
- *   RecurringTransaction
- * >({
- *   useQuery: useGetRecurringApiV1RecurringIdGet,
- * });
- * ```
  */
 export const useRecurringById = (recurringId: string) => {
-  const [isLoading] = useState(false);
-  const [error] = useState<Error | null>(null);
-
-  // Placeholder - find in mock data
-  const recurring = useMemo(() => {
-    return MOCK_RECURRING.find((r) => r.id === recurringId) ?? null;
-  }, [recurringId]);
-
-  const refetch = useCallback(() => {
-    console.warn('useRecurringById.refetch: Backend API not implemented');
-  }, []);
+  const query = useQuery({
+    queryKey: [...RECURRING_QUERY_KEY, recurringId],
+    queryFn: async () => {
+      const res = await api.get<BackendRecurring>(`/api/v1/recurring/${recurringId}`);
+      return mapBackendToFrontend(res.data);
+    },
+    enabled: !!recurringId,
+  });
 
   return {
-    recurring,
-    isLoading,
-    error,
-    refetch,
+    recurring: query.data ?? null,
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
   };
 };
 
-// ============================================================================
-// MUTATION HOOKS
-// ============================================================================
-
 /**
  * Hook to create a new recurring transaction
- *
- * TODO: Replace with factory-based implementation:
- * ```typescript
- * const useCreateRecurringBase = createCreateMutationHook<
- *   CreateRecurringApiV1RecurringPostMutationResult,
- *   RecurringTransactionCreate
- * >({
- *   useMutation: useCreateRecurringApiV1RecurringPost,
- *   defaultOptions: {
- *     invalidateKeys: getListRecurringApiV1RecurringGetQueryKey(),
- *   },
- * });
- * ```
  */
 export const useCreateRecurring = () => {
-  const [isCreating, setIsCreating] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const queryClient = useQueryClient();
+  const { mainProfileId } = useProfileContext();
 
-  const createRecurring = useCallback(
-    async (data: RecurringTransactionCreate): Promise<RecurringTransaction> => {
-      setIsCreating(true);
-      setError(null);
-
-      try {
-        // TODO: Replace with actual API call
-        console.warn(`useCreateRecurring: Backend API not implemented (name: ${data.name})`);
-        throw new Error('Backend API not implemented. Please implement recurring endpoints first.');
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error('Unknown error');
-        setError(error);
-        throw error;
-      } finally {
-        setIsCreating(false);
-      }
+  const mutation = useMutation({
+    mutationFn: async (data: RecurringTransactionCreate): Promise<RecurringTransaction> => {
+      const payload = mapCreateToBackend(data, mainProfileId!);
+      const res = await api.post<BackendRecurring>('/api/v1/recurring/', payload);
+      return mapBackendToFrontend(res.data);
     },
-    []
-  );
-
-  const reset = useCallback(() => {
-    setError(null);
-  }, []);
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: RECURRING_QUERY_KEY });
+    },
+  });
 
   return {
-    createRecurring,
-    isCreating,
-    error,
-    reset,
+    createRecurring: mutation.mutateAsync,
+    isCreating: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
   };
 };
 
 /**
  * Hook to update an existing recurring transaction
- *
- * TODO: Replace with factory-based implementation:
- * ```typescript
- * const useUpdateRecurringBase = createUpdateMutationHook<
- *   UpdateRecurringApiV1RecurringIdPutMutationResult,
- *   RecurringTransactionUpdate,
- *   ExtractOrvalData<UpdateRecurringApiV1RecurringIdPutMutationResult>,
- *   'recurringId'
- * >({
- *   useMutation: useUpdateRecurringApiV1RecurringIdPut,
- *   idParamName: 'recurringId',
- *   defaultOptions: {
- *     invalidateKeys: getListRecurringApiV1RecurringGetQueryKey(),
- *   },
- * });
- * ```
  */
 export const useUpdateRecurring = () => {
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const queryClient = useQueryClient();
 
-  const updateRecurring = useCallback(
-    async (
+  const mutation = useMutation({
+    mutationFn: async ({
+      recurringId,
+      data,
+    }: {
+      recurringId: string;
+      data: RecurringTransactionUpdate;
+    }): Promise<RecurringTransaction> => {
+      const payload = mapUpdateToBackend(data);
+      const res = await api.patch<BackendRecurring>(`/api/v1/recurring/${recurringId}`, payload);
+      return mapBackendToFrontend(res.data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: RECURRING_QUERY_KEY });
+    },
+  });
+
+  return {
+    updateRecurring: async (
       recurringId: string,
       data: RecurringTransactionUpdate
     ): Promise<RecurringTransaction> => {
-      setIsUpdating(true);
-      setError(null);
-
-      try {
-        // TODO: Replace with actual API call
-        console.warn(`useUpdateRecurring: Backend API not implemented (id: ${recurringId}, fields: ${Object.keys(data).join(', ')})`);
-        throw new Error('Backend API not implemented. Please implement recurring endpoints first.');
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error('Unknown error');
-        setError(error);
-        throw error;
-      } finally {
-        setIsUpdating(false);
-      }
+      return mutation.mutateAsync({ recurringId, data });
     },
-    []
-  );
-
-  const reset = useCallback(() => {
-    setError(null);
-  }, []);
-
-  return {
-    updateRecurring,
-    isUpdating,
-    error,
-    reset,
+    isUpdating: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
   };
 };
 
 /**
  * Hook to delete a recurring transaction
- *
- * TODO: Replace with factory-based implementation:
- * ```typescript
- * const useDeleteRecurringBase = createDeleteMutationHook<
- *   DeleteRecurringApiV1RecurringIdDeleteMutationResult,
- *   'recurringId'
- * >({
- *   useMutation: useDeleteRecurringApiV1RecurringIdDelete,
- *   idParamName: 'recurringId',
- *   defaultOptions: {
- *     invalidateKeys: getListRecurringApiV1RecurringGetQueryKey(),
- *   },
- * });
- * ```
  */
 export const useDeleteRecurring = () => {
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const queryClient = useQueryClient();
 
-  const deleteRecurring = useCallback(async (recurringId: string): Promise<void> => {
-    setIsDeleting(true);
-    setError(null);
-
-    try {
-      // TODO: Replace with actual API call
-      console.warn(`useDeleteRecurring: Backend API not implemented (id: ${recurringId})`);
-      throw new Error('Backend API not implemented. Please implement recurring endpoints first.');
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Unknown error');
-      setError(error);
-      throw error;
-    } finally {
-      setIsDeleting(false);
-    }
-  }, []);
-
-  const reset = useCallback(() => {
-    setError(null);
-  }, []);
-
-  return {
-    deleteRecurring,
-    isDeleting,
-    error,
-    reset,
-  };
-};
-
-// ============================================================================
-// OCCURRENCE HOOKS - For managing individual occurrences
-// ============================================================================
-
-/**
- * Hook to get occurrences for a recurring transaction
- *
- * TODO: Implement when backend API supports occurrences endpoint
- */
-export const useRecurringOccurrences = (recurringId: string) => {
-  const [isLoading] = useState(false);
-  const [error] = useState<Error | null>(null);
-
-  // Placeholder - returns empty array
-  const occurrences = useMemo<RecurringOccurrence[]>(() => {
-    console.warn(`useRecurringOccurrences(${recurringId}): Backend API not implemented`);
-    return [];
-  }, [recurringId]);
-
-  const refetch = useCallback(() => {
-    console.warn('useRecurringOccurrences.refetch: Backend API not implemented');
-  }, []);
-
-  return {
-    occurrences,
-    total: 0,
-    isLoading,
-    error,
-    refetch,
-  };
-};
-
-/**
- * Hook to skip an occurrence
- *
- * TODO: Implement when backend API supports skip endpoint
- */
-export const useSkipOccurrence = () => {
-  const [isSkipping, setIsSkipping] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-
-  const skipOccurrence = useCallback(
-    async (occurrenceId: string, reason?: string): Promise<void> => {
-      setIsSkipping(true);
-      setError(null);
-
-      try {
-        console.warn(`useSkipOccurrence: Backend API not implemented (occurrenceId: ${occurrenceId}, reason: ${reason ?? 'none'})`);
-        throw new Error('Backend API not implemented');
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error('Unknown error');
-        setError(error);
-        throw error;
-      } finally {
-        setIsSkipping(false);
-      }
+  const mutation = useMutation({
+    mutationFn: async (recurringId: string): Promise<void> => {
+      await api.delete(`/api/v1/recurring/${recurringId}`);
     },
-    []
-  );
-
-  const reset = useCallback(() => {
-    setError(null);
-  }, []);
-
-  return {
-    skipOccurrence,
-    isSkipping,
-    error,
-    reset,
-  };
-};
-
-/**
- * Hook to override an occurrence with a different amount
- *
- * TODO: Implement when backend API supports override endpoint
- */
-export const useOverrideOccurrence = () => {
-  const [isOverriding, setIsOverriding] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-
-  const overrideOccurrence = useCallback(
-    async (occurrenceId: string, newAmount: number): Promise<void> => {
-      setIsOverriding(true);
-      setError(null);
-
-      try {
-        console.warn(`useOverrideOccurrence: Backend API not implemented (occurrenceId: ${occurrenceId}, newAmount: ${newAmount})`);
-        throw new Error('Backend API not implemented');
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error('Unknown error');
-        setError(error);
-        throw error;
-      } finally {
-        setIsOverriding(false);
-      }
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: RECURRING_QUERY_KEY });
     },
-    []
-  );
-
-  const reset = useCallback(() => {
-    setError(null);
-  }, []);
+  });
 
   return {
-    overrideOccurrence,
-    isOverriding,
-    error,
-    reset,
+    deleteRecurring: mutation.mutateAsync,
+    isDeleting: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
   };
 };
-
-// ============================================================================
-// UTILITY HOOKS
-// ============================================================================
 
 /**
  * Hook to calculate summary statistics for recurring transactions
@@ -432,7 +257,6 @@ export const useRecurringSummary = (): RecurringSummary => {
     const activeRecurring = recurring.filter((r) => r.isActive);
     const pausedRecurring = recurring.filter((r) => !r.isActive);
 
-    // Calculate monthly equivalent for each recurring transaction
     const calculateMonthlyEquivalent = (r: RecurringTransaction): number => {
       const daysInFrequency = FREQUENCY_DAYS[r.frequency] || 30;
       const monthlyMultiplier = 30 / (daysInFrequency * r.interval);

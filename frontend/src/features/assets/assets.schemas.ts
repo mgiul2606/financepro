@@ -22,12 +22,17 @@ import { z } from 'zod';
  * Matches backend AssetType enum
  */
 export const assetTypeSchema = z.enum([
-  'property',
+  'real_estate',
   'vehicle',
-  'investment',
   'precious_metal',
+  'stock',
+  'bond',
+  'fund',
+  'etf',
   'crypto',
-  'collectible',
+  'artwork',
+  'jewelry',
+  'watch',
   'other',
 ]);
 

@@ -1,6 +1,6 @@
 // features/budgets/pages/BudgetsPage.tsx
 import { useState } from 'react';
-import { Plus, AlertCircle, Edit, Trash2, RefreshCw } from 'lucide-react';
+import { Plus, AlertCircle, Edit, Trash2, RefreshCw, Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardBody, CardFooter } from '@/core/components/atomic/Card';
@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Alert } from '@/components/ui/alert';
 import { useConfirm } from '@/hooks/useConfirm';
 import { BudgetForm } from '../components/BudgetForm';
+import { BudgetDetailsModal } from '../components/BudgetDetailsModal';
 import {
   useBudgets,
   useCreateBudget,
@@ -28,6 +29,7 @@ export const BudgetsPage: React.FC = () => {
   // State
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
+  const [detailsBudget, setDetailsBudget] = useState<Budget | null>(null);
 
   // Data fetching
   const { budgets, isLoading, error: loadError, refetch } = useBudgets();
@@ -218,6 +220,15 @@ export const BudgetsPage: React.FC = () => {
                       <Button
                         variant="ghost"
                         size="sm"
+                        leftIcon={<Eye size={16} />}
+                        onClick={() => setDetailsBudget({ ...budget, rolloverEnabled: budget.rolloverEnabled ?? false, isActive: budget.isActive ?? true })}
+                        fullWidth
+                      >
+                        {t('budgets.viewDetails')}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         leftIcon={<Edit size={16} />}
                         onClick={() => setEditingBudget({ ...budget, rolloverEnabled: budget.rolloverEnabled ?? false, isActive: budget.isActive ?? true })}
                         fullWidth
@@ -319,6 +330,15 @@ export const BudgetsPage: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Budget Details Modal */}
+      {detailsBudget && (
+        <BudgetDetailsModal
+          budget={detailsBudget}
+          isOpen={true}
+          onClose={() => setDetailsBudget(null)}
+        />
+      )}
     </div>
   );
 };

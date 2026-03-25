@@ -220,6 +220,7 @@ try:
     import app.api.ai as ai
     import app.api.imports as imports
     import app.api.analysis as analysis
+    import app.api.recurring_transactions as recurring_transactions
     logger.info("API modules imported successfully")
 except Exception as e:
     logger.error(f"Failed to import API modules: {e}")
@@ -227,7 +228,7 @@ except Exception as e:
     logger.warning("Application will start without API routers")
     auth = accounts = categories = None
     financial_profiles = transactions = budgets = goals = ai = None
-    imports = analysis = assets = None
+    imports = analysis = assets = recurring_transactions = None
 
 # Get API prefix
 API_PREFIX = get_api_prefix()
@@ -320,5 +321,13 @@ if analysis:
         tags=["Analysis"]
     )
     logger.info(f"Analysis router registered at {API_PREFIX}/analysis")
+
+if recurring_transactions:
+    app.include_router(
+        recurring_transactions.router,
+        prefix=f"{API_PREFIX}/recurring",
+        tags=["Recurring Transactions"]
+    )
+    logger.info(f"Recurring Transactions router registered at {API_PREFIX}/recurring")
 
 logger.info(f"Application startup complete. API documentation: {settings.api.docs_url}")
