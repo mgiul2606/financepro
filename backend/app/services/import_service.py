@@ -12,7 +12,15 @@ Handles data import with:
 from typing import Optional, List, Dict, Any, Tuple
 from uuid import UUID
 from datetime import date, datetime
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+
+# Standard quantize target for monetary values (2 decimal places)
+_TWO_PLACES = Decimal('0.01')
+
+
+def round_money(value: Decimal) -> Decimal:
+    """Round a Decimal to 2 decimal places using ROUND_HALF_UP."""
+    return Decimal(str(value)).quantize(_TWO_PLACES, rounding=ROUND_HALF_UP)
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, func
 import csv
@@ -392,7 +400,7 @@ class ImportService:
                 cleaned = cleaned.replace(',', '')
 
         try:
-            return Decimal(cleaned)
+            return round_money(Decimal(cleaned))
         except InvalidOperation:
             raise ValueError(f"Could not parse amount: {amount_str}")
 
@@ -479,8 +487,8 @@ class ImportService:
         Returns:
             Transaction: Created transaction
         """
-        # Determine transaction type from amount sign
-        amount = parsed_data['amount']
+        # Round amount to 2 decimal places and determine transaction type
+        amount = round_money(parsed_data['amount'])
         if amount >= 0:
             tx_type = TransactionType.INCOME
         else:
@@ -530,7 +538,7 @@ class ImportService:
             amount=encrypted_amount,
             amount_clear=amount,
             currency=parsed_data.get('currency', profile.default_currency),
-            amount_in_profile_currency=amount,  # TODO: Apply exchange rate if different currency
+            amount_in_profile_currency=round_money(amount),  # TODO: Apply exchange rate if different currency
             description=encrypted_description,
             description_clear=parsed_data['description'][:255] if parsed_data['description'] else None,
             merchant_name=merchant_name,

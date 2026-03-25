@@ -11,7 +11,15 @@ Handles transaction CRUD operations with:
 from typing import Optional, List, Tuple
 from uuid import UUID
 from datetime import date
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
+
+# Standard quantize target for monetary values (2 decimal places)
+_TWO_PLACES = Decimal('0.01')
+
+
+def round_money(value: Decimal) -> Decimal:
+    """Round a Decimal to 2 decimal places using ROUND_HALF_UP."""
+    return Decimal(str(value)).quantize(_TWO_PLACES, rounding=ROUND_HALF_UP)
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
 import logging
@@ -117,12 +125,15 @@ class TransactionService:
         if needs_encryption and not user_password:
             raise ValueError("Password required for High-Security profile transactions")
 
+        # Round amount to 2 decimal places before storing
+        amount = round_money(amount)
+
         # Calculate amount in profile currency
         exchange_rate = kwargs.get('exchange_rate')
         if currency == profile.default_currency:
             amount_in_profile_currency = amount
         elif exchange_rate:
-            amount_in_profile_currency = amount * exchange_rate
+            amount_in_profile_currency = round_money(amount * exchange_rate)
         else:
             amount_in_profile_currency = amount  # Assume same currency
 
@@ -348,8 +359,8 @@ class TransactionService:
             )
 
             if 'amount' in updates:
-                updates['amount'] = ctx.encrypt_numeric(float(updates['amount']))
-                updates['amount_clear'] = updates.get('amount_clear', Decimal(str(updates['amount'])))
+                updates['amount'] = ctx.encrypt_numeric(float(round_money(updates['amount'])))
+                updates['amount_clear'] = round_money(updates.get('amount_clear', Decimal(str(updates['amount']))))
             if 'description' in updates:
                 desc = updates['description']
                 updates['description'] = ctx.encrypt(desc) if desc else None

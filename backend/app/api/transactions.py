@@ -8,6 +8,8 @@ from uuid import UUID
 from datetime import date
 from decimal import Decimal
 
+from decimal import Decimal, ROUND_HALF_UP
+
 from app.db.database import get_db
 from app.models.user import User
 from app.models.transaction import Transaction
@@ -20,6 +22,14 @@ from app.schemas.transaction import (
     TransactionListResponse,
 )
 from app.api.dependencies import get_current_user
+
+# Standard quantize target for monetary values (2 decimal places)
+_TWO_PLACES = Decimal('0.01')
+
+
+def _round_money(value: Decimal) -> Decimal:
+    """Round a Decimal to 2 decimal places using ROUND_HALF_UP."""
+    return Decimal(str(value)).quantize(_TWO_PLACES, rounding=ROUND_HALF_UP)
 
 router = APIRouter()
 
@@ -163,10 +173,17 @@ async def create_transaction(
         HTTPException 400: If user doesn't own the account
     """
     # Verify account ownership
-    verify_account_ownership(transaction_in.account_id, db, current_user)
+    account = verify_account_ownership(transaction_in.account_id, db, current_user)
 
-    # Create transaction
-    transaction = Transaction(**transaction_in.model_dump())
+    # Build transaction with rounded monetary values
+    data = transaction_in.model_dump()
+    rounded_amount = _round_money(data['amount'])
+    data['amount'] = str(rounded_amount)  # TEXT column (non-encrypted)
+    data['amount_clear'] = rounded_amount
+    data['amount_in_profile_currency'] = rounded_amount  # Same currency assumed
+    data['financial_profile_id'] = account.financial_profile_id
+
+    transaction = Transaction(**data)
     db.add(transaction)
     db.commit()
     db.refresh(transaction)
@@ -381,6 +398,15 @@ async def update_transaction(
 
     # Update only provided fields
     update_data = transaction_in.model_dump(exclude_unset=True)
+
+    # Round monetary fields if present
+    if 'amount' in update_data and update_data['amount'] is not None:
+        rounded = _round_money(update_data['amount'])
+        update_data['amount'] = str(rounded)  # TEXT column
+        # Also update the clear and profile-currency columns
+        setattr(transaction, 'amount_clear', rounded)
+        setattr(transaction, 'amount_in_profile_currency', rounded)
+
     for field, value in update_data.items():
         setattr(transaction, field, value)
 
@@ -471,10 +497,22 @@ async def bulk_create_transactions(
     for account_id in unique_account_ids:
         verify_account_ownership(account_id, db, current_user)
 
-    # Create all transactions
+    # Pre-fetch account -> profile mapping for setting financial_profile_id
+    accounts = {
+        aid: db.query(Account).filter(Account.id == aid).first()
+        for aid in unique_account_ids
+    }
+
+    # Create all transactions with rounded amounts
     transactions = []
     for transaction_in in transactions_in:
-        transaction = Transaction(**transaction_in.model_dump())
+        data = transaction_in.model_dump()
+        rounded_amount = _round_money(data['amount'])
+        data['amount'] = str(rounded_amount)
+        data['amount_clear'] = rounded_amount
+        data['amount_in_profile_currency'] = rounded_amount
+        data['financial_profile_id'] = accounts[transaction_in.account_id].financial_profile_id
+        transaction = Transaction(**data)
         db.add(transaction)
         transactions.append(transaction)
 
