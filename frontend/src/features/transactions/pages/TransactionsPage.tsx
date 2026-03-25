@@ -54,7 +54,6 @@ import {
   useCreateTransaction,
   useUpdateTransaction,
   useDeleteTransaction,
-  useTransactionStats,
 } from '../transactions.hooks';
 import type {
   TransactionResponse,
@@ -99,7 +98,6 @@ export const TransactionsPage = () => {
 
   // Data fetching using the UI-aware hook
   const { transactions, isLoading, error: loadError, refetch } = useTransactionsWithUIFilters(filters);
-  const { stats } = useTransactionStats();
 
   // Mutations
   const { createTransaction, isCreating, error: createError, reset: resetCreate } =
@@ -139,6 +137,32 @@ export const TransactionsPage = () => {
   const filteredTransactions = useMemo(() => {
     return transactions ?? [];
   }, [transactions]);
+
+  // Compute summary stats from the currently visible (filtered) transactions
+  const stats = useMemo(() => {
+    const list = filteredTransactions;
+    if (list.length === 0) return null;
+
+    let totalIncome = 0;
+    let totalExpenses = 0;
+
+    for (const txn of list) {
+      const amount = parseFloat(txn.amount.toString());
+      if (txn.transactionType === 'income' || txn.transactionType === 'salary' || txn.transactionType === 'invoice' || txn.transactionType === 'refund' || txn.transactionType === 'dividend' || txn.transactionType === 'interest' || txn.transactionType === 'asset_sale') {
+        totalIncome += amount;
+      } else {
+        totalExpenses += amount;
+      }
+    }
+
+    const netAmount = totalIncome - totalExpenses;
+
+    return {
+      totalIncome: totalIncome.toString(),
+      totalExpenses: totalExpenses.toString(),
+      netAmount: netAmount.toString(),
+    };
+  }, [filteredTransactions]);
 
   const handleApplyFilters = (newFilters: TransactionUIFilters) => {
     setFilters(newFilters);

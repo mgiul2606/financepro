@@ -51,7 +51,9 @@ export const BudgetForm = ({
     alertThresholdPercent: budget?.alertThresholdPercent ?? DEFAULT_ALERT_THRESHOLD,
   });
 
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+  // Field-level errors tracked for FormField visual validation feedback
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
 
   // Update form when budget changes (edit mode)
   useEffect(() => {
@@ -73,9 +75,18 @@ export const BudgetForm = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate all fields
-    const hasErrors = Object.values(fieldErrors).some((errors) => errors.length > 0);
-    if (hasErrors) {
+    // Validate directly at submit time to avoid stale fieldErrors state
+    const errors: string[] = [];
+    if (!formData.name || formData.name.trim().length === 0) {
+      errors.push('name');
+    }
+    if (!formData.totalAmount || Number(formData.totalAmount) <= 0) {
+      errors.push('totalAmount');
+    }
+    if (!formData.startDate) {
+      errors.push('startDate');
+    }
+    if (errors.length > 0) {
       return;
     }
 

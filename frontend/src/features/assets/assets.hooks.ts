@@ -1,309 +1,146 @@
 /**
  * React Query hooks for Asset operations
  *
- * MIGRATION STATUS: NO BACKEND ENDPOINTS AVAILABLE
- * As of 2026-03-16, the OpenAPI spec does not include any /assets endpoints.
- * The backend has asset models but no API routes are exposed yet.
- * These hooks remain as placeholders returning empty/mock data until
- * the backend endpoints are added to the API and Orval hooks are generated.
- *
- * When backend endpoints become available:
- * 1. Run `npm run generate:api` to regenerate Orval hooks
- * 2. Replace placeholder implementations with Orval-generated hooks
- * 3. Follow the accounts.hooks.ts pattern with factory functions
+ * Uses direct API calls via the axios instance until Orval-generated
+ * hooks become available.
  */
 
-import { useState, useCallback } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/services/api';
+import { useProfileContext } from '@/contexts/ProfileContext';
 import type { AssetResponse, AssetCreate, AssetUpdate } from './assets.types';
 
 // Query key for cache invalidation
 export const ASSETS_QUERY_KEY = ['assets'] as const;
 
 /**
- * Hook to list all assets
- *
- * PLACEHOLDER: Returns empty array until API is implemented
- *
- * TODO: Replace with real implementation:
- * const useAssetsBase = createMultiProfileListHook<
- *   ListAssetsApiV1AssetsGetParams,
- *   listAssetsApiV1AssetsGetResponse,
- *   AssetResponse
- * >({
- *   getQueryKey: getListAssetsApiV1AssetsGetQueryKey,
- *   queryFn: listAssetsApiV1AssetsGet,
- *   extractItems: (response) => (response.data as AssetList)?.assets,
- *   extractTotal: (response) => (response.data as AssetList)?.total,
- * });
+ * Hook to list all assets across active profiles
  */
 export const useAssets = () => {
-  // TODO: Replace with useProfileContext and real hook
-  const [isLoading] = useState(false);
-  const [error] = useState<Error | null>(null);
+  const { activeProfileIds, isLoading: profileLoading } = useProfileContext();
 
-  // Placeholder: empty assets array
-  const assets: AssetResponse[] = [];
-  const total = 0;
+  const query = useQuery({
+    queryKey: [...ASSETS_QUERY_KEY, activeProfileIds],
+    queryFn: async () => {
+      // Fetch assets for each active profile and aggregate
+      const results = await Promise.all(
+        activeProfileIds.map((profileId) =>
+          api.get<{ items: AssetResponse[]; total: number }>(`/api/v1/assets/`, {
+            params: { profile_id: profileId },
+          })
+        )
+      );
+
+      const allAssets = results.flatMap((res) => res.data.items ?? []);
+      return allAssets;
+    },
+    enabled: !profileLoading && activeProfileIds.length > 0,
+  });
 
   return {
-    assets,
-    total,
-    isLoading,
-    error,
-    refetch: () => {
-      // TODO: Implement refetch when API is available
-    },
+    assets: query.data ?? [],
+    total: query.data?.length ?? 0,
+    isLoading: query.isLoading || profileLoading,
+    error: query.error,
+    refetch: query.refetch,
   };
 };
 
 /**
  * Hook to get a single asset by ID
- *
- * PLACEHOLDER: Returns undefined until API is implemented
- *
- * TODO: Replace with real implementation:
- * const useAssetBase = createGetByIdHook<
- *   { data: AssetResponse; status: number },
- *   AssetResponse
- * >({
- *   useQuery: useGetAssetApiV1AssetsAssetIdGet,
- * });
  */
 export const useAsset = (assetId: string) => {
-  const [isLoading] = useState(false);
-  const [error] = useState<Error | null>(null);
-
-  // Placeholder: no asset data
-  const asset: AssetResponse | undefined = undefined;
+  const query = useQuery({
+    queryKey: [...ASSETS_QUERY_KEY, assetId],
+    queryFn: async () => {
+      const res = await api.get<AssetResponse>(`/api/v1/assets/${assetId}`);
+      return res.data;
+    },
+    enabled: !!assetId,
+  });
 
   return {
-    asset,
-    isLoading: isLoading || !assetId,
-    error,
-    refetch: () => {
-      // TODO: Implement refetch when API is available
-    },
+    asset: query.data,
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
   };
 };
 
 /**
  * Hook to create a new asset
- *
- * PLACEHOLDER: Simulates creation until API is implemented
- *
- * TODO: Replace with real implementation:
- * const useCreateAssetBase = createCreateMutationHook<
- *   CreateAssetApiV1AssetsPostMutationResult,
- *   AssetCreate
- * >({
- *   useMutation: useCreateAssetApiV1AssetsPost,
- *   defaultOptions: {
- *     invalidateKeys: getListAssetsApiV1AssetsGetQueryKey(),
- *   },
- * });
  */
 export const useCreateAsset = () => {
-  const [isCreating, setIsCreating] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
   const queryClient = useQueryClient();
+  const { mainProfileId } = useProfileContext();
 
-  const createAsset = useCallback(
-    async (data: AssetCreate): Promise<AssetResponse> => {
-      setIsCreating(true);
-      setError(null);
-
-      try {
-        // TODO: Replace with actual API call
-        // Simulate network delay
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // Create mock response
-        const newAsset: AssetResponse = {
-          id: crypto.randomUUID(),
-          financialProfileId: crypto.randomUUID(),
-          name: data.name,
-          assetType: data.assetType,
-          purchaseDate: data.purchaseDate ?? null,
-          purchasePrice: data.purchasePrice?.toString() ?? null,
-          currentValue: data.currentValue.toString(),
-          currentValueMin: data.currentValueMin?.toString() ?? null,
-          currentValueMax: data.currentValueMax?.toString() ?? null,
-          valuationMethod: data.valuationMethod ?? 'manual',
-          lastValuationDate: null,
-          currency: data.currency,
-          isLiquid: data.isLiquid ?? false,
-          quantity: data.quantity?.toString() ?? null,
-          tickerSymbol: data.tickerSymbol ?? null,
-          notes: data.notes ?? null,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-
-        // Invalidate cache
-        queryClient.invalidateQueries({ queryKey: ASSETS_QUERY_KEY });
-
-        return newAsset;
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error('Failed to create asset');
-        setError(error);
-        throw error;
-      } finally {
-        setIsCreating(false);
-      }
+  const mutation = useMutation({
+    mutationFn: async (data: AssetCreate): Promise<AssetResponse> => {
+      const payload = {
+        ...data,
+        financialProfileId: mainProfileId,
+      };
+      const res = await api.post<AssetResponse>('/api/v1/assets/', payload);
+      return res.data;
     },
-    [queryClient]
-  );
-
-  const reset = useCallback(() => {
-    setError(null);
-  }, []);
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ASSETS_QUERY_KEY });
+    },
+  });
 
   return {
-    createAsset,
-    isCreating,
-    error,
-    reset,
+    createAsset: mutation.mutateAsync,
+    isCreating: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
   };
 };
 
 /**
  * Hook to update an existing asset
- *
- * PLACEHOLDER: Simulates update until API is implemented
- *
- * TODO: Replace with real implementation:
- * const useUpdateAssetBase = createUpdateMutationHook<
- *   UpdateAssetApiV1AssetsAssetIdPutMutationResult,
- *   AssetUpdate,
- *   ExtractOrvalData<UpdateAssetApiV1AssetsAssetIdPutMutationResult>,
- *   'assetId'
- * >({
- *   useMutation: useUpdateAssetApiV1AssetsAssetIdPut,
- *   idParamName: 'assetId',
- *   defaultOptions: {
- *     invalidateKeys: getListAssetsApiV1AssetsGetQueryKey(),
- *   },
- * });
  */
 export const useUpdateAsset = () => {
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
   const queryClient = useQueryClient();
 
-  const updateAsset = useCallback(
-    async (assetId: string, data: AssetUpdate): Promise<AssetResponse> => {
-      setIsUpdating(true);
-      setError(null);
-
-      try {
-        // TODO: Replace with actual API call
-        // Simulate network delay
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // Create mock response (in real implementation, this would be the server response)
-        const updatedAsset: AssetResponse = {
-          id: assetId,
-          financialProfileId: crypto.randomUUID(),
-          name: data.name ?? 'Updated Asset',
-          assetType: data.assetType ?? 'other',
-          purchaseDate: data.purchaseDate ?? null,
-          purchasePrice: data.purchasePrice?.toString() ?? null,
-          currentValue: data.currentValue?.toString() ?? '0',
-          currentValueMin: data.currentValueMin?.toString() ?? null,
-          currentValueMax: data.currentValueMax?.toString() ?? null,
-          valuationMethod: data.valuationMethod ?? 'manual',
-          lastValuationDate: null,
-          currency: data.currency ?? 'EUR',
-          isLiquid: data.isLiquid ?? false,
-          quantity: data.quantity?.toString() ?? null,
-          tickerSymbol: data.tickerSymbol ?? null,
-          notes: data.notes ?? null,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-
-        // Invalidate cache
-        queryClient.invalidateQueries({ queryKey: ASSETS_QUERY_KEY });
-
-        return updatedAsset;
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error('Failed to update asset');
-        setError(error);
-        throw error;
-      } finally {
-        setIsUpdating(false);
-      }
+  const mutation = useMutation({
+    mutationFn: async ({ assetId, data }: { assetId: string; data: AssetUpdate }): Promise<AssetResponse> => {
+      const res = await api.patch<AssetResponse>(`/api/v1/assets/${assetId}`, data);
+      return res.data;
     },
-    [queryClient]
-  );
-
-  const reset = useCallback(() => {
-    setError(null);
-  }, []);
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ASSETS_QUERY_KEY });
+    },
+  });
 
   return {
-    updateAsset,
-    isUpdating,
-    error,
-    reset,
+    updateAsset: async (assetId: string, data: AssetUpdate): Promise<AssetResponse> => {
+      return mutation.mutateAsync({ assetId, data });
+    },
+    isUpdating: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
   };
 };
 
 /**
  * Hook to delete an asset
- *
- * PLACEHOLDER: Simulates deletion until API is implemented
- *
- * TODO: Replace with real implementation:
- * const useDeleteAssetBase = createDeleteMutationHook<
- *   DeleteAssetApiV1AssetsAssetIdDeleteMutationResult,
- *   'assetId'
- * >({
- *   useMutation: useDeleteAssetApiV1AssetsAssetIdDelete,
- *   idParamName: 'assetId',
- *   defaultOptions: {
- *     invalidateKeys: getListAssetsApiV1AssetsGetQueryKey(),
- *   },
- * });
  */
 export const useDeleteAsset = () => {
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
   const queryClient = useQueryClient();
 
-  const deleteAsset = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async (_assetId: string): Promise<void> => {
-      setIsDeleting(true);
-      setError(null);
-
-      try {
-        // TODO: Replace with actual API call
-        // Simulate network delay
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // Invalidate cache
-        queryClient.invalidateQueries({ queryKey: ASSETS_QUERY_KEY });
-      } catch (err) {
-        const error = err instanceof Error ? err : new Error('Failed to delete asset');
-        setError(error);
-        throw error;
-      } finally {
-        setIsDeleting(false);
-      }
+  const mutation = useMutation({
+    mutationFn: async (assetId: string): Promise<void> => {
+      await api.delete(`/api/v1/assets/${assetId}`);
     },
-    [queryClient]
-  );
-
-  const reset = useCallback(() => {
-    setError(null);
-  }, []);
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ASSETS_QUERY_KEY });
+    },
+  });
 
   return {
-    deleteAsset,
-    isDeleting,
-    error,
-    reset,
+    deleteAsset: mutation.mutateAsync,
+    isDeleting: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
   };
 };
