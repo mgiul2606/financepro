@@ -304,16 +304,16 @@ async def get_transaction_stats(
         currency = default_profile.default_currency if default_profile else "EUR"
 
     return {
-        "total_income": str(total_income),
-        "total_expenses": str(total_expenses),
-        "net_amount": str(net_amount),
-        "transaction_count": len(transactions),
+        "totalIncome": str(total_income),
+        "totalExpenses": str(total_expenses),
+        "netAmount": str(net_amount),
+        "transactionCount": len(transactions),
         "currency": currency,
-        "category_breakdown": [
+        "categoryBreakdown": [
             {
-                "category_id": str(stat.category_id) if stat.category_id else None,
+                "categoryId": str(stat.category_id) if stat.category_id else None,
                 "count": stat.count,
-                "total_amount": str(stat.total_amount) if stat.total_amount else "0.00"
+                "totalAmount": str(stat.total_amount) if stat.total_amount else "0.00"
             }
             for stat in category_stats
         ]

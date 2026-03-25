@@ -152,9 +152,20 @@ export const GoalForm = ({
     }
 
     try {
+      // Map form category to backend GoalType
+      const categoryToGoalType: Record<string, string> = {
+        Savings: 'emergency_fund',
+        Investment: 'investment',
+        Travel: 'vacation',
+        Education: 'education',
+        Home: 'house',
+        Other: 'custom',
+      };
+
       const submitData = {
         name: formData.name,
         description: formData.description || undefined,
+        goalType: categoryToGoalType[formData.category] || 'custom',
         targetAmount: formData.targetAmount,
         currency: formData.currency,
         targetDate: formData.targetDate,
@@ -171,7 +182,7 @@ export const GoalForm = ({
     : 0;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form id="goal-form" onSubmit={handleSubmit} className="space-y-6">
       {error && (
         <Alert variant="destructive" className="mb-4">
           <AlertDescription className="flex items-center justify-between">

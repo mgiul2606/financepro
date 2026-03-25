@@ -216,6 +216,7 @@ try:
     import app.api.transactions as transactions
     import app.api.budgets as budgets
     import app.api.goals as goals
+    import app.api.assets as assets
     import app.api.ai as ai
     import app.api.imports as imports
     import app.api.analysis as analysis
@@ -226,7 +227,7 @@ except Exception as e:
     logger.warning("Application will start without API routers")
     auth = accounts = categories = None
     financial_profiles = transactions = budgets = goals = ai = None
-    imports = analysis = None
+    imports = analysis = assets = None
 
 # Get API prefix
 API_PREFIX = get_api_prefix()
@@ -287,6 +288,14 @@ if goals:
         tags=["Financial Goals"]
     )
     logger.info(f"Goals router registered at {API_PREFIX}/goals")
+
+if assets:
+    app.include_router(
+        assets.router,
+        prefix=f"{API_PREFIX}/assets",
+        tags=["Assets"]
+    )
+    logger.info(f"Assets router registered at {API_PREFIX}/assets")
 
 if ai:
     app.include_router(
