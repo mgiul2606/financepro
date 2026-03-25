@@ -1,12 +1,15 @@
 # app/schemas/transaction.py
 
 from app.schemas.base import CamelCaseModel
-from pydantic import Field, ConfigDict
+from pydantic import Field, ConfigDict, model_validator
 from datetime import datetime, date
-from typing import Optional
+from typing import Optional, Any
 from uuid import UUID
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from app.models import TransactionType, TransactionSource
+
+# Standard quantize target for monetary values (2 decimal places)
+_TWO_PLACES = Decimal('0.01')
 
 
 class TransactionBase(CamelCaseModel):
@@ -172,6 +175,56 @@ class TransactionResponse(TransactionBase):
     Complete transaction schema returned by API endpoints.
     Includes all fields including computed and metadata fields.
     """
+
+    @model_validator(mode='before')
+    @classmethod
+    def _round_monetary_fields(cls, data: Any) -> Any:
+        """
+        When constructing from an ORM Transaction object, the 'amount' attribute
+        is a TEXT column (encrypted or raw string) which may have excess decimal
+        places. We read from 'amount_clear' (the Numeric(15,2) column) instead,
+        and quantize all monetary fields to 2 decimal places.
+        """
+        if hasattr(data, '__dict__'):
+            # ORM object — read amount_clear instead of the encrypted TEXT amount
+            amount_clear = getattr(data, 'amount_clear', None)
+            if amount_clear is not None:
+                rounded = Decimal(str(amount_clear)).quantize(_TWO_PLACES, rounding=ROUND_HALF_UP)
+                # Inject the rounded value so Pydantic reads it as 'amount'
+                object.__setattr__(data, '_override_amount', rounded)
+
+            # Also round amount_in_profile_currency
+            aipc = getattr(data, 'amount_in_profile_currency', None)
+            if aipc is not None:
+                rounded_aipc = Decimal(str(aipc)).quantize(_TWO_PLACES, rounding=ROUND_HALF_UP)
+                object.__setattr__(data, 'amount_in_profile_currency', rounded_aipc)
+
+            class _Proxy:
+                """Thin proxy that overrides 'amount' with rounded amount_clear."""
+                def __init__(self, obj: Any) -> None:
+                    object.__setattr__(self, '_obj', obj)
+
+                def __getattr__(self, name: str) -> Any:
+                    obj = object.__getattribute__(self, '_obj')
+                    if name == 'amount':
+                        return getattr(obj, '_override_amount', getattr(obj, 'amount'))
+                    return getattr(obj, name)
+
+            if hasattr(data, '_override_amount'):
+                return _Proxy(data)
+
+        elif isinstance(data, dict):
+            # Dict input — round monetary Decimal values
+            for key in ('amount', 'amount_clear', 'amount_in_profile_currency'):
+                val = data.get(key)
+                if val is not None:
+                    data[key] = Decimal(str(val)).quantize(_TWO_PLACES, rounding=ROUND_HALF_UP)
+            # If amount is missing but amount_clear is present, use it
+            if data.get('amount') is None and data.get('amount_clear') is not None:
+                data['amount'] = data['amount_clear']
+
+        return data
+
     id: UUID = Field(..., description="Unique transaction identifier")
     financial_profile_id: UUID = Field(
         ...,
