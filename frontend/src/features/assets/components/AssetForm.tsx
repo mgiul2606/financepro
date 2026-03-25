@@ -170,8 +170,8 @@ export const AssetForm = ({
 
   // Watch asset type to show/hide relevant fields
   const assetType = form.watch('assetType');
-  const showTickerField = ['investment', 'crypto'].includes(assetType);
-  const showQuantityField = ['investment', 'crypto', 'precious_metal'].includes(assetType);
+  const showTickerField = ['stock', 'bond', 'fund', 'etf', 'crypto'].includes(assetType);
+  const showQuantityField = ['stock', 'bond', 'fund', 'etf', 'crypto', 'precious_metal'].includes(assetType);
 
   return (
     <Form {...form}>

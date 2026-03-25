@@ -1,10 +1,6 @@
 /**
  * Public API for recurring transactions feature
  * Exports components, hooks, types, schemas, and constants
- *
- * NOTE: Backend API for recurring transactions does not exist yet.
- * Hooks are implemented as placeholders that return empty/mock data.
- * TODO: Update imports when backend is implemented.
  */
 
 // Pages
@@ -20,11 +16,9 @@ export {
   useCreateRecurring,
   useUpdateRecurring,
   useDeleteRecurring,
-  useRecurringOccurrences,
-  useSkipOccurrence,
-  useOverrideOccurrence,
   useRecurringSummary,
   useToggleRecurringStatus,
+  RECURRING_QUERY_KEY,
 } from './recurring.hooks';
 
 // Schemas

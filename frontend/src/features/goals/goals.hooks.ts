@@ -3,6 +3,8 @@
  *
  * Uses factory pattern for consistency with other features (accounts, transactions)
  */
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/services/api';
 import {
   useGetGoalApiV1GoalsGoalIdGet,
   useCreateGoalApiV1GoalsPost,
@@ -178,5 +180,46 @@ export const useDeleteGoal = () => {
     isDeleting: isPending,
     error,
     reset,
+  };
+};
+
+/**
+ * Contribution create payload
+ */
+export interface GoalContributionCreatePayload {
+  amount: number;
+  contributionDate: string;
+  transactionId?: string;
+  notes?: string;
+}
+
+/**
+ * Hook to add a contribution to a goal.
+ * Uses direct API call since this endpoint isn't in the Orval-generated code.
+ */
+export const useAddGoalContribution = () => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async ({
+      goalId,
+      data,
+    }: {
+      goalId: string;
+      data: GoalContributionCreatePayload;
+    }) => {
+      const res = await api.post(`/api/v1/goals/${goalId}/contributions`, data);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: getListGoalsApiV1GoalsGetQueryKey() });
+    },
+  });
+
+  return {
+    addContribution: mutation.mutateAsync,
+    isAdding: mutation.isPending,
+    error: mutation.error,
+    reset: mutation.reset,
   };
 };
