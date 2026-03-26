@@ -50,9 +50,11 @@ export const BudgetDetailsModal = ({
   const budgetTransactions = useMemo(() => {
     if (!allTransactions) return [];
 
+    const expenseTypes = ['purchase', 'payment', 'withdrawal', 'loan_payment', 'asset_purchase'];
+
     return allTransactions.filter((txn: Transaction) => {
-      // Only purchase transactions
-      if (txn.transactionType !== 'purchase') return false;
+      // Only expense transaction types
+      if (!expenseTypes.includes(txn.transactionType)) return false;
 
       // Match category
       if (!txn.categoryId || !budgetCategoryIds.includes(txn.categoryId)) return false;

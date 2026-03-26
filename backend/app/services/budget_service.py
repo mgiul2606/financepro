@@ -26,12 +26,22 @@ from app.models import (
     Notification,
     ScopeType,
     PeriodType,
+    TransactionType,
     NotificationType,
     NotificationStatus
 )
 from app.core.rls import RLSService
 
 logger = logging.getLogger(__name__)
+
+# Transaction types that represent money going out (expenses)
+EXPENSE_TRANSACTION_TYPES = [
+    TransactionType.PURCHASE,
+    TransactionType.PAYMENT,
+    TransactionType.WITHDRAWAL,
+    TransactionType.LOAN_PAYMENT,
+    TransactionType.ASSET_PURCHASE,
+]
 
 
 class BudgetService:
@@ -422,13 +432,14 @@ class BudgetService:
 
         for bc in budget.budget_categories:
             # Query transactions for this category within the current period
+            # Filter by expense transaction types (amounts are stored as positive)
             query = self.db.query(
-                func.coalesce(func.sum(func.abs(Transaction.amount_clear)), 0)
+                func.coalesce(func.sum(Transaction.amount_clear), 0)
             ).filter(
                 Transaction.category_id == bc.category_id,
                 Transaction.transaction_date >= period_start,
                 Transaction.transaction_date <= period_end,
-                Transaction.amount_clear < 0  # Only expenses
+                Transaction.transaction_type.in_(EXPENSE_TRANSACTION_TYPES),
             )
 
             # Apply profile filter
