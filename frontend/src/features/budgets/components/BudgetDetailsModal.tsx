@@ -18,6 +18,7 @@ import type { Budget } from '../budgets.types';
 import { useTransactions } from '@/features/transactions/transactions.hooks';
 import type { Transaction } from '@/features/transactions/transactions.types';
 import type { SupportedCurrency } from '@/utils/currency';
+import { getCurrentBudgetPeriod } from '../budgets.utils';
 
 interface BudgetDetailsModalProps {
   budget: Budget;
@@ -39,7 +40,13 @@ export const BudgetDetailsModal = ({
     return budget.categoryAllocations.map((a) => a.categoryId);
   }, [budget.categoryAllocations]);
 
-  // Filter transactions for this budget
+  // Calculate current period dates based on budget period type
+  const { periodStart, periodEnd } = useMemo(
+    () => getCurrentBudgetPeriod(budget.periodType, budget.startDate, budget.endDate),
+    [budget.periodType, budget.startDate, budget.endDate]
+  );
+
+  // Filter transactions for this budget's current period
   const budgetTransactions = useMemo(() => {
     if (!allTransactions) return [];
 
@@ -50,17 +57,14 @@ export const BudgetDetailsModal = ({
       // Match category
       if (!txn.categoryId || !budgetCategoryIds.includes(txn.categoryId)) return false;
 
-      // Within budget date range
+      // Within current period
       const txnDate = new Date(txn.transactionDate);
-      const budgetStart = new Date(budget.startDate);
-      const budgetEnd = budget.endDate ? new Date(budget.endDate) : null;
-
-      if (txnDate < budgetStart) return false;
-      if (budgetEnd && txnDate > budgetEnd) return false;
+      if (txnDate < periodStart) return false;
+      if (txnDate > periodEnd) return false;
 
       return true;
     });
-  }, [allTransactions, budget, budgetCategoryIds]);
+  }, [allTransactions, periodStart, periodEnd, budgetCategoryIds]);
 
   const totalAmount = parseFloat(budget.totalAmount);
   const totalSpent = parseFloat(budget.totalSpent ?? '0');
@@ -187,14 +191,13 @@ export const BudgetDetailsModal = ({
                 </div>
               </div>
 
-              {/* Date Range */}
+              {/* Current Period */}
               <div className="mt-4 flex items-center gap-2 text-sm text-neutral-600 bg-white p-3 rounded-lg border border-neutral-200">
                 <Calendar className="h-4 w-4" />
                 <span>
-                  {format(new Date(budget.startDate), 'MMM dd, yyyy')}
-                  {budget.endDate && (
-                    <> - {format(new Date(budget.endDate), 'MMM dd, yyyy')}</>
-                  )}
+                  {format(periodStart, 'MMM dd, yyyy')}
+                  {' - '}
+                  {format(periodEnd, 'MMM dd, yyyy')}
                 </span>
                 <span className="mx-2">•</span>
                 <span className="capitalize">{t(`budgets.periods.${budget.periodType}`)}</span>
