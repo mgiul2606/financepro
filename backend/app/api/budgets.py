@@ -24,6 +24,7 @@ from app.schemas.budget import (
     BudgetCreate,
     BudgetUpdate,
     BudgetResponse,
+    BudgetCategoryAllocation,
     BudgetCategoryCreate,
     BudgetCategoryResponse
 )
@@ -88,6 +89,18 @@ async def list_budgets(
         # Calculate spent
         spent_info = service.calculate_spent(budget, recalculate=False)
 
+        # Build category allocations
+        cat_allocs = None
+        if budget.budget_categories:
+            cat_allocs = [
+                BudgetCategoryAllocation(
+                    category_id=bc.category_id,
+                    category_name=bc.category.name if bc.category else str(bc.category_id),
+                    allocated_amount=bc.allocated_amount
+                )
+                for bc in budget.budget_categories
+            ]
+
         items.append(BudgetResponse(
             id=budget.id,
             user_id=budget.user_id,
@@ -105,6 +118,7 @@ async def list_budgets(
             total_spent=spent_info['total_spent'],
             remaining=spent_info['remaining'],
             usage_percentage=spent_info['usage_percentage'],
+            category_allocations=cat_allocs,
             created_at=budget.created_at,
             updated_at=budget.updated_at
         ))
@@ -144,6 +158,18 @@ async def create_budget(
         # Calculate spent
         spent_info = service.calculate_spent(budget, recalculate=True)
 
+        # Build category allocations
+        cat_allocs = None
+        if budget.budget_categories:
+            cat_allocs = [
+                BudgetCategoryAllocation(
+                    category_id=bc.category_id,
+                    category_name=bc.category.name if bc.category else str(bc.category_id),
+                    allocated_amount=bc.allocated_amount
+                )
+                for bc in budget.budget_categories
+            ]
+
         return BudgetResponse(
             id=budget.id,
             user_id=budget.user_id,
@@ -161,6 +187,7 @@ async def create_budget(
             total_spent=spent_info['total_spent'],
             remaining=spent_info['remaining'],
             usage_percentage=spent_info['usage_percentage'],
+            category_allocations=cat_allocs,
             created_at=budget.created_at,
             updated_at=budget.updated_at
         )
@@ -184,6 +211,17 @@ async def get_budget(
         budget = service.get_budget(budget_id)
         spent_info = service.calculate_spent(budget, recalculate=False)
 
+        cat_allocs = None
+        if budget.budget_categories:
+            cat_allocs = [
+                BudgetCategoryAllocation(
+                    category_id=bc.category_id,
+                    category_name=bc.category.name if bc.category else str(bc.category_id),
+                    allocated_amount=bc.allocated_amount
+                )
+                for bc in budget.budget_categories
+            ]
+
         return BudgetResponse(
             id=budget.id,
             user_id=budget.user_id,
@@ -201,6 +239,7 @@ async def get_budget(
             total_spent=spent_info['total_spent'],
             remaining=spent_info['remaining'],
             usage_percentage=spent_info['usage_percentage'],
+            category_allocations=cat_allocs,
             created_at=budget.created_at,
             updated_at=budget.updated_at
         )
@@ -226,6 +265,17 @@ async def update_budget(
         budget = service.update_budget(budget_id, **updates)
         spent_info = service.calculate_spent(budget, recalculate=True)
 
+        cat_allocs = None
+        if budget.budget_categories:
+            cat_allocs = [
+                BudgetCategoryAllocation(
+                    category_id=bc.category_id,
+                    category_name=bc.category.name if bc.category else str(bc.category_id),
+                    allocated_amount=bc.allocated_amount
+                )
+                for bc in budget.budget_categories
+            ]
+
         return BudgetResponse(
             id=budget.id,
             user_id=budget.user_id,
@@ -243,6 +293,7 @@ async def update_budget(
             total_spent=spent_info['total_spent'],
             remaining=spent_info['remaining'],
             usage_percentage=spent_info['usage_percentage'],
+            category_allocations=cat_allocs,
             created_at=budget.created_at,
             updated_at=budget.updated_at
         )

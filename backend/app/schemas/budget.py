@@ -79,7 +79,7 @@ class BudgetCreate(BudgetBase):
         le=100,
         description="Percentage of budget to trigger alerts (0-100)"
     )
-    category_allocations: Optional[list] = Field(
+    category_allocations: Optional[list['BudgetCategoryCreate']] = Field(
         None,
         description="Optional category allocations for this budget"
     )

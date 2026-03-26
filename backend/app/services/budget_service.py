@@ -130,10 +130,13 @@ class BudgetService:
         # Create category allocations
         if category_allocations:
             for alloc in category_allocations:
+                # Support both dict and Pydantic model access
+                cat_id = alloc.category_id if hasattr(alloc, 'category_id') else alloc['category_id']
+                alloc_amount = alloc.allocated_amount if hasattr(alloc, 'allocated_amount') else alloc['allocated_amount']
                 budget_category = BudgetCategory(
                     budget_id=budget.id,
-                    category_id=alloc['category_id'],
-                    allocated_amount=alloc['allocated_amount'],
+                    category_id=cat_id,
+                    allocated_amount=alloc_amount,
                     spent_amount=Decimal("0.00")
                 )
                 self.db.add(budget_category)

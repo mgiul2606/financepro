@@ -252,6 +252,13 @@
     "budgetDetails": "Dettagli Budget",
     "transactionsInBudget": "Transazioni in questo budget",
     "noTransactionsInBudget": "Nessuna transazione trovata per questo budget",
+    "categoryAllocations": "Categorie di spesa",
+    "addCategory": "Aggiungi Categoria",
+    "noCategoryAllocations": "Nessuna categoria selezionata. Aggiungi categorie per monitorare le spese di questo budget.",
+    "allocatedAmount": "Importo",
+    "totalAllocated": "Allocato",
+    "overAllocated": "oltre il budget",
+    "categoryAllocationsHint": "Seleziona le categorie di spesa monitorate da questo budget. Le transazioni in queste categorie nel periodo del budget verranno conteggiate.",
     "periods": {
       "monthly": "Mensile",
       "quarterly": "Trimestrale",
