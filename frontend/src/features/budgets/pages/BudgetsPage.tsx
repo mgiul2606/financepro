@@ -19,6 +19,8 @@ import {
   useCreateBudget,
   useUpdateBudget,
   useDeleteBudget,
+  useAddBudgetCategory,
+  useRemoveBudgetCategory,
 } from '../budgets.hooks';
 import type { BudgetResponse as Budget, BudgetCreate, BudgetUpdate } from '../budgets.types';
 
@@ -38,6 +40,8 @@ export const BudgetsPage: React.FC = () => {
   const createMutation = useCreateBudget();
   const updateMutation = useUpdateBudget();
   const deleteMutation = useDeleteBudget();
+  const addCategoryMutation = useAddBudgetCategory();
+  const removeCategoryMutation = useRemoveBudgetCategory();
 
   // Handlers
   const handleCreate = async (data: BudgetCreate | BudgetUpdate) => {
@@ -50,11 +54,40 @@ export const BudgetsPage: React.FC = () => {
     }
   };
 
-  const handleUpdate = async (data: BudgetUpdate) => {
+  const handleUpdate = async (data: BudgetCreate | BudgetUpdate) => {
     if (!editingBudget) return;
 
     try {
-      await updateMutation.updateBudget(editingBudget.id, data);
+      // Extract category allocations (not part of BudgetUpdate schema)
+      const { categoryAllocations: rawAllocations, ...budgetData } = data as BudgetCreate & { categoryAllocations?: Array<{ categoryId: string; allocatedAmount: number }> };
+      const newAllocations = rawAllocations as Array<{ categoryId: string; allocatedAmount: number }> | undefined;
+      await updateMutation.updateBudget(editingBudget.id, budgetData);
+
+      // Sync category allocations if provided
+      if (newAllocations !== undefined) {
+        const existingIds = (editingBudget.categoryAllocations ?? []).map((a) => a.categoryId);
+        const newIds = newAllocations.map((a) => a.categoryId);
+
+        // Remove categories no longer in the list
+        const toRemove = existingIds.filter((id) => !newIds.includes(id));
+        for (const categoryId of toRemove) {
+          await removeCategoryMutation.mutateAsync({
+            budgetId: editingBudget.id,
+            categoryId,
+          });
+        }
+
+        // Add new categories (ones not in existing list)
+        const toAdd = newAllocations.filter((a) => !existingIds.includes(a.categoryId));
+        for (const alloc of toAdd) {
+          await addCategoryMutation.mutateAsync({
+            budgetId: editingBudget.id,
+            categoryId: alloc.categoryId,
+            allocatedAmount: alloc.allocatedAmount,
+          });
+        }
+      }
+
       setEditingBudget(null);
     } catch (error) {
       console.error('Failed to update budget:', error);

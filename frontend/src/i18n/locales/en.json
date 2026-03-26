@@ -252,6 +252,13 @@
     "budgetDetails": "Budget Details",
     "transactionsInBudget": "Transactions in this budget",
     "noTransactionsInBudget": "No transactions found for this budget",
+    "categoryAllocations": "Category Allocations",
+    "addCategory": "Add Category",
+    "noCategoryAllocations": "No categories selected. Add categories to track spending against this budget.",
+    "allocatedAmount": "Amount",
+    "totalAllocated": "Allocated",
+    "overAllocated": "over budget",
+    "categoryAllocationsHint": "Select expense categories this budget tracks. Transactions in these categories within the budget dates will count toward spending.",
     "periods": {
       "monthly": "Monthly",
       "quarterly": "Quarterly",

@@ -28,6 +28,8 @@ import { createCreateMutationHook } from '@/hooks/factories/createCreateMutation
 import { createUpdateMutationHook } from '@/hooks/factories/createUpdateMutationHook';
 import { createDeleteMutationHook } from '@/hooks/factories/createDeleteMutationHook';
 import type { ExtractOrvalData } from '@/lib/orval-types';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/services/api';
 import type { BudgetList, BudgetFilters } from './budgets.types';
 
 /**
@@ -179,4 +181,58 @@ export const useDeleteBudget = () => {
     error,
     reset,
   };
+};
+
+/**
+ * Hook to add a category allocation to an existing budget
+ */
+export const useAddBudgetCategory = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      budgetId,
+      categoryId,
+      allocatedAmount,
+    }: {
+      budgetId: string;
+      categoryId: string;
+      allocatedAmount: number;
+    }) => {
+      const response = await api.post(`/api/v1/budgets/${budgetId}/categories`, {
+        categoryId,
+        allocatedAmount,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: getListBudgetsApiV1BudgetsGetQueryKey(),
+      });
+    },
+  });
+};
+
+/**
+ * Hook to remove a category allocation from an existing budget
+ */
+export const useRemoveBudgetCategory = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      budgetId,
+      categoryId,
+    }: {
+      budgetId: string;
+      categoryId: string;
+    }) => {
+      await api.delete(`/api/v1/budgets/${budgetId}/categories/${categoryId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: getListBudgetsApiV1BudgetsGetQueryKey(),
+      });
+    },
+  });
 };
