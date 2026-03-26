@@ -259,7 +259,12 @@
     "totalAllocated": "Allocated",
     "overAllocated": "over budget",
     "categoryAllocationsHint": "Select expense categories this budget tracks. Transactions in these categories within the budget dates will count toward spending.",
+    "previousPeriod": "Previous period",
+    "nextPeriod": "Next period",
+    "currentPeriod": "Current period",
     "periods": {
+      "daily": "Daily",
+      "weekly": "Weekly",
       "monthly": "Monthly",
       "quarterly": "Quarterly",
       "yearly": "Yearly",

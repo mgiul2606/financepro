@@ -11,6 +11,7 @@ import { EmptyState } from '@/core/components/composite/EmptyState';
 import { Spinner } from '@/core/components/atomic/Spinner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Alert } from '@/components/ui/alert';
+import { useQueryClient } from '@tanstack/react-query';
 import { useConfirm } from '@/hooks/useConfirm';
 import { BudgetForm } from '../components/BudgetForm';
 import { BudgetDetailsModal } from '../components/BudgetDetailsModal';
@@ -27,6 +28,7 @@ import type { BudgetResponse as Budget, BudgetCreate, BudgetUpdate } from '../bu
 export const BudgetsPage: React.FC = () => {
   const { t } = useTranslation();
   const confirm = useConfirm();
+  const queryClient = useQueryClient();
 
   // State
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -88,6 +90,8 @@ export const BudgetsPage: React.FC = () => {
         }
       }
 
+      // Invalidate detail queries so the modal refreshes with new data
+      queryClient.invalidateQueries({ queryKey: ['budget-detail'] });
       setEditingBudget(null);
     } catch (error) {
       console.error('Failed to update budget:', error);

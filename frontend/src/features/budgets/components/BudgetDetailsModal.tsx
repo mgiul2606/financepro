@@ -1,7 +1,7 @@
 // features/budgets/components/BudgetDetailsModal.tsx
-import { useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TrendingDown, Calendar } from 'lucide-react';
+import { TrendingDown, Calendar, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   Dialog,
@@ -11,14 +11,12 @@ import {
 } from '@/components/ui/dialog';
 import { Card, CardBody } from '@/core/components/atomic/Card';
 import { Badge } from '@/core/components/atomic/Badge';
+import { Button } from '@/core/components/atomic/Button';
 import { CurrencyText } from '@/core/components/atomic/CurrencyText';
-import { DataTable, type Column } from '@/core/components/composite/DataTable';
 import { EmptyState } from '@/core/components/composite/EmptyState';
+import { Spinner } from '@/core/components/atomic/Spinner';
 import type { Budget } from '../budgets.types';
-import { useTransactions } from '@/features/transactions/transactions.hooks';
-import type { Transaction } from '@/features/transactions/transactions.types';
-import type { SupportedCurrency } from '@/utils/currency';
-import { getCurrentBudgetPeriod } from '../budgets.utils';
+import { useBudgetDetail } from '../budgets.hooks';
 
 interface BudgetDetailsModalProps {
   budget: Budget;
@@ -32,90 +30,49 @@ export const BudgetDetailsModal = ({
   onClose,
 }: BudgetDetailsModalProps) => {
   const { t } = useTranslation();
-  const { transactions: allTransactions, isLoading } = useTransactions();
+  const [periodOffset, setPeriodOffset] = useState(0);
 
-  // Get category IDs from budget allocations for filtering
-  const budgetCategoryIds = useMemo(() => {
-    if (!budget.categoryAllocations) return [];
-    return budget.categoryAllocations.map((a) => a.categoryId);
-  }, [budget.categoryAllocations]);
-
-  // Calculate current period dates based on budget period type
-  const { periodStart, periodEnd } = useMemo(
-    () => getCurrentBudgetPeriod(budget.periodType, budget.startDate, budget.endDate),
-    [budget.periodType, budget.startDate, budget.endDate]
+  const { data: detail, isLoading } = useBudgetDetail(
+    isOpen ? budget.id : null,
+    periodOffset
   );
 
-  // Filter transactions for this budget's current period
-  const budgetTransactions = useMemo(() => {
-    if (!allTransactions) return [];
+  const handlePrevious = useCallback(() => {
+    setPeriodOffset((prev) => prev - 1);
+  }, []);
 
-    const expenseTypes = ['purchase', 'payment', 'withdrawal', 'loan_payment', 'asset_purchase'];
+  const handleNext = useCallback(() => {
+    setPeriodOffset((prev) => prev + 1);
+  }, []);
 
-    return allTransactions.filter((txn: Transaction) => {
-      // Only expense transaction types
-      if (!expenseTypes.includes(txn.transactionType)) return false;
+  const handleGoToCurrent = useCallback(() => {
+    setPeriodOffset(0);
+  }, []);
 
-      // Match category
-      if (!txn.categoryId || !budgetCategoryIds.includes(txn.categoryId)) return false;
+  const handleClose = useCallback(() => {
+    setPeriodOffset(0);
+    onClose();
+  }, [onClose]);
 
-      // Within current period
-      const txnDate = new Date(txn.transactionDate);
-      if (txnDate < periodStart) return false;
-      if (txnDate > periodEnd) return false;
+  const isCustom = budget.periodType === 'custom';
 
-      return true;
-    });
-  }, [allTransactions, periodStart, periodEnd, budgetCategoryIds]);
-
-  const totalAmount = parseFloat(budget.totalAmount);
-  const totalSpent = parseFloat(budget.totalSpent ?? '0');
-  const percentage = totalAmount > 0 ? (totalSpent / totalAmount) * 100 : 0;
+  // Use server data when available, fall back to budget list data
+  const totalAmount = detail
+    ? parseFloat(detail.spending.totalAllocated)
+    : parseFloat(budget.totalAmount);
+  const totalSpent = detail
+    ? parseFloat(detail.spending.totalSpent)
+    : parseFloat(budget.totalSpent ?? '0');
   const remaining = totalAmount - totalSpent;
+  const percentage = totalAmount > 0 ? (totalSpent / totalAmount) * 100 : 0;
 
-  const columns: Column<Transaction>[] = [
-    {
-      key: 'transactionDate',
-      label: t('transactions.date'),
-      sortable: true,
-      render: (item) => (
-        <span className="text-sm font-medium">
-          {format(new Date(item.transactionDate), 'MMM dd, yyyy')}
-        </span>
-      ),
-      width: '120px',
-    },
-    {
-      key: 'description',
-      label: t('transactions.description'),
-      sortable: true,
-      render: (item) => (
-        <div>
-          <div className="font-medium text-sm">{item.description}</div>
-          {item.merchantName && (
-            <div className="text-xs text-neutral-500">{item.merchantName}</div>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: 'amount',
-      label: t('transactions.amount'),
-      sortable: true,
-      align: 'right',
-      render: (item) => (
-        <span className="text-sm font-semibold text-red-600">
-          -<CurrencyText value={item.amount} currency={item.currency as SupportedCurrency} />
-        </span>
-      ),
-      width: '130px',
-    },
-  ];
+  const periodInfo = detail?.period;
+  const categories = detail?.spending.categories ?? [];
 
   return (
     <Dialog
       open={isOpen}
-      onOpenChange={(open) => { if (!open) onClose(); }}
+      onOpenChange={(open) => { if (!open) handleClose(); }}
     >
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
@@ -128,9 +85,9 @@ export const BudgetDetailsModal = ({
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <h3 className="text-lg font-bold text-neutral-900">{budget.name}</h3>
-                  {budgetCategoryIds.length > 0 && (
+                  {categories.length > 0 && (
                     <p className="text-sm text-neutral-600 mt-1">
-                      {budgetCategoryIds.length} {budgetCategoryIds.length === 1 ? 'category' : 'categories'}
+                      {categories.length} {categories.length === 1 ? t('budgets.category') : t('budgets.categoryAllocations').toLowerCase()}
                     </p>
                   )}
                 </div>
@@ -152,7 +109,7 @@ export const BudgetDetailsModal = ({
               <div className="mb-4">
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-neutral-600">{t('budgets.spent')}</span>
-                  <CurrencyText value={budget.totalSpent ?? '0'} className="font-semibold" />
+                  <CurrencyText value={totalSpent.toString()} className="font-semibold" />
                 </div>
                 <div className="w-full h-3 bg-neutral-200 rounded-full overflow-hidden">
                   <div
@@ -173,14 +130,14 @@ export const BudgetDetailsModal = ({
                 <div className="text-center p-3 bg-white rounded-lg border border-neutral-200">
                   <p className="text-xs text-neutral-600 mb-1">{t('budgets.amount')}</p>
                   <CurrencyText
-                    value={budget.totalAmount}
+                    value={totalAmount.toString()}
                     className="text-lg font-bold text-neutral-900"
                   />
                 </div>
                 <div className="text-center p-3 bg-white rounded-lg border border-neutral-200">
                   <p className="text-xs text-neutral-600 mb-1">{t('budgets.spent')}</p>
                   <CurrencyText
-                    value={budget.totalSpent ?? '0'}
+                    value={totalSpent.toString()}
                     className="text-lg font-bold text-red-600"
                   />
                 </div>
@@ -193,66 +150,156 @@ export const BudgetDetailsModal = ({
                 </div>
               </div>
 
-              {/* Current Period */}
-              <div className="mt-4 flex items-center gap-2 text-sm text-neutral-600 bg-white p-3 rounded-lg border border-neutral-200">
-                <Calendar className="h-4 w-4" />
-                <span>
-                  {format(periodStart, 'MMM dd, yyyy')}
-                  {' - '}
-                  {format(periodEnd, 'MMM dd, yyyy')}
-                </span>
-                <span className="mx-2">•</span>
-                <span className="capitalize">{t(`budgets.periods.${budget.periodType}`)}</span>
-              </div>
+              {/* Period Navigation */}
+              {periodInfo && (
+                <div className="mt-4">
+                  {!isCustom ? (
+                    <div className="flex items-center justify-between bg-white p-3 rounded-lg border border-neutral-200">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handlePrevious}
+                        disabled={!periodInfo.hasPrevious || isLoading}
+                        aria-label={t('budgets.previousPeriod')}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+
+                      <div className="flex items-center gap-2 text-sm text-neutral-700">
+                        <Calendar className="h-4 w-4 text-neutral-500" />
+                        <span className="font-medium">
+                          {format(new Date(periodInfo.start), 'dd MMM yyyy')}
+                          {' - '}
+                          {format(new Date(periodInfo.end), 'dd MMM yyyy')}
+                        </span>
+                        {!periodInfo.isCurrent && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleGoToCurrent}
+                            disabled={isLoading}
+                            className="ml-1 text-blue-600 hover:text-blue-700"
+                            aria-label={t('budgets.currentPeriod')}
+                          >
+                            <RotateCcw className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                      </div>
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleNext}
+                        disabled={!periodInfo.hasNext || isLoading}
+                        aria-label={t('budgets.nextPeriod')}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-sm text-neutral-600 bg-white p-3 rounded-lg border border-neutral-200">
+                      <Calendar className="h-4 w-4" />
+                      <span>
+                        {format(new Date(periodInfo.start), 'dd MMM yyyy')}
+                        {' - '}
+                        {format(new Date(periodInfo.end), 'dd MMM yyyy')}
+                      </span>
+                      <span className="mx-2">&bull;</span>
+                      <span className="capitalize">{t(`budgets.periods.${budget.periodType}`)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </CardBody>
           </Card>
 
-          {/* Transactions */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-semibold text-neutral-900">
-                {t('budgets.transactionsInBudget')}
-              </h4>
-              <Badge variant="secondary" size="sm">
-                {budgetTransactions.length} {t('budgets.transactions').toLowerCase()}
-              </Badge>
+          {/* Category Breakdown */}
+          {isLoading ? (
+            <div className="flex justify-center py-6">
+              <Spinner size="md" />
             </div>
+          ) : categories.length === 0 ? (
+            <EmptyState
+              icon={<TrendingDown />}
+              title={t('budgets.noTransactionsInBudget')}
+              description={t('budgets.noCategoryAllocations')}
+            />
+          ) : (
+            <div>
+              <h4 className="text-sm font-semibold text-neutral-900 mb-3">
+                {t('budgets.categoryAllocations')}
+              </h4>
+              <div className="space-y-3">
+                {categories.map((cat) => {
+                  const catAllocated = parseFloat(cat.allocated);
+                  const catSpent = parseFloat(cat.spent);
+                  const catRemaining = parseFloat(cat.remaining);
+                  const catPercent = catAllocated > 0 ? (catSpent / catAllocated) * 100 : 0;
 
-            {budgetTransactions.length === 0 ? (
-              <EmptyState
-                icon={<TrendingDown />}
-                title={t('budgets.noTransactionsInBudget')}
-                description={`No expenses found for this budget's categories in this period`}
-              />
-            ) : (
-              <div className="border border-neutral-200 rounded-lg overflow-hidden">
-                <DataTable
-                  data={budgetTransactions}
-                  columns={columns}
-                  keyExtractor={(item) => item.id}
-                  isLoading={isLoading}
-                  hoverable
-                  compact
-                />
+                  return (
+                    <div
+                      key={cat.categoryId}
+                      className="p-3 bg-white rounded-lg border border-neutral-200"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-neutral-900">
+                          {cat.categoryName}
+                        </span>
+                        <Badge
+                          variant={
+                            catPercent >= 100
+                              ? 'danger'
+                              : catPercent >= 80
+                                ? 'warning'
+                                : 'success'
+                          }
+                          size="sm"
+                        >
+                          {catPercent.toFixed(0)}%
+                        </Badge>
+                      </div>
+                      <div className="w-full h-2 bg-neutral-200 rounded-full overflow-hidden mb-2">
+                        <div
+                          className={`h-full transition-all duration-300 ${
+                            catPercent >= 100
+                              ? 'bg-red-600'
+                              : catPercent >= 80
+                                ? 'bg-yellow-500'
+                                : 'bg-green-600'
+                          }`}
+                          style={{ width: `${Math.min(catPercent, 100)}%` }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-xs text-neutral-600">
+                        <span>
+                          <CurrencyText value={catSpent.toString()} /> / <CurrencyText value={catAllocated.toString()} />
+                        </span>
+                        <span className={catRemaining >= 0 ? 'text-green-600' : 'text-red-600'}>
+                          {t('budgets.remaining')}: <CurrencyText value={catRemaining.toString()} />
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Summary */}
-          {budgetTransactions.length > 0 && (
+          {categories.length > 0 && (
             <Card variant="bordered" className="bg-neutral-50">
               <CardBody className="p-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center justify-between">
-                    <span className="text-neutral-600">{t('analytics.total')} {t('budgets.transactions')}</span>
+                    <span className="text-neutral-600">{t('budgets.categoryAllocations')}</span>
                     <span className="font-semibold text-neutral-900">
-                      {budgetTransactions.length}
+                      {categories.length}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-neutral-600">{t('analytics.average')} per transaction</span>
+                    <span className="text-neutral-600">{t('budgets.spent')}</span>
                     <CurrencyText
-                      value={(totalSpent / budgetTransactions.length).toString()}
+                      value={totalSpent.toString()}
                       className="font-semibold text-neutral-900"
                     />
                   </div>

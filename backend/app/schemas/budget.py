@@ -361,6 +361,49 @@ class BudgetSummary(CamelCaseModel):
         }
     )
 
+class BudgetPeriodInfo(CamelCaseModel):
+    """Period navigation information for a budget."""
+    start: date = Field(..., description="Period start date (inclusive)")
+    end: date = Field(..., description="Period end date (inclusive)")
+    offset: int = Field(..., description="Period offset from current (0=current)")
+    is_current: bool = Field(..., description="Whether this is the current period")
+    has_previous: bool = Field(..., description="Whether a previous period exists")
+    has_next: bool = Field(..., description="Whether a next period exists")
+
+
+class BudgetCategorySpending(CamelCaseModel):
+    """Per-category spending breakdown."""
+    category_id: UUID = Field(..., description="Category identifier")
+    category_name: str = Field(..., description="Category display name")
+    allocated: Decimal = Field(..., description="Amount allocated to this category")
+    spent: Decimal = Field(..., description="Amount spent in this category")
+    remaining: Decimal = Field(..., description="Remaining amount (allocated - spent)")
+
+
+class BudgetSpendingInfo(CamelCaseModel):
+    """Aggregated spending information for a budget period."""
+    total_allocated: Decimal = Field(..., description="Total budget amount")
+    total_spent: Decimal = Field(..., description="Total amount spent")
+    total_remaining: Decimal = Field(..., description="Total remaining (allocated - spent)")
+    percent_used: Decimal = Field(..., description="Percentage of budget used")
+    categories: list[BudgetCategorySpending] = Field(
+        default_factory=list,
+        description="Per-category spending breakdown"
+    )
+
+
+class BudgetDetailResponse(CamelCaseModel):
+    """
+    Complete budget detail with period navigation and spending.
+    This is the primary response for the budget detail view.
+    """
+    budget: BudgetResponse = Field(..., description="Budget data")
+    period: BudgetPeriodInfo = Field(..., description="Current period information")
+    spending: BudgetSpendingInfo = Field(..., description="Spending breakdown for the period")
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class BudgetCategoryCreate(CamelCaseModel):
     """Schema for budget category allocation"""
     category_id: UUID
