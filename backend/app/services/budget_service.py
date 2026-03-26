@@ -8,12 +8,13 @@ Handles budget operations with:
 - Alert threshold monitoring
 - Notification creation
 """
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Tuple
 from uuid import UUID
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, func
+from calendar import monthrange
 import logging
 
 from app.models import (
@@ -275,25 +276,127 @@ class BudgetService:
         self.db.commit()
         return True
 
+    def _get_current_period(self, budget: Budget) -> Tuple[date, date]:
+        """
+        Calculate the current period's start and end dates based on
+        the budget's period_type and start_date.
+
+        For recurring budgets (monthly, quarterly, yearly, weekly, daily),
+        finds which period window "today" falls into, anchored to start_date.
+        For custom budgets, uses the explicit start_date/end_date range.
+
+        Returns:
+            Tuple of (period_start, period_end) inclusive dates.
+        """
+        today = date.today()
+        budget_start = budget.start_date
+
+        if budget.period_type == PeriodType.CUSTOM:
+            # Custom: use the explicit date range
+            return (budget_start, budget.end_date or today)
+
+        if budget.period_type == PeriodType.DAILY:
+            return (today, today)
+
+        if budget.period_type == PeriodType.WEEKLY:
+            # Find which week we're in, anchored to budget start's weekday
+            days_since = (today - budget_start).days
+            if days_since < 0:
+                return (budget_start, budget_start + timedelta(days=6))
+            period_num = days_since // 7
+            period_start = budget_start + timedelta(weeks=period_num)
+            period_end = period_start + timedelta(days=6)
+            return (period_start, period_end)
+
+        if budget.period_type == PeriodType.MONTHLY:
+            # Current calendar month, but respect the budget's start day
+            start_day = min(budget_start.day, monthrange(today.year, today.month)[1])
+            period_start = date(today.year, today.month, start_day)
+            # If today is before the start day this month, we're in the previous period
+            if today < period_start:
+                if today.month == 1:
+                    prev_year, prev_month = today.year - 1, 12
+                else:
+                    prev_year, prev_month = today.year, today.month - 1
+                start_day = min(budget_start.day, monthrange(prev_year, prev_month)[1])
+                period_start = date(prev_year, prev_month, start_day)
+
+            # Period end is the day before next period start
+            if period_start.month == 12:
+                next_year, next_month = period_start.year + 1, 1
+            else:
+                next_year, next_month = period_start.year, period_start.month + 1
+            next_start_day = min(budget_start.day, monthrange(next_year, next_month)[1])
+            period_end = date(next_year, next_month, next_start_day) - timedelta(days=1)
+            return (period_start, period_end)
+
+        if budget.period_type == PeriodType.QUARTERLY:
+            # Find which quarter we're in, anchored to budget start
+            months_since = (today.year - budget_start.year) * 12 + (today.month - budget_start.month)
+            if months_since < 0:
+                months_since = 0
+            quarter_num = months_since // 3
+            # Period start
+            total_months = budget_start.month - 1 + (quarter_num * 3)
+            start_year = budget_start.year + total_months // 12
+            start_month = (total_months % 12) + 1
+            start_day = min(budget_start.day, monthrange(start_year, start_month)[1])
+            period_start = date(start_year, start_month, start_day)
+            # If today is before this period_start, go back one quarter
+            if today < period_start and quarter_num > 0:
+                quarter_num -= 1
+                total_months = budget_start.month - 1 + (quarter_num * 3)
+                start_year = budget_start.year + total_months // 12
+                start_month = (total_months % 12) + 1
+                start_day = min(budget_start.day, monthrange(start_year, start_month)[1])
+                period_start = date(start_year, start_month, start_day)
+            # Period end: day before next quarter start
+            next_total = budget_start.month - 1 + ((quarter_num + 1) * 3)
+            end_year = budget_start.year + next_total // 12
+            end_month = (next_total % 12) + 1
+            end_day = min(budget_start.day, monthrange(end_year, end_month)[1])
+            period_end = date(end_year, end_month, end_day) - timedelta(days=1)
+            return (period_start, period_end)
+
+        if budget.period_type == PeriodType.YEARLY:
+            # Which year period we're in
+            year_offset = today.year - budget_start.year
+            start_day = min(budget_start.day, monthrange(budget_start.year + year_offset, budget_start.month)[1])
+            period_start = date(budget_start.year + year_offset, budget_start.month, start_day)
+            if today < period_start and year_offset > 0:
+                year_offset -= 1
+                start_day = min(budget_start.day, monthrange(budget_start.year + year_offset, budget_start.month)[1])
+                period_start = date(budget_start.year + year_offset, budget_start.month, start_day)
+            next_start_day = min(budget_start.day, monthrange(budget_start.year + year_offset + 1, budget_start.month)[1])
+            period_end = date(budget_start.year + year_offset + 1, budget_start.month, next_start_day) - timedelta(days=1)
+            return (period_start, period_end)
+
+        # Fallback
+        return (budget_start, budget.end_date or today)
+
     def calculate_spent(
         self,
         budget: Budget,
         recalculate: bool = True
     ) -> Dict[str, Any]:
         """
-        Calculate spent amount for a budget.
+        Calculate spent amount for a budget in the current period.
+
+        For recurring budgets (monthly, quarterly, etc.), only transactions
+        within the current period window are counted. For custom budgets,
+        the explicit start_date/end_date range is used.
 
         Considers:
+        - Period type → current period window
         - Scope type (user/profile/multi_profile)
         - Category allocations
-        - Date range
 
         Args:
             budget: Budget object
-            recalculate: Whether to recalculate from transactions
+            recalculate: Whether to update BudgetCategory.spent_amount
 
         Returns:
-            Dict with spent amounts and percentages
+            Dict with total_spent, remaining, usage_percentage, category_breakdown
         """
         # Get category IDs
         category_ids = [bc.category_id for bc in budget.budget_categories]
@@ -307,6 +410,9 @@ class BudgetService:
                 'category_breakdown': []
             }
 
+        # Calculate current period date window
+        period_start, period_end = self._get_current_period(budget)
+
         # Determine profile filter based on scope
         profile_filter = self._get_scope_profile_filter(budget)
 
@@ -315,18 +421,15 @@ class BudgetService:
         total_spent = Decimal("0.00")
 
         for bc in budget.budget_categories:
-            # Query transactions for this category
+            # Query transactions for this category within the current period
             query = self.db.query(
                 func.coalesce(func.sum(func.abs(Transaction.amount_clear)), 0)
             ).filter(
                 Transaction.category_id == bc.category_id,
-                Transaction.transaction_date >= budget.start_date,
+                Transaction.transaction_date >= period_start,
+                Transaction.transaction_date <= period_end,
                 Transaction.amount_clear < 0  # Only expenses
             )
-
-            # Apply end date filter
-            if budget.end_date:
-                query = query.filter(Transaction.transaction_date <= budget.end_date)
 
             # Apply profile filter
             if profile_filter:
