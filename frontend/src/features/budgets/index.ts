@@ -14,6 +14,7 @@ export { BudgetDetailsModal } from './components/BudgetDetailsModal';
 export {
   useBudgets,
   useBudget,
+  useBudgetDetail,
   useCreateBudget,
   useUpdateBudget,
   useDeleteBudget,
@@ -41,6 +42,10 @@ export type {
   PeriodType,
   BudgetPeriod,
   BudgetCategoryAllocation,
+  BudgetDetailResponse,
+  BudgetPeriodInfo,
+  BudgetSpendingInfo,
+  BudgetCategorySpending,
 } from './budgets.types';
 
 // Constants

@@ -28,9 +28,9 @@ import { createCreateMutationHook } from '@/hooks/factories/createCreateMutation
 import { createUpdateMutationHook } from '@/hooks/factories/createUpdateMutationHook';
 import { createDeleteMutationHook } from '@/hooks/factories/createDeleteMutationHook';
 import type { ExtractOrvalData } from '@/lib/orval-types';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/services/api';
-import type { BudgetList, BudgetFilters } from './budgets.types';
+import type { BudgetList, BudgetFilters, BudgetDetailResponse } from './budgets.types';
 
 /**
  * Base hook for listing budgets across multiple profiles
@@ -180,6 +180,31 @@ export const useDeleteBudget = () => {
     isDeleting: isPending,
     error,
     reset,
+  };
+};
+
+/**
+ * Hook to get budget detail with period navigation and spending breakdown.
+ * This is the primary hook for the budget detail view.
+ */
+export const useBudgetDetail = (budgetId: string | null, periodOffset: number = 0) => {
+  const result = useQuery<BudgetDetailResponse>({
+    queryKey: ['budget-detail', budgetId, periodOffset],
+    queryFn: async () => {
+      const response = await api.get(
+        `/api/v1/budgets/${budgetId}/detail`,
+        { params: { period_offset: periodOffset } }
+      );
+      return response.data;
+    },
+    enabled: !!budgetId,
+  });
+
+  return {
+    data: result.data ?? null,
+    isLoading: result.isLoading,
+    error: result.error,
+    refetch: result.refetch,
   };
 };
 

@@ -38,3 +38,46 @@ export type BudgetCategoryAllocation = z.infer<typeof budgetCategoryAllocationSc
  * Used in components that expect 'BudgetPeriod' naming
  */
 export type BudgetPeriod = PeriodType;
+
+/**
+ * Period navigation info from the detail endpoint
+ */
+export interface BudgetPeriodInfo {
+  start: string;
+  end: string;
+  offset: number;
+  isCurrent: boolean;
+  hasPrevious: boolean;
+  hasNext: boolean;
+}
+
+/**
+ * Per-category spending breakdown
+ */
+export interface BudgetCategorySpending {
+  categoryId: string;
+  categoryName: string;
+  allocated: string;
+  spent: string;
+  remaining: string;
+}
+
+/**
+ * Aggregated spending info
+ */
+export interface BudgetSpendingInfo {
+  totalAllocated: string;
+  totalSpent: string;
+  totalRemaining: string;
+  percentUsed: string;
+  categories: BudgetCategorySpending[];
+}
+
+/**
+ * Complete budget detail response with period navigation and spending
+ */
+export interface BudgetDetailResponse {
+  budget: BudgetResponse;
+  period: BudgetPeriodInfo;
+  spending: BudgetSpendingInfo;
+}

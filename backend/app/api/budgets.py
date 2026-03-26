@@ -26,7 +26,11 @@ from app.schemas.budget import (
     BudgetResponse,
     BudgetCategoryAllocation,
     BudgetCategoryCreate,
-    BudgetCategoryResponse
+    BudgetCategoryResponse,
+    BudgetDetailResponse,
+    BudgetPeriodInfo,
+    BudgetSpendingInfo,
+    BudgetCategorySpending,
 )
 from pydantic import BaseModel
 
@@ -61,6 +65,84 @@ def get_budget_service(
     return BudgetService(db, rls)
 
 
+def _build_budget_response(budget, spent_info: dict) -> BudgetResponse:
+    """Build a BudgetResponse from a budget ORM object and spent_info dict."""
+    cat_allocs = None
+    if budget.budget_categories:
+        cat_allocs = [
+            BudgetCategoryAllocation(
+                category_id=bc.category_id,
+                category_name=bc.category.name if bc.category else str(bc.category_id),
+                allocated_amount=bc.allocated_amount
+            )
+            for bc in budget.budget_categories
+        ]
+    return BudgetResponse(
+        id=budget.id,
+        user_id=budget.user_id,
+        name=budget.name,
+        scope_type=budget.scope_type,
+        scope_profile_ids=budget.scope_profile_ids,
+        period_type=budget.period_type,
+        start_date=budget.start_date,
+        end_date=budget.end_date,
+        total_amount=budget.total_amount,
+        currency=budget.currency,
+        rollover_enabled=budget.rollover_enabled,
+        alert_threshold_percent=budget.alert_threshold_percent,
+        is_active=budget.is_active,
+        total_spent=spent_info['total_spent'],
+        remaining=spent_info['remaining'],
+        usage_percentage=spent_info['usage_percentage'],
+        category_allocations=cat_allocs,
+        created_at=budget.created_at,
+        updated_at=budget.updated_at
+    )
+
+
+def _build_detail_response(detail: dict) -> BudgetDetailResponse:
+    """Build a BudgetDetailResponse from the service's get_budget_detail result."""
+    budget = detail['budget']
+    period = detail['period']
+    spending = detail['spending']
+
+    budget_resp = _build_budget_response(budget, spending)
+
+    period_info = BudgetPeriodInfo(
+        start=period['start'],
+        end=period['end'],
+        offset=period['offset'],
+        is_current=period['is_current'],
+        has_previous=period['has_previous'],
+        has_next=period['has_next'],
+    )
+
+    categories = [
+        BudgetCategorySpending(
+            category_id=cat['category_id'],
+            category_name=cat['category_name'],
+            allocated=cat['allocated'],
+            spent=cat['spent'],
+            remaining=cat['remaining'],
+        )
+        for cat in spending['category_breakdown']
+    ]
+
+    spending_info = BudgetSpendingInfo(
+        total_allocated=spending['total_allocated'],
+        total_spent=spending['total_spent'],
+        total_remaining=spending['remaining'],
+        percent_used=spending['usage_percentage'],
+        categories=categories,
+    )
+
+    return BudgetDetailResponse(
+        budget=budget_resp,
+        period=period_info,
+        spending=spending_info,
+    )
+
+
 @router.get(
     "/",
     response_model=BudgetListResponse,
@@ -86,42 +168,8 @@ async def list_budgets(
 
     items = []
     for budget in budgets:
-        # Calculate spent
         spent_info = service.calculate_spent(budget, recalculate=False)
-
-        # Build category allocations
-        cat_allocs = None
-        if budget.budget_categories:
-            cat_allocs = [
-                BudgetCategoryAllocation(
-                    category_id=bc.category_id,
-                    category_name=bc.category.name if bc.category else str(bc.category_id),
-                    allocated_amount=bc.allocated_amount
-                )
-                for bc in budget.budget_categories
-            ]
-
-        items.append(BudgetResponse(
-            id=budget.id,
-            user_id=budget.user_id,
-            name=budget.name,
-            scope_type=budget.scope_type,
-            scope_profile_ids=budget.scope_profile_ids,
-            period_type=budget.period_type,
-            start_date=budget.start_date,
-            end_date=budget.end_date,
-            total_amount=budget.total_amount,
-            currency=budget.currency,
-            rollover_enabled=budget.rollover_enabled,
-            alert_threshold_percent=budget.alert_threshold_percent,
-            is_active=budget.is_active,
-            total_spent=spent_info['total_spent'],
-            remaining=spent_info['remaining'],
-            usage_percentage=spent_info['usage_percentage'],
-            category_allocations=cat_allocs,
-            created_at=budget.created_at,
-            updated_at=budget.updated_at
-        ))
+        items.append(_build_budget_response(budget, spent_info))
 
     return BudgetListResponse(items=items, total=len(items))
 
@@ -155,42 +203,8 @@ async def create_budget(
             category_allocations=budget_in.category_allocations
         )
 
-        # Calculate spent
         spent_info = service.calculate_spent(budget, recalculate=True)
-
-        # Build category allocations
-        cat_allocs = None
-        if budget.budget_categories:
-            cat_allocs = [
-                BudgetCategoryAllocation(
-                    category_id=bc.category_id,
-                    category_name=bc.category.name if bc.category else str(bc.category_id),
-                    allocated_amount=bc.allocated_amount
-                )
-                for bc in budget.budget_categories
-            ]
-
-        return BudgetResponse(
-            id=budget.id,
-            user_id=budget.user_id,
-            name=budget.name,
-            scope_type=budget.scope_type,
-            scope_profile_ids=budget.scope_profile_ids,
-            period_type=budget.period_type,
-            start_date=budget.start_date,
-            end_date=budget.end_date,
-            total_amount=budget.total_amount,
-            currency=budget.currency,
-            rollover_enabled=budget.rollover_enabled,
-            alert_threshold_percent=budget.alert_threshold_percent,
-            is_active=budget.is_active,
-            total_spent=spent_info['total_spent'],
-            remaining=spent_info['remaining'],
-            usage_percentage=spent_info['usage_percentage'],
-            category_allocations=cat_allocs,
-            created_at=budget.created_at,
-            updated_at=budget.updated_at
-        )
+        return _build_budget_response(budget, spent_info)
 
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -210,94 +224,49 @@ async def get_budget(
     try:
         budget = service.get_budget(budget_id)
         spent_info = service.calculate_spent(budget, recalculate=False)
+        return _build_budget_response(budget, spent_info)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
-        cat_allocs = None
-        if budget.budget_categories:
-            cat_allocs = [
-                BudgetCategoryAllocation(
-                    category_id=bc.category_id,
-                    category_name=bc.category.name if bc.category else str(bc.category_id),
-                    allocated_amount=bc.allocated_amount
-                )
-                for bc in budget.budget_categories
-            ]
 
-        return BudgetResponse(
-            id=budget.id,
-            user_id=budget.user_id,
-            name=budget.name,
-            scope_type=budget.scope_type,
-            scope_profile_ids=budget.scope_profile_ids,
-            period_type=budget.period_type,
-            start_date=budget.start_date,
-            end_date=budget.end_date,
-            total_amount=budget.total_amount,
-            currency=budget.currency,
-            rollover_enabled=budget.rollover_enabled,
-            alert_threshold_percent=budget.alert_threshold_percent,
-            is_active=budget.is_active,
-            total_spent=spent_info['total_spent'],
-            remaining=spent_info['remaining'],
-            usage_percentage=spent_info['usage_percentage'],
-            category_allocations=cat_allocs,
-            created_at=budget.created_at,
-            updated_at=budget.updated_at
-        )
-
+@router.get(
+    "/{budget_id}/detail",
+    response_model=BudgetDetailResponse,
+    summary="Get budget detail with period navigation",
+    description="Get detailed budget info with spending for a specific period. "
+                "Use period_offset=0 for current period, -1 for previous, +1 for next."
+)
+async def get_budget_detail(
+    budget_id: UUID,
+    service: Annotated[BudgetService, Depends(get_budget_service)],
+    period_offset: int = Query(0, description="Period offset (0=current, -1=previous, +1=next)")
+) -> BudgetDetailResponse:
+    """Get budget detail with period navigation and spending breakdown."""
+    try:
+        detail = service.get_budget_detail(budget_id, period_offset=period_offset)
+        return _build_detail_response(detail)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 
 @router.patch(
     "/{budget_id}",
-    response_model=BudgetResponse,
+    response_model=BudgetDetailResponse,
     summary="Update budget",
-    description="Update an existing budget"
+    description="Update an existing budget. Returns full detail with recalculated spending for current period."
 )
 async def update_budget(
     budget_id: UUID,
     budget_in: BudgetUpdate,
     service: Annotated[BudgetService, Depends(get_budget_service)]
-) -> BudgetResponse:
-    """Update budget."""
+) -> BudgetDetailResponse:
+    """Update budget and return full detail with recalculated spending."""
     try:
         updates = budget_in.model_dump(exclude_unset=True)
-        budget = service.update_budget(budget_id, **updates)
-        spent_info = service.calculate_spent(budget, recalculate=True)
-
-        cat_allocs = None
-        if budget.budget_categories:
-            cat_allocs = [
-                BudgetCategoryAllocation(
-                    category_id=bc.category_id,
-                    category_name=bc.category.name if bc.category else str(bc.category_id),
-                    allocated_amount=bc.allocated_amount
-                )
-                for bc in budget.budget_categories
-            ]
-
-        return BudgetResponse(
-            id=budget.id,
-            user_id=budget.user_id,
-            name=budget.name,
-            scope_type=budget.scope_type,
-            scope_profile_ids=budget.scope_profile_ids,
-            period_type=budget.period_type,
-            start_date=budget.start_date,
-            end_date=budget.end_date,
-            total_amount=budget.total_amount,
-            currency=budget.currency,
-            rollover_enabled=budget.rollover_enabled,
-            alert_threshold_percent=budget.alert_threshold_percent,
-            is_active=budget.is_active,
-            total_spent=spent_info['total_spent'],
-            remaining=spent_info['remaining'],
-            usage_percentage=spent_info['usage_percentage'],
-            category_allocations=cat_allocs,
-            created_at=budget.created_at,
-            updated_at=budget.updated_at
-        )
-
+        service.update_budget(budget_id, **updates)
+        # Return full detail for current period (offset=0)
+        detail = service.get_budget_detail(budget_id, period_offset=0)
+        return _build_detail_response(detail)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 

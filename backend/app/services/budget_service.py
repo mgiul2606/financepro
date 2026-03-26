@@ -288,127 +288,191 @@ class BudgetService:
 
     def _get_current_period(self, budget: Budget) -> Tuple[date, date]:
         """
-        Calculate the current period's start and end dates based on
-        the budget's period_type and start_date.
+        Calculate the current period's start and end dates.
+        Delegates to compute_budget_period with offset=0.
+        """
+        return self.compute_budget_period(budget, offset=0)
 
-        For recurring budgets (monthly, quarterly, yearly, weekly, daily),
-        finds which period window "today" falls into, anchored to start_date.
-        For custom budgets, uses the explicit start_date/end_date range.
+    @staticmethod
+    def _add_months(base_date: date, months: int) -> date:
+        """Add months to a date, clamping day to last day of target month."""
+        total_months = (base_date.year * 12 + base_date.month - 1) + months
+        target_year = total_months // 12
+        target_month = (total_months % 12) + 1
+        target_day = min(base_date.day, monthrange(target_year, target_month)[1])
+        return date(target_year, target_month, target_day)
+
+    def compute_budget_period(self, budget: Budget, offset: int = 0) -> Tuple[date, date]:
+        """
+        Calculate a budget period's start and end dates given an offset.
+
+        offset=0 means the current period (the one containing today).
+        offset=-1 means the previous period, offset=+1 the next, etc.
+
+        For custom budgets, only the fixed range is returned (offset ignored).
 
         Returns:
-            Tuple of (period_start, period_end) inclusive dates.
+            Tuple of (period_start, period_end) where period_end is the last
+            inclusive day of the period.
         """
         today = date.today()
         budget_start = budget.start_date
 
         if budget.period_type == PeriodType.CUSTOM:
-            # Custom: use the explicit date range
             return (budget_start, budget.end_date or today)
 
+        # Step 1: Find the current period number (the one containing today)
         if budget.period_type == PeriodType.DAILY:
-            return (today, today)
+            days_since = (today - budget_start).days
+            current_num = max(0, days_since)
+            period_num = current_num + offset
+            ps = budget_start + timedelta(days=period_num)
+            pe = ps
+            return self._clamp_period(budget, ps, pe)
 
         if budget.period_type == PeriodType.WEEKLY:
-            # Find which week we're in, anchored to budget start's weekday
             days_since = (today - budget_start).days
             if days_since < 0:
-                return (budget_start, budget_start + timedelta(days=6))
-            period_num = days_since // 7
-            period_start = budget_start + timedelta(weeks=period_num)
-            period_end = period_start + timedelta(days=6)
-            return (period_start, period_end)
+                current_num = 0
+            else:
+                current_num = days_since // 7
+            period_num = current_num + offset
+            if period_num < 0:
+                period_num = 0
+            ps = budget_start + timedelta(weeks=period_num)
+            pe = ps + timedelta(days=6)
+            return self._clamp_period(budget, ps, pe)
 
         if budget.period_type == PeriodType.MONTHLY:
-            # Current calendar month, but respect the budget's start day
-            start_day = min(budget_start.day, monthrange(today.year, today.month)[1])
-            period_start = date(today.year, today.month, start_day)
-            # If today is before the start day this month, we're in the previous period
-            if today < period_start:
-                if today.month == 1:
-                    prev_year, prev_month = today.year - 1, 12
-                else:
-                    prev_year, prev_month = today.year, today.month - 1
-                start_day = min(budget_start.day, monthrange(prev_year, prev_month)[1])
-                period_start = date(prev_year, prev_month, start_day)
-
-            # Period end is the day before next period start
-            if period_start.month == 12:
-                next_year, next_month = period_start.year + 1, 1
-            else:
-                next_year, next_month = period_start.year, period_start.month + 1
-            next_start_day = min(budget_start.day, monthrange(next_year, next_month)[1])
-            period_end = date(next_year, next_month, next_start_day) - timedelta(days=1)
-            return (period_start, period_end)
+            # Find which monthly period today falls into
+            current_num = self._find_monthly_period_num(budget_start, today, 1)
+            period_num = current_num + offset
+            if period_num < 0:
+                period_num = 0
+            ps = self._add_months(budget_start, period_num)
+            pe = self._add_months(budget_start, period_num + 1) - timedelta(days=1)
+            return self._clamp_period(budget, ps, pe)
 
         if budget.period_type == PeriodType.QUARTERLY:
-            # Find which quarter we're in, anchored to budget start
-            months_since = (today.year - budget_start.year) * 12 + (today.month - budget_start.month)
-            if months_since < 0:
-                months_since = 0
-            quarter_num = months_since // 3
-            # Period start
-            total_months = budget_start.month - 1 + (quarter_num * 3)
-            start_year = budget_start.year + total_months // 12
-            start_month = (total_months % 12) + 1
-            start_day = min(budget_start.day, monthrange(start_year, start_month)[1])
-            period_start = date(start_year, start_month, start_day)
-            # If today is before this period_start, go back one quarter
-            if today < period_start and quarter_num > 0:
-                quarter_num -= 1
-                total_months = budget_start.month - 1 + (quarter_num * 3)
-                start_year = budget_start.year + total_months // 12
-                start_month = (total_months % 12) + 1
-                start_day = min(budget_start.day, monthrange(start_year, start_month)[1])
-                period_start = date(start_year, start_month, start_day)
-            # Period end: day before next quarter start
-            next_total = budget_start.month - 1 + ((quarter_num + 1) * 3)
-            end_year = budget_start.year + next_total // 12
-            end_month = (next_total % 12) + 1
-            end_day = min(budget_start.day, monthrange(end_year, end_month)[1])
-            period_end = date(end_year, end_month, end_day) - timedelta(days=1)
-            return (period_start, period_end)
+            current_num = self._find_monthly_period_num(budget_start, today, 3)
+            period_num = current_num + offset
+            if period_num < 0:
+                period_num = 0
+            ps = self._add_months(budget_start, period_num * 3)
+            pe = self._add_months(budget_start, (period_num + 1) * 3) - timedelta(days=1)
+            return self._clamp_period(budget, ps, pe)
 
         if budget.period_type == PeriodType.YEARLY:
-            # Which year period we're in
-            year_offset = today.year - budget_start.year
-            start_day = min(budget_start.day, monthrange(budget_start.year + year_offset, budget_start.month)[1])
-            period_start = date(budget_start.year + year_offset, budget_start.month, start_day)
-            if today < period_start and year_offset > 0:
-                year_offset -= 1
-                start_day = min(budget_start.day, monthrange(budget_start.year + year_offset, budget_start.month)[1])
-                period_start = date(budget_start.year + year_offset, budget_start.month, start_day)
-            next_start_day = min(budget_start.day, monthrange(budget_start.year + year_offset + 1, budget_start.month)[1])
-            period_end = date(budget_start.year + year_offset + 1, budget_start.month, next_start_day) - timedelta(days=1)
-            return (period_start, period_end)
+            current_num = self._find_monthly_period_num(budget_start, today, 12)
+            period_num = current_num + offset
+            if period_num < 0:
+                period_num = 0
+            ps = self._add_months(budget_start, period_num * 12)
+            pe = self._add_months(budget_start, (period_num + 1) * 12) - timedelta(days=1)
+            return self._clamp_period(budget, ps, pe)
 
         # Fallback
         return (budget_start, budget.end_date or today)
 
+    def _find_monthly_period_num(self, budget_start: date, target: date, months_per_period: int) -> int:
+        """Find which period number (0-based) a target date falls into."""
+        if target < budget_start:
+            return 0
+        # Approximate the period number from months elapsed
+        months_since = (target.year - budget_start.year) * 12 + (target.month - budget_start.month)
+        period_num = max(0, months_since // months_per_period)
+        # Verify and adjust: target must be >= period_start
+        ps = self._add_months(budget_start, period_num * months_per_period)
+        if target < ps and period_num > 0:
+            period_num -= 1
+        else:
+            # Check if we should be in the next period
+            next_ps = self._add_months(budget_start, (period_num + 1) * months_per_period)
+            if target >= next_ps:
+                period_num += 1
+        return period_num
+
+    def _clamp_period(self, budget: Budget, ps: date, pe: date) -> Tuple[date, date]:
+        """Ensure period doesn't exceed budget boundaries."""
+        if ps < budget.start_date:
+            ps = budget.start_date
+        if budget.end_date and pe > budget.end_date:
+            pe = budget.end_date
+        return (ps, pe)
+
+    def get_period_navigation_info(self, budget: Budget, offset: int = 0) -> Dict[str, Any]:
+        """
+        Get full period information including navigation flags.
+
+        Returns dict with:
+            start, end, offset, is_current, has_previous, has_next, label
+        """
+        today = date.today()
+        period_start, period_end = self.compute_budget_period(budget, offset)
+
+        # Check if this is the current period (contains today)
+        current_start, current_end = self.compute_budget_period(budget, 0)
+        is_current = (period_start == current_start)
+
+        # Check has_previous: can we go back one more period?
+        has_previous = True
+        if budget.period_type == PeriodType.CUSTOM:
+            has_previous = False
+        else:
+            prev_start, _ = self.compute_budget_period(budget, offset - 1)
+            # If going back yields the same period, we're at the beginning
+            if prev_start == period_start:
+                has_previous = False
+            # Don't go before budget start
+            if prev_start < budget.start_date:
+                has_previous = False
+
+        # Check has_next: allow up to 1 period in the future beyond current
+        has_next = True
+        if budget.period_type == PeriodType.CUSTOM:
+            has_next = False
+        else:
+            next_start, next_end = self.compute_budget_period(budget, offset + 1)
+            if next_start == period_start:
+                has_next = False
+            # Don't go more than 1 period beyond current
+            future_start, _ = self.compute_budget_period(budget, 0)
+            future_next_start, _ = self.compute_budget_period(budget, 1)
+            if next_start > future_next_start:
+                has_next = False
+            # Respect end_date
+            if budget.end_date and next_start > budget.end_date:
+                has_next = False
+
+        return {
+            'start': period_start,
+            'end': period_end,
+            'offset': offset,
+            'is_current': is_current,
+            'has_previous': has_previous,
+            'has_next': has_next,
+        }
+
     def calculate_spent(
         self,
         budget: Budget,
-        recalculate: bool = True
+        recalculate: bool = True,
+        period_start: Optional[date] = None,
+        period_end: Optional[date] = None
     ) -> Dict[str, Any]:
         """
-        Calculate spent amount for a budget in the current period.
-
-        For recurring budgets (monthly, quarterly, etc.), only transactions
-        within the current period window are counted. For custom budgets,
-        the explicit start_date/end_date range is used.
-
-        Considers:
-        - Period type → current period window
-        - Scope type (user/profile/multi_profile)
-        - Category allocations
+        Calculate spent amount for a budget in the given (or current) period.
 
         Args:
             budget: Budget object
             recalculate: Whether to update BudgetCategory.spent_amount
+            period_start: Explicit period start (if None, uses current period)
+            period_end: Explicit period end (if None, uses current period)
 
         Returns:
-            Dict with total_spent, remaining, usage_percentage, category_breakdown
+            Dict with total_spent, total_allocated, remaining, usage_percentage,
+            category_breakdown (per-category details with category_name)
         """
-        # Get category IDs
         category_ids = [bc.category_id for bc in budget.budget_categories]
 
         if not category_ids:
@@ -420,40 +484,45 @@ class BudgetService:
                 'category_breakdown': []
             }
 
-        # Calculate current period date window
-        period_start, period_end = self._get_current_period(budget)
+        # Use explicit dates or calculate from current period
+        if period_start is None or period_end is None:
+            period_start, period_end = self._get_current_period(budget)
 
-        # Determine profile filter based on scope
+        # period_end is inclusive in our model, so for the query we use
+        # transaction_date < (period_end + 1 day) to avoid overlap
+        query_end_exclusive = period_end + timedelta(days=1)
+
         profile_filter = self._get_scope_profile_filter(budget)
 
-        # Calculate spent per category
         category_breakdown = []
         total_spent = Decimal("0.00")
 
         for bc in budget.budget_categories:
-            # Query transactions for this category within the current period
-            # Filter by expense transaction types (amounts are stored as positive)
             query = self.db.query(
                 func.coalesce(func.sum(Transaction.amount_clear), 0)
             ).filter(
                 Transaction.category_id == bc.category_id,
                 Transaction.transaction_date >= period_start,
-                Transaction.transaction_date <= period_end,
+                Transaction.transaction_date < query_end_exclusive,
                 Transaction.transaction_type.in_(EXPENSE_TRANSACTION_TYPES),
             )
 
-            # Apply profile filter
             if profile_filter:
                 query = query.filter(Transaction.financial_profile_id.in_(profile_filter))
 
             spent = Decimal(str(query.scalar() or 0))
 
-            # Update spent_amount in BudgetCategory
             if recalculate:
                 bc.spent_amount = spent
 
+            # Resolve category name
+            cat_name = str(bc.category_id)
+            if bc.category:
+                cat_name = bc.category.name
+
             category_breakdown.append({
                 'category_id': bc.category_id,
+                'category_name': cat_name,
                 'allocated': bc.allocated_amount,
                 'spent': spent,
                 'remaining': bc.allocated_amount - spent,
@@ -474,6 +543,44 @@ class BudgetService:
             'remaining': remaining,
             'usage_percentage': usage_percentage,
             'category_breakdown': category_breakdown
+        }
+
+    def get_budget_detail(
+        self,
+        budget_id: UUID,
+        period_offset: int = 0
+    ) -> Dict[str, Any]:
+        """
+        Get complete budget detail with period navigation and spending.
+
+        This is the single source of truth for all budget display data.
+        All spending is calculated on-the-fly from real transactions.
+
+        Args:
+            budget_id: Budget UUID
+            period_offset: Period offset (0=current, -1=previous, +1=next)
+
+        Returns:
+            Dict with budget, period info, and spending breakdown
+        """
+        budget = self.get_budget(budget_id)
+
+        # For custom budgets, ignore offset
+        if budget.period_type == PeriodType.CUSTOM:
+            period_offset = 0
+
+        period_info = self.get_period_navigation_info(budget, period_offset)
+        spending = self.calculate_spent(
+            budget,
+            recalculate=(period_offset == 0),
+            period_start=period_info['start'],
+            period_end=period_info['end']
+        )
+
+        return {
+            'budget': budget,
+            'period': period_info,
+            'spending': spending,
         }
 
     def _get_scope_profile_filter(self, budget: Budget) -> Optional[List[UUID]]:

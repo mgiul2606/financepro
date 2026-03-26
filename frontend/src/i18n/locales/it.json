@@ -259,7 +259,12 @@
     "totalAllocated": "Allocato",
     "overAllocated": "oltre il budget",
     "categoryAllocationsHint": "Seleziona le categorie di spesa monitorate da questo budget. Le transazioni in queste categorie nel periodo del budget verranno conteggiate.",
+    "previousPeriod": "Periodo precedente",
+    "nextPeriod": "Periodo successivo",
+    "currentPeriod": "Periodo corrente",
     "periods": {
+      "daily": "Giornaliero",
+      "weekly": "Settimanale",
       "monthly": "Mensile",
       "quarterly": "Trimestrale",
       "yearly": "Annuale",
