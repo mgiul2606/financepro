@@ -30,13 +30,13 @@ from app.models.enums import TransactionType, ScopeType
 from app.core.rls import get_rls_context
 from app.api.dependencies import get_current_user
 from app.services import ExchangeRateService
-from pydantic import BaseModel
+from app.schemas.base import CamelCaseModel
 
 router = APIRouter()
 
 
 # Response models
-class CategorySpending(BaseModel):
+class CategorySpending(CamelCaseModel):
     category_id: str
     category_name: str
     total_amount: float
@@ -45,7 +45,7 @@ class CategorySpending(BaseModel):
     currency: str
 
 
-class PeriodSummary(BaseModel):
+class PeriodSummary(CamelCaseModel):
     period: str
     total_income: float
     total_expenses: float
@@ -54,14 +54,14 @@ class PeriodSummary(BaseModel):
     currency: str
 
 
-class SpendingTrend(BaseModel):
+class SpendingTrend(CamelCaseModel):
     period: str
     amount: float
     change_from_previous: float
     change_percentage: float
 
 
-class BudgetVsActual(BaseModel):
+class BudgetVsActual(CamelCaseModel):
     budget_id: str
     budget_name: str
     budget_amount: float
@@ -71,7 +71,7 @@ class BudgetVsActual(BaseModel):
     is_over_budget: bool
 
 
-class ProfileSummary(BaseModel):
+class ProfileSummary(CamelCaseModel):
     profile_id: str
     profile_name: str
     total_income: float
@@ -80,7 +80,7 @@ class ProfileSummary(BaseModel):
     currency: str
 
 
-class ExpenseAnalysisResponse(BaseModel):
+class ExpenseAnalysisResponse(CamelCaseModel):
     total_expenses: float
     currency: str
     by_category: List[CategorySpending]
@@ -89,7 +89,7 @@ class ExpenseAnalysisResponse(BaseModel):
     transaction_count: int
 
 
-class IncomeAnalysisResponse(BaseModel):
+class IncomeAnalysisResponse(CamelCaseModel):
     total_income: float
     currency: str
     by_category: List[CategorySpending]
@@ -98,7 +98,7 @@ class IncomeAnalysisResponse(BaseModel):
     transaction_count: int
 
 
-class TrendAnalysisResponse(BaseModel):
+class TrendAnalysisResponse(CamelCaseModel):
     trends: List[SpendingTrend]
     average: float
     min_amount: float
@@ -107,7 +107,7 @@ class TrendAnalysisResponse(BaseModel):
     trend_direction: str  # "increasing", "decreasing", "stable"
 
 
-class BudgetComparisonResponse(BaseModel):
+class BudgetComparisonResponse(CamelCaseModel):
     comparisons: List[BudgetVsActual]
     total_budget: float
     total_actual: float
@@ -115,7 +115,7 @@ class BudgetComparisonResponse(BaseModel):
     currency: str
 
 
-class MultiProfileAnalysisResponse(BaseModel):
+class MultiProfileAnalysisResponse(CamelCaseModel):
     profiles: List[ProfileSummary]
     total_income: float
     total_expenses: float
@@ -123,7 +123,7 @@ class MultiProfileAnalysisResponse(BaseModel):
     currency: str
 
 
-class PeriodComparisonResponse(BaseModel):
+class PeriodComparisonResponse(CamelCaseModel):
     period1: PeriodSummary
     period2: PeriodSummary
     income_change: float
@@ -132,7 +132,7 @@ class PeriodComparisonResponse(BaseModel):
     expense_change_percentage: float
 
 
-class CashFlowResponse(BaseModel):
+class CashFlowResponse(CamelCaseModel):
     period_summaries: List[PeriodSummary]
     total_income: float
     total_expenses: float
