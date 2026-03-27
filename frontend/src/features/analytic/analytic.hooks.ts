@@ -1,11 +1,10 @@
 /**
  * React Query hooks for Analytics operations
  *
- * MIGRATION STATUS (2026-03-16):
- * - useAnalyticOverview: MIGRATED to real API (expenses + income endpoints)
+ * MIGRATION STATUS (2026-03-27):
+ * - useAnalyticOverview: MIGRATED to real API (expenses + income + period-comparison)
  * - useCategoryBreakdown: MIGRATED to real API (expenses endpoint byCategory)
  * - useTimeSeriesData: MIGRATED to real API (cash flow endpoint periodSummaries)
- * - useSpendingTrends: MIGRATED to real API (trends endpoint)
  * - useMerchantAnalysis: MOCK - no backend endpoint
  * - useAnomalies: MOCK - no backend endpoint
  * - useRecurringPatterns: MOCK - no backend endpoint
@@ -17,10 +16,12 @@ import {
   useAnalyzeExpensesApiV1AnalysisExpensesGet,
   useAnalyzeIncomeApiV1AnalysisIncomeGet,
   useGetCashFlowApiV1AnalysisCashFlowGet,
+  useComparePeriodsApiV1AnalysisPeriodComparisonGet,
 } from '@/api/generated/analysis/analysis';
 import type { ExpenseAnalysisResponse } from '@/api/generated/models/expenseAnalysisResponse';
 import type { IncomeAnalysisResponse } from '@/api/generated/models/incomeAnalysisResponse';
 import type { CashFlowResponse } from '@/api/generated/models/cashFlowResponse';
+import type { PeriodComparisonResponse } from '@/api/generated/models/periodComparisonResponse';
 import type { CategorySpending } from '@/api/generated/models/categorySpending';
 import type { PeriodSummary } from '@/api/generated/models/periodSummary';
 import { mockAnalyticApi } from './api/mockAnalyticApi';
@@ -57,16 +58,48 @@ export const analyticKeys = {
 } as const;
 
 // ============================================================================
+// Helpers
+// ============================================================================
+
+function getDefaultDateRange() {
+  const now = new Date();
+  const endDate = now.toISOString().split('T')[0];
+  const startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+  return { startDate, endDate };
+}
+
+function getPreviousPeriodDates(startDate: string, endDate: string) {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const durationMs = end.getTime() - start.getTime();
+  const prevEnd = new Date(start.getTime() - 1); // day before current start
+  const prevStart = new Date(prevEnd.getTime() - durationMs);
+  return {
+    prevStartDate: prevStart.toISOString().split('T')[0],
+    prevEndDate: prevEnd.toISOString().split('T')[0],
+  };
+}
+
+function computeMonthsFromDates(startDate: string, endDate: string): number {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const diffMs = end.getTime() - start.getTime();
+  return Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24 * 30)));
+}
+
+// ============================================================================
 // Overview & Summary Hooks — MIGRATED TO REAL API
 // ============================================================================
 
 /**
  * Hook to fetch analytics overview/summary data
  * Uses real backend: GET /api/v1/analysis/expenses + GET /api/v1/analysis/income
+ * + GET /api/v1/analysis/period-comparison for comparison deltas
  */
 export const useAnalyticOverview = (filters?: AnalyticFilters) => {
-  const startDate = filters?.dateFrom ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-  const endDate = filters?.dateTo ?? new Date().toISOString().split('T')[0];
+  const defaults = getDefaultDateRange();
+  const startDate = filters?.dateFrom ?? defaults.startDate;
+  const endDate = filters?.dateTo ?? defaults.endDate;
 
   const expenseQuery = useAnalyzeExpensesApiV1AnalysisExpensesGet(
     { start_date: startDate, end_date: endDate },
@@ -78,12 +111,24 @@ export const useAnalyticOverview = (filters?: AnalyticFilters) => {
     { query: { staleTime: ANALYTIC_STALE_TIMES.overview } },
   );
 
+  const { prevStartDate, prevEndDate } = getPreviousPeriodDates(startDate, endDate);
+  const comparisonQuery = useComparePeriodsApiV1AnalysisPeriodComparisonGet(
+    {
+      period1_start: prevStartDate,
+      period1_end: prevEndDate,
+      period2_start: startDate,
+      period2_end: endDate,
+    },
+    { query: { staleTime: ANALYTIC_STALE_TIMES.overview } },
+  );
+
   const isLoading = expenseQuery.isLoading || incomeQuery.isLoading;
   const isError = expenseQuery.isError || incomeQuery.isError;
   const error = expenseQuery.error || incomeQuery.error;
 
   const expenseData = expenseQuery.data?.data as ExpenseAnalysisResponse | undefined;
   const incomeData = incomeQuery.data?.data as IncomeAnalysisResponse | undefined;
+  const comparisonData = comparisonQuery.data?.data as PeriodComparisonResponse | undefined;
 
   // Map backend responses to the AnalyticOverview shape expected by UI
   const overview: AnalyticOverview | undefined =
@@ -99,7 +144,7 @@ export const useAnalyticOverview = (filters?: AnalyticFilters) => {
           transactionCount:
             expenseData.transactionCount + incomeData.transactionCount,
           topCategory:
-            expenseData.byCategory.length > 0
+            (expenseData.byCategory?.length ?? 0) > 0
               ? expenseData.byCategory.reduce((max: CategorySpending, cat: CategorySpending) =>
                   cat.totalAmount > max.totalAmount ? cat : max,
                 ).categoryName
@@ -114,8 +159,8 @@ export const useAnalyticOverview = (filters?: AnalyticFilters) => {
               ),
             ),
           comparisonToPrevious: {
-            spent: 0,
-            income: 0,
+            spent: comparisonData?.expenseChangePercentage ?? 0,
+            income: comparisonData?.incomeChangePercentage ?? 0,
             balance: 0,
           },
         }
@@ -124,6 +169,7 @@ export const useAnalyticOverview = (filters?: AnalyticFilters) => {
   const refetch = () => {
     expenseQuery.refetch();
     incomeQuery.refetch();
+    comparisonQuery.refetch();
   };
 
   return {
@@ -143,9 +189,14 @@ export const useAnalyticOverview = (filters?: AnalyticFilters) => {
  * Hook to fetch time series data for charts
  * Uses real backend: GET /api/v1/analysis/cash-flow
  */
-export const useTimeSeriesData = (_filters?: AnalyticFilters) => {
+export const useTimeSeriesData = (filters?: AnalyticFilters) => {
+  const defaults = getDefaultDateRange();
+  const startDate = filters?.dateFrom ?? defaults.startDate;
+  const endDate = filters?.dateTo ?? defaults.endDate;
+  const months = computeMonthsFromDates(startDate, endDate);
+
   const cashFlowQuery = useGetCashFlowApiV1AnalysisCashFlowGet(
-    { months: 1 },
+    { months },
     { query: { staleTime: ANALYTIC_STALE_TIMES.timeSeries } },
   );
 
@@ -178,8 +229,9 @@ export const useTimeSeriesData = (_filters?: AnalyticFilters) => {
  * Uses real backend: GET /api/v1/analysis/expenses (byCategory field)
  */
 export const useCategoryBreakdown = (filters?: AnalyticFilters) => {
-  const startDate = filters?.dateFrom ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-  const endDate = filters?.dateTo ?? new Date().toISOString().split('T')[0];
+  const defaults = getDefaultDateRange();
+  const startDate = filters?.dateFrom ?? defaults.startDate;
+  const endDate = filters?.dateTo ?? defaults.endDate;
 
   const expenseQuery = useAnalyzeExpensesApiV1AnalysisExpensesGet(
     { start_date: startDate, end_date: endDate },
