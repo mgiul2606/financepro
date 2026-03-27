@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
-import { Tabs } from '@/core/components/atomic/Tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/core/components/atomic/Tabs';
 import { Spinner } from '@/core/components/atomic/Spinner';
 import { Button } from '@/core/components/atomic/Button';
 import { CurrencyText } from '@/core/components/atomic';
@@ -85,7 +85,17 @@ export const AnalyticPage = () => {
             defaultValue="overview"
             value={activeTab}
             onValueChange={setActiveTab}
-          />
+          >
+            <TabsList>
+              <TabsTrigger value="overview">{t('analytics.overview')}</TabsTrigger>
+              <TabsTrigger value="trends">{t('analytics.trends')}</TabsTrigger>
+              <TabsTrigger value="categories">{t('analytics.categories')}</TabsTrigger>
+              <TabsTrigger value="merchants">{t('analytics.merchants')}</TabsTrigger>
+              <TabsTrigger value="anomalies">{t('analytics.anomalies')}</TabsTrigger>
+              <TabsTrigger value="patterns">{t('analytics.patterns')}</TabsTrigger>
+              <TabsTrigger value="reports">{t('analytics.reports')}</TabsTrigger>
+            </TabsList>
+          </Tabs>
         }
       />
 
