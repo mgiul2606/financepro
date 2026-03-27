@@ -17,8 +17,12 @@ import {
   useAnalyzeExpensesApiV1AnalysisExpensesGet,
   useAnalyzeIncomeApiV1AnalysisIncomeGet,
   useGetCashFlowApiV1AnalysisCashFlowGet,
-  useGetSpendingTrendsApiV1AnalysisTrendsGet,
 } from '@/api/generated/analysis/analysis';
+import type { ExpenseAnalysisResponse } from '@/api/generated/models/expenseAnalysisResponse';
+import type { IncomeAnalysisResponse } from '@/api/generated/models/incomeAnalysisResponse';
+import type { CashFlowResponse } from '@/api/generated/models/cashFlowResponse';
+import type { CategorySpending } from '@/api/generated/models/categorySpending';
+import type { PeriodSummary } from '@/api/generated/models/periodSummary';
 import { mockAnalyticApi } from './api/mockAnalyticApi';
 import { ANALYTIC_STALE_TIMES } from './analytic.constants';
 import type {
@@ -78,27 +82,30 @@ export const useAnalyticOverview = (filters?: AnalyticFilters) => {
   const isError = expenseQuery.isError || incomeQuery.isError;
   const error = expenseQuery.error || incomeQuery.error;
 
+  const expenseData = expenseQuery.data?.data as ExpenseAnalysisResponse | undefined;
+  const incomeData = incomeQuery.data?.data as IncomeAnalysisResponse | undefined;
+
   // Map backend responses to the AnalyticOverview shape expected by UI
   const overview: AnalyticOverview | undefined =
-    expenseQuery.data?.data && incomeQuery.data?.data
+    expenseData && incomeData
       ? {
           period: {
-            from: expenseQuery.data.data.periodStart,
-            to: expenseQuery.data.data.periodEnd,
+            from: expenseData.periodStart,
+            to: expenseData.periodEnd,
           },
-          totalSpent: expenseQuery.data.data.totalExpenses,
-          totalIncome: incomeQuery.data.data.totalIncome,
-          netBalance: incomeQuery.data.data.totalIncome - expenseQuery.data.data.totalExpenses,
+          totalSpent: expenseData.totalExpenses,
+          totalIncome: incomeData.totalIncome,
+          netBalance: incomeData.totalIncome - expenseData.totalExpenses,
           transactionCount:
-            expenseQuery.data.data.transactionCount + incomeQuery.data.data.transactionCount,
+            expenseData.transactionCount + incomeData.transactionCount,
           topCategory:
-            expenseQuery.data.data.byCategory.length > 0
-              ? expenseQuery.data.data.byCategory.reduce((max, cat) =>
+            expenseData.byCategory.length > 0
+              ? expenseData.byCategory.reduce((max: CategorySpending, cat: CategorySpending) =>
                   cat.totalAmount > max.totalAmount ? cat : max,
                 ).categoryName
               : '-',
           averageDaily:
-            expenseQuery.data.data.totalExpenses /
+            expenseData.totalExpenses /
             Math.max(
               1,
               Math.ceil(
@@ -136,15 +143,17 @@ export const useAnalyticOverview = (filters?: AnalyticFilters) => {
  * Hook to fetch time series data for charts
  * Uses real backend: GET /api/v1/analysis/cash-flow
  */
-export const useTimeSeriesData = (filters?: AnalyticFilters) => {
+export const useTimeSeriesData = (_filters?: AnalyticFilters) => {
   const cashFlowQuery = useGetCashFlowApiV1AnalysisCashFlowGet(
     { months: 1 },
     { query: { staleTime: ANALYTIC_STALE_TIMES.timeSeries } },
   );
 
+  const cashFlowData = cashFlowQuery.data?.data as CashFlowResponse | undefined;
+
   // Map PeriodSummary[] to TimeSeriesData[] expected by the UI
   const timeSeries: TimeSeriesData[] =
-    cashFlowQuery.data?.data?.periodSummaries?.map((ps) => ({
+    cashFlowData?.periodSummaries?.map((ps: PeriodSummary) => ({
       date: ps.period,
       income: ps.totalIncome,
       expenses: ps.totalExpenses,
@@ -183,9 +192,11 @@ export const useCategoryBreakdown = (filters?: AnalyticFilters) => {
     '#06b6d4', '#ec4899', '#64748b', '#f97316', '#14b8a6',
   ];
 
+  const catExpenseData = expenseQuery.data?.data as ExpenseAnalysisResponse | undefined;
+
   // Map CategorySpending[] to CategoryBreakdown[] expected by UI
   const categories: CategoryBreakdown[] =
-    expenseQuery.data?.data?.byCategory?.map((cat, index) => ({
+    catExpenseData?.byCategory?.map((cat: CategorySpending, index: number) => ({
       category: cat.categoryName,
       amount: cat.totalAmount,
       percentage: cat.percentage,
