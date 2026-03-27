@@ -12,7 +12,7 @@ Provides comprehensive financial analysis endpoints:
 from app.api.utils import get_by_id, children_for
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_, extract
+from sqlalchemy import func
 from typing import Annotated, Optional, List
 from uuid import UUID
 from datetime import date, datetime, timedelta
@@ -26,10 +26,8 @@ from app.models.category import Category
 from app.models.financial_profile import FinancialProfile
 from app.models.budget import Budget, BudgetCategory
 from app.models.exchange_rate import ExchangeRate
-from app.models.enums import TransactionType, ScopeType
-from app.core.rls import get_rls_context
+from app.models.enums import ScopeType
 from app.api.dependencies import get_current_user
-from app.services import ExchangeRateService
 from app.schemas.base import CamelCaseModel
 
 router = APIRouter()
@@ -211,8 +209,14 @@ async def analyze_expenses(
         Transaction.amount_clear < 0  # Expenses are negative
     ).all()
 
+    # Pre-fetch all categories for this user to avoid N+1 queries
+    user_categories = {
+        str(c.id): c.name
+        for c in db.query(Category).filter(Category.user_id == current_user.id).all()
+    }
+
     # Aggregate by category
-    category_totals = {}
+    category_totals: dict = {}
     total_expenses = Decimal("0.00")
 
     for txn in transactions:
@@ -225,9 +229,8 @@ async def analyze_expenses(
 
         cat_id = str(txn.category_id) if txn.category_id else "uncategorized"
         if cat_id not in category_totals:
-            category = db.query(Category).filter(Category.id == txn.category_id).first() if txn.category_id else None
             category_totals[cat_id] = {
-                "category_name": category.name if category else "Uncategorized",
+                "category_name": user_categories.get(cat_id, "Uncategorized"),
                 "total_amount": Decimal("0.00"),
                 "transaction_count": 0
             }
@@ -294,8 +297,14 @@ async def analyze_income(
         Transaction.amount_clear > 0  # Income is positive
     ).all()
 
+    # Pre-fetch all categories for this user to avoid N+1 queries
+    user_categories = {
+        str(c.id): c.name
+        for c in db.query(Category).filter(Category.user_id == current_user.id).all()
+    }
+
     # Aggregate by category
-    category_totals = {}
+    category_totals: dict = {}
     total_income = Decimal("0.00")
 
     for txn in transactions:
@@ -307,9 +316,8 @@ async def analyze_income(
 
         cat_id = str(txn.category_id) if txn.category_id else "uncategorized"
         if cat_id not in category_totals:
-            category = db.query(Category).filter(Category.id == txn.category_id).first() if txn.category_id else None
             category_totals[cat_id] = {
-                "category_name": category.name if category else "Uncategorized",
+                "category_name": user_categories.get(cat_id, "Uncategorized"),
                 "total_amount": Decimal("0.00"),
                 "transaction_count": 0
             }
