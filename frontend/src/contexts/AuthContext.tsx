@@ -2,6 +2,7 @@
 // src/contexts/AuthContext.tsx
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
 
 interface User {
@@ -26,13 +27,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   // Logout definito prima (serve per fetchUserData)
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     setToken(null);
     setUser(null);
-  }, []);
+    // Clear all React Query cache to prevent stale data from previous user
+    queryClient.clear();
+  }, [queryClient]);
 
   // Wrapped in useCallback per evitare re-render infiniti
   const fetchUserData = useCallback(async (authToken: string) => {

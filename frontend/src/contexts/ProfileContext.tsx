@@ -54,7 +54,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Fetch data
   const { profiles: profilesList, isLoading: profilesLoading, error: profilesError, refetch: refetchProfiles } = useProfiles();
-  const { mainProfile: mainProfileData, isLoading: mainProfileLoading, error: mainProfileError, refetch: refetchMainProfile } = useMainProfile();
+  const { mainProfileId: fetchedMainProfileId, isLoading: mainProfileLoading, error: mainProfileError, refetch: refetchMainProfile } = useMainProfile();
 
   // Mutations
   const setMainProfileMutation = useSetMainProfile();
@@ -99,10 +99,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Update local state when main profile data changes
   useEffect(() => {
-    if (mainProfileData?.id) {
-      setMainProfileId(mainProfileData.id);
+    if (fetchedMainProfileId) {
+      setMainProfileId(fetchedMainProfileId);
     }
-  }, [mainProfileData]);
+  }, [fetchedMainProfileId]);
 
   // Initialize: when profiles are loaded, set up initial state
   // Use profilesList to check if data actually arrived (not just loading finished)
@@ -125,10 +125,10 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
         // All profiles are inactive - show creation modal
         setShowCreateProfileModal(true);
         setIsInitialized(true);
-      } else if (mainProfileData?.id) {
+      } else if (fetchedMainProfileId) {
         // Has profiles and main profile - select it
-        setActiveProfileIdsState([mainProfileData.id]);
-        setMainProfileId(mainProfileData.id);
+        setActiveProfileIdsState([fetchedMainProfileId]);
+        setMainProfileId(fetchedMainProfileId);
         setIsInitialized(true);
       } else {
         // Has profiles but no main - select first active one and set it as main in backend
@@ -145,7 +145,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
           });
       }
     }
-  }, [queriesLoading, isInitialized, profilesList, mainProfileData, setMainProfileMutation, refetchMainProfile]);
+  }, [queriesLoading, isInitialized, profilesList, fetchedMainProfileId, setMainProfileMutation, refetchMainProfile]);
 
   // Auto-show modal when profiles become empty (e.g., after deletion)
   useEffect(() => {

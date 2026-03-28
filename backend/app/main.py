@@ -1,6 +1,7 @@
 # backend/app/main.py
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.openapi.utils import get_openapi
 from datetime import datetime
 import logging
@@ -82,6 +83,15 @@ app.add_middleware(
     allow_headers=settings.cors.allow_headers,
 )
 logger.info(f"CORS middleware configured with origins: {settings.cors.allowed_origins}")
+
+
+# Global exception handler for RLS PermissionError → 403
+@app.exception_handler(PermissionError)
+async def permission_error_handler(request: Request, exc: PermissionError):
+    return JSONResponse(
+        status_code=403,
+        content={"detail": str(exc)},
+    )
 
 
 def custom_openapi():

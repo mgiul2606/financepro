@@ -44,9 +44,12 @@ export const currencySchema = z
 
 /**
  * Account Create Schema
- * Base schema from Orval with custom validation messages
+ * Extends base Orval schema to make financialProfileId optional in the form
+ * (it gets injected from ProfileContext before submission)
  */
-export const accountCreateSchema = CreateAccountApiV1AccountsPostBody;
+export const accountCreateSchema = CreateAccountApiV1AccountsPostBody.extend({
+  financialProfileId: z.string().uuid().optional().or(z.literal('')),
+});
 
 /**
  * Account Update Schema

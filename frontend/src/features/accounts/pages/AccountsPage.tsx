@@ -19,6 +19,7 @@ import { CurrencyText, NumberText, PercentageText } from '@/core/components/atom
 import { useConfirm } from '@/hooks/useConfirm';
 import { useCrudModal } from '@/hooks/useCrudModal';
 
+import { useProfileContext } from '@/contexts/ProfileContext';
 import {
   useAccounts,
   useCreateAccount,
@@ -40,6 +41,7 @@ export const AccountsPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const confirm = useConfirm();
+  const { mainProfileId } = useProfileContext();
 
   // State for deleting indicator (temporary, could be moved to useCrudModal if needed)
   const [deletingAccountId, setDeletingAccountId] = useState<string | null>(null);
@@ -57,7 +59,8 @@ export const AccountsPage = () => {
     useCreate: () => ({ isCreating, error: createError, reset: resetCreate }),
     useUpdate: () => ({ isUpdating, error: updateError, reset: resetUpdate }),
     useDelete: () => ({ isDeleting, error: null, reset: () => {} }),
-    createFn: createAccount,
+    createFn: (data: AccountCreate) =>
+      createAccount({ ...data, financialProfileId: data.financialProfileId || mainProfileId || '' }),
     updateFn: updateAccount,
     deleteFn: async (id: string) => {
       setDeletingAccountId(id);
