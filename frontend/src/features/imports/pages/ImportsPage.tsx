@@ -1,64 +1,34 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
+import { Button } from '@/core/components/atomic/Button';
 import { useProfileContext } from '@/contexts/ProfileContext';
-import { ImportUploadZone } from '../components/ImportUploadZone';
 import { ImportJobsTable } from '../components/ImportJobsTable';
-import { useImports, useCreateImport, useDeleteImport } from '../imports.hooks';
+import { SmartImportWizard } from '../components/SmartImportWizard';
+import { useImports, useDeleteImport } from '../imports.hooks';
 
 /**
  * Imports page component
- * Allows users to upload CSV/Excel files and view import history
+ * Features the smart CSV import wizard and import history
  */
 export const ImportsPage = () => {
   const { t } = useTranslation();
   const { activeProfileIds } = useProfileContext();
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [showWizard, setShowWizard] = useState(true);
 
   // Hooks for data fetching and mutations
-  const { imports, total, isLoading, error: fetchError, refetch } = useImports();
-  const { uploadFile, isUploading, error: uploadError, reset: resetUpload } = useCreateImport();
+  const { imports, total, isLoading, error: fetchError } = useImports();
   const { deleteImport, isDeleting } = useDeleteImport();
 
-  const handleFileSelect = useCallback((file: File) => {
-    resetUpload();
-    setSelectedFile(file);
-  }, [resetUpload]);
-
-  const handleUpload = useCallback(async () => {
-    if (!selectedFile || activeProfileIds.length === 0) return;
-
-    try {
-      await uploadFile({
-        file: selectedFile,
-        profileId: activeProfileIds[0],
-        skipDuplicates: true,
-      });
-      setSelectedFile(null);
-      refetch();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (err) {
-      // Error is handled by the hook
-    }
-  }, [selectedFile, activeProfileIds, uploadFile, refetch]);
-
-  const handleCancel = useCallback(() => {
-    setSelectedFile(null);
-    resetUpload();
-  }, [resetUpload]);
-
-  const handleDelete = useCallback(async (jobId: string) => {
+  const handleDelete = async (jobId: string) => {
     try {
       await deleteImport(jobId, false);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (err) {
+    } catch {
       // Error is handled by the hook
     }
-  }, [deleteImport]);
-
-  const uploadErrorMessage = uploadError instanceof Error ? uploadError.message : null;
+  };
 
   return (
     <div className="p-8">
@@ -67,23 +37,18 @@ export const ImportsPage = () => {
         subtitle={t('imports.subtitle')}
       />
 
-      {/* Upload Section */}
-      <Card variant="bordered" className="mb-6">
-        <CardHeader
-          title={t('imports.uploadFile')}
-          subtitle={t('imports.uploadDescription')}
-        />
-        <CardBody>
-          <ImportUploadZone
-            onFileSelect={handleFileSelect}
-            onUpload={handleUpload}
-            onCancel={handleCancel}
-            selectedFile={selectedFile}
-            isUploading={isUploading}
-            error={uploadErrorMessage}
-          />
-        </CardBody>
-      </Card>
+      {/* Smart Import Wizard */}
+      {showWizard ? (
+        <div className="mb-6">
+          <SmartImportWizard />
+        </div>
+      ) : (
+        <div className="mb-6">
+          <Button variant="primary" onClick={() => setShowWizard(true)}>
+            {t('smartImport.startNew')}
+          </Button>
+        </div>
+      )}
 
       {/* Import History */}
       <Card variant="bordered">

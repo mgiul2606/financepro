@@ -6,6 +6,9 @@ from app.services.goal_service import GoalService
 from app.services.import_service import ImportService
 from app.services.exchange_rate_service import ExchangeRateService
 from app.services.recurring_service import RecurringTransactionService
+from app.services.csv_import_service import CSVImportService
+from app.services.transaction_classifier import TransactionClassifier
+from app.services.reconciliation_service import ReconciliationService
 
 __all__ = [
     "TransactionService",
@@ -14,4 +17,7 @@ __all__ = [
     "ImportService",
     "ExchangeRateService",
     "RecurringTransactionService",
+    "CSVImportService",
+    "TransactionClassifier",
+    "ReconciliationService",
 ]

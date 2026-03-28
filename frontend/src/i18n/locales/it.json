@@ -757,6 +757,35 @@
       "currency": "Ogni profilo ha la propria valuta predefinita"
     }
   },
+  "imports": {
+    "title": "Importa Dati",
+    "subtitle": "Importa transazioni da fonti esterne",
+    "uploadFile": "Carica File",
+    "uploadDescription": "Carica file CSV o Excel contenenti le tue transazioni",
+    "dragAndDrop": "Trascina il file qui o clicca per selezionare",
+    "supportedFormats": "Formati supportati: CSV, XLSX, XLS",
+    "selectFile": "Seleziona File",
+    "startImport": "Avvia Importazione",
+    "importHistory": "Storico Importazioni",
+    "recentImports": "Le tue importazioni recenti",
+    "noImportsYet": "Nessuna importazione",
+    "uploadToStart": "Carica un file per importare i tuoi dati",
+    "filename": "Nome File",
+    "status": "Stato",
+    "progress": "Progresso",
+    "errors": {
+      "loadFailed": "Impossibile caricare le importazioni",
+      "fileTooLarge": "Il file è troppo grande (max {{maxSize}})",
+      "invalidFormat": "Formato file non supportato"
+    },
+    "uploading": "Caricamento...",
+    "deleteJob": "Elimina",
+    "successful": "Riuscite",
+    "failed": "Fallite",
+    "skipped": "Saltate",
+    "results": "Risultati",
+    "date": "Data"
+  },
   "assets": {
     "title": "Asset",
     "subtitle": "Gestisci proprietà, veicoli e investimenti",
@@ -801,6 +830,58 @@
       "createFailed": "Impossibile creare l'asset",
       "updateFailed": "Impossibile aggiornare l'asset",
       "deleteFailed": "Impossibile eliminare l'asset"
+    }
+  },
+  "smartImport": {
+    "startNew": "Nuova Importazione Intelligente",
+    "steps": {
+      "upload": "Caricamento",
+      "preview": "Anteprima",
+      "result": "Risultato"
+    },
+    "upload": {
+      "title": "Importazione CSV Intelligente",
+      "subtitle": "Carica un estratto conto CSV — formato, categorie e duplicati vengono rilevati automaticamente",
+      "selectAccount": "Conto Destinazione",
+      "chooseAccount": "Scegli un conto...",
+      "selectAccountFirst": "Seleziona un conto prima di analizzare il file"
+    },
+    "preview": {
+      "detectedFormat": "Formato Rilevato",
+      "encoding": "Codifica",
+      "separator": "Separatore",
+      "dateFormat": "Formato Data",
+      "headerRow": "Riga Intestazione",
+      "transactions": "Anteprima Transazioni",
+      "date": "Data",
+      "description": "Descrizione",
+      "amount": "Importo",
+      "category": "Categoria",
+      "status": "Stato",
+      "actions": "Azioni",
+      "toImport": "{{count}} da importare",
+      "duplicatesCount": "{{count}} duplicati",
+      "flaggedCount": "{{count}} da verificare",
+      "parseWarnings": "{{count}} avvisi di parsing",
+      "duplicate": "Duplicato",
+      "needsReview": "Da Verificare",
+      "new": "Nuovo",
+      "forceImport": "Forza Importazione",
+      "undoForce": "Annulla",
+      "importFlaggedLabel": "Importa anche le {{count}} transazioni da verificare",
+      "confirmImport": "Importa {{count}} transazioni"
+    },
+    "result": {
+      "title": "Importazione Completata",
+      "subtitleSuccess": "Tutte le transazioni importate con successo",
+      "subtitlePartial": "Importazione completata con alcuni problemi",
+      "subtitleFailed": "Importazione fallita",
+      "imported": "Importate",
+      "skipped": "Saltate",
+      "flagged": "Da Verificare",
+      "errors": "Errori",
+      "importAnother": "Importa un Altro File",
+      "viewTransactions": "Vedi Transazioni"
     }
   },
   "recurring": {

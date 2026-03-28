@@ -221,6 +221,7 @@ try:
     import app.api.imports as imports
     import app.api.analysis as analysis
     import app.api.recurring_transactions as recurring_transactions
+    import app.api.smart_import as smart_import
     logger.info("API modules imported successfully")
 except Exception as e:
     logger.error(f"Failed to import API modules: {e}")
@@ -229,6 +230,7 @@ except Exception as e:
     auth = accounts = categories = None
     financial_profiles = transactions = budgets = goals = ai = None
     imports = analysis = assets = recurring_transactions = None
+    smart_import = None
 
 # Get API prefix
 API_PREFIX = get_api_prefix()
@@ -329,5 +331,16 @@ if recurring_transactions:
         tags=["Recurring Transactions"]
     )
     logger.info(f"Recurring Transactions router registered at {API_PREFIX}/recurring")
+
+try:
+    if smart_import:
+        app.include_router(
+            smart_import.router,
+            prefix=f"{API_PREFIX}/import",
+            tags=["Smart Import"]
+        )
+        logger.info(f"Smart Import router registered at {API_PREFIX}/import")
+except Exception:
+    pass
 
 logger.info(f"Application startup complete. API documentation: {settings.api.docs_url}")
