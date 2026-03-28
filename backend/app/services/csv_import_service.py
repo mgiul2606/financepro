@@ -17,8 +17,6 @@ from datetime import date, datetime
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
 
-import chardet
-
 logger = logging.getLogger(__name__)
 
 _TWO_PLACES = Decimal("0.01")
@@ -187,8 +185,17 @@ class CSVImportService:
         if raw_bytes[:2] in (b"\xff\xfe", b"\xfe\xff"):
             return "utf-16"
 
-        result = chardet.detect(raw_bytes[:8192])
-        encoding = (result.get("encoding") or "utf-8").lower()
+        try:
+            import chardet
+            result = chardet.detect(raw_bytes[:8192])
+            encoding = (result.get("encoding") or "utf-8").lower()
+        except ImportError:
+            # chardet not installed — try utf-8, fall back to latin-1
+            try:
+                raw_bytes[:8192].decode("utf-8")
+                encoding = "utf-8"
+            except UnicodeDecodeError:
+                encoding = "latin-1"
 
         # Normalize common Italian encodings
         encoding_map = {
