@@ -845,7 +845,9 @@
       "subtitle": "Upload a bank statement CSV — format, categories, and duplicates are detected automatically",
       "selectAccount": "Destination Account",
       "chooseAccount": "Choose an account...",
-      "selectAccountFirst": "Please select an account before analyzing the file"
+      "selectAccountFirst": "Please select an account before analyzing the file",
+      "analyzing": "Analyzing CSV file...",
+      "analyzingHint": "Detecting format, classifying transactions, and checking for duplicates in {{fileName}}"
     },
     "preview": {
       "detectedFormat": "Detected Format",

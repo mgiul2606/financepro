@@ -845,7 +845,9 @@
       "subtitle": "Carica un estratto conto CSV — formato, categorie e duplicati vengono rilevati automaticamente",
       "selectAccount": "Conto Destinazione",
       "chooseAccount": "Scegli un conto...",
-      "selectAccountFirst": "Seleziona un conto prima di analizzare il file"
+      "selectAccountFirst": "Seleziona un conto prima di analizzare il file",
+      "analyzing": "Analisi del file CSV in corso...",
+      "analyzingHint": "Rilevamento formato, classificazione transazioni e controllo duplicati in {{fileName}}"
     },
     "preview": {
       "detectedFormat": "Formato Rilevato",
