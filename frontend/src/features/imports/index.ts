@@ -11,6 +11,9 @@ export { ImportsPage } from './pages/ImportsPage';
 export { ImportStatusBadge } from './components/ImportStatusBadge';
 export { ImportUploadZone } from './components/ImportUploadZone';
 export { ImportJobsTable } from './components/ImportJobsTable';
+export { SmartImportWizard } from './components/SmartImportWizard';
+export { SmartImportPreview } from './components/SmartImportPreview';
+export { SmartImportResult } from './components/SmartImportResult';
 
 // Hooks
 export {
@@ -22,6 +25,8 @@ export {
   calculateProgress,
   normalizeImportJob,
 } from './imports.hooks';
+
+export { useSmartImport } from './imports.smart-hooks';
 
 // Schemas
 export {

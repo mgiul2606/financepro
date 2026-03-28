@@ -827,6 +827,58 @@
       "deleteFailed": "Failed to delete asset"
     }
   },
+  "smartImport": {
+    "startNew": "New Smart Import",
+    "steps": {
+      "upload": "Upload",
+      "preview": "Preview",
+      "result": "Result"
+    },
+    "upload": {
+      "title": "Smart CSV Import",
+      "subtitle": "Upload a bank statement CSV — format, categories, and duplicates are detected automatically",
+      "selectAccount": "Destination Account",
+      "chooseAccount": "Choose an account...",
+      "selectAccountFirst": "Please select an account before analyzing the file"
+    },
+    "preview": {
+      "detectedFormat": "Detected Format",
+      "encoding": "Encoding",
+      "separator": "Separator",
+      "dateFormat": "Date Format",
+      "headerRow": "Header Row",
+      "transactions": "Transaction Preview",
+      "date": "Date",
+      "description": "Description",
+      "amount": "Amount",
+      "category": "Category",
+      "status": "Status",
+      "actions": "Actions",
+      "toImport": "{{count}} to import",
+      "duplicatesCount": "{{count}} duplicates",
+      "flaggedCount": "{{count}} to review",
+      "parseWarnings": "{{count}} parse warnings",
+      "duplicate": "Duplicate",
+      "needsReview": "Review",
+      "new": "New",
+      "forceImport": "Force Import",
+      "undoForce": "Undo",
+      "importFlaggedLabel": "Also import {{count}} flagged transactions",
+      "confirmImport": "Import {{count}} transactions"
+    },
+    "result": {
+      "title": "Import Complete",
+      "subtitleSuccess": "All transactions imported successfully",
+      "subtitlePartial": "Import completed with some issues",
+      "subtitleFailed": "Import failed",
+      "imported": "Imported",
+      "skipped": "Skipped",
+      "flagged": "Flagged",
+      "errors": "Errors",
+      "importAnother": "Import Another File",
+      "viewTransactions": "View Transactions"
+    }
+  },
   "recurring": {
     "title": "Recurring Transactions",
     "subtitle": "Manage your recurring income and expenses",
