@@ -15,15 +15,11 @@ import {
   useCategoryBreakdown,
   useMerchantAnalysis,
   useAnomalies,
-  useRecurringPatterns,
-  useReports,
+  useSpendingPatterns,
+  useGenerateReport,
 } from '../analytic.hooks';
 import { OverviewStats } from '../components/OverviewStats';
-import { AnomalyCard } from '../components/AnomalyCard';
-import { RecurringPatternCard } from '../components/RecurringPatternCard';
-import { ReportCard } from '../components/ReportCard';
-import { Filter, Download, Calendar, X, RefreshCw, FileText, BarChart3 } from 'lucide-react';
-import { Alert } from '@/components/ui/alert';
+import { Filter, Download, Calendar, X, RefreshCw, FileText, BarChart3, TrendingUp, TrendingDown, AlertTriangle, Repeat, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 
 export const AnalyticPage = () => {
@@ -51,9 +47,9 @@ export const AnalyticPage = () => {
   const { timeSeries: timeSeriesData, isLoading: timeSeriesLoading } = useTimeSeriesData(timeSeriesFilters);
   const { categories, isLoading: categoriesLoading } = useCategoryBreakdown(filters);
   const { merchants, isLoading: merchantsLoading } = useMerchantAnalysis(filters);
-  const { anomalies, isLoading: anomaliesLoading } = useAnomalies(filters);
-  const { patterns, isLoading: patternsLoading } = useRecurringPatterns(filters);
-  const { reports, isLoading: reportsLoading } = useReports(filters);
+  const { anomalies, totalAnalyzed, isLoading: anomaliesLoading } = useAnomalies(filters);
+  const { patterns: patternsData, isLoading: patternsLoading } = useSpendingPatterns(filters);
+  const { generateReport, report: generatedReport, isGenerating, reset: resetReport } = useGenerateReport();
 
   // Calculate selected index for PieChart highlighting
   const selectedCategoryIndex = useMemo(() => {
@@ -395,27 +391,34 @@ export const AnalyticPage = () => {
                           <th className="px-4 py-3 text-left text-sm font-semibold">{t('analytics.merchant')}</th>
                           <th className="px-4 py-3 text-left text-sm font-semibold">{t('analytics.category')}</th>
                           <th className="px-4 py-3 text-right text-sm font-semibold">{t('analytics.total')}</th>
+                          <th className="px-4 py-3 text-right text-sm font-semibold">{t('analytics.percentage')}</th>
                           <th className="px-4 py-3 text-right text-sm font-semibold">{t('analytics.transactionCount')}</th>
                           <th className="px-4 py-3 text-right text-sm font-semibold">{t('analytics.average')}</th>
-                          <th className="px-4 py-3 text-right text-sm font-semibold">{t('analytics.last')}</th>
                         </tr>
                       </thead>
                       <tbody>
                         {merchants.map((merchant, index) => (
                           <tr key={index} className="border-b border-neutral-200 hover:bg-neutral-50">
-                            <td className="px-4 py-3 font-medium">{merchant.merchantName}</td>
-                            <td className="px-4 py-3 text-neutral-600">{merchant.category}</td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2">
+                                {merchant.logoUrl && (
+                                  <img src={merchant.logoUrl} alt="" className="h-6 w-6 rounded" />
+                                )}
+                                <span className="font-medium">{merchant.merchantName}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-neutral-600">{merchant.categoryName ?? '—'}</td>
                             <td className="px-4 py-3 text-right font-semibold">
                               <CurrencyText value={merchant.totalAmount} />
+                            </td>
+                            <td className="px-4 py-3 text-right text-neutral-600">
+                              {merchant.percentage.toFixed(1)}%
                             </td>
                             <td className="px-4 py-3 text-right text-neutral-600">
                               {merchant.transactionCount}
                             </td>
                             <td className="px-4 py-3 text-right text-neutral-600">
-                              <CurrencyText value={merchant.averageAmount} />
-                            </td>
-                            <td className="px-4 py-3 text-right text-sm text-neutral-500">
-                              {format(new Date(merchant.lastTransaction), 'dd/MM/yy')}
+                              <CurrencyText value={merchant.avgTransaction} />
                             </td>
                           </tr>
                         ))}
@@ -439,7 +442,7 @@ export const AnalyticPage = () => {
             <Card variant="bordered" className="bg-orange-50 border-orange-200">
               <CardBody>
                 <div className="flex items-start gap-3">
-                  <span className="text-3xl">🔍</span>
+                  <AlertTriangle className="h-8 w-8 text-orange-600 shrink-0" />
                   <div>
                     <h3 className="font-semibold text-neutral-900 mb-1">
                       {t('analytics.anomalyDetection')}
@@ -447,6 +450,11 @@ export const AnalyticPage = () => {
                     <p className="text-sm text-neutral-700">
                       {t('analytics.anomalyDetectionDesc')}
                     </p>
+                    {totalAnalyzed > 0 && (
+                      <p className="text-xs text-neutral-500 mt-1">
+                        {t('analytics.transactionsAnalyzed', { count: totalAnalyzed })}
+                      </p>
+                    )}
                   </div>
                 </div>
               </CardBody>
@@ -457,16 +465,46 @@ export const AnalyticPage = () => {
                 <Spinner size="lg" />
               </div>
             ) : anomalies && anomalies.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="space-y-3">
                 {anomalies.map((anomaly) => (
-                  <AnomalyCard key={anomaly.id} anomaly={anomaly} />
+                  <Card key={anomaly.transactionId} variant="bordered" className="hover:shadow-md transition-shadow">
+                    <CardBody>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                              anomaly.severity === 'high' ? 'bg-red-100 text-red-800' :
+                              anomaly.severity === 'medium' ? 'bg-orange-100 text-orange-800' :
+                              'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {t(`analytics.severity.${anomaly.severity}`)}
+                            </span>
+                            <span className="text-xs text-neutral-500">{anomaly.transactionDate}</span>
+                          </div>
+                          <p className="font-medium text-neutral-900 truncate">{anomaly.description}</p>
+                          <p className="text-sm text-neutral-600">{anomaly.categoryName}</p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-lg font-bold text-red-600">
+                            <CurrencyText value={anomaly.amount} />
+                          </p>
+                          <p className="text-xs text-neutral-500">
+                            {t('analytics.expectedAvg')}: <CurrencyText value={anomaly.categoryAvg} />
+                          </p>
+                          <p className="text-xs text-neutral-500">
+                            {anomaly.deviationFactor.toFixed(1)}x {t('analytics.deviation')}
+                          </p>
+                        </div>
+                      </div>
+                    </CardBody>
+                  </Card>
                 ))}
               </div>
             ) : (
               <Card variant="elevated">
                 <CardBody>
                   <div className="text-center py-12">
-                    <span className="text-5xl mb-4 block">✅</span>
+                    <CheckCircle className="h-12 w-12 text-green-400 mx-auto mb-4" />
                     <p className="text-lg font-medium text-neutral-900">{t('analytics.noAnomalies')}</p>
                     <p className="text-sm text-neutral-600 mt-2">
                       {t('analytics.noAnomaliesDesc')}
@@ -481,32 +519,144 @@ export const AnalyticPage = () => {
         {/* Patterns Tab */}
         {activeTab === 'patterns' && (
           <div className="space-y-6">
-            <Card variant="bordered" className="bg-blue-50 border-blue-200">
-              <CardBody>
-                <div className="flex items-start gap-3">
-                  <span className="text-3xl">🔄</span>
-                  <div>
-                    <h3 className="font-semibold text-neutral-900 mb-1">
-                      {t('analytics.recurringPatternsDetected')}
-                    </h3>
-                    <p className="text-sm text-neutral-700">
-                      {t('analytics.recurringPatternsDesc')}
-                    </p>
-                  </div>
-                </div>
-              </CardBody>
-            </Card>
-
             {patternsLoading ? (
               <div className="flex justify-center py-12">
                 <Spinner size="lg" />
               </div>
-            ) : patterns && patterns.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {patterns.map((pattern) => (
-                  <RecurringPatternCard key={pattern.id} pattern={pattern} />
-                ))}
-              </div>
+            ) : patternsData ? (
+              <>
+                {/* Day of Week spending */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card variant="elevated">
+                    <CardHeader title={t('analytics.dayOfWeekSpending')} />
+                    <CardBody>
+                      <BarChart
+                        data={patternsData.dayOfWeek.map((d) => ({
+                          day: d.dayName,
+                          total: d.total,
+                          avg: d.avg,
+                        }))}
+                        xAxisKey="day"
+                        bars={[
+                          { dataKey: 'total', name: t('analytics.total') },
+                          { dataKey: 'avg', name: t('analytics.average') },
+                        ]}
+                        height={250}
+                        formatYAxis={(value) => formatCurrency(value, preferences.currency, preferences.locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        formatTooltip={(value) => formatCurrency(value, preferences.currency, preferences.locale)}
+                      />
+                      <div className="mt-3 flex gap-4 text-sm">
+                        <span className="text-neutral-600">
+                          {t('analytics.busiestDay')}: <strong className="text-neutral-900">{patternsData.busiestDay}</strong>
+                        </span>
+                        <span className="text-neutral-600">
+                          {t('analytics.quietestDay')}: <strong className="text-neutral-900">{patternsData.quietestDay}</strong>
+                        </span>
+                      </div>
+                    </CardBody>
+                  </Card>
+
+                  {/* Week of Month spending */}
+                  <Card variant="elevated">
+                    <CardHeader title={t('analytics.weekOfMonthSpending')} />
+                    <CardBody>
+                      <BarChart
+                        data={patternsData.weekOfMonth.map((w) => ({
+                          week: w.label,
+                          total: w.total,
+                          avg: w.avg,
+                        }))}
+                        xAxisKey="week"
+                        bars={[
+                          { dataKey: 'total', name: t('analytics.total') },
+                          { dataKey: 'avg', name: t('analytics.average') },
+                        ]}
+                        height={250}
+                        formatYAxis={(value) => formatCurrency(value, preferences.currency, preferences.locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        formatTooltip={(value) => formatCurrency(value, preferences.currency, preferences.locale)}
+                      />
+                    </CardBody>
+                  </Card>
+                </div>
+
+                {/* Category Trends */}
+                {patternsData.categoryTrends.length > 0 && (
+                  <Card variant="elevated">
+                    <CardHeader title={t('analytics.categoryTrends')} />
+                    <CardBody>
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead className="border-b-2 border-neutral-200 bg-neutral-50">
+                            <tr>
+                              <th className="px-4 py-3 text-left text-sm font-semibold">{t('analytics.category')}</th>
+                              <th className="px-4 py-3 text-right text-sm font-semibold">{t('analytics.trend')}</th>
+                              <th className="px-4 py-3 text-right text-sm font-semibold">{t('analytics.change')}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {patternsData.categoryTrends.map((ct) => (
+                              <tr key={ct.categoryId} className="border-b border-neutral-200 hover:bg-neutral-50">
+                                <td className="px-4 py-3 font-medium">{ct.categoryName}</td>
+                                <td className="px-4 py-3 text-right">
+                                  <span className={`inline-flex items-center gap-1 text-sm font-medium ${
+                                    ct.trend === 'increasing' ? 'text-red-600' :
+                                    ct.trend === 'decreasing' ? 'text-green-600' :
+                                    'text-neutral-600'
+                                  }`}>
+                                    {ct.trend === 'increasing' && <TrendingUp className="h-4 w-4" />}
+                                    {ct.trend === 'decreasing' && <TrendingDown className="h-4 w-4" />}
+                                    {t(`analytics.trendDirection.${ct.trend}`)}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-right">
+                                  <span className={ct.trendPct > 0 ? 'text-red-600' : ct.trendPct < 0 ? 'text-green-600' : 'text-neutral-600'}>
+                                    {ct.trendPct > 0 ? '+' : ''}{ct.trendPct.toFixed(1)}%
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardBody>
+                  </Card>
+                )}
+
+                {/* Detected Recurring */}
+                {patternsData.detectedRecurring.length > 0 && (
+                  <Card variant="elevated">
+                    <CardHeader title={t('analytics.detectedRecurring')} />
+                    <CardBody>
+                      <div className="space-y-3">
+                        {patternsData.detectedRecurring.map((rec, idx) => (
+                          <div key={idx} className="flex items-center justify-between p-3 bg-neutral-50 rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <Repeat className="h-5 w-5 text-blue-600" />
+                              <div>
+                                <p className="font-medium text-neutral-900">{rec.description}</p>
+                                <p className="text-xs text-neutral-500">
+                                  {t(`analytics.frequency.${rec.estimatedFrequency}`)} · {rec.occurrenceCount} {t('analytics.occurrences')}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-semibold text-neutral-900">
+                                <CurrencyText value={rec.avgAmount} />
+                              </p>
+                              {rec.alreadyTracked && (
+                                <span className="text-xs text-green-600 flex items-center gap-1 justify-end">
+                                  <CheckCircle className="h-3 w-3" />
+                                  {t('analytics.tracked')}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardBody>
+                  </Card>
+                )}
+              </>
             ) : (
               <Card variant="elevated">
                 <CardBody>
@@ -527,41 +677,75 @@ export const AnalyticPage = () => {
             <Card variant="bordered" className="bg-purple-50 border-purple-200">
               <CardBody>
                 <div className="flex items-start gap-3">
-                  <span className="text-3xl">📊</span>
+                  <FileText className="h-8 w-8 text-purple-600 shrink-0" />
                   <div>
                     <h3 className="font-semibold text-neutral-900 mb-1">
-                      {t('analytics.aiGeneratedReports')}
+                      {t('analytics.generateReports')}
                     </h3>
                     <p className="text-sm text-neutral-700">
-                      {t('analytics.aiGeneratedReportsDesc')}
+                      {t('analytics.generateReportsDesc')}
                     </p>
                   </div>
                 </div>
               </CardBody>
             </Card>
 
-            {reportsLoading ? (
-              <div className="flex justify-center py-12">
-                <Spinner size="lg" />
-              </div>
-            ) : reports && reports.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {reports.map((report) => (
-                  <ReportCard
-                    key={report.id}
-                    report={report}
-                    onView={() => console.log('View report', report.id)}
-                    onDownload={() => console.log('Download report', report.id)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <Card variant="elevated">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[
+                { type: 'monthly_summary', icon: Calendar, label: t('analytics.reportTypes.monthlySummary') },
+                { type: 'category_breakdown', icon: BarChart3, label: t('analytics.reportTypes.categoryBreakdown') },
+                { type: 'full_report', icon: FileText, label: t('analytics.reportTypes.fullReport') },
+              ].map(({ type, icon: Icon, label }) => (
+                <Card key={type} variant="elevated" hoverable>
+                  <CardBody>
+                    <div className="text-center py-4">
+                      <Icon className="h-10 w-10 text-purple-500 mx-auto mb-3" />
+                      <h4 className="font-semibold text-neutral-900 mb-2">{label}</h4>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        leftIcon={<Download className="h-4 w-4" />}
+                        loading={isGenerating}
+                        onClick={() => generateReport(type, filters.dateFrom, filters.dateTo)}
+                      >
+                        {t('analytics.generate')}
+                      </Button>
+                    </div>
+                  </CardBody>
+                </Card>
+              ))}
+            </div>
+
+            {generatedReport && (
+              <Card variant="elevated" className="border-green-200 bg-green-50">
                 <CardBody>
-                  <div className="text-center py-12">
-                    <FileText className="h-12 w-12 text-neutral-300 mx-auto mb-4" />
-                    <p className="text-lg font-medium text-neutral-900">{t('analytics.noReports')}</p>
-                    <p className="text-sm text-neutral-600 mt-2">{t('analytics.noReportsDesc')}</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <CheckCircle className="h-6 w-6 text-green-600" />
+                      <div>
+                        <p className="font-medium text-neutral-900">
+                          {t('analytics.reportReady')}
+                        </p>
+                        <p className="text-sm text-neutral-600">
+                          {generatedReport.rowCount} {t('analytics.rows')} · {generatedReport.reportType}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        leftIcon={<Download className="h-4 w-4" />}
+                        onClick={() => {
+                          window.open(generatedReport.downloadUrl, '_blank');
+                        }}
+                      >
+                        {t('common.download')}
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => resetReport()}>
+                        {t('common.close')}
+                      </Button>
+                    </div>
                   </div>
                 </CardBody>
               </Card>

@@ -26,6 +26,8 @@ from app.models.category import Category
 from app.models.financial_profile import FinancialProfile
 from app.models.budget import Budget, BudgetCategory
 from app.models.exchange_rate import ExchangeRate
+from app.models.merchant import Merchant
+from app.models.recurring_transaction import RecurringTransaction
 from app.models.enums import ScopeType
 from app.api.dependencies import get_current_user
 from app.schemas.base import CamelCaseModel
@@ -752,4 +754,747 @@ async def compare_periods(
         income_change_percentage=income_pct,
         expense_change=expense_change,
         expense_change_percentage=expense_pct
+    )
+
+
+# ============================================================================
+# New analytics endpoints: top-merchants, anomalies, patterns,
+# category-breakdown, reports
+# ============================================================================
+
+def _get_profile_ids(db: Session, current_user: User,
+                     profile_ids: Optional[List[UUID]]) -> List[UUID]:
+    """Validate and return profile IDs for the current user."""
+    if profile_ids:
+        children_for(db, User, FinancialProfile, current_user.id, profile_ids)
+        return profile_ids
+    return [p.id for p in get_user_profiles(db, current_user.id)]
+
+
+# --- Top Merchants ---
+
+class TopMerchantItem(CamelCaseModel):
+    merchant_name: str
+    merchant_id: Optional[str] = None
+    logo_url: Optional[str] = None
+    category_name: Optional[str] = None
+    total_amount: float
+    transaction_count: int
+    percentage: float
+    avg_transaction: float
+
+
+class TopMerchantsResponse(CamelCaseModel):
+    merchants: List[TopMerchantItem]
+    period_start: date
+    period_end: date
+    total_expenses: float
+
+
+@router.get(
+    "/top-merchants",
+    response_model=TopMerchantsResponse,
+    summary="Top merchants by spending",
+)
+async def get_top_merchants(
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+    start_date: date = Query(...),
+    end_date: date = Query(...),
+    limit: int = Query(10, ge=1, le=50),
+    profile_ids: Optional[List[UUID]] = Query(None),
+    currency: str = Query("EUR"),
+) -> TopMerchantsResponse:
+    pid_list = _get_profile_ids(db, current_user, profile_ids)
+
+    transactions = db.query(Transaction).join(Account).filter(
+        Account.financial_profile_id.in_(pid_list),
+        Transaction.transaction_date >= start_date,
+        Transaction.transaction_date <= end_date,
+        Transaction.amount_clear < 0,
+    ).all()
+
+    # Pre-fetch merchants and categories
+    merchant_map: dict = {}
+    for m in db.query(Merchant).all():
+        merchant_map[str(m.id)] = m
+    user_categories = {
+        str(c.id): c.name
+        for c in db.query(Category).filter(Category.user_id == current_user.id).all()
+    }
+
+    # Aggregate — prefer merchant_id, fallback to merchant_name / description_clear
+    groups: dict = {}
+    total_expenses = Decimal("0")
+
+    for txn in transactions:
+        amount = abs(convert_amount(
+            txn.amount_clear, txn.currency, currency, txn.transaction_date, db
+        ))
+        total_expenses += amount
+
+        if txn.merchant_id:
+            key = f"mid:{txn.merchant_id}"
+        else:
+            raw = (txn.merchant_name or txn.description_clear or "Unknown").strip()
+            key = f"name:{raw.lower()}"
+
+        if key not in groups:
+            if txn.merchant_id and str(txn.merchant_id) in merchant_map:
+                m = merchant_map[str(txn.merchant_id)]
+                groups[key] = {
+                    "merchant_name": m.canonical_name,
+                    "merchant_id": str(m.id),
+                    "logo_url": m.logo_url,
+                    "total": Decimal("0"), "count": 0, "cat_id": None,
+                }
+            else:
+                groups[key] = {
+                    "merchant_name": (txn.merchant_name or txn.description_clear or "Unknown").strip(),
+                    "merchant_id": None, "logo_url": None,
+                    "total": Decimal("0"), "count": 0, "cat_id": None,
+                }
+
+        groups[key]["total"] += amount
+        groups[key]["count"] += 1
+        if txn.category_id:
+            groups[key]["cat_id"] = str(txn.category_id)
+
+    sorted_groups = sorted(groups.values(), key=lambda g: g["total"], reverse=True)[:limit]
+
+    items = []
+    for g in sorted_groups:
+        pct = float(g["total"] / total_expenses * 100) if total_expenses > 0 else 0
+        items.append(TopMerchantItem(
+            merchant_name=g["merchant_name"],
+            merchant_id=g["merchant_id"],
+            logo_url=g["logo_url"],
+            category_name=user_categories.get(g["cat_id"]) if g["cat_id"] else None,
+            total_amount=float(g["total"]),
+            transaction_count=g["count"],
+            percentage=pct,
+            avg_transaction=float(g["total"] / g["count"]) if g["count"] else 0,
+        ))
+
+    return TopMerchantsResponse(
+        merchants=items,
+        period_start=start_date,
+        period_end=end_date,
+        total_expenses=float(total_expenses),
+    )
+
+
+# --- Anomaly Detection ---
+
+class AnomalyItem(CamelCaseModel):
+    transaction_id: str
+    transaction_date: date
+    description: str
+    amount: float
+    category_name: str
+    category_avg: float
+    category_stddev: float
+    deviation_factor: float
+    severity: str
+
+
+class AnomaliesResponse(CamelCaseModel):
+    anomalies: List[AnomalyItem]
+    period_start: date
+    period_end: date
+    total_analyzed: int
+
+
+@router.get(
+    "/anomalies",
+    response_model=AnomaliesResponse,
+    summary="Detect spending anomalies",
+)
+async def detect_anomalies(
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+    start_date: date = Query(...),
+    end_date: date = Query(...),
+    sensitivity: str = Query("medium", pattern="^(low|medium|high)$"),
+    profile_ids: Optional[List[UUID]] = Query(None),
+    currency: str = Query("EUR"),
+) -> AnomaliesResponse:
+    pid_list = _get_profile_ids(db, current_user, profile_ids)
+    thresholds = {"high": 1.5, "medium": 2.0, "low": 2.5}
+    n_sigma = thresholds[sensitivity]
+
+    # Baseline: 6 months before start_date
+    baseline_start = start_date - timedelta(days=180)
+    baseline_txns = db.query(Transaction).join(Account).filter(
+        Account.financial_profile_id.in_(pid_list),
+        Transaction.transaction_date >= baseline_start,
+        Transaction.transaction_date < start_date,
+        Transaction.amount_clear < 0,
+    ).all()
+
+    # Build per-category stats from baseline
+    cat_amounts: dict = {}
+    for txn in baseline_txns:
+        cid = str(txn.category_id) if txn.category_id else None
+        if cid is None:
+            continue
+        amount = float(abs(convert_amount(
+            txn.amount_clear, txn.currency, currency, txn.transaction_date, db
+        )))
+        cat_amounts.setdefault(cid, []).append(amount)
+
+    # Compute mean/stddev per category (need >= 5 data points)
+    import math
+    cat_stats: dict = {}
+    for cid, amounts in cat_amounts.items():
+        if len(amounts) < 5:
+            continue
+        mean = sum(amounts) / len(amounts)
+        variance = sum((a - mean) ** 2 for a in amounts) / len(amounts)
+        stddev = math.sqrt(variance)
+        cat_stats[cid] = {"mean": mean, "stddev": stddev}
+
+    user_categories = {
+        str(c.id): c.name
+        for c in db.query(Category).filter(Category.user_id == current_user.id).all()
+    }
+
+    # Check period transactions for anomalies
+    period_txns = db.query(Transaction).join(Account).filter(
+        Account.financial_profile_id.in_(pid_list),
+        Transaction.transaction_date >= start_date,
+        Transaction.transaction_date <= end_date,
+        Transaction.amount_clear < 0,
+    ).all()
+
+    anomalies = []
+    for txn in period_txns:
+        cid = str(txn.category_id) if txn.category_id else None
+        if cid is None or cid not in cat_stats:
+            continue
+        amount = float(abs(convert_amount(
+            txn.amount_clear, txn.currency, currency, txn.transaction_date, db
+        )))
+        if amount < 5:
+            continue
+        stats = cat_stats[cid]
+        if stats["stddev"] == 0:
+            z = 10.0 if amount != stats["mean"] else 0
+        else:
+            z = (amount - stats["mean"]) / stats["stddev"]
+        if z >= n_sigma:
+            if z >= 3:
+                sev = "high"
+            elif z >= 2:
+                sev = "medium"
+            else:
+                sev = "low"
+            anomalies.append(AnomalyItem(
+                transaction_id=str(txn.id),
+                transaction_date=txn.transaction_date,
+                description=txn.description_clear or txn.merchant_name or "—",
+                amount=amount,
+                category_name=user_categories.get(cid, "Unknown"),
+                category_avg=round(stats["mean"], 2),
+                category_stddev=round(stats["stddev"], 2),
+                deviation_factor=round(z, 2),
+                severity=sev,
+            ))
+
+    anomalies.sort(key=lambda a: a.deviation_factor, reverse=True)
+
+    return AnomaliesResponse(
+        anomalies=anomalies,
+        period_start=start_date,
+        period_end=end_date,
+        total_analyzed=len(period_txns),
+    )
+
+
+# --- Spending Patterns ---
+
+class DayOfWeekSpending(CamelCaseModel):
+    day: int
+    day_name: str
+    total: float
+    avg: float
+    transaction_count: int
+
+
+class WeekOfMonthSpending(CamelCaseModel):
+    week: int
+    label: str
+    total: float
+    avg: float
+
+
+class CategoryTrend(CamelCaseModel):
+    category_name: str
+    category_id: str
+    monthly_totals: List[dict]
+    trend: str
+    trend_pct: float
+
+
+class DetectedRecurring(CamelCaseModel):
+    description: str
+    merchant_name: Optional[str] = None
+    avg_amount: float
+    occurrence_count: int
+    estimated_frequency: str
+    last_occurrence: date
+    already_tracked: bool
+
+
+class PatternsResponse(CamelCaseModel):
+    day_of_week: List[DayOfWeekSpending]
+    busiest_day: str
+    quietest_day: str
+    week_of_month: List[WeekOfMonthSpending]
+    category_trends: List[CategoryTrend]
+    detected_recurring: List[DetectedRecurring]
+    period_start: date
+    period_end: date
+
+
+DAY_NAMES_IT = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"]
+WEEK_LABELS = ["1-7", "8-14", "15-21", "22-28", "29-31"]
+
+
+@router.get(
+    "/patterns",
+    response_model=PatternsResponse,
+    summary="Spending patterns analysis",
+)
+async def get_patterns(
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+    start_date: date = Query(...),
+    end_date: date = Query(...),
+    profile_ids: Optional[List[UUID]] = Query(None),
+    currency: str = Query("EUR"),
+) -> PatternsResponse:
+    pid_list = _get_profile_ids(db, current_user, profile_ids)
+
+    transactions = db.query(Transaction).join(Account).filter(
+        Account.financial_profile_id.in_(pid_list),
+        Transaction.transaction_date >= start_date,
+        Transaction.transaction_date <= end_date,
+        Transaction.amount_clear < 0,
+    ).all()
+
+    user_categories = {
+        str(c.id): c.name
+        for c in db.query(Category).filter(Category.user_id == current_user.id).all()
+    }
+
+    # 1. Day of week (Python: Monday=0 .. Sunday=6)
+    dow_totals: dict = {i: {"total": Decimal("0"), "count": 0} for i in range(7)}
+    # 2. Week of month
+    wom_totals: dict = {i: {"total": Decimal("0"), "count": 0} for i in range(5)}
+    # 3. Category monthly
+    cat_monthly: dict = {}
+
+    num_months = max(1, ((end_date.year - start_date.year) * 12 +
+                         end_date.month - start_date.month) or 1)
+
+    for txn in transactions:
+        amount = abs(convert_amount(
+            txn.amount_clear, txn.currency, currency, txn.transaction_date, db
+        ))
+        # Day of week
+        dow = txn.transaction_date.weekday()
+        dow_totals[dow]["total"] += amount
+        dow_totals[dow]["count"] += 1
+        # Week of month
+        day_num = txn.transaction_date.day
+        wom_idx = min((day_num - 1) // 7, 4)
+        wom_totals[wom_idx]["total"] += amount
+        wom_totals[wom_idx]["count"] += 1
+        # Category monthly
+        cid = str(txn.category_id) if txn.category_id else None
+        if cid:
+            mk = txn.transaction_date.strftime("%Y-%m")
+            cat_monthly.setdefault(cid, {}).setdefault(mk, Decimal("0"))
+            cat_monthly[cid][mk] += amount
+
+    # Build day_of_week
+    dow_items = []
+    for i in range(7):
+        d = dow_totals[i]
+        dow_items.append(DayOfWeekSpending(
+            day=i, day_name=DAY_NAMES_IT[i],
+            total=float(d["total"]),
+            avg=float(d["total"] / num_months) if num_months else 0,
+            transaction_count=d["count"],
+        ))
+    busiest = max(dow_items, key=lambda x: x.total)
+    quietest = min(dow_items, key=lambda x: x.total)
+
+    # Build week_of_month
+    wom_items = []
+    for i in range(5):
+        d = wom_totals[i]
+        wom_items.append(WeekOfMonthSpending(
+            week=i + 1, label=WEEK_LABELS[i],
+            total=float(d["total"]),
+            avg=float(d["total"] / num_months) if num_months else 0,
+        ))
+
+    # Build category trends (top 5 by total)
+    cat_totals_sorted = sorted(
+        cat_monthly.items(),
+        key=lambda kv: sum(kv[1].values()), reverse=True
+    )[:5]
+
+    cat_trends = []
+    for cid, monthly in cat_totals_sorted:
+        sorted_months = sorted(monthly.keys())
+        amounts_list = [float(monthly[m]) for m in sorted_months]
+        monthly_dicts = [{"month": m, "amount": float(monthly[m])} for m in sorted_months]
+        # Simple trend: compare first half vs second half
+        if len(amounts_list) >= 2:
+            mid = len(amounts_list) // 2
+            first = sum(amounts_list[:mid]) / mid
+            second = sum(amounts_list[mid:]) / (len(amounts_list) - mid)
+            avg_val = sum(amounts_list) / len(amounts_list)
+            if avg_val > 0:
+                pct = (second - first) / avg_val * 100
+            else:
+                pct = 0
+            if pct > 5:
+                trend_dir = "increasing"
+            elif pct < -5:
+                trend_dir = "decreasing"
+            else:
+                trend_dir = "stable"
+        else:
+            trend_dir = "stable"
+            pct = 0
+
+        cat_trends.append(CategoryTrend(
+            category_name=user_categories.get(cid, "Unknown"),
+            category_id=cid,
+            monthly_totals=monthly_dicts,
+            trend=trend_dir,
+            trend_pct=round(pct, 1),
+        ))
+
+    # Detect recurring: group by description, find regular intervals
+    desc_groups: dict = {}
+    for txn in transactions:
+        key = (txn.merchant_name or txn.description_clear or "").strip().lower()
+        if not key or len(key) < 3:
+            continue
+        amt = float(abs(txn.amount_clear))
+        desc_groups.setdefault(key, []).append({
+            "date": txn.transaction_date,
+            "amount": amt,
+            "merchant_name": txn.merchant_name,
+        })
+
+    # Check existing recurring transactions for this user's profiles
+    existing_recurring = set()
+    recs = db.query(RecurringTransaction).filter(
+        RecurringTransaction.financial_profile_id.in_(pid_list),
+        RecurringTransaction.is_active == True,
+    ).all()
+    for r in recs:
+        existing_recurring.add(r.name.strip().lower())
+
+    detected = []
+    for key, txn_list in desc_groups.items():
+        if len(txn_list) < 3:
+            continue
+        amounts = [t["amount"] for t in txn_list]
+        avg_amt = sum(amounts) / len(amounts)
+        # Check amount consistency (within ±20%)
+        if avg_amt > 0 and all(abs(a - avg_amt) / avg_amt < 0.20 for a in amounts):
+            dates_sorted = sorted(t["date"] for t in txn_list)
+            intervals = [(dates_sorted[i+1] - dates_sorted[i]).days
+                        for i in range(len(dates_sorted) - 1)]
+            avg_interval = sum(intervals) / len(intervals) if intervals else 0
+            if 25 <= avg_interval <= 35:
+                freq = "monthly"
+            elif 12 <= avg_interval <= 16:
+                freq = "biweekly"
+            elif 5 <= avg_interval <= 9:
+                freq = "weekly"
+            else:
+                continue
+            display_name = txn_list[0].get("merchant_name") or key.title()
+            detected.append(DetectedRecurring(
+                description=display_name,
+                merchant_name=txn_list[0].get("merchant_name"),
+                avg_amount=round(avg_amt, 2),
+                occurrence_count=len(txn_list),
+                estimated_frequency=freq,
+                last_occurrence=dates_sorted[-1],
+                already_tracked=key in existing_recurring,
+            ))
+
+    detected.sort(key=lambda d: d.avg_amount, reverse=True)
+
+    return PatternsResponse(
+        day_of_week=dow_items,
+        busiest_day=busiest.day_name,
+        quietest_day=quietest.day_name,
+        week_of_month=wom_items,
+        category_trends=cat_trends,
+        detected_recurring=detected,
+        period_start=start_date,
+        period_end=end_date,
+    )
+
+
+# --- Category Breakdown (drill-down by merchant/description) ---
+
+class CategoryBreakdownItem(CamelCaseModel):
+    label: str
+    merchant_id: Optional[str] = None
+    total_amount: float
+    transaction_count: int
+    percentage: float
+    avg_amount: float
+
+
+class CategoryBreakdownResponse(CamelCaseModel):
+    category_id: str
+    category_name: str
+    total_category_spending: float
+    breakdown: List[CategoryBreakdownItem]
+    period_start: date
+    period_end: date
+
+
+@router.get(
+    "/categories/{category_id}/breakdown",
+    response_model=CategoryBreakdownResponse,
+    summary="Category spending breakdown",
+)
+async def get_category_breakdown(
+    category_id: UUID,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+    start_date: date = Query(...),
+    end_date: date = Query(...),
+    profile_ids: Optional[List[UUID]] = Query(None),
+    limit: int = Query(15, ge=1, le=50),
+    currency: str = Query("EUR"),
+) -> CategoryBreakdownResponse:
+    pid_list = _get_profile_ids(db, current_user, profile_ids)
+
+    category = db.query(Category).filter(
+        Category.id == category_id,
+        Category.user_id == current_user.id,
+    ).first()
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+
+    transactions = db.query(Transaction).join(Account).filter(
+        Account.financial_profile_id.in_(pid_list),
+        Transaction.category_id == category_id,
+        Transaction.transaction_date >= start_date,
+        Transaction.transaction_date <= end_date,
+        Transaction.amount_clear < 0,
+    ).all()
+
+    merchant_map: dict = {}
+    for m in db.query(Merchant).all():
+        merchant_map[str(m.id)] = m
+
+    groups: dict = {}
+    total_cat = Decimal("0")
+
+    for txn in transactions:
+        amount = abs(convert_amount(
+            txn.amount_clear, txn.currency, currency, txn.transaction_date, db
+        ))
+        total_cat += amount
+
+        if txn.merchant_id and str(txn.merchant_id) in merchant_map:
+            m = merchant_map[str(txn.merchant_id)]
+            key = f"mid:{m.id}"
+            label = m.canonical_name
+            mid = str(m.id)
+        else:
+            raw = (txn.merchant_name or txn.description_clear or "Other").strip()
+            key = f"name:{raw.lower()}"
+            label = raw
+            mid = None
+
+        if key not in groups:
+            groups[key] = {"label": label, "mid": mid, "total": Decimal("0"), "count": 0}
+        groups[key]["total"] += amount
+        groups[key]["count"] += 1
+
+    sorted_groups = sorted(groups.values(), key=lambda g: g["total"], reverse=True)[:limit]
+
+    items = []
+    for g in sorted_groups:
+        pct = float(g["total"] / total_cat * 100) if total_cat > 0 else 0
+        items.append(CategoryBreakdownItem(
+            label=g["label"],
+            merchant_id=g["mid"],
+            total_amount=float(g["total"]),
+            transaction_count=g["count"],
+            percentage=pct,
+            avg_amount=float(g["total"] / g["count"]) if g["count"] else 0,
+        ))
+
+    return CategoryBreakdownResponse(
+        category_id=str(category_id),
+        category_name=category.name,
+        total_category_spending=float(total_cat),
+        breakdown=items,
+        period_start=start_date,
+        period_end=end_date,
+    )
+
+
+# --- Report Generation (CSV) ---
+
+class ReportRequest(CamelCaseModel):
+    report_type: str  # "monthly_summary", "category_breakdown", "full_report"
+    start_date: date
+    end_date: date
+    profile_ids: Optional[List[UUID]] = None
+
+
+class ReportMeta(CamelCaseModel):
+    report_type: str
+    period_start: date
+    period_end: date
+    row_count: int
+    download_url: str
+
+
+@router.post(
+    "/reports/generate",
+    response_model=ReportMeta,
+    summary="Generate analytics report",
+)
+async def generate_report(
+    body: ReportRequest,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> ReportMeta:
+    import csv
+    import io
+    import os
+    import uuid as uuid_mod
+
+    pid_list = _get_profile_ids(db, current_user, body.profile_ids)
+    user_categories = {
+        str(c.id): c.name
+        for c in db.query(Category).filter(Category.user_id == current_user.id).all()
+    }
+
+    transactions = db.query(Transaction).join(Account).filter(
+        Account.financial_profile_id.in_(pid_list),
+        Transaction.transaction_date >= body.start_date,
+        Transaction.transaction_date <= body.end_date,
+    ).order_by(Transaction.transaction_date).all()
+
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+
+    if body.report_type == "monthly_summary":
+        writer.writerow(["Month", "Income", "Expenses", "Net", "SavingsRate", "TopCategory"])
+        monthly: dict = {}
+        cat_monthly: dict = {}
+        for txn in transactions:
+            mk = txn.transaction_date.strftime("%Y-%m")
+            monthly.setdefault(mk, {"income": Decimal("0"), "expenses": Decimal("0")})
+            cat_monthly.setdefault(mk, {})
+            if txn.amount_clear > 0:
+                monthly[mk]["income"] += txn.amount_clear
+            else:
+                monthly[mk]["expenses"] += abs(txn.amount_clear)
+                cid = str(txn.category_id) if txn.category_id else "uncategorized"
+                cat_monthly[mk].setdefault(cid, Decimal("0"))
+                cat_monthly[mk][cid] += abs(txn.amount_clear)
+        for mk in sorted(monthly.keys()):
+            d = monthly[mk]
+            net = d["income"] - d["expenses"]
+            rate = float(net / d["income"] * 100) if d["income"] > 0 else 0
+            top = max(cat_monthly.get(mk, {"?": Decimal("0")}).items(),
+                      key=lambda kv: kv[1], default=("?", 0))
+            top_name = user_categories.get(top[0], top[0])
+            writer.writerow([mk, float(d["income"]), float(d["expenses"]),
+                             float(net), round(rate, 1), top_name])
+        row_count = len(monthly)
+
+    elif body.report_type == "category_breakdown":
+        writer.writerow(["Category", "Total", "Transactions", "Percentage", "Average"])
+        cat_data: dict = {}
+        total_exp = Decimal("0")
+        for txn in transactions:
+            if txn.amount_clear >= 0:
+                continue
+            amt = abs(txn.amount_clear)
+            total_exp += amt
+            cid = str(txn.category_id) if txn.category_id else "uncategorized"
+            cat_data.setdefault(cid, {"total": Decimal("0"), "count": 0})
+            cat_data[cid]["total"] += amt
+            cat_data[cid]["count"] += 1
+        for cid, d in sorted(cat_data.items(), key=lambda kv: kv[1]["total"], reverse=True):
+            pct = float(d["total"] / total_exp * 100) if total_exp > 0 else 0
+            avg = float(d["total"] / d["count"]) if d["count"] else 0
+            writer.writerow([user_categories.get(cid, cid), float(d["total"]),
+                             d["count"], round(pct, 1), round(avg, 2)])
+        row_count = len(cat_data)
+
+    else:  # full_report
+        writer.writerow(["Date", "Description", "Category", "Amount", "Currency", "Account"])
+        acct_map = {
+            str(a.id): a.name for a in db.query(Account).filter(
+                Account.financial_profile_id.in_(pid_list)
+            ).all()
+        }
+        for txn in transactions:
+            writer.writerow([
+                txn.transaction_date.isoformat(),
+                txn.description_clear or txn.merchant_name or "",
+                user_categories.get(str(txn.category_id), "") if txn.category_id else "",
+                float(txn.amount_clear),
+                txn.currency,
+                acct_map.get(str(txn.account_id), ""),
+            ])
+        row_count = len(transactions)
+
+    # Save to /tmp
+    report_id = str(uuid_mod.uuid4())
+    tmp_path = f"/tmp/financepro_report_{report_id}.csv"
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        f.write(buf.getvalue())
+
+    return ReportMeta(
+        report_type=body.report_type,
+        period_start=body.start_date,
+        period_end=body.end_date,
+        row_count=row_count,
+        download_url=f"/api/v1/analysis/reports/{report_id}/download",
+    )
+
+
+from fastapi.responses import FileResponse
+
+
+@router.get(
+    "/reports/{report_id}/download",
+    summary="Download generated report",
+)
+async def download_report(
+    report_id: str,
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    import os
+    tmp_path = f"/tmp/financepro_report_{report_id}.csv"
+    if not os.path.exists(tmp_path):
+        raise HTTPException(status_code=404, detail="Report not found or expired")
+    return FileResponse(
+        tmp_path,
+        media_type="text/csv",
+        filename=f"financepro_report_{report_id}.csv",
     )

@@ -441,6 +441,46 @@
     "noReportsDesc": "Reports will be automatically generated when there is enough data.",
     "noDataAvailable": "No data available",
     "noDataAvailableDesc": "There is no data to analyze for this period yet.",
+    "transactionsAnalyzed": "{{count}} transactions analyzed",
+    "expectedAvg": "Expected avg",
+    "deviation": "deviation",
+    "dayOfWeekSpending": "Spending by Day of Week",
+    "weekOfMonthSpending": "Spending by Week of Month",
+    "busiestDay": "Busiest day",
+    "quietestDay": "Quietest day",
+    "categoryTrends": "Category Trends",
+    "trend": "Trend",
+    "change": "Change",
+    "trendDirection": {
+      "increasing": "Increasing",
+      "decreasing": "Decreasing",
+      "stable": "Stable"
+    },
+    "detectedRecurring": "Detected Recurring Transactions",
+    "occurrences": "occurrences",
+    "tracked": "Tracked",
+    "frequency": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "biweekly": "Biweekly",
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "yearly": "Yearly"
+    },
+    "generateReports": "Generate Reports",
+    "generateReportsDesc": "Export your financial data as CSV reports for the selected period.",
+    "generate": "Generate",
+    "reportReady": "Report ready for download",
+    "rows": "rows",
+    "reportTypes": {
+      "monthlySummary": "Monthly Summary",
+      "categoryBreakdown": "Category Breakdown",
+      "fullReport": "Full Report",
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "yearly": "Yearly",
+      "custom": "Custom"
+    },
     "errors": {
       "loadFailed": "Failed to load analytics data. Please try again later."
     }
