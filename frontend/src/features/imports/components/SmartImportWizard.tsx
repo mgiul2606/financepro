@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
 import { useProfileContext } from '@/contexts/ProfileContext';
@@ -27,6 +27,7 @@ export const SmartImportWizard = () => {
 
   const {
     preview,
+    setPreview,
     confirmResult,
     isAnalyzing,
     isImporting,
@@ -34,8 +35,21 @@ export const SmartImportWizard = () => {
     importError,
     analyze,
     confirm,
+    resume,
     reset,
   } = useSmartImport();
+
+  // Block navigation during import
+  useEffect(() => {
+    if (isImporting) {
+      const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+        e.preventDefault();
+        e.returnValue = t('smartImport.preview.leaveWarning');
+      };
+      window.addEventListener('beforeunload', handleBeforeUnload);
+      return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    }
+  }, [isImporting, t]);
 
   const handleFileSelect = useCallback((file: File) => {
     setSelectedFile(file);
@@ -51,11 +65,25 @@ export const SmartImportWizard = () => {
     }
   }, [selectedFile, selectedAccountId, activeProfileIds, analyze]);
 
+  const handleResume = useCallback(async (jobId: string) => {
+    try {
+      await resume(jobId);
+      setStep('preview');
+    } catch {
+      // Error handled by hook
+    }
+  }, [resume]);
+
   const handleConfirm = useCallback(
-    async (overrides: Record<string, { category?: string; action?: string }>, importFlagged: boolean) => {
+    async (
+      overrides: Record<string, { category?: string; action?: string }>,
+      importFlagged: boolean,
+      excludedRows: number[],
+      invertAmounts: boolean,
+    ) => {
       if (!preview) return;
       try {
-        await confirm(preview.jobId, overrides, importFlagged);
+        await confirm(preview.jobId, overrides, importFlagged, excludedRows, invertAmounts);
         setStep('result');
       } catch {
         // Error handled by hook

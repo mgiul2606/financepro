@@ -45,10 +45,10 @@ COLUMN_PATTERNS: Dict[str, List[str]] = {
         "importo in euro", "importo_eur", "importo eur",
     ],
     "debit": [
-        "avere", "addebito", "uscite", "debit", "addebiti", "spese",
+        "dare", "addebito", "uscite", "debit", "addebiti", "spese",
     ],
     "credit": [
-        "dare", "accredito", "entrate", "credit", "accrediti", "incassi",
+        "avere", "accredito", "entrate", "credit", "accrediti", "incassi",
     ],
     "balance": [
         "saldo", "balance", "saldo contabile", "saldo disponibile",

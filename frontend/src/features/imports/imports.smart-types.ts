@@ -36,6 +36,8 @@ export interface PreviewTransactionItem {
   currency: string;
   classification: ClassificationInfo;
   reconciliation: ReconciliationInfo;
+  isParseable: boolean;
+  parseWarnings: string[];
 }
 
 export interface PreviewSummary {

@@ -67,6 +67,9 @@ from app.models.document import Document
 from app.models.import_job import ImportJob
 from app.models.bank_condition import BankCondition
 
+# Category learning
+from app.models.user_category_rule import UserCategoryRule
+
 # ML and AI models
 from app.models.ml_classification_log import MLClassificationLog
 from app.models.prediction import Prediction
@@ -134,6 +137,8 @@ __all__ = [
     "Document",
     "ImportJob",
     "BankCondition",
+    # Category learning
+    "UserCategoryRule",
     # ML and AI
     "MLClassificationLog",
     "Prediction",

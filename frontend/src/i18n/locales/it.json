@@ -784,7 +784,8 @@
     "failed": "Fallite",
     "skipped": "Saltate",
     "results": "Risultati",
-    "date": "Data"
+    "date": "Data",
+    "resumeJob": "Riprendi"
   },
   "assets": {
     "title": "Asset",
@@ -869,7 +870,13 @@
       "forceImport": "Forza Importazione",
       "undoForce": "Annulla",
       "importFlaggedLabel": "Importa anche le {{count}} transazioni da verificare",
-      "confirmImport": "Importa {{count}} transazioni"
+      "confirmImport": "Importa {{count}} transazioni",
+      "invertAmounts": "Inverti segni degli importi",
+      "invertAmountsHint": "Attiva se gli importi appaiono con il segno invertito (incassi negativi e pagamenti positivi)",
+      "selectAll": "Seleziona/deseleziona tutto",
+      "excludedCount": "{{count}} escluse",
+      "uncategorizedCount": "{{count}} senza categoria",
+      "leaveWarning": "Importazione in corso. Sei sicuro di voler uscire?"
     },
     "result": {
       "title": "Importazione Completata",
