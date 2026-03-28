@@ -847,7 +847,9 @@
       "chooseAccount": "Scegli un conto...",
       "selectAccountFirst": "Seleziona un conto prima di analizzare il file",
       "analyzing": "Analisi del file CSV in corso...",
-      "analyzingHint": "Rilevamento formato, classificazione transazioni e controllo duplicati in {{fileName}}"
+      "analyzingHint": "Rilevamento formato, classificazione transazioni e controllo duplicati in {{fileName}}",
+      "activeJobWarning": "Un'importazione è già in corso",
+      "activeJobHint": "Attendi il completamento dell'importazione corrente o riprendila dalla cronologia sottostante prima di avviarne una nuova."
     },
     "preview": {
       "detectedFormat": "Formato Rilevato",

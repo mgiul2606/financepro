@@ -12,18 +12,21 @@ import logging
 import re
 from dataclasses import dataclass
 from decimal import Decimal
+from functools import lru_cache
 from typing import Dict, List, Optional, Tuple
 
-_WORD_BOUNDARY = re.compile(r"(?<!\w){}(?!\w)", re.IGNORECASE)
+# Pre-compiled regex cache for word boundary matching
+@lru_cache(maxsize=512)
+def _compile_word_pattern(needle: str) -> re.Pattern:
+    return re.compile(r"(?<!\w)" + re.escape(needle) + r"(?!\w)", re.IGNORECASE)
 
 
 def _word_match(needle: str, haystack: str) -> bool:
     """Check if needle appears in haystack as a whole word (or at word boundary)."""
     # For very short patterns (<=3 chars), require word boundaries
     if len(needle) <= 3:
-        pattern = re.compile(r"(?<!\w)" + re.escape(needle) + r"(?!\w)", re.IGNORECASE)
-        return bool(pattern.search(haystack))
-    return needle in haystack
+        return bool(_compile_word_pattern(needle).search(haystack))
+    return needle.lower() in haystack
 
 from sqlalchemy.orm import Session
 
@@ -212,8 +215,8 @@ class TransactionClassifier:
         """
         desc_lower = description.lower()
 
-        # 1. DB merchant matching (if session available)
-        if db is not None:
+        # 1. DB merchant matching (if session available or merchants pre-cached)
+        if db is not None or self._merchant_cache is not None:
             result = self._match_db_merchant(desc_lower, db)
             if result:
                 return result
@@ -236,11 +239,13 @@ class TransactionClassifier:
     # ----- DB merchant lookup ------------------------------------------------
 
     def _match_db_merchant(
-        self, desc_lower: str, db: Session
+        self, desc_lower: str, db: Optional[Session] = None
     ) -> Optional[ClassificationResult]:
         """Check description against the merchants table (cached per instance)."""
         # Cache the merchant list to avoid N round-trips to DB
         if self._merchant_cache is None:
+            if db is None:
+                return None
             self._merchant_cache = db.query(Merchant).all()
         for merchant in self._merchant_cache:
             name_lower = merchant.canonical_name.lower()

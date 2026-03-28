@@ -11,6 +11,7 @@ interface ImportUploadZoneProps {
   selectedFile: File | null;
   isUploading?: boolean;
   error?: string | null;
+  disabled?: boolean;
 }
 
 /**
@@ -24,6 +25,7 @@ export const ImportUploadZone = ({
   selectedFile,
   isUploading = false,
   error = null,
+  disabled = false,
 }: ImportUploadZoneProps) => {
   const { t } = useTranslation();
   const [dragActive, setDragActive] = useState(false);
@@ -124,12 +126,12 @@ export const ImportUploadZone = ({
           onChange={handleFileChange}
           className="hidden"
           id="file-upload"
-          disabled={isUploading}
+          disabled={isUploading || disabled}
         />
         <Button
           variant="secondary"
           onClick={handleButtonClick}
-          disabled={isUploading}
+          disabled={isUploading || disabled}
         >
           {t('imports.selectFile')}
         </Button>

@@ -179,32 +179,29 @@ class CSVImportService:
     # ----- encoding detection ------------------------------------------------
 
     def _detect_encoding(self, raw_bytes: bytes) -> str:
-        # Check BOM first
+        # Check BOM first (instant)
         if raw_bytes[:3] == b"\xef\xbb\xbf":
             return "utf-8-sig"
         if raw_bytes[:2] in (b"\xff\xfe", b"\xfe\xff"):
             return "utf-16"
 
+        # Fast path: try UTF-8 decode (covers 95%+ of modern files)
         try:
-            import chardet
-            result = chardet.detect(raw_bytes[:8192])
-            encoding = (result.get("encoding") or "utf-8").lower()
-        except ImportError:
-            # chardet not installed — try utf-8, fall back to latin-1
-            try:
-                raw_bytes[:8192].decode("utf-8")
-                encoding = "utf-8"
-            except UnicodeDecodeError:
-                encoding = "latin-1"
+            raw_bytes.decode("utf-8")
+            return "utf-8"
+        except UnicodeDecodeError:
+            pass
 
-        # Normalize common Italian encodings
-        encoding_map = {
-            "iso-8859-1": "latin-1",
-            "iso-8859-15": "latin-1",
-            "windows-1252": "cp1252",
-            "ascii": "utf-8",
-        }
-        return encoding_map.get(encoding, encoding)
+        # Try latin-1 (covers most Italian bank statements)
+        # latin-1 never fails since every byte maps to a character,
+        # but check if cp1252 is more appropriate by looking for
+        # common cp1252-only chars (smart quotes, etc.)
+        sample = raw_bytes[:4096]
+        cp1252_chars = set(range(0x80, 0xA0))  # chars in cp1252 but not latin-1
+        if any(b in cp1252_chars for b in sample):
+            return "cp1252"
+
+        return "latin-1"
 
     # ----- separator detection -----------------------------------------------
 
