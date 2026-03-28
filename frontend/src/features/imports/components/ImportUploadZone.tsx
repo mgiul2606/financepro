@@ -143,8 +143,23 @@ export const ImportUploadZone = ({
         </div>
       )}
 
+      {/* Analyzing overlay */}
+      {selectedFile && isUploading && (
+        <div className="p-6 bg-blue-50 border border-blue-200 rounded-lg text-center space-y-3">
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-200 border-t-blue-600" />
+          </div>
+          <p className="font-medium text-blue-800">
+            {t('smartImport.upload.analyzing')}
+          </p>
+          <p className="text-sm text-blue-600">
+            {t('smartImport.upload.analyzingHint', { fileName: selectedFile.name })}
+          </p>
+        </div>
+      )}
+
       {/* Selected File Preview */}
-      {selectedFile && !displayError && (
+      {selectedFile && !displayError && !isUploading && (
         <div className="p-4 bg-gray-50 rounded-lg flex items-center justify-between">
           <div className="flex items-center gap-3">
             <FileText className="h-5 w-5 text-gray-500" />
@@ -159,16 +174,14 @@ export const ImportUploadZone = ({
             <Button
               variant="ghost"
               onClick={handleClear}
-              disabled={isUploading}
             >
               {t('common.cancel')}
             </Button>
             <Button
               variant="primary"
               onClick={onUpload}
-              disabled={isUploading}
             >
-              {isUploading ? t('imports.uploading') : t('imports.startImport')}
+              {t('imports.startImport')}
             </Button>
           </div>
         </div>

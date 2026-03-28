@@ -193,6 +193,9 @@ INCOME_CATEGORIES = {"Salary", "Freelance Income", "Investment Income", "Other I
 class TransactionClassifier:
     """Classify a transaction description into category + merchant."""
 
+    def __init__(self) -> None:
+        self._merchant_cache: Optional[List] = None
+
     def classify(
         self,
         description: str,
@@ -235,9 +238,11 @@ class TransactionClassifier:
     def _match_db_merchant(
         self, desc_lower: str, db: Session
     ) -> Optional[ClassificationResult]:
-        """Check description against the merchants table."""
-        merchants = db.query(Merchant).all()
-        for merchant in merchants:
+        """Check description against the merchants table (cached per instance)."""
+        # Cache the merchant list to avoid N round-trips to DB
+        if self._merchant_cache is None:
+            self._merchant_cache = db.query(Merchant).all()
+        for merchant in self._merchant_cache:
             name_lower = merchant.canonical_name.lower()
             aliases = merchant.aliases or []
             all_names = [name_lower] + [a.lower() for a in aliases]

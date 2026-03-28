@@ -88,9 +88,13 @@ def _batch_reconcile(
     profile_id: UUID,
     account_id: UUID,
 ) -> Dict[int, "ReconciliationResult"]:
-    """Batch reconciliation: one query instead of N queries."""
+    """Batch reconciliation: one query instead of N queries.
+
+    Uses hash-based exact matching first (O(1) per row), only falls back
+    to fuzzy SequenceMatcher for rows that have an amount+date near-match
+    but no exact description match.
+    """
     from app.services.reconciliation_service import ReconciliationResult
-    from difflib import SequenceMatcher
 
     results: Dict[int, ReconciliationResult] = {}
 
@@ -111,44 +115,73 @@ def _batch_reconcile(
         )
     ).all()
 
+    # Build hash index for fast exact-match lookups: (date, amount, desc) → tx
+    exact_index: Dict[tuple, Transaction] = {}
+    # Build secondary index: (date, amount) → [tx, ...] for near-matches
+    date_amount_index: Dict[tuple, List[Transaction]] = {}
+    for tx in existing:
+        desc_norm = (tx.description_clear or "").lower().strip()
+        key = (tx.transaction_date, tx.amount_clear, desc_norm)
+        exact_index[key] = tx
+        # Also index by (date, amount) for fast narrowing
+        da_key = (tx.transaction_date, tx.amount_clear)
+        date_amount_index.setdefault(da_key, []).append(tx)
+        # Add ±1 day keys for broader matching
+        for delta in (-1, 1):
+            da_key2 = (tx.transaction_date + timedelta(days=delta), tx.amount_clear)
+            date_amount_index.setdefault(da_key2, []).append(tx)
+
     for ptx in transactions:
         desc_lower = ptx.original_description.lower().strip()
+
+        # Level 1 — exact hash match (instant, no string comparison)
+        exact_key = (ptx.date, ptx.amount, desc_lower)
+        if exact_key in exact_index:
+            tx = exact_index[exact_key]
+            results[ptx.row_number] = ReconciliationResult(
+                action="skip", confidence=1.0,
+                matched_transaction_id=str(tx.id),
+                reason="exact_duplicate",
+            )
+            continue
+
+        # Level 2 — same amount + date (±1 day), needs description check
+        # Only do expensive SequenceMatcher on the small subset of candidates
+        da_key = (ptx.date, ptx.amount)
+        candidates = date_amount_index.get(da_key, [])
         best_result = None
 
-        for tx in existing:
-            existing_desc = (tx.description_clear or "").lower().strip()
-            similarity = SequenceMatcher(None, desc_lower, existing_desc).ratio()
+        if candidates:
+            from difflib import SequenceMatcher
+            for tx in candidates:
+                existing_desc = (tx.description_clear or "").lower().strip()
+                date_diff = abs((tx.transaction_date - ptx.date).days)
+                similarity = SequenceMatcher(None, desc_lower, existing_desc).ratio()
+                if date_diff <= 1 and similarity >= 0.85:
+                    best_result = ReconciliationResult(
+                        action="skip", confidence=0.9,
+                        matched_transaction_id=str(tx.id),
+                        reason="likely_duplicate",
+                    )
+                    break
 
-            # Level 1 – exact match
-            if (tx.transaction_date == ptx.date
-                    and tx.amount_clear == ptx.amount
-                    and similarity >= 0.98):
-                best_result = ReconciliationResult(
-                    action="skip", confidence=1.0,
-                    matched_transaction_id=str(tx.id),
-                    reason="exact_duplicate",
-                )
-                break
-
-            # Level 2 – strong match
-            date_diff = abs((tx.transaction_date - ptx.date).days)
-            if (date_diff <= 1
-                    and tx.amount_clear == ptx.amount
-                    and similarity >= 0.85):
-                best_result = ReconciliationResult(
-                    action="skip", confidence=0.9,
-                    matched_transaction_id=str(tx.id),
-                    reason="likely_duplicate",
-                )
-                break
-
-            # Level 3 – possible match
-            if tx.amount_clear is not None and ptx.amount != 0:
-                amount_low = ptx.amount * Decimal("0.99")
-                amount_high = ptx.amount * Decimal("1.01")
-                if (date_diff <= 3
-                        and amount_low <= tx.amount_clear <= amount_high
-                        and similarity >= 0.70):
+        # Level 3 — wider tolerance (amount ±1%, date ±3 days)
+        if best_result is None and ptx.amount != 0:
+            amount_low = ptx.amount * Decimal("0.99")
+            amount_high = ptx.amount * Decimal("1.01")
+            # Check nearby amounts in existing — but limit to a fast scan
+            for tx in existing:
+                if tx.amount_clear is None:
+                    continue
+                date_diff = abs((tx.transaction_date - ptx.date).days)
+                if date_diff > 3:
+                    continue
+                if not (amount_low <= tx.amount_clear <= amount_high):
+                    continue
+                from difflib import SequenceMatcher
+                existing_desc = (tx.description_clear or "").lower().strip()
+                similarity = SequenceMatcher(None, desc_lower, existing_desc).ratio()
+                if similarity >= 0.70:
                     confidence = 0.6 + (similarity - 0.70) * 0.67
                     if best_result is None or confidence > best_result.confidence:
                         best_result = ReconciliationResult(
@@ -385,6 +418,12 @@ async def smart_csv_confirm(
 
     encryption_svc = get_encryption_service()
 
+    # Pre-cache categories and merchants to avoid N per-row queries
+    all_categories = db.query(Category).filter(Category.user_id == profile.user_id).all()
+    category_lookup: Dict[str, UUID] = {cat.name.lower(): cat.id for cat in all_categories}
+    all_merchants = db.query(Merchant).all()
+    merchant_lookup: Dict[str, Merchant] = {m.canonical_name.lower(): m for m in all_merchants}
+
     transactions: List[ParsedTransaction] = cached["transactions"]
     classifications = cached["classifications"]
     reconciliations = cached["reconciliations"]
@@ -461,9 +500,9 @@ async def smart_csv_confirm(
                 job=job,
                 ptx=ptx,
                 classification=cl,
-                profile=profile,
                 account_id=account_id,
-                encryption_svc=encryption_svc,
+                category_lookup=category_lookup,
+                merchant_lookup=merchant_lookup,
             )
             transactions_to_insert.append(tx)
             imported += 1
@@ -482,15 +521,12 @@ async def smart_csv_confirm(
                     row_num = int(row_key)
                     ptx = preview_data_map.get(row_num)
                     if ptx:
-                        # Resolve category_id from name
-                        cat = db.query(Category).filter(
-                            Category.user_id == profile.user_id,
-                            Category.name.ilike(override.category),
-                        ).first()
-                        if cat:
+                        # Use cached category lookup
+                        cat_id = category_lookup.get(override.category.lower())
+                        if cat_id:
                             learning_svc.learn_from_correction(
                                 original_description=ptx.original_description,
-                                assigned_category_id=cat.id,
+                                assigned_category_id=cat_id,
                                 source="import_override",
                             )
         except ImportError:
@@ -537,11 +573,14 @@ def _build_transaction(
     job: ImportJob,
     ptx: ParsedTransaction,
     classification: Any,
-    profile: FinancialProfile,
     account_id: UUID,
-    encryption_svc: Any,
+    category_lookup: Dict[str, UUID],
+    merchant_lookup: Dict[str, Merchant],
 ) -> Transaction:
-    """Build a Transaction object for bulk insert (does not commit or flush)."""
+    """Build a Transaction object for bulk insert (does not commit or flush).
+
+    Uses pre-cached category_lookup and merchant_lookup to avoid per-row DB queries.
+    """
     amount = _round_money(ptx.amount)
 
     # Map transaction type string to enum
@@ -550,41 +589,37 @@ def _build_transaction(
     except ValueError:
         tx_type = TransactionType.PURCHASE if amount < 0 else TransactionType.INCOME
 
-    # Resolve category
+    # Resolve category from cache
     category_id = None
     if classification.category_name and classification.category_name != "Uncategorized":
-        cat = db.query(Category).filter(
-            Category.user_id == profile.user_id,
-            Category.name.ilike(classification.category_name),
-        ).first()
-        if cat:
-            category_id = cat.id
+        category_id = category_lookup.get(classification.category_name.lower())
 
-    # Resolve merchant
+    # Resolve merchant from cache
     merchant_id = None
     if classification.merchant_name:
-        from sqlalchemy import or_
-        merchant = db.query(Merchant).filter(
-            or_(
-                Merchant.canonical_name.ilike(f"%{classification.merchant_name}%"),
-                Merchant.aliases.contains([classification.merchant_name]),
-            )
-        ).first()
+        merchant_key = classification.merchant_name.lower()
+        merchant = merchant_lookup.get(merchant_key)
         if merchant:
             merchant.usage_count += 1
             merchant_id = merchant.id
         else:
-            merchant = Merchant(
-                canonical_name=classification.merchant_name,
-                usage_count=1,
-            )
-            db.add(merchant)
-            db.flush()
-            merchant_id = merchant.id
-
-    # Encryption for high-security profiles
-    encrypted_amount = str(amount)
-    encrypted_description = ptx.description
+            # Try partial match in cache
+            for key, m in merchant_lookup.items():
+                if merchant_key in key or key in merchant_key:
+                    m.usage_count += 1
+                    merchant_id = m.id
+                    break
+            if merchant_id is None:
+                # Create new merchant
+                merchant = Merchant(
+                    canonical_name=classification.merchant_name,
+                    usage_count=1,
+                )
+                db.add(merchant)
+                db.flush()
+                merchant_id = merchant.id
+                # Add to cache for future rows
+                merchant_lookup[merchant_key] = merchant
 
     tx = Transaction(
         financial_profile_id=job.financial_profile_id,
@@ -594,15 +629,13 @@ def _build_transaction(
         transaction_date=ptx.date,
         transaction_type=tx_type,
         source=TransactionSource.IMPORT_CSV,
-        amount=encrypted_amount,
+        amount=str(amount),
         amount_clear=amount,
         currency=ptx.currency,
         amount_in_profile_currency=_round_money(amount),
-        description=encrypted_description,
+        description=ptx.description,
         description_clear=ptx.description[:255] if ptx.description else None,
-        original_description=ptx.original_description[:500] if ptx.original_description else None,
         merchant_name=classification.merchant_name,
-        is_verified=False,
         import_job_id=job.id,
     )
     return tx
