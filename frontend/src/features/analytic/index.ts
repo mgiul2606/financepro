@@ -38,11 +38,9 @@ export {
   useMerchantAnalysis,
   // Anomaly Detection
   useAnomalies,
-  // Recurring Patterns
-  useRecurringPatterns,
+  // Spending Patterns
+  useSpendingPatterns,
   // Reports
-  useReports,
-  useReport,
   useGenerateReport,
 } from './analytic.hooks';
 

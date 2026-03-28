@@ -441,6 +441,46 @@
     "noReportsDesc": "I report verranno generati automaticamente quando ci saranno abbastanza dati.",
     "noDataAvailable": "Nessun dato disponibile",
     "noDataAvailableDesc": "Non ci sono ancora dati da analizzare per questo periodo.",
+    "transactionsAnalyzed": "{{count}} transazioni analizzate",
+    "expectedAvg": "Media attesa",
+    "deviation": "deviazione",
+    "dayOfWeekSpending": "Spesa per Giorno della Settimana",
+    "weekOfMonthSpending": "Spesa per Settimana del Mese",
+    "busiestDay": "Giorno più attivo",
+    "quietestDay": "Giorno più tranquillo",
+    "categoryTrends": "Tendenze per Categoria",
+    "trend": "Tendenza",
+    "change": "Variazione",
+    "trendDirection": {
+      "increasing": "In aumento",
+      "decreasing": "In diminuzione",
+      "stable": "Stabile"
+    },
+    "detectedRecurring": "Transazioni Ricorrenti Rilevate",
+    "occurrences": "occorrenze",
+    "tracked": "Monitorata",
+    "frequency": {
+      "daily": "Giornaliera",
+      "weekly": "Settimanale",
+      "biweekly": "Bisettimanale",
+      "monthly": "Mensile",
+      "quarterly": "Trimestrale",
+      "yearly": "Annuale"
+    },
+    "generateReports": "Genera Report",
+    "generateReportsDesc": "Esporta i tuoi dati finanziari come report CSV per il periodo selezionato.",
+    "generate": "Genera",
+    "reportReady": "Report pronto per il download",
+    "rows": "righe",
+    "reportTypes": {
+      "monthlySummary": "Riepilogo Mensile",
+      "categoryBreakdown": "Dettaglio Categorie",
+      "fullReport": "Report Completo",
+      "monthly": "Mensile",
+      "quarterly": "Trimestrale",
+      "yearly": "Annuale",
+      "custom": "Personalizzato"
+    },
     "errors": {
       "loadFailed": "Impossibile caricare i dati analitici. Riprova più tardi."
     }

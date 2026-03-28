@@ -1,17 +1,8 @@
 /**
  * React Query hooks for Analytics operations
  *
- * MIGRATION STATUS (2026-03-27):
- * - useAnalyticOverview: MIGRATED to real API (expenses + income + period-comparison)
- * - useCategoryBreakdown: MIGRATED to real API (expenses endpoint byCategory)
- * - useTimeSeriesData: MIGRATED to real API (cash flow endpoint periodSummaries)
- * - useMerchantAnalysis: MOCK - no backend endpoint
- * - useAnomalies: MOCK - no backend endpoint
- * - useRecurringPatterns: MOCK - no backend endpoint
- * - useReports/useReport/useGenerateReport: MOCK - no backend endpoint
- * - useSubcategoryBreakdown: MOCK - no backend endpoint
+ * ALL HOOKS MIGRATED TO REAL API (2026-03-27)
  */
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   useAnalyzeExpensesApiV1AnalysisExpensesGet,
   useAnalyzeIncomeApiV1AnalysisIncomeGet,
@@ -24,20 +15,27 @@ import type { CashFlowResponse } from '@/api/generated/models/cashFlowResponse';
 import type { PeriodComparisonResponse } from '@/api/generated/models/periodComparisonResponse';
 import type { CategorySpending } from '@/api/generated/models/categorySpending';
 import type { PeriodSummary } from '@/api/generated/models/periodSummary';
-import { mockAnalyticApi } from './api/mockAnalyticApi';
+import {
+  useTopMerchants,
+  useAnomaliesApi,
+  usePatternsApi,
+  useCategoryBreakdownApi,
+  useGenerateReportApi,
+} from './api/analysisApi';
+import type {
+  TopMerchantsResponse,
+  AnomaliesResponse,
+  PatternsResponse,
+  CategoryBreakdownResponse,
+  ReportMeta,
+} from './api/analysisApi';
 import { ANALYTIC_STALE_TIMES } from './analytic.constants';
 import type {
   AnalyticFilters,
   AnalyticOverview,
   TimeSeriesData,
   CategoryBreakdown,
-  MerchantAnalysis,
-  AnomalyDetection,
-  RecurringPattern,
-  FinancialReport,
-  SubcategoryBreakdown,
 } from './analytic.types';
-import type { ReportTypeValue } from './analytic.constants';
 
 // ============================================================================
 // Query Keys (for hooks still using mocks)
@@ -266,19 +264,24 @@ export const useCategoryBreakdown = (filters?: AnalyticFilters) => {
 };
 
 /**
- * Hook to fetch subcategory breakdown for a specific category
- * MOCK — no backend endpoint for subcategory drill-down
+ * Hook to fetch subcategory/category breakdown (drill-down by merchant)
+ * Uses real backend: GET /api/v1/analysis/categories/{categoryId}/breakdown
  */
-export const useSubcategoryBreakdown = (category: string, filters?: AnalyticFilters) => {
-  const query = useQuery<SubcategoryBreakdown>({
-    queryKey: analyticKeys.subcategory(category, filters),
-    queryFn: () => mockAnalyticApi.getSubcategoryBreakdown(category, filters),
-    enabled: !!category,
-    staleTime: ANALYTIC_STALE_TIMES.categories,
-  });
+export const useSubcategoryBreakdown = (categoryId: string, filters?: AnalyticFilters) => {
+  const defaults = getDefaultDateRange();
+  const startDate = filters?.dateFrom ?? defaults.startDate;
+  const endDate = filters?.dateTo ?? defaults.endDate;
+
+  const query = useCategoryBreakdownApi(
+    categoryId,
+    { start_date: startDate, end_date: endDate },
+    { query: { staleTime: ANALYTIC_STALE_TIMES.categories } },
+  );
+
+  const data = query.data?.data as CategoryBreakdownResponse | undefined;
 
   return {
-    subcategory: query.data,
+    subcategory: data,
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error,
@@ -287,22 +290,28 @@ export const useSubcategoryBreakdown = (category: string, filters?: AnalyticFilt
 };
 
 // ============================================================================
-// Merchant Analysis Hooks — MOCK (no backend endpoint)
+// Merchant Analysis Hooks — MIGRATED TO REAL API
 // ============================================================================
 
 /**
- * Hook to fetch merchant analysis data
- * MOCK — no backend endpoint for merchant-level analysis
+ * Hook to fetch top merchants data
+ * Uses real backend: GET /api/v1/analysis/top-merchants
  */
 export const useMerchantAnalysis = (filters?: AnalyticFilters) => {
-  const query = useQuery<MerchantAnalysis[]>({
-    queryKey: analyticKeys.merchants(filters),
-    queryFn: () => mockAnalyticApi.getMerchantAnalysis(filters),
-    staleTime: ANALYTIC_STALE_TIMES.merchants,
-  });
+  const defaults = getDefaultDateRange();
+  const startDate = filters?.dateFrom ?? defaults.startDate;
+  const endDate = filters?.dateTo ?? defaults.endDate;
+
+  const query = useTopMerchants(
+    { start_date: startDate, end_date: endDate, limit: 20 },
+    { query: { staleTime: ANALYTIC_STALE_TIMES.merchants } },
+  );
+
+  const data = query.data?.data as TopMerchantsResponse | undefined;
 
   return {
-    merchants: query.data ?? [],
+    merchants: data?.merchants ?? [],
+    totalExpenses: data?.totalExpenses ?? 0,
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error,
@@ -311,22 +320,28 @@ export const useMerchantAnalysis = (filters?: AnalyticFilters) => {
 };
 
 // ============================================================================
-// Anomaly Detection Hooks — MOCK (no backend endpoint)
+// Anomaly Detection Hooks — MIGRATED TO REAL API
 // ============================================================================
 
 /**
  * Hook to fetch detected anomalies
- * MOCK — no backend endpoint for anomaly detection
+ * Uses real backend: GET /api/v1/analysis/anomalies
  */
 export const useAnomalies = (filters?: AnalyticFilters) => {
-  const query = useQuery<AnomalyDetection[]>({
-    queryKey: analyticKeys.anomalies(filters),
-    queryFn: () => mockAnalyticApi.getAnomalies(filters),
-    staleTime: ANALYTIC_STALE_TIMES.anomalies,
-  });
+  const defaults = getDefaultDateRange();
+  const startDate = filters?.dateFrom ?? defaults.startDate;
+  const endDate = filters?.dateTo ?? defaults.endDate;
+
+  const query = useAnomaliesApi(
+    { start_date: startDate, end_date: endDate, sensitivity: 'medium' },
+    { query: { staleTime: ANALYTIC_STALE_TIMES.anomalies } },
+  );
+
+  const data = query.data?.data as AnomaliesResponse | undefined;
 
   return {
-    anomalies: query.data ?? [],
+    anomalies: data?.anomalies ?? [],
+    totalAnalyzed: data?.totalAnalyzed ?? 0,
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error,
@@ -335,22 +350,27 @@ export const useAnomalies = (filters?: AnalyticFilters) => {
 };
 
 // ============================================================================
-// Recurring Patterns Hooks — MOCK (no backend endpoint)
+// Spending Patterns Hooks — MIGRATED TO REAL API
 // ============================================================================
 
 /**
- * Hook to fetch recurring transaction patterns
- * MOCK — no backend endpoint for recurring pattern detection
+ * Hook to fetch spending patterns
+ * Uses real backend: GET /api/v1/analysis/patterns
  */
-export const useRecurringPatterns = (filters?: AnalyticFilters) => {
-  const query = useQuery<RecurringPattern[]>({
-    queryKey: analyticKeys.patterns(filters),
-    queryFn: () => mockAnalyticApi.getRecurringPatterns(filters),
-    staleTime: ANALYTIC_STALE_TIMES.patterns,
-  });
+export const useSpendingPatterns = (filters?: AnalyticFilters) => {
+  const defaults = getDefaultDateRange();
+  const startDate = filters?.dateFrom ?? defaults.startDate;
+  const endDate = filters?.dateTo ?? defaults.endDate;
+
+  const query = usePatternsApi(
+    { start_date: startDate, end_date: endDate },
+    { query: { staleTime: ANALYTIC_STALE_TIMES.patterns } },
+  );
+
+  const data = query.data?.data as PatternsResponse | undefined;
 
   return {
-    patterns: query.data ?? [],
+    patterns: data,
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error,
@@ -359,94 +379,22 @@ export const useRecurringPatterns = (filters?: AnalyticFilters) => {
 };
 
 // ============================================================================
-// Reports Hooks — MOCK (no backend endpoint)
+// Reports Hooks — MIGRATED TO REAL API
 // ============================================================================
 
 /**
- * Hook to fetch list of financial reports
- * MOCK — no backend endpoint for report management
- */
-export const useReports = (filters?: AnalyticFilters) => {
-  const query = useQuery<FinancialReport[]>({
-    queryKey: analyticKeys.reports(filters),
-    queryFn: () => mockAnalyticApi.getReports(filters),
-    staleTime: ANALYTIC_STALE_TIMES.reports,
-  });
-
-  return {
-    reports: query.data ?? [],
-    isLoading: query.isLoading,
-    isError: query.isError,
-    error: query.error,
-    refetch: query.refetch,
-  };
-};
-
-/**
- * Hook to fetch a single report by ID
- * MOCK — no backend endpoint for report management
- */
-export const useReport = (id: string) => {
-  const query = useQuery<FinancialReport>({
-    queryKey: analyticKeys.report(id),
-    queryFn: () => mockAnalyticApi.getReportById(id),
-    enabled: !!id,
-    staleTime: ANALYTIC_STALE_TIMES.reports,
-  });
-
-  return {
-    report: query.data,
-    isLoading: query.isLoading,
-    isError: query.isError,
-    error: query.error,
-    refetch: query.refetch,
-  };
-};
-
-/**
- * Hook to generate a new financial report
- * MOCK — no backend endpoint for report generation
+ * Hook to generate a CSV report
+ * Uses real backend: POST /api/v1/analysis/reports/generate
  */
 export const useGenerateReport = () => {
-  const queryClient = useQueryClient();
+  const mutation = useGenerateReportApi();
 
-  const mutation = useMutation({
-    mutationFn: async ({
-      type,
-      filters,
-    }: {
-      type: ReportTypeValue;
-      filters?: AnalyticFilters;
-    }): Promise<FinancialReport> => {
-      // Mock implementation - replace with actual API call when available
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return {
-        id: `report-${Date.now()}`,
-        title: `${type.charAt(0).toUpperCase() + type.slice(1)} Report`,
-        type,
-        period: {
-          from: filters?.dateFrom ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          to: filters?.dateTo ?? new Date().toISOString().split('T')[0],
-        },
-        summary: {
-          totalIncome: 5800,
-          totalExpenses: 4567.89,
-          netSavings: 1232.11,
-          savingsRate: 21.2,
-        },
-        topCategories: [],
-        insights: ['Report generated successfully.'],
-        generatedAt: new Date().toISOString(),
-      };
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: analyticKeys.all });
-    },
-  });
+  const data = mutation.data?.data as ReportMeta | undefined;
 
   return {
-    generateReport: (type: ReportTypeValue, filters?: AnalyticFilters) =>
-      mutation.mutateAsync({ type, filters }),
+    generateReport: (reportType: string, startDate: string, endDate: string) =>
+      mutation.mutateAsync({ reportType, startDate, endDate }),
+    report: data,
     isGenerating: mutation.isPending,
     isError: mutation.isError,
     error: mutation.error,
