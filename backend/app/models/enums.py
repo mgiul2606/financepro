@@ -71,6 +71,31 @@ class TransactionType(str, enum.Enum):
     OTHER = "other"
 
 
+# Canonical income/expense classification by transaction_type.
+# These sets are the SINGLE SOURCE OF TRUTH for the entire application.
+# A transaction is income if its type is in INCOME_TRANSACTION_TYPES,
+# expense if in EXPENSE_TRANSACTION_TYPES, or neutral otherwise.
+INCOME_TRANSACTION_TYPES = frozenset({
+    TransactionType.INCOME,
+    TransactionType.SALARY,
+    TransactionType.INVOICE,
+    TransactionType.ASSET_SALE,
+    TransactionType.DIVIDEND,
+    TransactionType.INTEREST,
+    TransactionType.REFUND,
+})
+
+EXPENSE_TRANSACTION_TYPES = frozenset({
+    TransactionType.PURCHASE,
+    TransactionType.PAYMENT,
+    TransactionType.WITHDRAWAL,
+    TransactionType.LOAN_PAYMENT,
+    TransactionType.ASSET_PURCHASE,
+    TransactionType.FEE,
+    TransactionType.TAX,
+})
+
+
 class TransactionSource(str, enum.Enum):
     """Source of transaction creation"""
     MANUAL = "manual"

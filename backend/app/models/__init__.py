@@ -14,6 +14,8 @@ from app.models.enums import (
     AccountType,
     TransactionType,
     TransactionSource,
+    INCOME_TRANSACTION_TYPES,
+    EXPENSE_TRANSACTION_TYPES,
     AssetType,
     ValuationMethod,
     AmountModel,

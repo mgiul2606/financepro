@@ -28,7 +28,7 @@ from app.models.budget import Budget, BudgetCategory
 from app.models.exchange_rate import ExchangeRate
 from app.models.merchant import Merchant
 from app.models.recurring_transaction import RecurringTransaction
-from app.models.enums import ScopeType
+from app.models.enums import ScopeType, INCOME_TRANSACTION_TYPES, EXPENSE_TRANSACTION_TYPES
 from app.api.dependencies import get_current_user
 from app.schemas.base import CamelCaseModel
 
@@ -208,7 +208,7 @@ async def analyze_expenses(
         Account.financial_profile_id.in_(profile_id_list),
         Transaction.transaction_date >= start_date,
         Transaction.transaction_date <= end_date,
-        Transaction.amount_clear < 0  # Expenses are negative
+        Transaction.transaction_type.in_(EXPENSE_TRANSACTION_TYPES)
     ).all()
 
     # Pre-fetch all categories for this user to avoid N+1 queries
@@ -296,7 +296,7 @@ async def analyze_income(
         Account.financial_profile_id.in_(profile_id_list),
         Transaction.transaction_date >= start_date,
         Transaction.transaction_date <= end_date,
-        Transaction.amount_clear > 0  # Income is positive
+        Transaction.transaction_type.in_(INCOME_TRANSACTION_TYPES)
     ).all()
 
     # Pre-fetch all categories for this user to avoid N+1 queries
@@ -310,10 +310,10 @@ async def analyze_income(
     total_income = Decimal("0.00")
 
     for txn in transactions:
-        amount = convert_amount(
+        amount = abs(convert_amount(
             txn.amount_clear, txn.currency, currency,
             txn.transaction_date, db
-        )
+        ))
         total_income += amount
 
         cat_id = str(txn.category_id) if txn.category_id else "uncategorized"
@@ -386,7 +386,7 @@ async def get_spending_trends(
         Account.financial_profile_id.in_(profile_id_list),
         Transaction.transaction_date >= start_date,
         Transaction.transaction_date <= end_date,
-        Transaction.amount_clear < 0
+        Transaction.transaction_type.in_(EXPENSE_TRANSACTION_TYPES)
     )
 
     if category_id:
@@ -494,7 +494,7 @@ async def compare_budget_vs_actual(
             Transaction.category_id.in_(category_ids),
             Transaction.transaction_date >= budget.start_date,
             Transaction.transaction_date <= (budget.end_date or date.today()),
-            Transaction.amount_clear < 0
+            Transaction.transaction_type.in_(EXPENSE_TRANSACTION_TYPES)
         ).scalar() or Decimal("0.00")
 
         variance = budget.total_amount - actual
@@ -811,7 +811,7 @@ async def get_top_merchants(
         Account.financial_profile_id.in_(pid_list),
         Transaction.transaction_date >= start_date,
         Transaction.transaction_date <= end_date,
-        Transaction.amount_clear < 0,
+        Transaction.transaction_type.in_(EXPENSE_TRANSACTION_TYPES),
     ).all()
 
     # Pre-fetch merchants and categories
@@ -929,7 +929,7 @@ async def detect_anomalies(
         Account.financial_profile_id.in_(pid_list),
         Transaction.transaction_date >= baseline_start,
         Transaction.transaction_date < start_date,
-        Transaction.amount_clear < 0,
+        Transaction.transaction_type.in_(EXPENSE_TRANSACTION_TYPES),
     ).all()
 
     # Build per-category stats from baseline
@@ -964,7 +964,7 @@ async def detect_anomalies(
         Account.financial_profile_id.in_(pid_list),
         Transaction.transaction_date >= start_date,
         Transaction.transaction_date <= end_date,
-        Transaction.amount_clear < 0,
+        Transaction.transaction_type.in_(EXPENSE_TRANSACTION_TYPES),
     ).all()
 
     anomalies = []
@@ -1080,7 +1080,7 @@ async def get_patterns(
         Account.financial_profile_id.in_(pid_list),
         Transaction.transaction_date >= start_date,
         Transaction.transaction_date <= end_date,
-        Transaction.amount_clear < 0,
+        Transaction.transaction_type.in_(EXPENSE_TRANSACTION_TYPES),
     ).all()
 
     user_categories = {
@@ -1296,7 +1296,7 @@ async def get_category_breakdown(
         Transaction.category_id == category_id,
         Transaction.transaction_date >= start_date,
         Transaction.transaction_date <= end_date,
-        Transaction.amount_clear < 0,
+        Transaction.transaction_type.in_(EXPENSE_TRANSACTION_TYPES),
     ).all()
 
     merchant_map: dict = {}
@@ -1407,9 +1407,9 @@ async def generate_report(
             mk = txn.transaction_date.strftime("%Y-%m")
             monthly.setdefault(mk, {"income": Decimal("0"), "expenses": Decimal("0")})
             cat_monthly.setdefault(mk, {})
-            if txn.amount_clear > 0:
-                monthly[mk]["income"] += txn.amount_clear
-            else:
+            if txn.transaction_type in INCOME_TRANSACTION_TYPES:
+                monthly[mk]["income"] += abs(txn.amount_clear)
+            elif txn.transaction_type in EXPENSE_TRANSACTION_TYPES:
                 monthly[mk]["expenses"] += abs(txn.amount_clear)
                 cid = str(txn.category_id) if txn.category_id else "uncategorized"
                 cat_monthly[mk].setdefault(cid, Decimal("0"))

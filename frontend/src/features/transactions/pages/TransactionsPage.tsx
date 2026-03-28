@@ -146,12 +146,19 @@ export const TransactionsPage = () => {
     let totalIncome = 0;
     let totalExpenses = 0;
 
+    const incomeTypes = new Set(['income', 'salary', 'invoice', 'refund', 'dividend', 'interest', 'asset_sale']);
+    const expenseTypes = new Set(['purchase', 'payment', 'withdrawal', 'loan_payment', 'asset_purchase', 'fee', 'tax']);
+
     for (const txn of list) {
       const amount = parseFloat(txn.amount.toString());
-      if (txn.transactionType === 'income' || txn.transactionType === 'salary' || txn.transactionType === 'invoice' || txn.transactionType === 'refund' || txn.transactionType === 'dividend' || txn.transactionType === 'interest' || txn.transactionType === 'asset_sale') {
-        totalIncome += amount;
+      if (incomeTypes.has(txn.transactionType)) {
+        totalIncome += Math.abs(amount);
+      } else if (expenseTypes.has(txn.transactionType)) {
+        totalExpenses += Math.abs(amount);
       } else {
-        totalExpenses += amount;
+        // Neutral types (bank_transfer, internal_transfer, other): classify by sign
+        if (amount > 0) totalIncome += amount;
+        else if (amount < 0) totalExpenses += Math.abs(amount);
       }
     }
 
@@ -364,7 +371,7 @@ export const TransactionsPage = () => {
             <div className="space-y-4">
               {filteredTransactions.map((transaction) => {
                 const amount = parseFloat(transaction.amount.toString());
-                const isIncome = transaction.transactionType === 'income';
+                const isIncome = ['income', 'salary', 'invoice', 'refund', 'dividend', 'interest', 'asset_sale'].includes(transaction.transactionType);
 
                 return (
                   <div

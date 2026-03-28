@@ -247,8 +247,8 @@ async def get_transaction_stats(
     if date_to:
         query = query.filter(Transaction.transaction_date <= date_to)
 
-    # Calculate statistics
-    from app.models.transaction import TransactionType
+    # Calculate statistics using transaction_type (not amount sign)
+    from app.models.enums import INCOME_TRANSACTION_TYPES, EXPENSE_TRANSACTION_TYPES
 
     transactions = query.all()
 
@@ -256,10 +256,18 @@ async def get_transaction_stats(
     total_expenses = Decimal("0.00")
 
     for t in transactions:
-        if t.amount_clear > 0:
-            total_income += Decimal(str(t.amount_clear))
+        amt = Decimal(str(t.amount_clear))
+        if t.transaction_type in INCOME_TRANSACTION_TYPES:
+            total_income += abs(amt)
+        elif t.transaction_type in EXPENSE_TRANSACTION_TYPES:
+            total_expenses += abs(amt)
         else:
-            total_expenses += Decimal(str(t.amount_clear))
+            # Neutral types (bank_transfer, internal_transfer, other):
+            # classify by sign as fallback
+            if amt > 0:
+                total_income += amt
+            elif amt < 0:
+                total_expenses += abs(amt)
 
     net_amount = total_income - total_expenses
 

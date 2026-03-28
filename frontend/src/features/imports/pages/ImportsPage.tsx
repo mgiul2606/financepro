@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
 import { Button } from '@/core/components/atomic/Button';
-import { useProfileContext } from '@/contexts/ProfileContext';
 import { ImportJobsTable } from '../components/ImportJobsTable';
 import { SmartImportWizard } from '../components/SmartImportWizard';
 import { useImports, useDeleteImport } from '../imports.hooks';
@@ -16,14 +15,13 @@ import { useSmartImport } from '../imports.smart-hooks';
  */
 export const ImportsPage = () => {
   const { t } = useTranslation();
-  const { activeProfileIds } = useProfileContext();
   const [showWizard, setShowWizard] = useState(true);
   const [wizardKey, setWizardKey] = useState(0);
 
   // Hooks for data fetching and mutations
   const { imports, total, isLoading, error: fetchError } = useImports();
   const { deleteImport, isDeleting } = useDeleteImport();
-  const { resume, preview, setPreview } = useSmartImport();
+  const { resume } = useSmartImport();
 
   const handleDelete = async (jobId: string) => {
     try {
@@ -35,7 +33,7 @@ export const ImportsPage = () => {
 
   const handleResume = useCallback(async (jobId: string) => {
     try {
-      const data = await resume(jobId);
+      await resume(jobId);
       setShowWizard(true);
       // Force wizard remount with resume data
       setWizardKey((k) => k + 1);
@@ -54,7 +52,7 @@ export const ImportsPage = () => {
       {/* Smart Import Wizard */}
       {showWizard ? (
         <div className="mb-6">
-          <SmartImportWizard key={wizardKey} />
+          <SmartImportWizard key={wizardKey} activeJobs={imports} />
         </div>
       ) : (
         <div className="mb-6">

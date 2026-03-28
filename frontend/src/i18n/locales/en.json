@@ -847,7 +847,9 @@
       "chooseAccount": "Choose an account...",
       "selectAccountFirst": "Please select an account before analyzing the file",
       "analyzing": "Analyzing CSV file...",
-      "analyzingHint": "Detecting format, classifying transactions, and checking for duplicates in {{fileName}}"
+      "analyzingHint": "Detecting format, classifying transactions, and checking for duplicates in {{fileName}}",
+      "activeJobWarning": "An import is already in progress",
+      "activeJobHint": "Wait for the current import to complete or resume it from the history below before starting a new one."
     },
     "preview": {
       "detectedFormat": "Detected Format",

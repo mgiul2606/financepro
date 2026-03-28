@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { AlertTriangle } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
 import { useProfileContext } from '@/contexts/ProfileContext';
 import { useAccounts } from '@/features/accounts';
@@ -7,8 +8,13 @@ import { ImportUploadZone } from './ImportUploadZone';
 import { SmartImportPreview } from './SmartImportPreview';
 import { SmartImportResult } from './SmartImportResult';
 import { useSmartImport } from '../imports.smart-hooks';
+import type { ImportJobResponse } from '@/api/generated/models';
 
 type WizardStep = 'upload' | 'preview' | 'result';
+
+interface SmartImportWizardProps {
+  activeJobs?: ImportJobResponse[];
+}
 
 /**
  * Multi-step wizard for smart CSV import.
@@ -16,7 +22,7 @@ type WizardStep = 'upload' | 'preview' | 'result';
  * Step 2: Preview parsed transactions with auto-classification
  * Step 3: Import result summary
  */
-export const SmartImportWizard = () => {
+export const SmartImportWizard = ({ activeJobs = [] }: SmartImportWizardProps) => {
   const { t } = useTranslation();
   const { activeProfileIds } = useProfileContext();
   const { accounts, isLoading: accountsLoading } = useAccounts();
@@ -27,7 +33,6 @@ export const SmartImportWizard = () => {
 
   const {
     preview,
-    setPreview,
     confirmResult,
     isAnalyzing,
     isImporting,
@@ -35,7 +40,6 @@ export const SmartImportWizard = () => {
     importError,
     analyze,
     confirm,
-    resume,
     reset,
   } = useSmartImport();
 
@@ -64,15 +68,6 @@ export const SmartImportWizard = () => {
       // Error handled by hook
     }
   }, [selectedFile, selectedAccountId, activeProfileIds, analyze]);
-
-  const handleResume = useCallback(async (jobId: string) => {
-    try {
-      await resume(jobId);
-      setStep('preview');
-    } catch {
-      // Error handled by hook
-    }
-  }, [resume]);
 
   const handleConfirm = useCallback(
     async (
@@ -112,8 +107,27 @@ export const SmartImportWizard = () => {
   ];
   const currentIdx = steps.findIndex((s) => s.key === step);
 
+  const hasActiveJob = activeJobs.some(
+    (j) => j.status === 'pending' || j.status === 'processing',
+  );
+
   return (
     <div className="space-y-6">
+      {/* Active job warning */}
+      {hasActiveJob && step === 'upload' && (
+        <div className="flex items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4">
+          <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-amber-800">
+              {t('smartImport.upload.activeJobWarning')}
+            </p>
+            <p className="text-xs text-amber-600 mt-1">
+              {t('smartImport.upload.activeJobHint')}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Step indicator */}
       <div className="flex items-center gap-2">
         {steps.map((s, idx) => (
@@ -177,6 +191,7 @@ export const SmartImportWizard = () => {
                 selectedFile={selectedFile}
                 isUploading={isAnalyzing}
                 error={analyzeError}
+                disabled={hasActiveJob}
               />
 
               {!selectedAccountId && selectedFile && (

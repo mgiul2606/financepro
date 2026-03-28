@@ -59,15 +59,17 @@ _preview_cache: Dict[str, Dict[str, Any]] = {}
 
 _TWO_PLACES = Decimal("0.01")
 
-# Patterns for detecting summary/balance rows (not real transactions)
-SUMMARY_ROW_PATTERNS = [
-    r"saldo\s*(finale|iniziale|contabile|disponibile)",
-    r"totale\s*(dare|avere|movimenti|periodo)",
-    r"riepilogo",
-    r"balance",
-    r"total\b",
-    r"n\.\s*movimenti",
-    r"^\s*$",
+# Pre-compiled patterns for detecting summary/balance rows
+_SUMMARY_ROW_PATTERNS = [
+    re.compile(p, re.IGNORECASE) for p in [
+        r"saldo\s*(finale|iniziale|contabile|disponibile)",
+        r"totale\s*(dare|avere|movimenti|periodo)",
+        r"riepilogo",
+        r"balance",
+        r"total\b",
+        r"n\.\s*movimenti",
+        r"^\s*$",
+    ]
 ]
 
 
@@ -79,7 +81,7 @@ def _round_money(v: Decimal) -> Decimal:
 def _is_summary_row(description: str) -> bool:
     """Detect summary/balance rows that are not real transactions."""
     desc_lower = description.lower().strip()
-    return any(re.search(pattern, desc_lower) for pattern in SUMMARY_ROW_PATTERNS)
+    return any(p.search(desc_lower) for p in _SUMMARY_ROW_PATTERNS)
 
 
 def _batch_reconcile(
@@ -201,6 +203,107 @@ def _batch_reconcile(
     return results
 
 
+def _batch_classify(
+    transactions: List[ParsedTransaction],
+    db: Session,
+    profile_id: UUID,
+) -> Dict[int, Any]:
+    """Classify all transactions with minimal DB queries.
+
+    Loads ALL user rules and ALL merchants upfront in 2 queries,
+    then classifies purely in-memory.
+    """
+    from app.services.transaction_classifier import (
+        ClassificationResult,
+        TransactionClassifier,
+    )
+
+    results: Dict[int, Any] = {}
+    if not transactions:
+        return results
+
+    # ---- 1 query: load ALL user category rules for this profile ----
+    try:
+        from app.models.user_category_rule import UserCategoryRule
+        all_rules = db.query(UserCategoryRule).filter(
+            UserCategoryRule.financial_profile_id == profile_id,
+        ).all()
+    except Exception:
+        all_rules = []
+
+    # Build in-memory lookup structures for rules
+    exact_rules: Dict[str, UserCategoryRule] = {}  # normalized_desc → rule
+    keyword_rules: List[UserCategoryRule] = []
+    for rule in all_rules:
+        if rule.match_type == "exact_description":
+            exact_rules[rule.match_value] = rule  # already stored UPPER
+        elif rule.match_type == "contains_keyword":
+            keyword_rules.append(rule)
+
+    # ---- 1 query: pre-load ALL categories for name resolution ----
+    from app.models.category import Category
+    from app.models.user import User as UserModel
+    profile = db.query(FinancialProfile).filter(
+        FinancialProfile.id == profile_id
+    ).first()
+    cat_id_to_name: Dict[UUID, str] = {}
+    if profile:
+        all_cats = db.query(Category).filter(
+            Category.user_id == profile.user_id
+        ).all()
+        cat_id_to_name = {c.id: c.name for c in all_cats}
+
+    # ---- Create classifier (loads merchants once via its internal cache) ----
+    classifier = TransactionClassifier()
+    # Pre-warm the merchant cache with a single DB query
+    classifier._merchant_cache = db.query(Merchant).all()
+
+    # ---- Classify each transaction in-memory ----
+    for ptx in transactions:
+        normalized = ptx.description.strip().upper()
+
+        # Priority 1: User exact rule (pure dict lookup, no DB)
+        rule = exact_rules.get(normalized)
+        if rule:
+            cat_name = cat_id_to_name.get(rule.category_id, "Uncategorized")
+            results[ptx.row_number] = ClassificationResult(
+                category_name=cat_name,
+                merchant_name=None,
+                confidence_score=0.98,
+                match_method="user_rule_exact",
+                suggested_transaction_type=classifier._infer_transaction_type(
+                    ptx.description.lower(), ptx.amount
+                ),
+            )
+            continue
+
+        # Priority 2: User keyword rule (in-memory scan, no DB)
+        matched_rule = None
+        for kr in keyword_rules:
+            if kr.match_value.upper() in normalized:
+                matched_rule = kr
+                break
+        if matched_rule:
+            cat_name = cat_id_to_name.get(matched_rule.category_id, "Uncategorized")
+            results[ptx.row_number] = ClassificationResult(
+                category_name=cat_name,
+                merchant_name=None,
+                confidence_score=0.90,
+                match_method="user_rule_keyword",
+                suggested_transaction_type=classifier._infer_transaction_type(
+                    ptx.description.lower(), ptx.amount
+                ),
+            )
+            continue
+
+        # Priority 3: Global classifier (uses pre-cached merchants, no DB)
+        results[ptx.row_number] = classifier.classify(
+            ptx.description, ptx.amount, db=None  # No DB — merchants already cached
+        )
+
+    return results
+
+
 # ---------------------------------------------------------------------------
 # Step 1 – Preview
 # ---------------------------------------------------------------------------
@@ -228,26 +331,10 @@ async def smart_csv_preview(
     csv_svc = CSVImportService()
     parse_result = csv_svc.parse(raw_bytes)
 
-    # 2. Classify each parsed transaction (with user rules priority)
-    classifier = TransactionClassifier()
-
-    # Try to use user category rules for classification
-    try:
-        from app.services.category_learning_service import CategoryLearningService
-        learning_svc = CategoryLearningService(db, financial_profile_id)
-    except ImportError:
-        learning_svc = None
-
-    classifications: Dict[int, Any] = {}
-    for ptx in parse_result.transactions:
-        # Priority 1: User-learned rules
-        cl = None
-        if learning_svc:
-            cl = learning_svc.classify_with_user_rules(ptx.description)
-        # Priority 2: Global classifier
-        if cl is None:
-            cl = classifier.classify(ptx.description, ptx.amount, db=db)
-        classifications[ptx.row_number] = cl
+    # 2. Batch-classify all transactions (minimal DB queries)
+    classifications = _batch_classify(
+        parse_result.transactions, db, financial_profile_id,
+    )
 
     # 3. Batch reconciliation (single DB query instead of N)
     reconciliations = _batch_reconcile(
