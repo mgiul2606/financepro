@@ -55,6 +55,8 @@ class PreviewTransaction(CamelCaseModel):
     currency: str = "EUR"
     classification: ClassificationInfo
     reconciliation: ReconciliationInfo
+    is_parseable: bool = True
+    parse_warnings: List[str] = Field(default_factory=list)
 
 
 class PreviewSummary(CamelCaseModel):
@@ -95,6 +97,8 @@ class SmartImportConfirmRequest(CamelCaseModel):
     job_id: str
     user_overrides: Optional[Dict[str, TransactionOverride]] = None
     import_flagged: bool = False
+    excluded_rows: List[int] = Field(default_factory=list)
+    invert_amounts: bool = False
 
 
 class SmartImportConfirmResponse(CamelCaseModel):

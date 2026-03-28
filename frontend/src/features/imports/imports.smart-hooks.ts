@@ -55,6 +55,8 @@ export const useSmartImport = () => {
       jobId: string,
       userOverrides: Record<string, { category?: string; action?: string }>,
       importFlagged: boolean,
+      excludedRows: number[] = [],
+      invertAmounts: boolean = false,
     ) => {
       setIsImporting(true);
       setImportError(null);
@@ -65,6 +67,8 @@ export const useSmartImport = () => {
             jobId,
             userOverrides: Object.keys(userOverrides).length > 0 ? userOverrides : undefined,
             importFlagged,
+            excludedRows,
+            invertAmounts,
           },
         );
 
@@ -90,6 +94,31 @@ export const useSmartImport = () => {
     [queryClient],
   );
 
+  const resume = useCallback(
+    async (jobId: string) => {
+      setIsAnalyzing(true);
+      setAnalyzeError(null);
+      try {
+        const response = await api.get<SmartPreviewData>(
+          `/api/v1/import/jobs/${jobId}/resume`,
+        );
+
+        setPreview(response.data);
+        return response.data;
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error
+            ? err.message
+            : 'Failed to resume import';
+        setAnalyzeError(message);
+        throw err;
+      } finally {
+        setIsAnalyzing(false);
+      }
+    },
+    [],
+  );
+
   const reset = useCallback(() => {
     setPreview(null);
     setConfirmResult(null);
@@ -99,6 +128,7 @@ export const useSmartImport = () => {
 
   return {
     preview,
+    setPreview,
     confirmResult,
     isAnalyzing,
     isImporting,
@@ -106,6 +136,7 @@ export const useSmartImport = () => {
     importError,
     analyze,
     confirm,
+    resume,
     reset,
   };
 };

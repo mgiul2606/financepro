@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { FileText, Trash2 } from 'lucide-react';
+import { FileText, Trash2, Play } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { DataTable, type Column } from '@/core/components/composite/DataTable';
 import { Button } from '@/core/components/atomic/Button';
@@ -10,6 +10,7 @@ import { calculateProgress } from '../imports.hooks';
 interface ImportJobsTableProps {
   jobs: ImportJobResponse[];
   onDelete?: (jobId: string) => void;
+  onResume?: (jobId: string) => void;
   isDeleting?: boolean;
 }
 
@@ -19,6 +20,7 @@ interface ImportJobsTableProps {
 export const ImportJobsTable = ({
   jobs,
   onDelete,
+  onResume,
   isDeleting = false,
 }: ImportJobsTableProps) => {
   const { t } = useTranslation();
@@ -87,22 +89,37 @@ export const ImportJobsTable = ({
         </span>
       ),
     },
-    ...(onDelete ? [{
+    {
       key: 'actions',
       label: '',
       render: (job: ImportJobResponse) => (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onDelete(job.id)}
-          disabled={isDeleting}
-          aria-label={t('imports.deleteJob')}
-        >
-          <Trash2 className="h-4 w-4 text-gray-500 hover:text-red-500" />
-        </Button>
+        <div className="flex items-center gap-1">
+          {job.status === 'pending' && onResume && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onResume(job.id)}
+              aria-label={t('imports.resumeJob')}
+            >
+              <Play className="h-4 w-4 mr-1" />
+              {t('imports.resumeJob')}
+            </Button>
+          )}
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDelete(job.id)}
+              disabled={isDeleting}
+              aria-label={t('imports.deleteJob')}
+            >
+              <Trash2 className="h-4 w-4 text-gray-500 hover:text-red-500" />
+            </Button>
+          )}
+        </div>
       ),
-    }] : []),
-  ], [t, onDelete, isDeleting]);
+    },
+  ], [t, onDelete, onResume, isDeleting]);
 
   return (
     <DataTable

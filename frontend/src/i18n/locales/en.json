@@ -774,7 +774,13 @@
     "status": "Status",
     "progress": "Progress",
     "errors": "Errors",
-    "date": "Date"
+    "date": "Date",
+    "successful": "Successful",
+    "failed": "Failed",
+    "skipped": "Skipped",
+    "results": "Results",
+    "resumeJob": "Resume",
+    "deleteJob": "Delete"
   },
   "assets": {
     "title": "Assets",
@@ -864,7 +870,13 @@
       "forceImport": "Force Import",
       "undoForce": "Undo",
       "importFlaggedLabel": "Also import {{count}} flagged transactions",
-      "confirmImport": "Import {{count}} transactions"
+      "confirmImport": "Import {{count}} transactions",
+      "invertAmounts": "Invert amount signs",
+      "invertAmountsHint": "Enable if amounts appear with inverted signs (incomes as negative, expenses as positive)",
+      "selectAll": "Select/deselect all",
+      "excludedCount": "{{count}} excluded",
+      "uncategorizedCount": "{{count}} uncategorized",
+      "leaveWarning": "Import in progress. Are you sure you want to leave?"
     },
     "result": {
       "title": "Import Complete",

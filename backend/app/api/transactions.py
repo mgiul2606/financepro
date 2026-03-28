@@ -407,6 +407,21 @@ async def update_transaction(
         setattr(transaction, 'amount_clear', rounded)
         setattr(transaction, 'amount_in_profile_currency', rounded)
 
+    # Learn from category changes (adaptive categorization)
+    if 'category_id' in update_data and update_data['category_id'] != transaction.category_id:
+        try:
+            from app.services.category_learning_service import CategoryLearningService
+            learning_svc = CategoryLearningService(db, transaction.financial_profile_id)
+            desc = transaction.original_description or transaction.description_clear or transaction.description
+            if desc and update_data['category_id']:
+                learning_svc.learn_from_correction(
+                    original_description=desc,
+                    assigned_category_id=update_data['category_id'],
+                    source="user_correction",
+                )
+        except Exception:
+            pass  # Don't fail the update if learning fails
+
     for field, value in update_data.items():
         setattr(transaction, field, value)
 

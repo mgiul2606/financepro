@@ -26,6 +26,7 @@ from app.models.import_job import ImportJob
 from app.models.audit_log import AuditLog
 from app.models.exchange_rate import ExchangeRate
 from app.models.ml_classification_log import MLClassificationLog
+from app.models.user_category_rule import UserCategoryRule
 from app.models.chat import ChatConversation, ChatMessage
 
 # this is the Alembic Config object, which provides

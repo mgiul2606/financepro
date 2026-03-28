@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
@@ -8,6 +8,7 @@ import { useProfileContext } from '@/contexts/ProfileContext';
 import { ImportJobsTable } from '../components/ImportJobsTable';
 import { SmartImportWizard } from '../components/SmartImportWizard';
 import { useImports, useDeleteImport } from '../imports.hooks';
+import { useSmartImport } from '../imports.smart-hooks';
 
 /**
  * Imports page component
@@ -17,10 +18,12 @@ export const ImportsPage = () => {
   const { t } = useTranslation();
   const { activeProfileIds } = useProfileContext();
   const [showWizard, setShowWizard] = useState(true);
+  const [wizardKey, setWizardKey] = useState(0);
 
   // Hooks for data fetching and mutations
   const { imports, total, isLoading, error: fetchError } = useImports();
   const { deleteImport, isDeleting } = useDeleteImport();
+  const { resume, preview, setPreview } = useSmartImport();
 
   const handleDelete = async (jobId: string) => {
     try {
@@ -29,6 +32,17 @@ export const ImportsPage = () => {
       // Error is handled by the hook
     }
   };
+
+  const handleResume = useCallback(async (jobId: string) => {
+    try {
+      const data = await resume(jobId);
+      setShowWizard(true);
+      // Force wizard remount with resume data
+      setWizardKey((k) => k + 1);
+    } catch {
+      // Error handled by hook
+    }
+  }, [resume]);
 
   return (
     <div className="p-8">
@@ -40,7 +54,7 @@ export const ImportsPage = () => {
       {/* Smart Import Wizard */}
       {showWizard ? (
         <div className="mb-6">
-          <SmartImportWizard />
+          <SmartImportWizard key={wizardKey} />
         </div>
       ) : (
         <div className="mb-6">
@@ -70,6 +84,7 @@ export const ImportsPage = () => {
             <ImportJobsTable
               jobs={imports}
               onDelete={handleDelete}
+              onResume={handleResume}
               isDeleting={isDeleting}
             />
           ) : (
