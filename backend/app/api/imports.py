@@ -19,13 +19,13 @@ from app.models.enums import ImportType, ImportStatus
 from app.services import ImportService
 from app.core.rls import get_rls_context
 from app.api.dependencies import get_current_user
-from pydantic import BaseModel
+from app.schemas.base import CamelCaseModel
 
 router = APIRouter()
 
 
-# Response models
-class ImportJobResponse(BaseModel):
+# Response models - use CamelCaseModel to match frontend expectations
+class ImportJobResponse(CamelCaseModel):
     id: str
     financial_profile_id: str
     account_id: Optional[str] = None
@@ -42,7 +42,7 @@ class ImportJobResponse(BaseModel):
     completed_at: Optional[str] = None
 
 
-class ImportResultResponse(BaseModel):
+class ImportResultResponse(CamelCaseModel):
     total_rows: int
     successful: int
     failed: int
@@ -50,14 +50,14 @@ class ImportResultResponse(BaseModel):
     errors: List[dict]
 
 
-class ImportPreviewResponse(BaseModel):
+class ImportPreviewResponse(CamelCaseModel):
     headers: List[str]
     total_rows: int
     preview_rows: List[dict]
     suggested_mapping: dict
 
 
-class ImportJobListResponse(BaseModel):
+class ImportJobListResponse(CamelCaseModel):
     items: List[ImportJobResponse]
     total: int
 

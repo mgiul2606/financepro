@@ -184,8 +184,11 @@ export const useDeleteProfile = () => {
 export const useMainProfile = () => {
   const query = useGetMainProfileApiV1ProfilesMainGet();
 
+  const raw = query.data?.data as { userId?: string; mainProfileId?: string | null } | undefined;
+
   return {
-    mainProfile: query.data?.data as ProfileResponse | undefined,
+    mainProfile: raw,
+    mainProfileId: raw?.mainProfileId ?? null,
     isLoading: query.isLoading,
     error: query.error,
     refetch: query.refetch,

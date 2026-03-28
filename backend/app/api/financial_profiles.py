@@ -8,7 +8,7 @@ from uuid import UUID
 
 from app.db.database import get_db
 from app.models.user import User
-from app.models.financial_profile import FinancialProfile
+from app.models.financial_profile import FinancialProfile, ProfileType
 from app.schemas.financial_profile import (
     FinancialProfileCreate,
     FinancialProfileUpdate,
@@ -118,17 +118,46 @@ async def get_main_profile(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> MainProfileResponse:
-    
+
     default_profile = db.scalars(
         select(FinancialProfile).where(
             FinancialProfile.user_id == current_user.id,
             FinancialProfile.is_default == True
         )
     ).first()
-    
+
+    if not default_profile:
+        # Fallback: find first active profile and set it as default
+        first_profile = db.scalars(
+            select(FinancialProfile).where(
+                FinancialProfile.user_id == current_user.id,
+                FinancialProfile.is_active == True
+            ).order_by(FinancialProfile.created_at)
+        ).first()
+
+        if first_profile:
+            first_profile.is_default = True
+            db.commit()
+            db.refresh(first_profile)
+            default_profile = first_profile
+        else:
+            # No profiles at all — create a default one
+            default_profile = FinancialProfile(
+                user_id=current_user.id,
+                name="Default Profile",
+                description="Your default financial profile",
+                profile_type=ProfileType.PERSONAL,
+                default_currency="EUR",
+                is_active=True,
+                is_default=True,
+            )
+            db.add(default_profile)
+            db.commit()
+            db.refresh(default_profile)
+
     return MainProfileResponse(
         user_id=current_user.id,
-        main_profile_id=default_profile.id if default_profile else None
+        main_profile_id=default_profile.id
     )
 
 
