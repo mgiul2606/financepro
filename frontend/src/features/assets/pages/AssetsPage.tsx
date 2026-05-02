@@ -17,6 +17,7 @@ import { Separator } from '@/components/ui/separator';
 import { CurrencyText, PercentageText } from '@/core/components/atomic';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useCrudModal } from '@/hooks/useCrudModal';
+import { usePreferences } from '@/contexts/PreferencesContext';
 
 import {
   useAssets,
@@ -25,13 +26,14 @@ import {
   useDeleteAsset,
 } from '../assets.hooks';
 import type { AssetResponse, AssetCreate, AssetUpdate } from '../assets.types';
-import { SupportedCurrency } from '@/utils/currency';
+import { SupportedCurrency, formatNumber } from '@/utils/currency';
 import { AssetForm } from '../components/AssetForm';
 import { ASSET_TYPE_ICONS, ASSET_TYPE_COLORS } from '../assets.constants';
 
 export const AssetsPage = () => {
   const { t } = useTranslation();
   const confirm = useConfirm();
+  const { preferences } = usePreferences();
 
   // State for deleting indicator
   const [deletingAssetId, setDeletingAssetId] = useState<string | null>(null);
@@ -365,7 +367,7 @@ export const AssetsPage = () => {
                         {t('assets.quantity')}
                       </span>
                       <span className="font-medium">
-                        {parseFloat(asset.quantity).toLocaleString()}
+                        {formatNumber(parseFloat(asset.quantity), preferences.locale, { minimumFractionDigits: 0, maximumFractionDigits: 8 })}
                       </span>
                     </div>
                   )}
