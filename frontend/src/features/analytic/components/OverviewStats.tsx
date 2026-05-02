@@ -7,6 +7,8 @@ import { TrendingUp, TrendingDown, DollarSign, CreditCard, Target, Calendar } fr
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/core/components/atomic/Card';
 import type { AnalyticOverview } from '../analytic.types';
+import { usePreferences } from '@/contexts/PreferencesContext';
+import { formatCurrency } from '@/utils/currency';
 
 export interface OverviewStatsProps {
   overview: AnalyticOverview;
@@ -68,13 +70,15 @@ const StatCard: React.FC<StatCardProps> = ({ icon, label, value, change, trend, 
 
 export const OverviewStats: React.FC<OverviewStatsProps> = ({ overview }) => {
   const { t } = useTranslation();
+  const { preferences } = usePreferences();
+  const fmt = (v: number) => formatCurrency(v, preferences.currency, preferences.locale);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard
         icon={<DollarSign className="h-6 w-6" />}
         label={t('analytics.totalSpent')}
-        value={overview.totalSpent.toLocaleString()}
+        value={fmt(overview.totalSpent)}
         change={overview.comparisonToPrevious.spent}
         trend={overview.comparisonToPrevious.spent < 0 ? 'down' : 'up'}
         color="red"
@@ -82,7 +86,7 @@ export const OverviewStats: React.FC<OverviewStatsProps> = ({ overview }) => {
       <StatCard
         icon={<CreditCard className="h-6 w-6" />}
         label={t('analytics.totalIncome')}
-        value={overview.totalIncome.toLocaleString()}
+        value={fmt(overview.totalIncome)}
         change={overview.comparisonToPrevious.income}
         trend={overview.comparisonToPrevious.income > 0 ? 'up' : 'down'}
         color="green"
@@ -90,7 +94,7 @@ export const OverviewStats: React.FC<OverviewStatsProps> = ({ overview }) => {
       <StatCard
         icon={<Target className="h-6 w-6" />}
         label={t('analytics.netBalance')}
-        value={overview.netBalance.toLocaleString()}
+        value={fmt(overview.netBalance)}
         change={overview.comparisonToPrevious.balance}
         trend={overview.comparisonToPrevious.balance > 0 ? 'up' : 'down'}
         color={overview.netBalance > 0 ? 'green' : 'red'}
@@ -98,7 +102,7 @@ export const OverviewStats: React.FC<OverviewStatsProps> = ({ overview }) => {
       <StatCard
         icon={<Calendar className="h-6 w-6" />}
         label={t('analytics.dailyAverage')}
-        value={overview.averageDaily.toFixed(2)}
+        value={fmt(overview.averageDaily)}
         color="purple"
       />
     </div>
