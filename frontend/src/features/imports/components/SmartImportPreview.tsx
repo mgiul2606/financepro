@@ -5,6 +5,8 @@ import { Button } from '@/core/components/atomic/Button';
 import { Badge } from '@/core/components/atomic/Badge';
 import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
 import type { SmartPreviewData, PreviewTransactionItem } from '../imports.smart-types';
+import { usePreferences } from '@/contexts/PreferencesContext';
+import { formatCurrency } from '@/utils/currency';
 
 interface SmartImportPreviewProps {
   preview: SmartPreviewData;
@@ -35,6 +37,7 @@ export const SmartImportPreview = ({
   importError,
 }: SmartImportPreviewProps) => {
   const { t } = useTranslation();
+  const { preferences } = usePreferences();
 
   // Track user overrides
   const [overrides, setOverrides] = useState<
@@ -118,10 +121,7 @@ export const SmartImportPreview = ({
 
   const formatAmount = (amount: number) => {
     const displayAmount = invertAmounts ? -amount : amount;
-    return new Intl.NumberFormat('it-IT', {
-      style: 'currency',
-      currency: 'EUR',
-    }).format(displayAmount);
+    return formatCurrency(displayAmount, preferences.currency, preferences.locale);
   };
 
   const getDisplayAmount = (amount: number) => {
