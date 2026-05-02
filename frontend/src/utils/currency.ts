@@ -301,11 +301,7 @@ export const formatDateRange = (
   const start = typeof startDate === 'string' ? new Date(startDate) : startDate;
   const end = typeof endDate === 'string' ? new Date(endDate) : endDate;
 
-  const formatter = new Intl.DateTimeFormat(locale, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+  const formatter = new Intl.DateTimeFormat(locale, getDefaultDateOptions(locale));
 
   return `${formatter.format(start)} - ${formatter.format(end)}`;
 };

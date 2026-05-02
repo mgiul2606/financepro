@@ -10,7 +10,8 @@ import { Badge } from '@/core/components/atomic/Badge';
 import type { AnomalyDetection, BadgeVariant } from '../analytic.types';
 import type { AnomalyTypeValue, SeverityValue } from '../analytic.constants';
 import { ANOMALY_TYPE_OPTIONS, SEVERITY_OPTIONS } from '../analytic.constants';
-import { format } from 'date-fns';
+import { usePreferences } from '@/contexts/PreferencesContext';
+import { formatCurrency, formatDate } from '@/utils/currency';
 
 export interface AnomalyCardProps {
   anomaly: AnomalyDetection;
@@ -41,6 +42,7 @@ const getSeverityLabel = (severity: SeverityValue): string => {
 
 export const AnomalyCard: React.FC<AnomalyCardProps> = ({ anomaly, onViewDetails }) => {
   const { t } = useTranslation();
+  const { preferences } = usePreferences();
   const Icon = anomalyTypeIcons[anomaly.anomalyType];
 
   return (
@@ -74,10 +76,10 @@ export const AnomalyCard: React.FC<AnomalyCardProps> = ({ anomaly, onViewDetails
             </div>
             <div className="text-right">
               <p className="text-lg font-bold text-neutral-900">
-                {anomaly.amount.toFixed(2)}
+                {formatCurrency(anomaly.amount, preferences.currency, preferences.locale)}
               </p>
               <p className="text-xs text-neutral-500">
-                {format(new Date(anomaly.date), 'dd/MM/yyyy')}
+                {formatDate(anomaly.date, preferences.locale)}
               </p>
             </div>
           </div>
@@ -92,7 +94,7 @@ export const AnomalyCard: React.FC<AnomalyCardProps> = ({ anomaly, onViewDetails
           {anomaly.expectedAmount !== undefined && (
             <div className="text-xs text-neutral-600">
               <span>{t('analytics.expectedAmount')}: </span>
-              <span className="font-medium">{anomaly.expectedAmount.toFixed(2)}</span>
+              <span className="font-medium">{formatCurrency(anomaly.expectedAmount, preferences.currency, preferences.locale)}</span>
             </div>
           )}
         </div>

@@ -5,7 +5,6 @@
  */
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, TrendingUp, Calendar, DollarSign, Tag, Store, Clock } from 'lucide-react';
-import { format } from 'date-fns';
 import { Modal } from '@/components/ui/Modal';
 import { Card, CardBody } from '@/core/components/atomic/Card';
 import { Badge } from '@/core/components/atomic/Badge';
@@ -14,6 +13,8 @@ import type { AnomalyDetection, BadgeVariant } from '../analytic.types';
 import type { AnomalyTypeValue, SeverityValue } from '../analytic.constants';
 import { SEVERITY_OPTIONS } from '../analytic.constants';
 import type { SupportedCurrency } from '@/utils/currency';
+import { usePreferences } from '@/contexts/PreferencesContext';
+import { formatDate } from '@/utils/currency';
 
 interface AnomalyDetailsModalProps {
   anomaly: AnomalyDetection;
@@ -60,6 +61,7 @@ export const AnomalyDetailsModal = ({
   onClose,
 }: AnomalyDetailsModalProps) => {
   const { t } = useTranslation();
+  const { preferences } = usePreferences();
 
   // Use transactionDate if available, otherwise fall back to date
   const displayDate = anomaly.transactionDate ?? anomaly.date;
@@ -106,7 +108,7 @@ export const AnomalyDetailsModal = ({
                 <span className="text-sm">{t('transactions.date')}</span>
               </div>
               <span className="text-sm font-medium text-neutral-900">
-                {format(new Date(displayDate), 'MMMM dd, yyyy')}
+                {formatDate(displayDate, preferences.locale, { day: 'numeric', month: 'long', year: 'numeric' })}
               </span>
             </div>
 

@@ -10,7 +10,8 @@ import { Badge } from '@/core/components/atomic/Badge';
 import type { RecurringPattern, BadgeVariant, ConfidenceBadgeInfo } from '../analytic.types';
 import type { FrequencyValue } from '../analytic.constants';
 import { FREQUENCY_OPTIONS, CONFIDENCE_THRESHOLDS } from '../analytic.constants';
-import { format } from 'date-fns';
+import { usePreferences } from '@/contexts/PreferencesContext';
+import { formatDate } from '@/utils/currency';
 
 export interface RecurringPatternCardProps {
   pattern: RecurringPattern;
@@ -33,6 +34,7 @@ const getConfidenceBadge = (confidence: number): ConfidenceBadgeInfo => {
 
 export const RecurringPatternCard: React.FC<RecurringPatternCardProps> = ({ pattern }) => {
   const { t } = useTranslation();
+  const { preferences } = usePreferences();
   const confidenceBadge = getConfidenceBadge(pattern.confidence);
 
   return (
@@ -93,7 +95,7 @@ export const RecurringPatternCard: React.FC<RecurringPatternCardProps> = ({ patt
                   {t('analytics.nextExpectedDate')}
                 </p>
                 <p className="text-sm font-medium text-neutral-900">
-                  {format(new Date(pattern.nextExpectedDate), 'dd MMM yyyy')}
+                  {formatDate(pattern.nextExpectedDate, preferences.locale)}
                 </p>
               </div>
             </div>

@@ -3,6 +3,8 @@ import { Card, CardHeader, CardBody, CardFooter } from '@/core/components/atomic
 import { Badge } from '@/core/components/atomic/Badge';
 import { Button } from '@/core/components/atomic/Button';
 import type { OptimizationSuggestion } from '../optimization.types';
+import { usePreferences } from '@/contexts/PreferencesContext';
+import { formatCurrency, formatDate } from '@/utils/currency';
 
 export interface SuggestionCardProps {
   suggestion: OptimizationSuggestion;
@@ -32,6 +34,7 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
   onDismiss,
   onViewDetails,
 }) => {
+  const { preferences } = usePreferences();
   const priorityBadge = priorityConfig[suggestion.priority];
 
   return (
@@ -76,11 +79,11 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
               <span className="text-sm font-medium text-green-900">Risparmio Potenziale</span>
               <div className="text-right">
                 <p className="text-xl font-bold text-green-600">
-                  €{suggestion.potentialSavings.toFixed(2)}
+                  {formatCurrency(suggestion.potentialSavings, preferences.currency, preferences.locale)}
                 </p>
                 {suggestion.monthlySavings > 0 && (
                   <p className="text-xs text-green-700">
-                    €{suggestion.monthlySavings.toFixed(2)}/mese
+                    {formatCurrency(suggestion.monthlySavings, preferences.currency, preferences.locale)}/mese
                   </p>
                 )}
               </div>
@@ -116,7 +119,7 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
             <div className="bg-green-100 border border-green-300 rounded-lg p-3">
               <p className="text-sm font-medium text-green-900">
                 ✓ Implementato il{' '}
-                {new Date(suggestion.implementedAt).toLocaleDateString('it-IT')}
+                {formatDate(suggestion.implementedAt, preferences.locale)}
               </p>
             </div>
           )}

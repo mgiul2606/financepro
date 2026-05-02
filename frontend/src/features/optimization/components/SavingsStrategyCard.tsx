@@ -3,6 +3,8 @@ import { Card, CardHeader, CardBody, CardFooter } from '@/core/components/atomic
 import { Badge } from '@/core/components/atomic/Badge';
 import { Button } from '@/core/components/atomic/Button';
 import type { SavingsStrategy } from '../optimization.types';
+import { usePreferences } from '@/contexts/PreferencesContext';
+import { formatCurrency, formatDate } from '@/utils/currency';
 
 export interface SavingsStrategyCardProps {
   strategy: SavingsStrategy;
@@ -34,6 +36,7 @@ export const SavingsStrategyCard: React.FC<SavingsStrategyCardProps> = ({
   onStart,
   onContinue,
 }) => {
+  const { preferences } = usePreferences();
   const completedSteps = strategy.steps.filter((s) => s.completed).length;
   const totalSteps = strategy.steps.length;
   const progress = (completedSteps / totalSteps) * 100;
@@ -83,13 +86,13 @@ export const SavingsStrategyCard: React.FC<SavingsStrategyCardProps> = ({
               <div>
                 <p className="text-xs text-neutral-600 mb-1">Risparmio Mensile</p>
                 <p className="text-lg font-bold text-blue-600">
-                  €{strategy.projectedSavings.monthly.toFixed(2)}
+                  {formatCurrency(strategy.projectedSavings.monthly, preferences.currency, preferences.locale)}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-neutral-600 mb-1">Risparmio Annuale</p>
                 <p className="text-lg font-bold text-green-600">
-                  €{strategy.projectedSavings.yearly.toFixed(2)}
+                  {formatCurrency(strategy.projectedSavings.yearly, preferences.currency, preferences.locale)}
                 </p>
               </div>
             </div>
@@ -101,7 +104,7 @@ export const SavingsStrategyCard: React.FC<SavingsStrategyCardProps> = ({
                 <div>
                   <p className="text-xs text-green-700 mb-1">Risparmio Effettivo</p>
                   <p className="text-xl font-bold text-green-600">
-                    €{strategy.actualSavings.toFixed(2)}
+                    {formatCurrency(strategy.actualSavings, preferences.currency, preferences.locale)}
                   </p>
                 </div>
                 <div className="text-right">
@@ -157,7 +160,7 @@ export const SavingsStrategyCard: React.FC<SavingsStrategyCardProps> = ({
             <span>Status: {statusLabels[strategy.status]}</span>
             {strategy.startDate && (
               <span>
-                Iniziata il {new Date(strategy.startDate).toLocaleDateString('it-IT')}
+                Iniziata il {formatDate(strategy.startDate, preferences.locale)}
               </span>
             )}
           </div>

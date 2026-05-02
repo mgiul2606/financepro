@@ -3,7 +3,8 @@ import { Card, CardHeader, CardBody, CardFooter } from '@/core/components/atomic
 import { Badge } from '@/core/components/atomic/Badge';
 import { Button } from '@/core/components/atomic/Button';
 import type { WasteDetection } from '../optimization.types';
-import { format } from 'date-fns';
+import { usePreferences } from '@/contexts/PreferencesContext';
+import { formatCurrency, formatDate } from '@/utils/currency';
 
 export interface WasteCardProps {
   waste: WasteDetection;
@@ -32,6 +33,7 @@ const usageColors = {
 };
 
 export const WasteCard: React.FC<WasteCardProps> = ({ waste, onTakeAction }) => {
+  const { preferences } = usePreferences();
   return (
     <Card variant="bordered" className="border-orange-200 bg-orange-50/30">
       <CardHeader
@@ -62,7 +64,7 @@ export const WasteCard: React.FC<WasteCardProps> = ({ waste, onTakeAction }) => 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-xs text-neutral-600 mb-1">Costo Mensile</p>
-              <p className="text-lg font-bold text-red-600">€{waste.monthlyCost.toFixed(2)}</p>
+              <p className="text-lg font-bold text-red-600">{formatCurrency(waste.monthlyCost, preferences.currency, preferences.locale)}</p>
             </div>
             <div>
               <p className="text-xs text-neutral-600 mb-1">Utilizzi</p>
@@ -74,7 +76,7 @@ export const WasteCard: React.FC<WasteCardProps> = ({ waste, onTakeAction }) => 
             <div>
               <p className="text-xs text-neutral-600 mb-1">Costo per Utilizzo</p>
               <p className="text-base font-semibold text-neutral-900">
-                €{waste.costPerUse.toFixed(2)}
+                {formatCurrency(waste.costPerUse, preferences.currency, preferences.locale)}
               </p>
             </div>
           )}
@@ -83,7 +85,7 @@ export const WasteCard: React.FC<WasteCardProps> = ({ waste, onTakeAction }) => 
             <div>
               <p className="text-xs text-neutral-600 mb-1">Ultimo Utilizzo</p>
               <p className="text-sm text-neutral-900">
-                {format(new Date(waste.lastUsage), 'dd MMM yyyy')}
+                {formatDate(waste.lastUsage, preferences.locale)}
               </p>
             </div>
           )}
@@ -101,7 +103,7 @@ export const WasteCard: React.FC<WasteCardProps> = ({ waste, onTakeAction }) => 
               <div className="flex items-center gap-1">
                 <TrendingDown className="h-4 w-4 text-green-600" />
                 <span className="font-bold text-green-600">
-                  €{waste.potentialSaving.toFixed(2)}/anno
+                  {formatCurrency(waste.potentialSaving, preferences.currency, preferences.locale)}/anno
                 </span>
               </div>
             </div>
