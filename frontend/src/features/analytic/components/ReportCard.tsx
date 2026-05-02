@@ -11,7 +11,8 @@ import { Button } from '@/core/components/atomic/Button';
 import type { FinancialReport } from '../analytic.types';
 import type { ReportTypeValue } from '../analytic.constants';
 import { REPORT_TYPE_OPTIONS } from '../analytic.constants';
-import { format } from 'date-fns';
+import { usePreferences } from '@/contexts/PreferencesContext';
+import { formatCurrency, formatDate } from '@/utils/currency';
 
 export interface ReportCardProps {
   report: FinancialReport;
@@ -26,6 +27,8 @@ const getReportTypeLabel = (type: ReportTypeValue): string => {
 
 export const ReportCard: React.FC<ReportCardProps> = ({ report, onView, onDownload }) => {
   const { t } = useTranslation();
+  const { preferences } = usePreferences();
+  const fmt = (v: number) => formatCurrency(v, preferences.currency, preferences.locale);
   const savingsRate = report.summary.savingsRate;
   const isPositive = report.summary.netSavings > 0;
 
@@ -47,21 +50,21 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onView, onDownlo
       <CardBody>
         <div className="space-y-4">
           <div className="text-sm text-neutral-600">
-            {format(new Date(report.period.from), 'dd MMM yyyy')} -{' '}
-            {format(new Date(report.period.to), 'dd MMM yyyy')}
+            {formatDate(report.period.from, preferences.locale)} -{' '}
+            {formatDate(report.period.to, preferences.locale)}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-xs text-neutral-600 mb-1">{t('analytics.income')}</p>
               <p className="text-lg font-semibold text-green-600">
-                {report.summary.totalIncome.toLocaleString()}
+                {fmt(report.summary.totalIncome)}
               </p>
             </div>
             <div>
               <p className="text-xs text-neutral-600 mb-1">{t('analytics.expenses')}</p>
               <p className="text-lg font-semibold text-red-600">
-                {report.summary.totalExpenses.toLocaleString()}
+                {fmt(report.summary.totalExpenses)}
               </p>
             </div>
           </div>
@@ -71,7 +74,7 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onView, onDownlo
               <div>
                 <p className="text-xs text-neutral-600 mb-1">{t('analytics.netSavings')}</p>
                 <p className={`text-xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                  {isPositive ? '+' : ''}{report.summary.netSavings.toLocaleString()}
+                  {isPositive ? '+' : ''}{fmt(report.summary.netSavings)}
                 </p>
               </div>
               <div className="text-right">
