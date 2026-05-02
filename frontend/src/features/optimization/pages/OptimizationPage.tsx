@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { usePreferences } from '@/contexts/PreferencesContext';
+import { formatCurrency } from '@/utils/currency';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
 import { Tabs, TabsList, TabsTrigger } from '@/core/components/atomic/Tabs';
@@ -23,6 +25,9 @@ import { Sparkles, TrendingDown, Target, Repeat, AlertTriangle } from 'lucide-re
 export const OptimizationPage = () => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('overview');
+  const { preferences } = usePreferences();
+  const fmt = (v: number, opts?: Intl.NumberFormatOptions) =>
+    formatCurrency(v, preferences.currency, preferences.locale, opts);
 
   // Fetch data
   const { overview, isLoading: overviewLoading } = useOptimizationOverview();
@@ -99,10 +104,10 @@ export const OptimizationPage = () => {
                         <div>
                           <p className="text-sm text-neutral-600 mb-2">{t('optimization.potentialSavings')}</p>
                           <p className="text-2xl font-bold text-green-600">
-                            €{overview.totalPotentialSavings.toLocaleString()}
+                            {fmt(overview.totalPotentialSavings)}
                           </p>
                           <p className="text-xs text-neutral-500 mt-1">
-                            €{overview.monthlySavingsOpportunity.toFixed(2)}{t('optimization.perMonth')}
+                            {fmt(overview.monthlySavingsOpportunity)}{t('optimization.perMonth')}
                           </p>
                         </div>
                         <div className="p-3 bg-green-100 rounded-lg">
@@ -137,7 +142,7 @@ export const OptimizationPage = () => {
                         <div>
                           <p className="text-sm text-neutral-600 mb-2">{t('optimization.wasteDetected')}</p>
                           <p className="text-2xl font-bold text-orange-600">
-                            €{overview.wasteDetected.totalWastedAmount.toFixed(2)}
+                            {fmt(overview.wasteDetected.totalWastedAmount)}
                           </p>
                           <p className="text-xs text-neutral-500 mt-1">
                             {overview.wasteDetected.unusedSubscriptions} {t('optimization.subscriptions')}
@@ -156,7 +161,7 @@ export const OptimizationPage = () => {
                         <div>
                           <p className="text-sm text-neutral-600 mb-2">{t('optimization.totalSaved')}</p>
                           <p className="text-2xl font-bold text-purple-600">
-                            €{overview.totalSavedToDate.toLocaleString()}
+                            {fmt(overview.totalSavedToDate)}
                           </p>
                           <p className="text-xs text-neutral-500 mt-1">
                             {t('optimization.accuracy')}: {overview.averageAccuracy}%
@@ -386,7 +391,7 @@ export const OptimizationPage = () => {
                             <div className="text-right">
                               <p className="text-sm text-neutral-600">{t('optimization.saving')}</p>
                               <p className="text-lg font-bold text-green-600">
-                                €{duplicate.potentialSaving.toFixed(2)}
+                                {fmt(duplicate.potentialSaving)}
                               </p>
                             </div>
                           </div>
@@ -400,7 +405,7 @@ export const OptimizationPage = () => {
                                 <div className="flex items-center gap-2">
                                   <span className="text-sm text-neutral-600">{service.frequency}</span>
                                   <span className="text-sm font-semibold">
-                                    €{service.amount.toFixed(2)}
+                                    {fmt(service.amount)}
                                   </span>
                                 </div>
                               </div>
@@ -488,7 +493,7 @@ export const OptimizationPage = () => {
                           <div className="bg-green-100 rounded-lg p-3 text-center ml-4">
                             <p className="text-xs text-green-700">{t('optimization.yearSaving')}</p>
                             <p className="text-2xl font-bold text-green-600">
-                              €{alternative.yearlyProjection.toFixed(0)}
+                              {fmt(alternative.yearlyProjection, { maximumFractionDigits: 0, minimumFractionDigits: 0 })}
                             </p>
                           </div>
                         </div>
@@ -500,7 +505,7 @@ export const OptimizationPage = () => {
                               {alternative.currentMerchant}
                             </p>
                             <p className="text-lg font-bold text-neutral-700 mt-1">
-                              €{alternative.currentAmount.toFixed(2)}{t('optimization.perMonth')}
+                              {fmt(alternative.currentAmount)}{t('optimization.perMonth')}
                             </p>
                           </div>
                           <div className="border-l border-neutral-200 pl-4">
@@ -514,7 +519,7 @@ export const OptimizationPage = () => {
                               </span>
                             </div>
                             <p className="text-lg font-bold text-green-600 mt-1">
-                              €{alternative.suggestedAmount.toFixed(2)}{t('optimization.perMonth')}
+                              {fmt(alternative.suggestedAmount)}{t('optimization.perMonth')}
                             </p>
                           </div>
                         </div>
