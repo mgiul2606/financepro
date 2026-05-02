@@ -10,7 +10,7 @@ import { Button } from '@/core/components/atomic/Button';
 import { Toggle } from '@/core/components/atomic/Toggle';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePreferences } from '@/contexts/PreferencesContext';
-import type { SupportedCurrency, SupportedLocale } from '@/utils/currency';
+import { getLocaleFromLanguage, type SupportedCurrency, type SupportedLocale } from '@/utils/currency';
 
 export const Settings = () => {
   const { t } = useTranslation();
@@ -151,7 +151,7 @@ export const Settings = () => {
                     hint={t('settings.languageDesc')}
                     options={languageOptions}
                     value={preferences.language}
-                    onChange={(value) => updatePreferences({ language: value })}
+                    onChange={(value) => updatePreferences({ language: value, locale: getLocaleFromLanguage(value) })}
                   />
 
                   <SelectField
@@ -393,7 +393,7 @@ export const Settings = () => {
                       hint={t('settings.languageDesc')}
                       options={languageOptions}
                       value={preferences.language}
-                      onChange={(value) => updatePreferences({ language: value })}
+                      onChange={(value) => updatePreferences({ language: value, locale: getLocaleFromLanguage(value) })}
                     />
 
                     <SelectField

@@ -1,7 +1,7 @@
 // contexts/PreferencesContext.tsx
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getLocaleFromLanguage, type SupportedLocale, type SupportedCurrency } from '@/utils/currency';
+import { type SupportedLocale, type SupportedCurrency } from '@/utils/currency';
 
 export interface UserPreferences {
   language: string;
@@ -76,13 +76,6 @@ export const PreferencesProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [preferences.language, i18n]);
 
-  // Update locale when language changes
-  useEffect(() => {
-    const newLocale = getLocaleFromLanguage(preferences.language);
-    if (newLocale !== preferences.locale) {
-      setPreferences((prev) => ({ ...prev, locale: newLocale }));
-    }
-  }, [preferences.language]);
 
   const updatePreferences = (updates: Partial<UserPreferences>) => {
     setPreferences((prev) => ({

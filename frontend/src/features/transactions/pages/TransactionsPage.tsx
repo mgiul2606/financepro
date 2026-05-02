@@ -14,7 +14,8 @@ import {
   MoreVertical,
   RefreshCw,
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { formatDate } from '@/utils/currency';
+import { usePreferences } from '@/contexts/PreferencesContext';
 
 // shadcn/ui components
 import { Button } from '@/components/ui/button';
@@ -69,6 +70,7 @@ import { getApiErrorMessage } from '@/lib/form-utils';
 
 export const TransactionsPage = () => {
   const { t } = useTranslation();
+  const { preferences } = usePreferences();
   const confirm = useConfirm();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -186,17 +188,17 @@ export const TransactionsPage = () => {
   // Loading state with Skeleton
   if (isLoading) {
     return (
-      <div className="p-8 space-y-6">
+      <div className="p-8 space-y-8 bg-gray-50 min-h-full">
         <div className="space-y-2">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-4 w-96" />
+          <Skeleton className="h-9 w-64 rounded-xl" />
+          <Skeleton className="h-4 w-96 rounded-xl" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[1, 2, 3].map((i) => (
-            <Card key={i}>
+            <Card key={i} className="rounded-xl shadow-sm border border-gray-100 bg-white">
               <CardHeader>
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-8 w-24" />
+                <Skeleton className="h-4 w-32 rounded-xl" />
+                <Skeleton className="h-9 w-24 rounded-xl" />
               </CardHeader>
             </Card>
           ))}
@@ -206,18 +208,19 @@ export const TransactionsPage = () => {
   }
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-8 space-y-8 bg-gray-50 min-h-full">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t('transactions.title')}</h1>
-          <p className="text-muted-foreground mt-2">{t('transactions.subtitle')}</p>
+          <h1 className="text-3xl font-bold text-gray-900">{t('transactions.title')}</h1>
+          <p className="text-gray-500 mt-1">{t('transactions.subtitle')}</p>
         </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
             onClick={() => setIsFilterModalOpen(true)}
             disabled={crud.isCreating}
+            className="rounded-lg border-gray-200 hover:border-indigo-300 hover:text-indigo-600"
           >
             <Filter className="mr-2 h-4 w-4" />
             {t('common.filter')}
@@ -231,11 +234,16 @@ export const TransactionsPage = () => {
             variant="outline"
             onClick={() => setIsExportModalOpen(true)}
             disabled={!filteredTransactions || filteredTransactions.length === 0}
+            className="rounded-lg border-gray-200 hover:border-indigo-300 hover:text-indigo-600"
           >
             <Download className="mr-2 h-4 w-4" />
             {t('common.export')}
           </Button>
-          <Button onClick={() => crud.openCreateModal()} disabled={crud.isCreating}>
+          <Button
+            onClick={() => crud.openCreateModal()}
+            disabled={crud.isCreating}
+            className="rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white"
+          >
             <Plus className="mr-2 h-4 w-4" />
             {t('transactions.newTransaction')}
           </Button>
@@ -260,11 +268,11 @@ export const TransactionsPage = () => {
 
       {/* Active Filters Banner */}
       {activeFiltersCount > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <Filter className="h-5 w-5 text-blue-600" />
-              <span className="text-sm font-semibold text-blue-900">
+              <Filter className="h-5 w-5 text-indigo-600" />
+              <span className="text-sm font-semibold text-indigo-900">
                 {activeFiltersCount > 1
                   ? t('transactions.filtersActiveMany', { count: activeFiltersCount })
                   : t('transactions.filtersActive', { count: activeFiltersCount })}
@@ -274,7 +282,7 @@ export const TransactionsPage = () => {
               {t('transactions.clearFilters')}
             </Button>
           </div>
-          <div className="text-sm text-blue-800">
+          <div className="text-sm text-indigo-800">
             <strong>{filteredTransactions.length}</strong> / <strong>{transactions?.length || 0}</strong> {t('transactions.title').toLowerCase()}
           </div>
         </div>
@@ -283,61 +291,70 @@ export const TransactionsPage = () => {
       {/* Stats Cards */}
       {stats && (
         <div className="grid gap-6 md:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+          {/* Income */}
+          <div className="rounded-xl shadow-sm border border-gray-100 bg-white p-6 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                 {t('transactions.totalIncome')}
-              </CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
+              </p>
+              <p className="text-3xl font-bold text-emerald-600 mt-1">
                 <CurrencyText value={parseFloat(stats.totalIncome)} />
-              </div>
-            </CardContent>
-          </Card>
+              </p>
+            </div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
+              <TrendingUp className="h-6 w-6 text-emerald-600" />
+            </div>
+          </div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+          {/* Expenses */}
+          <div className="rounded-xl shadow-sm border border-gray-100 bg-white p-6 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                 {t('transactions.totalExpenses')}
-              </CardTitle>
-              <TrendingDown className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600">
+              </p>
+              <p className="text-3xl font-bold text-rose-600 mt-1">
                 <CurrencyText value={parseFloat(stats.totalExpenses)} />
-              </div>
-            </CardContent>
-          </Card>
+              </p>
+            </div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-100">
+              <TrendingDown className="h-6 w-6 text-rose-600" />
+            </div>
+          </div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('transactions.balance')}</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
+          {/* Balance */}
+          <div className="rounded-xl shadow-sm border border-gray-100 bg-white p-6 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                {t('transactions.balance')}
+              </p>
+              <p
+                className={`text-3xl font-bold mt-1 ${
+                  parseFloat(stats.netAmount) >= 0 ? 'text-emerald-600' : 'text-rose-600'
+                }`}
+              >
                 <CurrencyText value={parseFloat(stats.netAmount)} />
-              </div>
-            </CardContent>
-          </Card>
+              </p>
+            </div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100">
+              <DollarSign className="h-6 w-6 text-indigo-600" />
+            </div>
+          </div>
         </div>
       )}
 
       {/* Transactions List */}
       {filteredTransactions.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted">
-              <DollarSign className="h-10 w-10 text-muted-foreground" />
+        <div className="rounded-xl border border-dashed border-gray-200 bg-white">
+          <div className="flex flex-col items-center justify-center py-16">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-100">
+              <DollarSign className="h-10 w-10 text-gray-400" />
             </div>
-            <h3 className="mt-6 text-lg font-semibold">
+            <h3 className="mt-6 text-lg font-semibold text-gray-900">
               {activeFiltersCount > 0
                 ? t('transactions.noMatchingTransactions')
                 : t('transactions.noTransactions')}
             </h3>
-            <p className="mt-2 text-center text-sm text-muted-foreground max-w-sm">
+            <p className="mt-2 text-center text-sm text-gray-500 max-w-sm">
               {activeFiltersCount > 0
                 ? t('transactions.adjustFilters')
                 : t('transactions.noTransactionsDesc')}
@@ -346,7 +363,7 @@ export const TransactionsPage = () => {
               onClick={() =>
                 activeFiltersCount > 0 ? handleClearFilters() : crud.openCreateModal()
               }
-              className="mt-6"
+              className="mt-6 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white"
             >
               {activeFiltersCount > 0 ? (
                 <>{t('transactions.clearFilters')}</>
@@ -357,92 +374,98 @@ export const TransactionsPage = () => {
                 </>
               )}
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('transactions.allTransactions')}</CardTitle>
-            <CardDescription>
+        <div className="rounded-xl shadow-sm border border-gray-100 bg-white">
+          <div className="px-6 py-4 border-b border-gray-100">
+            <h2 className="text-base font-semibold text-gray-900">{t('transactions.allTransactions')}</h2>
+            <p className="text-sm text-gray-500 mt-0.5">
               {filteredTransactions.length} {t('transactions.title').toLowerCase()}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {filteredTransactions.map((transaction) => {
-                const amount = parseFloat(transaction.amount.toString());
-                const isIncome = ['income', 'salary', 'invoice', 'refund', 'dividend', 'interest', 'asset_sale'].includes(transaction.transactionType);
+            </p>
+          </div>
+          <div className="divide-y divide-gray-50 px-4 py-2">
+            {filteredTransactions.map((transaction) => {
+              const amount = parseFloat(transaction.amount.toString());
+              const isIncome = ['income', 'salary', 'invoice', 'refund', 'dividend', 'interest', 'asset_sale'].includes(transaction.transactionType);
 
-                return (
-                  <div
-                    key={transaction.id}
-                    className={`flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors ${
-                      deletingTransactionId === transaction.id
-                        ? 'opacity-50 pointer-events-none'
-                        : ''
-                    }`}
-                  >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3">
-                        <div className="font-medium">{transaction.description}</div>
-                        <Badge variant={isIncome ? 'default' : 'secondary'}>
-                          {t(`transactions.types.${transaction.transactionType}`)}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                        <span>
-                          {format(new Date(transaction.transactionDate), 'MMM dd, yyyy')}
-                        </span>
-                        {transaction.merchantName && <span>• {transaction.merchantName}</span>}
-                        {transaction.categoryId && <span>• Category: {transaction.categoryId}</span>}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`text-lg font-semibold ${
-                          isIncome ? 'text-green-600' : 'text-red-600'
+              return (
+                <div
+                  key={transaction.id}
+                  className={`flex items-center justify-between p-4 rounded-lg hover:bg-gray-50 transition-colors border-l-4 ${
+                    isIncome ? 'border-l-emerald-500' : 'border-l-rose-500'
+                  } ${
+                    deletingTransactionId === transaction.id
+                      ? 'opacity-50 pointer-events-none'
+                      : ''
+                  }`}
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3">
+                      <span className="font-semibold text-gray-900">{transaction.description}</span>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                          isIncome
+                            ? 'bg-emerald-50 text-emerald-700'
+                            : 'bg-rose-50 text-rose-700'
                         }`}
                       >
-                        <CurrencyText
-                          value={amount}
-                          currency={transaction.currency as SupportedCurrency}
-                          showSign
-                        />
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            disabled={deletingTransactionId === transaction.id}
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                            <span className="sr-only">Open menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => crud.openEditModal(transaction)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            {t('common.edit')}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => crud.handleDelete(transaction)}
-                            className="text-destructive focus:text-destructive"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            {t('common.delete')}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                        {t(`transactions.types.${transaction.transactionType}`)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4 mt-1 text-sm text-gray-400">
+                      <span>
+                        {formatDate(transaction.transactionDate, preferences.locale)}
+                      </span>
+                      {transaction.merchantName && <span>• {transaction.merchantName}</span>}
+                      {transaction.categoryId && <span>• Category: {transaction.categoryId}</span>}
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+                  <div className="flex items-center gap-4">
+                    <span
+                      className={`text-lg font-bold ${
+                        isIncome ? 'text-emerald-600' : 'text-rose-600'
+                      }`}
+                    >
+                      <CurrencyText
+                        value={amount}
+                        currency={transaction.currency as SupportedCurrency}
+                        showSign
+                      />
+                    </span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          disabled={deletingTransactionId === transaction.id}
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                          <span className="sr-only">Open menu</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => crud.openEditModal(transaction)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          {t('common.edit')}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => crud.handleDelete(transaction)}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          {t('common.delete')}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       {/* Create Modal */}
