@@ -224,6 +224,23 @@ export const getLocaleFromLanguage = (language: string): SupportedLocale => {
   return localeMap[language] || 'en-US';
 };
 
+// Returns locale-appropriate default options for date formatting.
+// Numeric locales (it-IT, de-DE, fr-FR, es-ES) use dd/mm/yyyy; others use "Jan 1, 2025".
+const getDefaultDateOptions = (
+  locale: SupportedLocale,
+  includeTime = false
+): Intl.DateTimeFormatOptions => {
+  const isNumeric = ['it-IT', 'de-DE', 'fr-FR', 'es-ES'].includes(locale);
+  if (isNumeric) {
+    return includeTime
+      ? { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }
+      : { day: '2-digit', month: '2-digit', year: 'numeric' };
+  }
+  return includeTime
+    ? { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }
+    : { year: 'numeric', month: 'short', day: 'numeric' };
+};
+
 /**
  * Format date with locale
  */
@@ -235,9 +252,7 @@ export const formatDate = (
   const dateObj = typeof date === 'string' ? new Date(date) : date;
 
   return new Intl.DateTimeFormat(locale, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
+    ...getDefaultDateOptions(locale),
     ...options,
   }).format(dateObj);
 };
@@ -253,11 +268,7 @@ export const formatDateTime = (
   const dateObj = typeof date === 'string' ? new Date(date) : date;
 
   return new Intl.DateTimeFormat(locale, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
+    ...getDefaultDateOptions(locale, true),
     ...options,
   }).format(dateObj);
 };
