@@ -11,7 +11,7 @@ import type { RecurringPattern, BadgeVariant, ConfidenceBadgeInfo } from '../ana
 import type { FrequencyValue } from '../analytic.constants';
 import { FREQUENCY_OPTIONS, CONFIDENCE_THRESHOLDS } from '../analytic.constants';
 import { usePreferences } from '@/contexts/PreferencesContext';
-import { formatDate } from '@/utils/currency';
+import { formatDate, formatCurrency } from '@/utils/currency';
 
 export interface RecurringPatternCardProps {
   pattern: RecurringPattern;
@@ -60,7 +60,7 @@ export const RecurringPatternCard: React.FC<RecurringPatternCardProps> = ({ patt
               {t('analytics.averageAmount')}
             </span>
             <span className="text-lg font-bold text-neutral-900">
-              {pattern.averageAmount.toFixed(2)}
+              {formatCurrency(pattern.averageAmount, preferences.currency, preferences.locale)}
             </span>
           </div>
 
