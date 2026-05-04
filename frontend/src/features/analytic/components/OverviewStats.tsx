@@ -25,8 +25,8 @@ interface StatCardProps {
 
 const colorClasses = {
   blue: 'bg-blue-100 text-blue-600',
-  green: 'bg-green-100 text-green-600',
-  red: 'bg-red-100 text-red-600',
+  green: 'bg-income-subtle text-income',
+  red: 'bg-expense-subtle text-expense',
   purple: 'bg-purple-100 text-purple-600',
 } as const;
 
@@ -42,13 +42,13 @@ const StatCard: React.FC<StatCardProps> = ({ icon, label, value, change, trend, 
           {change !== undefined && (
             <div className="flex items-center gap-1">
               {trend === 'up' ? (
-                <TrendingUp className="h-4 w-4 text-green-600" />
+                <TrendingUp className="h-4 w-4 text-income" />
               ) : trend === 'down' ? (
-                <TrendingDown className="h-4 w-4 text-red-600" />
+                <TrendingDown className="h-4 w-4 text-expense" />
               ) : null}
               <span
                 className={`text-sm font-medium ${
-                  change > 0 ? 'text-green-600' : change < 0 ? 'text-red-600' : 'text-neutral-600'
+                  change > 0 ? 'text-income' : change < 0 ? 'text-expense' : 'text-neutral-600'
                 }`}
               >
                 {change > 0 ? '+' : ''}

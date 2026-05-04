@@ -211,7 +211,7 @@ export const AnalyticPage = () => {
                           <p className="text-sm text-neutral-600">{t('analytics.transactionCount')}</p>
                           <p className="text-lg font-bold text-neutral-900">{overview.transactionCount}</p>
                         </div>
-                        <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center">
+                        <div className="h-12 w-12 bg-income-subtle rounded-full flex items-center justify-center">
                           <span className="text-2xl">💳</span>
                         </div>
                       </div>
@@ -474,7 +474,7 @@ export const AnalyticPage = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                              anomaly.severity === 'high' ? 'bg-red-100 text-red-800' :
+                              anomaly.severity === 'high' ? 'bg-expense-subtle text-expense' :
                               anomaly.severity === 'medium' ? 'bg-orange-100 text-orange-800' :
                               'bg-yellow-100 text-yellow-800'
                             }`}>
@@ -486,7 +486,7 @@ export const AnalyticPage = () => {
                           <p className="text-sm text-neutral-600">{anomaly.categoryName}</p>
                         </div>
                         <div className="text-right shrink-0">
-                          <p className="text-lg font-bold text-red-600">
+                          <p className="text-lg font-bold text-expense">
                             <CurrencyText value={anomaly.amount} />
                           </p>
                           <p className="text-xs text-neutral-500">
@@ -505,7 +505,7 @@ export const AnalyticPage = () => {
               <Card variant="elevated">
                 <CardBody>
                   <div className="text-center py-12">
-                    <CheckCircle className="h-12 w-12 text-green-400 mx-auto mb-4" />
+                    <CheckCircle className="h-12 w-12 text-income mx-auto mb-4" />
                     <p className="text-lg font-medium text-neutral-900">{t('analytics.noAnomalies')}</p>
                     <p className="text-sm text-neutral-600 mt-2">
                       {t('analytics.noAnomaliesDesc')}
@@ -600,8 +600,8 @@ export const AnalyticPage = () => {
                                 <td className="px-4 py-3 font-medium">{ct.categoryName}</td>
                                 <td className="px-4 py-3 text-right">
                                   <span className={`inline-flex items-center gap-1 text-sm font-medium ${
-                                    ct.trend === 'increasing' ? 'text-red-600' :
-                                    ct.trend === 'decreasing' ? 'text-green-600' :
+                                    ct.trend === 'increasing' ? 'text-expense' :
+                                    ct.trend === 'decreasing' ? 'text-income' :
                                     'text-neutral-600'
                                   }`}>
                                     {ct.trend === 'increasing' && <TrendingUp className="h-4 w-4" />}
@@ -610,7 +610,7 @@ export const AnalyticPage = () => {
                                   </span>
                                 </td>
                                 <td className="px-4 py-3 text-right">
-                                  <span className={ct.trendPct > 0 ? 'text-red-600' : ct.trendPct < 0 ? 'text-green-600' : 'text-neutral-600'}>
+                                  <span className={ct.trendPct > 0 ? 'text-expense' : ct.trendPct < 0 ? 'text-income' : 'text-neutral-600'}>
                                     {ct.trendPct > 0 ? '+' : ''}{ct.trendPct.toFixed(1)}%
                                   </span>
                                 </td>
@@ -645,7 +645,7 @@ export const AnalyticPage = () => {
                                 <CurrencyText value={rec.avgAmount} />
                               </p>
                               {rec.alreadyTracked && (
-                                <span className="text-xs text-green-600 flex items-center gap-1 justify-end">
+                                <span className="text-xs text-income flex items-center gap-1 justify-end">
                                   <CheckCircle className="h-3 w-3" />
                                   {t('analytics.tracked')}
                                 </span>
@@ -718,11 +718,11 @@ export const AnalyticPage = () => {
             </div>
 
             {generatedReport && (
-              <Card variant="elevated" className="border-green-200 bg-green-50">
+              <Card variant="elevated" className="border-green-200 bg-income-subtle">
                 <CardBody>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <CheckCircle className="h-6 w-6 text-green-600" />
+                      <CheckCircle className="h-6 w-6 text-income" />
                       <div>
                         <p className="font-medium text-neutral-900">
                           {t('analytics.reportReady')}

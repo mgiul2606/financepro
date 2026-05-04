@@ -103,15 +103,15 @@ export const OptimizationPage = () => {
                       <div className="flex items-start justify-between">
                         <div>
                           <p className="text-sm text-neutral-600 mb-2">{t('optimization.potentialSavings')}</p>
-                          <p className="text-2xl font-bold text-green-600">
+                          <p className="text-2xl font-bold text-income">
                             {fmt(overview.totalPotentialSavings)}
                           </p>
                           <p className="text-xs text-neutral-500 mt-1">
                             {fmt(overview.monthlySavingsOpportunity)}{t('optimization.perMonth')}
                           </p>
                         </div>
-                        <div className="p-3 bg-green-100 rounded-lg">
-                          <TrendingDown className="h-6 w-6 text-green-600" />
+                        <div className="p-3 bg-income-subtle rounded-lg">
+                          <TrendingDown className="h-6 w-6 text-income" />
                         </div>
                       </div>
                     </CardBody>
@@ -180,8 +180,8 @@ export const OptimizationPage = () => {
                   <Card variant="bordered" className="bg-linear-to-br from-green-50 to-emerald-50 border-green-200">
                     <CardBody>
                       <div className="text-center py-4">
-                        <div className="inline-flex p-3 bg-green-100 rounded-full mb-3">
-                          <TrendingDown className="h-8 w-8 text-green-600" />
+                        <div className="inline-flex p-3 bg-income-subtle rounded-full mb-3">
+                          <TrendingDown className="h-8 w-8 text-income" />
                         </div>
                         <h3 className="font-semibold text-neutral-900 mb-1">{t('optimization.reduceWaste')}</h3>
                         <p className="text-sm text-neutral-600 mb-3">
@@ -390,7 +390,7 @@ export const OptimizationPage = () => {
                             </div>
                             <div className="text-right">
                               <p className="text-sm text-neutral-600">{t('optimization.saving')}</p>
-                              <p className="text-lg font-bold text-green-600">
+                              <p className="text-lg font-bold text-income">
                                 {fmt(duplicate.potentialSaving)}
                               </p>
                             </div>
@@ -424,10 +424,10 @@ export const OptimizationPage = () => {
         {/* Strategies Tab */}
         {activeTab === 'strategies' && (
           <div className="space-y-6">
-            <Card variant="bordered" className="bg-green-50 border-green-200">
+            <Card variant="bordered" className="bg-income-subtle border-green-200">
               <CardBody>
                 <div className="flex items-start gap-3">
-                  <Target className="h-8 w-8 text-green-600" />
+                  <Target className="h-8 w-8 text-income" />
                   <div>
                     <h3 className="font-semibold text-neutral-900 mb-1">
                       {t('optimization.personalizedSavingsStrategies')}
@@ -490,9 +490,9 @@ export const OptimizationPage = () => {
                             </h4>
                             <p className="text-sm text-neutral-600">{alternative.reason}</p>
                           </div>
-                          <div className="bg-green-100 rounded-lg p-3 text-center ml-4">
-                            <p className="text-xs text-green-700">{t('optimization.yearSaving')}</p>
-                            <p className="text-2xl font-bold text-green-600">
+                          <div className="bg-income-subtle rounded-lg p-3 text-center ml-4">
+                            <p className="text-xs text-income-foreground">{t('optimization.yearSaving')}</p>
+                            <p className="text-2xl font-bold text-income">
                               {fmt(alternative.yearlyProjection, { maximumFractionDigits: 0, minimumFractionDigits: 0 })}
                             </p>
                           </div>
@@ -509,16 +509,16 @@ export const OptimizationPage = () => {
                             </p>
                           </div>
                           <div className="border-l border-neutral-200 pl-4">
-                            <p className="text-xs text-green-700 mb-2">{t('optimization.suggested')}</p>
+                            <p className="text-xs text-income-foreground mb-2">{t('optimization.suggested')}</p>
                             <div className="flex items-center gap-2">
                               <p className="font-semibold text-neutral-900">
                                 {alternative.suggestedMerchant}
                               </p>
-                              <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                              <span className="text-xs bg-income-subtle text-income-foreground px-2 py-0.5 rounded-full">
                                 {alternative.qualityScore}/100
                               </span>
                             </div>
-                            <p className="text-lg font-bold text-green-600 mt-1">
+                            <p className="text-lg font-bold text-income mt-1">
                               {fmt(alternative.suggestedAmount)}{t('optimization.perMonth')}
                             </p>
                           </div>
@@ -526,22 +526,22 @@ export const OptimizationPage = () => {
 
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-xs font-medium text-green-700 mb-2">{t('optimization.pros')}</p>
+                            <p className="text-xs font-medium text-income-foreground mb-2">{t('optimization.pros')}</p>
                             <ul className="space-y-1">
                               {alternative.pros.map((pro, index) => (
                                 <li key={index} className="text-sm text-neutral-700 flex items-start gap-2">
-                                  <span className="text-green-600">✓</span>
+                                  <span className="text-income">✓</span>
                                   <span>{pro}</span>
                                 </li>
                               ))}
                             </ul>
                           </div>
                           <div>
-                            <p className="text-xs font-medium text-red-700 mb-2">{t('optimization.cons')}</p>
+                            <p className="text-xs font-medium text-expense-foreground mb-2">{t('optimization.cons')}</p>
                             <ul className="space-y-1">
                               {alternative.cons.map((con, index) => (
                                 <li key={index} className="text-sm text-neutral-700 flex items-start gap-2">
-                                  <span className="text-red-600">✗</span>
+                                  <span className="text-expense">✗</span>
                                   <span>{con}</span>
                                 </li>
                               ))}

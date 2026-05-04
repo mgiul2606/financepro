@@ -57,13 +57,13 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onView, onDownlo
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-xs text-neutral-600 mb-1">{t('analytics.income')}</p>
-              <p className="text-lg font-semibold text-green-600">
+              <p className="text-lg font-semibold text-income">
                 {fmt(report.summary.totalIncome)}
               </p>
             </div>
             <div>
               <p className="text-xs text-neutral-600 mb-1">{t('analytics.expenses')}</p>
-              <p className="text-lg font-semibold text-red-600">
+              <p className="text-lg font-semibold text-expense">
                 {fmt(report.summary.totalExpenses)}
               </p>
             </div>
@@ -73,7 +73,7 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onView, onDownlo
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-neutral-600 mb-1">{t('analytics.netSavings')}</p>
-                <p className={`text-xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                <p className={`text-xl font-bold ${isPositive ? 'text-income' : 'text-expense'}`}>
                   {isPositive ? '+' : ''}{fmt(report.summary.netSavings)}
                 </p>
               </div>
@@ -81,11 +81,11 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onView, onDownlo
                 <p className="text-xs text-neutral-600 mb-1">{t('analytics.savingsRate')}</p>
                 <div className="flex items-center gap-1">
                   {isPositive ? (
-                    <TrendingUp className="h-4 w-4 text-green-600" />
+                    <TrendingUp className="h-4 w-4 text-income" />
                   ) : (
-                    <TrendingDown className="h-4 w-4 text-red-600" />
+                    <TrendingDown className="h-4 w-4 text-expense" />
                   )}
-                  <span className={`text-lg font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                  <span className={`text-lg font-bold ${isPositive ? 'text-income' : 'text-expense'}`}>
                     {savingsRate.toFixed(1)}%
                   </span>
                 </div>

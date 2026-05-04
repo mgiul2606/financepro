@@ -42,7 +42,7 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
       variant="elevated"
       className={
         suggestion.status === 'implemented'
-          ? 'border-2 border-green-200 bg-green-50'
+          ? 'border-2 border-green-200 bg-income-subtle'
           : suggestion.status === 'dismissed'
           ? 'opacity-60'
           : ''
@@ -52,7 +52,7 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
         <CardTitle>
           <div className="flex items-start gap-2">
             {suggestion.status === 'implemented' ? (
-              <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+              <CheckCircle2 className="h-5 w-5 text-income shrink-0 mt-0.5" />
             ) : (
               <Lightbulb className="h-5 w-5 text-yellow-600 shrink-0 mt-0.5" />
             )}
@@ -74,15 +74,15 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
         <div className="space-y-4">
           <p className="text-sm text-neutral-700">{suggestion.description}</p>
 
-          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+          <div className="bg-income-subtle border border-green-200 rounded-lg p-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-green-900">Risparmio Potenziale</span>
+              <span className="text-sm font-medium text-income-foreground">Risparmio Potenziale</span>
               <div className="text-right">
-                <p className="text-xl font-bold text-green-600">
+                <p className="text-xl font-bold text-income">
                   {formatCurrency(suggestion.potentialSavings, preferences.currency, preferences.locale)}
                 </p>
                 {suggestion.monthlySavings > 0 && (
-                  <p className="text-xs text-green-700">
+                  <p className="text-xs text-income-foreground">
                     {formatCurrency(suggestion.monthlySavings, preferences.currency, preferences.locale)}/mese
                   </p>
                 )}
@@ -116,8 +116,8 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
           </div>
 
           {suggestion.status === 'implemented' && suggestion.implementedAt && (
-            <div className="bg-green-100 border border-green-300 rounded-lg p-3">
-              <p className="text-sm font-medium text-green-900">
+            <div className="bg-income-subtle border border-green-200 rounded-lg p-3">
+              <p className="text-sm font-medium text-income-foreground">
                 ✓ Implementato il{' '}
                 {formatDate(suggestion.implementedAt, preferences.locale)}
               </p>

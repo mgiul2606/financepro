@@ -47,7 +47,7 @@ export const SavingsStrategyCard: React.FC<SavingsStrategyCardProps> = ({
     <Card
       variant={isActive ? 'bordered' : 'default'}
       className={
-        isCompleted ? 'border-2 border-green-200 bg-green-50/30' : isActive ? 'border-blue-300' : ''
+        isCompleted ? 'border-2 border-green-200 bg-income-subtle/30' : isActive ? 'border-blue-300' : ''
       }
     >
       <CardHeader>
@@ -91,7 +91,7 @@ export const SavingsStrategyCard: React.FC<SavingsStrategyCardProps> = ({
               </div>
               <div>
                 <p className="text-xs text-neutral-600 mb-1">Risparmio Annuale</p>
-                <p className="text-lg font-bold text-green-600">
+                <p className="text-lg font-bold text-income">
                   {formatCurrency(strategy.projectedSavings.yearly, preferences.currency, preferences.locale)}
                 </p>
               </div>
@@ -99,19 +99,19 @@ export const SavingsStrategyCard: React.FC<SavingsStrategyCardProps> = ({
           </div>
 
           {isActive && strategy.actualSavings !== undefined && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+            <div className="bg-income-subtle border border-green-200 rounded-lg p-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-green-700 mb-1">Risparmio Effettivo</p>
-                  <p className="text-xl font-bold text-green-600">
+                  <p className="text-xs text-income-foreground mb-1">Risparmio Effettivo</p>
+                  <p className="text-xl font-bold text-income">
                     {formatCurrency(strategy.actualSavings, preferences.currency, preferences.locale)}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-green-700 mb-1">Efficacia</p>
+                  <p className="text-xs text-income-foreground mb-1">Efficacia</p>
                   <div className="flex items-center gap-1">
-                    <TrendingUp className="h-4 w-4 text-green-600" />
-                    <span className="text-base font-bold text-green-600">
+                    <TrendingUp className="h-4 w-4 text-income" />
+                    <span className="text-base font-bold text-income">
                       {((strategy.actualSavings / strategy.projectedSavings.monthly) * 100).toFixed(0)}%
                     </span>
                   </div>
@@ -139,7 +139,7 @@ export const SavingsStrategyCard: React.FC<SavingsStrategyCardProps> = ({
                 {strategy.steps.map((step) => (
                   <div key={step.order} className="flex items-start gap-2">
                     {step.completed ? (
-                      <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0 mt-0.5" />
+                      <CheckCircle2 className="h-4 w-4 text-income shrink-0 mt-0.5" />
                     ) : (
                       <Circle className="h-4 w-4 text-neutral-400 shrink-0 mt-0.5" />
                     )}

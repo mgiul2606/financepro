@@ -64,7 +64,7 @@ export const WasteCard: React.FC<WasteCardProps> = ({ waste, onTakeAction }) => 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-xs text-neutral-600 mb-1">Costo Mensile</p>
-              <p className="text-lg font-bold text-red-600">{formatCurrency(waste.monthlyCost, preferences.currency, preferences.locale)}</p>
+              <p className="text-lg font-bold text-expense">{formatCurrency(waste.monthlyCost, preferences.currency, preferences.locale)}</p>
             </div>
             <div>
               <p className="text-xs text-neutral-600 mb-1">Utilizzi</p>
@@ -97,12 +97,12 @@ export const WasteCard: React.FC<WasteCardProps> = ({ waste, onTakeAction }) => 
             </div>
           </div>
 
-          <div className="bg-green-50 border border-green-200 rounded-lg p-2">
+          <div className="bg-income-subtle border border-green-200 rounded-lg p-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-green-900">Risparmio Potenziale</span>
+              <span className="text-sm text-income-foreground">Risparmio Potenziale</span>
               <div className="flex items-center gap-1">
-                <TrendingDown className="h-4 w-4 text-green-600" />
-                <span className="font-bold text-green-600">
+                <TrendingDown className="h-4 w-4 text-income" />
+                <span className="font-bold text-income">
                   {formatCurrency(waste.potentialSaving, preferences.currency, preferences.locale)}/anno
                 </span>
               </div>

@@ -297,12 +297,12 @@ export const TransactionsPage = () => {
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                 {t('transactions.totalIncome')}
               </p>
-              <p className="text-3xl font-bold text-emerald-600 mt-1">
+              <p className="text-3xl font-bold text-income mt-1">
                 <CurrencyText value={parseFloat(stats.totalIncome)} />
               </p>
             </div>
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
-              <TrendingUp className="h-6 w-6 text-emerald-600" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-income-subtle">
+              <TrendingUp className="h-6 w-6 text-income" />
             </div>
           </div>
 
@@ -312,12 +312,12 @@ export const TransactionsPage = () => {
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                 {t('transactions.totalExpenses')}
               </p>
-              <p className="text-3xl font-bold text-rose-600 mt-1">
+              <p className="text-3xl font-bold text-expense mt-1">
                 <CurrencyText value={parseFloat(stats.totalExpenses)} />
               </p>
             </div>
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-rose-100">
-              <TrendingDown className="h-6 w-6 text-rose-600" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-expense-subtle">
+              <TrendingDown className="h-6 w-6 text-expense" />
             </div>
           </div>
 
@@ -329,7 +329,7 @@ export const TransactionsPage = () => {
               </p>
               <p
                 className={`text-3xl font-bold mt-1 ${
-                  parseFloat(stats.netAmount) >= 0 ? 'text-emerald-600' : 'text-rose-600'
+                  parseFloat(stats.netAmount) >= 0 ? 'text-income' : 'text-expense'
                 }`}
               >
                 <CurrencyText value={parseFloat(stats.netAmount)} />
@@ -394,7 +394,7 @@ export const TransactionsPage = () => {
                 <div
                   key={transaction.id}
                   className={`flex items-center justify-between p-4 rounded-lg hover:bg-gray-50 transition-colors border-l-4 ${
-                    isIncome ? 'border-l-emerald-500' : 'border-l-rose-500'
+                    isIncome ? 'border-l-income' : 'border-l-expense'
                   } ${
                     deletingTransactionId === transaction.id
                       ? 'opacity-50 pointer-events-none'
@@ -407,8 +407,8 @@ export const TransactionsPage = () => {
                       <span
                         className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                           isIncome
-                            ? 'bg-emerald-50 text-emerald-700'
-                            : 'bg-rose-50 text-rose-700'
+                            ? 'bg-income-subtle text-income-foreground'
+                            : 'bg-expense-subtle text-expense-foreground'
                         }`}
                       >
                         {t(`transactions.types.${transaction.transactionType}`)}
@@ -428,7 +428,7 @@ export const TransactionsPage = () => {
                   <div className="flex items-center gap-4">
                     <span
                       className={`text-lg font-bold ${
-                        isIncome ? 'text-emerald-600' : 'text-rose-600'
+                        isIncome ? 'text-income' : 'text-expense'
                       }`}
                     >
                       <CurrencyText

@@ -80,7 +80,7 @@ export const Dashboard = () => {
     return (
       <div className="p-8 flex items-center justify-center min-h-[400px] bg-gray-50">
         <div className="text-center">
-          <AlertCircle className="h-12 w-12 text-rose-600 mx-auto mb-4" />
+          <AlertCircle className="h-12 w-12 text-expense mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('common.errorLoadingData')}</h3>
           <p className="text-sm text-gray-600 mb-6">{t('dashboard.errorLoading')}</p>
           <Button
@@ -162,7 +162,7 @@ export const Dashboard = () => {
 
         {/* Active Goals */}
         <div className="rounded-xl shadow-sm border border-gray-100 bg-white overflow-hidden">
-          <div className="border-l-4 border-emerald-600 h-full">
+          <div className="border-l-4 border-income h-full">
             <div className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -174,8 +174,8 @@ export const Dashboard = () => {
                     <PercentageText value={avgGoalProgress} decimals={0} /> {t('dashboard.avgProgress')}
                   </p>
                 </div>
-                <div className="h-12 w-12 bg-emerald-100 rounded-full flex items-center justify-center shrink-0">
-                  <Target className="h-6 w-6 text-emerald-600" />
+                <div className="h-12 w-12 bg-income-subtle rounded-full flex items-center justify-center shrink-0">
+                  <Target className="h-6 w-6 text-income" />
                 </div>
               </div>
             </div>
@@ -194,7 +194,7 @@ export const Dashboard = () => {
                   {thisMonthStatsLoading || lastMonthStatsLoading ? (
                     <div className="h-9 w-20 bg-gray-100 rounded animate-pulse mt-1" />
                   ) : hasTrendData ? (
-                    <h3 className={`text-3xl font-bold ${trendIsPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
+                    <h3 className={`text-3xl font-bold ${trendIsPositive ? 'text-income' : 'text-expense'}`}>
                       <PercentageText value={trendPercent.toFixed(1)} showSign={true} />
                     </h3>
                   ) : (
@@ -254,13 +254,13 @@ export const Dashboard = () => {
                         <div className="flex items-center gap-1 text-xs justify-end">
                           {change >= 0 ? (
                             <>
-                              <ArrowUpRight className="h-3 w-3 text-emerald-600" />
-                              <CurrencyText value={change} showSign colorCoded className="text-emerald-600" />
+                              <ArrowUpRight className="h-3 w-3 text-income" />
+                              <CurrencyText value={change} showSign colorCoded className="text-income" />
                             </>
                           ) : (
                             <>
-                              <ArrowDownRight className="h-3 w-3 text-rose-600" />
-                              <CurrencyText value={change} colorCoded className="text-rose-600" />
+                              <ArrowDownRight className="h-3 w-3 text-expense" />
+                              <CurrencyText value={change} colorCoded className="text-expense" />
                             </>
                           )}
                         </div>
@@ -315,10 +315,10 @@ export const Dashboard = () => {
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
                             isExceeded
-                              ? 'bg-rose-100 text-rose-600'
+                              ? 'bg-expense-subtle text-expense'
                               : isWarning
                                 ? 'bg-amber-100 text-amber-500'
-                                : 'bg-emerald-100 text-emerald-600'
+                                : 'bg-income-subtle text-income'
                           }`}
                         >
                           <PercentageText value={percentage} decimals={0} />
@@ -328,10 +328,10 @@ export const Dashboard = () => {
                         <div
                           className={`h-full transition-all rounded-full ${
                             isExceeded
-                              ? 'bg-rose-600'
+                              ? 'bg-expense'
                               : isWarning
                                 ? 'bg-amber-500'
-                                : 'bg-emerald-600'
+                                : 'bg-income'
                           }`}
                           style={{ width: `${Math.min(percentage, 100)}%` }}
                         />

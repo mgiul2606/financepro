@@ -254,10 +254,10 @@ export const RecurringPage = () => {
               <CardTitle className="text-sm font-medium">
                 {t('recurring.monthlyIncome')}
               </CardTitle>
-              <TrendingUp className="h-4 w-4 text-green-600" />
+              <TrendingUp className="h-4 w-4 text-income" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-income">
                 <CurrencyText value={summary.monthlyIncome} />
               </div>
               <p className="text-xs text-muted-foreground mt-1">
@@ -272,10 +272,10 @@ export const RecurringPage = () => {
               <CardTitle className="text-sm font-medium">
                 {t('recurring.monthlyExpenses')}
               </CardTitle>
-              <TrendingDown className="h-4 w-4 text-red-600" />
+              <TrendingDown className="h-4 w-4 text-expense" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">
+              <div className="text-2xl font-bold text-expense">
                 <CurrencyText value={summary.monthlyExpenses} />
               </div>
               <p className="text-xs text-muted-foreground mt-1">
@@ -293,7 +293,7 @@ export const RecurringPage = () => {
               <RefreshCw className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className={`text-2xl font-bold ${summary.netMonthly >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <div className={`text-2xl font-bold ${summary.netMonthly >= 0 ? 'text-income' : 'text-expense'}`}>
                 <CurrencyText value={summary.netMonthly} showSign />
               </div>
               <p className="text-xs text-muted-foreground mt-1">
@@ -347,9 +347,9 @@ export const RecurringPage = () => {
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
                       <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                        isIncome ? 'bg-green-100' : 'bg-red-100'
+                        isIncome ? 'bg-income-subtle' : 'bg-expense-subtle'
                       }`}>
-                        <RefreshCw className={`h-5 w-5 ${isIncome ? 'text-green-600' : 'text-red-600'}`} />
+                        <RefreshCw className={`h-5 w-5 ${isIncome ? 'text-income' : 'text-expense'}`} />
                       </div>
                       <div>
                         <CardTitle className="text-lg">{recurringTxn.name}</CardTitle>
@@ -419,7 +419,7 @@ export const RecurringPage = () => {
                     <p className="text-sm font-medium text-muted-foreground">
                       {t('recurring.amount')}
                     </p>
-                    <p className={`text-2xl font-bold ${isIncome ? 'text-green-600' : 'text-red-600'}`}>
+                    <p className={`text-2xl font-bold ${isIncome ? 'text-income' : 'text-expense'}`}>
                       {isIncome ? '+' : '-'}
                       <CurrencyText
                         value={recurringTxn.amount}
@@ -433,7 +433,7 @@ export const RecurringPage = () => {
                     <span className="text-muted-foreground">
                       {t('recurring.monthlyEquivalent')}
                     </span>
-                    <span className={`font-medium ${isIncome ? 'text-green-600' : 'text-red-600'}`}>
+                    <span className={`font-medium ${isIncome ? 'text-income' : 'text-expense'}`}>
                       {isIncome ? '+' : '-'}
                       <CurrencyText
                         value={monthlyEquivalent}

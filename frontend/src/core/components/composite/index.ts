@@ -1,5 +1,5 @@
 // Composite Components
-// Complex, reusable components built from atomic components
+// Complex, reusable components built from primitive UI elements
 
 export { DataTable } from './DataTable';
 export type { DataTableProps, Column } from './DataTable';
