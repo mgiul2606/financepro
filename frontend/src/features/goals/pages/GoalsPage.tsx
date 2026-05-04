@@ -3,12 +3,12 @@ import { useState } from 'react';
 import { Plus, Target, Edit, Trash2, TrendingUp, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
-import { Card, CardHeader, CardBody, CardFooter } from '@/core/components/atomic/Card';
-import { Button } from '@/core/components/atomic/Button';
-import { Badge } from '@/core/components/atomic/Badge';
-import { CurrencyText, PercentageText, DateText } from '@/core/components/atomic';
+import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardBody, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { CurrencyText, PercentageText, DateText } from '@/core/components/formatters';
 import { EmptyState } from '@/core/components/composite/EmptyState';
-import { Spinner } from '@/core/components/atomic/Spinner';
+import { Spinner } from '@/components/ui/spinner';
 import { Modal } from '@/components/ui/Modal';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Alert } from '@/components/ui/alert';
@@ -18,8 +18,8 @@ import { GoalForm } from '../components/GoalForm';
 import { GoalContributionForm } from '../components/GoalContributionForm';
 import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal, useAddGoalContribution } from '../goals.hooks';
 import type { GoalResponse as Goal, GoalCreate, GoalUpdate } from '../goals.types';
-import type { BadgeVariant } from '@/core/components/atomic/Badge';
 import type { SupportedCurrency } from '@/utils/currency';
+import { getPriorityVariant, getProgressBarClass, getDaysRemainingClass } from '@/lib/finance-colors';
 
 export const GoalsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -81,25 +81,6 @@ export const GoalsPage: React.FC = () => {
   };
 
   // Utilities
-  const getProgressColor = (current: number, target: number) => {
-    const percentage = (current / target) * 100;
-    if (percentage >= 100) return 'bg-green-600';
-    if (percentage >= 75) return 'bg-blue-600';
-    if (percentage >= 50) return 'bg-yellow-500';
-    return 'bg-gray-400';
-  };
-
-  const getPriorityVariant = (priority: string): BadgeVariant => {
-    switch (priority) {
-      case 'high':
-        return 'danger';
-      case 'medium':
-        return 'warning';
-      default:
-        return 'secondary';
-    }
-  };
-
   const getDaysRemaining = (targetDate: string) => {
     const target = new Date(targetDate);
     const today = new Date();
@@ -128,7 +109,7 @@ export const GoalsPage: React.FC = () => {
         breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: t('goals.title') }]}
         actions={
           <Button
-            variant="primary"
+            variant="default"
             leftIcon={<Plus className="h-4 w-4" />}
             onClick={() => setShowCreateModal(true)}
             isLoading={createMutation.isCreating}
@@ -173,15 +154,17 @@ export const GoalsPage: React.FC = () => {
 
               return (
                 <Card key={goal.id} variant="elevated">
-                  <CardHeader
-                    title={goal.name}
-                    subtitle={goal.goalType ? t(`goals.categories.${goal.goalType}`) : t('goals.categories.general')}
-                    action={
-                      <Badge variant={getPriorityVariant(goal.priority.toString())} size="sm">
+                  <CardHeader>
+                    <CardTitle>{goal.name}</CardTitle>
+                    <CardDescription>
+                      {goal.goalType ? t(`goals.categories.${goal.goalType}`) : t('goals.categories.general')}
+                    </CardDescription>
+                    <CardAction>
+                      <Badge variant={getPriorityVariant(goal.priority.toString())}>
                         {goal.priority}
                       </Badge>
-                    }
-                  />
+                    </CardAction>
+                  </CardHeader>
 
                   <CardBody className="mt-4">
                     {/* Description */}
@@ -199,7 +182,7 @@ export const GoalsPage: React.FC = () => {
                       </div>
                       <div className="w-full h-3 bg-neutral-200 rounded-full overflow-hidden">
                         <div
-                          className={`h-full transition-all duration-300 ${getProgressColor(parseFloat(goal.currentAmount), parseFloat(goal.targetAmount))}`}
+                          className={`h-full transition-all duration-300 ${getProgressBarClass(percentage)}`}
                           style={{ width: `${Math.min(percentage, 100)}%` }}
                         />
                       </div>
@@ -236,7 +219,7 @@ export const GoalsPage: React.FC = () => {
                       <div className="flex justify-between">
                         <span className="text-neutral-600">{t('goals.daysLeft')}</span>
                         <span
-                          className={`font-medium ${daysRemaining < 30 ? 'text-red-600' : daysRemaining < 90 ? 'text-yellow-600' : 'text-green-600'}`}
+                          className={`font-medium ${getDaysRemainingClass(daysRemaining)}`}
                         >
                           {daysRemaining > 0 ? daysRemaining : 0} {t('goals.daysUnit')}
                         </span>
@@ -300,7 +283,7 @@ export const GoalsPage: React.FC = () => {
               {t('common.cancel')}
             </Button>
             <Button
-              variant="primary"
+              variant="default"
               type="submit"
               form="goal-form"
               isLoading={createMutation.isCreating}
@@ -336,7 +319,7 @@ export const GoalsPage: React.FC = () => {
                 {t('common.cancel')}
               </Button>
               <Button
-                variant="primary"
+                variant="default"
                 type="submit"
                 form="goal-form"
                 isLoading={updateMutation.isUpdating}
