@@ -3,9 +3,10 @@ import { useState } from 'react';
 import { Plus, AlertCircle, Edit, Trash2, RefreshCw, Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
-import { Card, CardHeader, CardBody, CardFooter } from '@/core/components/atomic/Card';
-import { Button } from '@/core/components/atomic/Button';
-import { CurrencyText, PercentageText, DateText } from '@/core/components/atomic';
+import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardBody, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { CurrencyText, PercentageText, DateText } from '@/core/components/formatters';
+import { getProgressBarClass } from '@/lib/finance-colors';
 import { EmptyState } from '@/core/components/composite/EmptyState';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Alert } from '@/components/ui/alert';
@@ -116,12 +117,6 @@ export const BudgetsPage: React.FC = () => {
   };
 
   // Utilities
-  const getProgressColor = (percentage: number) => {
-    if (percentage >= 100) return 'bg-rose-600';
-    if (percentage >= 80) return 'bg-amber-500';
-    return 'bg-emerald-600';
-  };
-
   const getPercentageBadgeClass = (percentage: number) => {
     if (percentage >= 100)
       return 'bg-rose-50 text-rose-700 text-xs font-semibold px-2 py-0.5 rounded-full';
@@ -156,7 +151,7 @@ export const BudgetsPage: React.FC = () => {
         breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: t('budgets.title') }]}
         actions={
           <Button
-            variant="primary"
+            variant="default"
             leftIcon={<Plus className="h-4 w-4" />}
             onClick={() => setShowCreateModal(true)}
             isLoading={createMutation.isCreating}
@@ -200,15 +195,15 @@ export const BudgetsPage: React.FC = () => {
 
               return (
                 <Card key={budget.id} variant="elevated" className="rounded-xl">
-                  <CardHeader
-                    title={budget.name}
-                    subtitle={budget.periodType}
-                    action={
+                  <CardHeader>
+                    <CardTitle>{budget.name}</CardTitle>
+                    <CardDescription>{budget.periodType}</CardDescription>
+                    <CardAction>
                       <span className={getPercentageBadgeClass(percentage)}>
                         <PercentageText value={percentage} decimals={0} />
                       </span>
-                    }
-                  />
+                    </CardAction>
+                  </CardHeader>
 
                   <CardBody className="mt-4">
                     {/* Progress Bar */}
@@ -221,7 +216,7 @@ export const BudgetsPage: React.FC = () => {
                       </div>
                       <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
                         <div
-                          className={`h-full transition-all duration-300 ${getProgressColor(percentage)}`}
+                          className={`h-full transition-all duration-300 ${getProgressBarClass(percentage)}`}
                           style={{ width: `${Math.min(percentage, 100)}%` }}
                         />
                       </div>
@@ -322,7 +317,7 @@ export const BudgetsPage: React.FC = () => {
               {t('common.cancel')}
             </Button>
             <Button
-              variant="primary"
+              variant="default"
               type="submit"
               form="budget-form"
               isLoading={createMutation.isCreating}
@@ -362,7 +357,7 @@ export const BudgetsPage: React.FC = () => {
               {t('common.cancel')}
             </Button>
             <Button
-              variant="primary"
+              variant="default"
               type="submit"
               form="budget-form"
               isLoading={updateMutation.isUpdating}

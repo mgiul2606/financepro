@@ -9,10 +9,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Card, CardBody } from '@/core/components/atomic/Card';
-import { Badge } from '@/core/components/atomic/Badge';
-import { Button } from '@/core/components/atomic/Button';
-import { CurrencyText } from '@/core/components/atomic/CurrencyText';
+import { Card, CardBody } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { CurrencyText } from '@/core/components/formatters';
 import { EmptyState } from '@/core/components/composite/EmptyState';
 import { Spinner } from '@/core/components/atomic/Spinner';
 import type { Budget } from '../budgets.types';
@@ -98,7 +98,7 @@ export const BudgetDetailsModal = ({
                 <Badge
                   variant={
                     percentage >= 100
-                      ? 'danger'
+                      ? 'destructive'
                       : percentage >= 80
                         ? 'warning'
                         : 'success'
@@ -254,7 +254,7 @@ export const BudgetDetailsModal = ({
                         <Badge
                           variant={
                             catPercent >= 100
-                              ? 'danger'
+                              ? 'destructive'
                               : catPercent >= 80
                                 ? 'warning'
                                 : 'success'
