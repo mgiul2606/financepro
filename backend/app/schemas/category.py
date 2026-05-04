@@ -46,6 +46,10 @@ class CategoryBase(CamelCaseModel):
         default=0,
         description="Custom sort order for category display"
     )
+    name_translations: Optional[dict[str, str]] = Field(
+        default=None,
+        description="Category name translations by language code, e.g. {'it': 'Spesa', 'en': 'Groceries'}"
+    )
 
 
 class CategoryCreate(CategoryBase):
@@ -104,13 +108,18 @@ class CategoryUpdate(CamelCaseModel):
         None,
         description="Whether the category is active"
     )
+    name_translations: Optional[dict[str, str]] = Field(
+        None,
+        description="Updated name translations by language code"
+    )
 
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
                 "name": "Updated Category Name",
                 "color": "#3498DB",
-                "is_active": True
+                "is_active": True,
+                "name_translations": {"it": "Nome aggiornato", "en": "Updated name"}
             }
         }
     )

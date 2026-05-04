@@ -15,6 +15,7 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
+import type { CategoryCreateNameTranslations } from "./categoryCreateNameTranslations";
 
 /**
  * Schema for creating a new category.
@@ -37,4 +38,6 @@ export interface CategoryCreate {
   isIncome?: boolean;
   /** Custom sort order for category display */
   sortOrder?: number;
+  /** Category name translations by language code, e.g. {'it': 'Spesa', 'en': 'Groceries'} */
+  nameTranslations?: CategoryCreateNameTranslations;
 }

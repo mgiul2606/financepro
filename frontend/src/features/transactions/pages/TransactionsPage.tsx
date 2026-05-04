@@ -56,6 +56,7 @@ import {
   useUpdateTransaction,
   useDeleteTransaction,
 } from '../transactions.hooks';
+import { useCategories, useCategoryName } from '@/features/categories';
 import type {
   TransactionResponse,
   TransactionCreate,
@@ -100,6 +101,8 @@ export const TransactionsPage = () => {
 
   // Data fetching using the UI-aware hook
   const { transactions, isLoading, error: loadError, refetch } = useTransactionsWithUIFilters(filters);
+  const { categories } = useCategories();
+  const getCategoryName = useCategoryName();
 
   // Mutations
   const { createTransaction, isCreating, error: createError, reset: resetCreate } =
@@ -386,8 +389,9 @@ export const TransactionsPage = () => {
           </div>
           <div className="divide-y divide-gray-50 px-4 py-2">
             {filteredTransactions.map((transaction) => {
-              const amount = parseFloat(transaction.amount.toString());
+              const rawAmount = parseFloat(transaction.amount.toString());
               const isIncome = ['income', 'salary', 'invoice', 'refund', 'dividend', 'interest', 'asset_sale'].includes(transaction.transactionType);
+              const amount = isIncome ? Math.abs(rawAmount) : -Math.abs(rawAmount);
 
               return (
                 <div
@@ -418,7 +422,10 @@ export const TransactionsPage = () => {
                         {formatDate(transaction.transactionDate, preferences.locale)}
                       </span>
                       {transaction.merchantName && <span>• {transaction.merchantName}</span>}
-                      {transaction.categoryId && <span>• Category: {transaction.categoryId}</span>}
+                      {transaction.categoryId && (() => {
+                        const cat = categories.find((c) => c.id === transaction.categoryId);
+                        return cat ? <span>• {getCategoryName(cat)}</span> : null;
+                      })()}
                     </div>
                   </div>
                   <div className="flex items-center gap-4">

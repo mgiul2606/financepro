@@ -53,7 +53,7 @@ import {
 import { buildUpdatePayload } from '@/lib/form-utils';
 
 import { useAccounts } from '@/features/accounts';
-import { useCategories } from '@/features/categories';
+import { useCategories, useCategoryName } from '@/features/categories';
 
 // ============================================================================
 // TYPES
@@ -94,6 +94,7 @@ export const RecurringForm = ({
   // Fetch accounts and categories for select options
   const { accounts, isLoading: accountsLoading } = useAccounts();
   const { categories, isLoading: categoriesLoading } = useCategories();
+  const getCategoryName = useCategoryName();
 
   // Build account options
   const accountOptions = accounts.map((account) => ({
@@ -106,7 +107,7 @@ export const RecurringForm = ({
     { value: '', label: t('recurring.noCategory') },
     ...categories.map((category) => ({
       value: category.id,
-      label: category.name,
+      label: getCategoryName(category),
     })),
   ];
 

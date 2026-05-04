@@ -35,10 +35,12 @@ import type {
   BudgetCategoryCreate,
   BudgetCategoryResponse,
   BudgetCreate,
+  BudgetDetailResponse,
   BudgetListResponse,
   BudgetResponse,
   BudgetUpdate,
   BudgetUsageResponse,
+  GetBudgetDetailApiV1BudgetsBudgetIdDetailGetParams,
   HTTPValidationError,
   ListBudgetsApiV1BudgetsGetParams,
 } from ".././models";
@@ -580,11 +582,11 @@ export function useGetBudgetApiV1BudgetsBudgetIdGet<
 }
 
 /**
- * Update an existing budget
+ * Update an existing budget. Returns full detail with recalculated spending for current period.
  * @summary Update budget
  */
 export type updateBudgetApiV1BudgetsBudgetIdPatchResponse200 = {
-  data: BudgetResponse;
+  data: BudgetDetailResponse;
   status: 200;
 };
 
@@ -824,6 +826,269 @@ export const useDeleteBudgetApiV1BudgetsBudgetIdDelete = <
     queryClient,
   );
 };
+/**
+ * Get detailed budget info with spending for a specific period. Use period_offset=0 for current period, -1 for previous, +1 for next.
+ * @summary Get budget detail with period navigation
+ */
+export type getBudgetDetailApiV1BudgetsBudgetIdDetailGetResponse200 = {
+  data: BudgetDetailResponse;
+  status: 200;
+};
+
+export type getBudgetDetailApiV1BudgetsBudgetIdDetailGetResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type getBudgetDetailApiV1BudgetsBudgetIdDetailGetResponseSuccess =
+  getBudgetDetailApiV1BudgetsBudgetIdDetailGetResponse200 & {
+    headers: Headers;
+  };
+export type getBudgetDetailApiV1BudgetsBudgetIdDetailGetResponseError =
+  getBudgetDetailApiV1BudgetsBudgetIdDetailGetResponse422 & {
+    headers: Headers;
+  };
+
+export type getBudgetDetailApiV1BudgetsBudgetIdDetailGetResponse =
+  | getBudgetDetailApiV1BudgetsBudgetIdDetailGetResponseSuccess
+  | getBudgetDetailApiV1BudgetsBudgetIdDetailGetResponseError;
+
+export const getGetBudgetDetailApiV1BudgetsBudgetIdDetailGetUrl = (
+  budgetId: string,
+  params?: GetBudgetDetailApiV1BudgetsBudgetIdDetailGetParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/v1/budgets/${budgetId}/detail?${stringifiedParams}`
+    : `/api/v1/budgets/${budgetId}/detail`;
+};
+
+export const getBudgetDetailApiV1BudgetsBudgetIdDetailGet = async (
+  budgetId: string,
+  params?: GetBudgetDetailApiV1BudgetsBudgetIdDetailGetParams,
+  options?: RequestInit,
+): Promise<getBudgetDetailApiV1BudgetsBudgetIdDetailGetResponse> => {
+  return customInstance<getBudgetDetailApiV1BudgetsBudgetIdDetailGetResponse>(
+    getGetBudgetDetailApiV1BudgetsBudgetIdDetailGetUrl(budgetId, params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetBudgetDetailApiV1BudgetsBudgetIdDetailGetQueryKey = (
+  budgetId: string,
+  params?: GetBudgetDetailApiV1BudgetsBudgetIdDetailGetParams,
+) => {
+  return [
+    `/api/v1/budgets/${budgetId}/detail`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetBudgetDetailApiV1BudgetsBudgetIdDetailGetQueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof getBudgetDetailApiV1BudgetsBudgetIdDetailGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  budgetId: string,
+  params?: GetBudgetDetailApiV1BudgetsBudgetIdDetailGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof getBudgetDetailApiV1BudgetsBudgetIdDetailGet>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetBudgetDetailApiV1BudgetsBudgetIdDetailGetQueryKey(budgetId, params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getBudgetDetailApiV1BudgetsBudgetIdDetailGet>>
+  > = ({ signal }) =>
+    getBudgetDetailApiV1BudgetsBudgetIdDetailGet(budgetId, params, {
+      signal,
+      ...requestOptions,
+    });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!budgetId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getBudgetDetailApiV1BudgetsBudgetIdDetailGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetBudgetDetailApiV1BudgetsBudgetIdDetailGetQueryResult =
+  NonNullable<
+    Awaited<ReturnType<typeof getBudgetDetailApiV1BudgetsBudgetIdDetailGet>>
+  >;
+export type GetBudgetDetailApiV1BudgetsBudgetIdDetailGetQueryError =
+  HTTPValidationError;
+
+export function useGetBudgetDetailApiV1BudgetsBudgetIdDetailGet<
+  TData = Awaited<
+    ReturnType<typeof getBudgetDetailApiV1BudgetsBudgetIdDetailGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  budgetId: string,
+  params: undefined | GetBudgetDetailApiV1BudgetsBudgetIdDetailGetParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof getBudgetDetailApiV1BudgetsBudgetIdDetailGet>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof getBudgetDetailApiV1BudgetsBudgetIdDetailGet>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof getBudgetDetailApiV1BudgetsBudgetIdDetailGet>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetBudgetDetailApiV1BudgetsBudgetIdDetailGet<
+  TData = Awaited<
+    ReturnType<typeof getBudgetDetailApiV1BudgetsBudgetIdDetailGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  budgetId: string,
+  params?: GetBudgetDetailApiV1BudgetsBudgetIdDetailGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof getBudgetDetailApiV1BudgetsBudgetIdDetailGet>
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof getBudgetDetailApiV1BudgetsBudgetIdDetailGet>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof getBudgetDetailApiV1BudgetsBudgetIdDetailGet>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetBudgetDetailApiV1BudgetsBudgetIdDetailGet<
+  TData = Awaited<
+    ReturnType<typeof getBudgetDetailApiV1BudgetsBudgetIdDetailGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  budgetId: string,
+  params?: GetBudgetDetailApiV1BudgetsBudgetIdDetailGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof getBudgetDetailApiV1BudgetsBudgetIdDetailGet>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Get budget detail with period navigation
+ */
+
+export function useGetBudgetDetailApiV1BudgetsBudgetIdDetailGet<
+  TData = Awaited<
+    ReturnType<typeof getBudgetDetailApiV1BudgetsBudgetIdDetailGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  budgetId: string,
+  params?: GetBudgetDetailApiV1BudgetsBudgetIdDetailGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<typeof getBudgetDetailApiV1BudgetsBudgetIdDetailGet>
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getGetBudgetDetailApiV1BudgetsBudgetIdDetailGetQueryOptions(
+      budgetId,
+      params,
+      options,
+    );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
 /**
  * Get detailed usage statistics for a budget
  * @summary Get budget usage

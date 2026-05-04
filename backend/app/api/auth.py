@@ -6,6 +6,7 @@ from datetime import timedelta
 from app.db.database import get_db
 from app.models.user import User
 from app.models.financial_profile import FinancialProfile, ProfileType
+from app.models.category import Category
 from app.schemas.auth import UserRegister, UserLogin, Token
 from app.schemas.user import UserResponse
 from app.services.auth_service import (
@@ -15,6 +16,33 @@ from app.services.auth_service import (
 )
 from app.config import settings
 from app.api.dependencies import get_current_user
+
+DEFAULT_CATEGORIES = [
+    # Income
+    {"name": "Stipendio",     "name_translations": {"it": "Stipendio",     "en": "Salary"},        "icon": "💼", "color": "#10b981", "is_income": True,  "sort_order": 0},
+    {"name": "Freelance",     "name_translations": {"it": "Freelance",     "en": "Freelance"},      "icon": "💻", "color": "#3b82f6", "is_income": True,  "sort_order": 1},
+    {"name": "Investimenti",  "name_translations": {"it": "Investimenti",  "en": "Investments"},    "icon": "📈", "color": "#8b5cf6", "is_income": True,  "sort_order": 2},
+    {"name": "Altri Ricavi",  "name_translations": {"it": "Altri Ricavi",  "en": "Other Income"},   "icon": "💰", "color": "#06b6d4", "is_income": True,  "sort_order": 3},
+    # Expenses - Essential
+    {"name": "Spesa",         "name_translations": {"it": "Spesa",         "en": "Groceries"},      "icon": "🛒", "color": "#ef4444", "is_income": False, "sort_order": 10},
+    {"name": "Affitto/Mutuo", "name_translations": {"it": "Affitto/Mutuo", "en": "Rent/Mortgage"},  "icon": "🏠", "color": "#f59e0b", "is_income": False, "sort_order": 11},
+    {"name": "Utenze",        "name_translations": {"it": "Utenze",        "en": "Utilities"},      "icon": "⚡", "color": "#eab308", "is_income": False, "sort_order": 12},
+    {"name": "Trasporti",     "name_translations": {"it": "Trasporti",     "en": "Transport"},      "icon": "🚗", "color": "#6366f1", "is_income": False, "sort_order": 13},
+    {"name": "Salute",        "name_translations": {"it": "Salute",        "en": "Healthcare"},     "icon": "🏥", "color": "#ec4899", "is_income": False, "sort_order": 14},
+    {"name": "Assicurazioni", "name_translations": {"it": "Assicurazioni", "en": "Insurance"},      "icon": "🛡️", "color": "#14b8a6", "is_income": False, "sort_order": 15},
+    # Expenses - Lifestyle
+    {"name": "Ristoranti",    "name_translations": {"it": "Ristoranti",    "en": "Restaurants"},    "icon": "🍽️", "color": "#f97316", "is_income": False, "sort_order": 20},
+    {"name": "Shopping",      "name_translations": {"it": "Shopping",      "en": "Shopping"},       "icon": "🛍️", "color": "#a855f7", "is_income": False, "sort_order": 21},
+    {"name": "Intrattenimento","name_translations": {"it": "Intrattenimento","en": "Entertainment"}, "icon": "🎬", "color": "#06b6d4", "is_income": False, "sort_order": 22},
+    {"name": "Viaggi",        "name_translations": {"it": "Viaggi",        "en": "Travel"},         "icon": "✈️", "color": "#0ea5e9", "is_income": False, "sort_order": 23},
+    {"name": "Formazione",    "name_translations": {"it": "Formazione",    "en": "Education"},      "icon": "📚", "color": "#8b5cf6", "is_income": False, "sort_order": 24},
+    {"name": "Abbonamenti",   "name_translations": {"it": "Abbonamenti",   "en": "Subscriptions"},  "icon": "📱", "color": "#6366f1", "is_income": False, "sort_order": 25},
+    # Other
+    {"name": "Risparmi",      "name_translations": {"it": "Risparmi",      "en": "Savings"},        "icon": "💎", "color": "#10b981", "is_income": False, "sort_order": 30},
+    {"name": "Regali",        "name_translations": {"it": "Regali",        "en": "Gifts"},          "icon": "🎁", "color": "#ec4899", "is_income": False, "sort_order": 31},
+    {"name": "Animali",       "name_translations": {"it": "Animali",       "en": "Pets"},           "icon": "🐕", "color": "#f59e0b", "is_income": False, "sort_order": 32},
+    {"name": "Altro",         "name_translations": {"it": "Altro",         "en": "Other"},          "icon": "📦", "color": "#6b7280", "is_income": False, "sort_order": 99},
+]
 
 router = APIRouter()
 
@@ -52,6 +80,11 @@ async def register(user_data: UserRegister, db: Session = Depends(get_db)):
     )
 
     db.add(default_profile)
+
+    # Crea categorie di default per il nuovo utente
+    for cat_data in DEFAULT_CATEGORIES:
+        db.add(Category(user_id=db_user.id, is_system=True, **cat_data))
+
     db.commit()
     db.refresh(db_user)
 

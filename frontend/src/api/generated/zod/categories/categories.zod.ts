@@ -98,6 +98,12 @@ export const ListCategoriesApiV1CategoriesGetResponse = zod
                 listCategoriesApiV1CategoriesGetResponseItemsItemSortOrderDefault,
               )
               .describe("Custom sort order for category display"),
+            nameTranslations: zod
+              .union([zod.record(zod.string(), zod.string()), zod.null()])
+              .optional()
+              .describe(
+                "Category name translations by language code, e.g. {'it': 'Spesa', 'en': 'Groceries'}",
+              ),
             id: zod.uuid().describe("Unique category identifier"),
             userId: zod
               .uuid()
@@ -179,6 +185,12 @@ export const CreateCategoryApiV1CategoriesPostBody = zod
       .number()
       .default(createCategoryApiV1CategoriesPostBodySortOrderDefault)
       .describe("Custom sort order for category display"),
+    nameTranslations: zod
+      .union([zod.record(zod.string(), zod.string()), zod.null()])
+      .optional()
+      .describe(
+        "Category name translations by language code, e.g. {'it': 'Spesa', 'en': 'Groceries'}",
+      ),
   })
   .describe(
     "Schema for creating a new category.\nCategories are USER-level and shared across all user's profiles.",
@@ -242,6 +254,12 @@ export const GetCategoryApiV1CategoriesCategoryIdGetResponse = zod
       .number()
       .default(getCategoryApiV1CategoriesCategoryIdGetResponseSortOrderDefault)
       .describe("Custom sort order for category display"),
+    nameTranslations: zod
+      .union([zod.record(zod.string(), zod.string()), zod.null()])
+      .optional()
+      .describe(
+        "Category name translations by language code, e.g. {'it': 'Spesa', 'en': 'Groceries'}",
+      ),
     id: zod.uuid().describe("Unique category identifier"),
     userId: zod.uuid().describe("ID of the user this category belongs to"),
     isSystem: zod
@@ -322,6 +340,10 @@ export const UpdateCategoryApiV1CategoriesCategoryIdPutBody = zod
       .union([zod.boolean(), zod.null()])
       .optional()
       .describe("Whether the category is active"),
+    nameTranslations: zod
+      .union([zod.record(zod.string(), zod.string()), zod.null()])
+      .optional()
+      .describe("Updated name translations by language code"),
   })
   .describe(
     "Schema for updating an existing category.\nAll fields are optional (partial update).",
@@ -383,6 +405,12 @@ export const UpdateCategoryApiV1CategoriesCategoryIdPutResponse = zod
         updateCategoryApiV1CategoriesCategoryIdPutResponseSortOrderDefault,
       )
       .describe("Custom sort order for category display"),
+    nameTranslations: zod
+      .union([zod.record(zod.string(), zod.string()), zod.null()])
+      .optional()
+      .describe(
+        "Category name translations by language code, e.g. {'it': 'Spesa', 'en': 'Groceries'}",
+      ),
     id: zod.uuid().describe("Unique category identifier"),
     userId: zod.uuid().describe("ID of the user this category belongs to"),
     isSystem: zod

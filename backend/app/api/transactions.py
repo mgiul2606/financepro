@@ -15,6 +15,7 @@ from app.models.user import User
 from app.models.transaction import Transaction
 from app.models.account import Account
 from app.models.financial_profile import FinancialProfile
+from app.models.enums import INCOME_TRANSACTION_TYPES, EXPENSE_TRANSACTION_TYPES, TransactionType
 from app.schemas.transaction import (
     TransactionCreate,
     TransactionUpdate,
@@ -22,6 +23,7 @@ from app.schemas.transaction import (
     TransactionListResponse,
 )
 from app.api.dependencies import get_current_user
+from app.models.import_job import ImportJob
 
 # Standard quantize target for monetary values (2 decimal places)
 _TWO_PLACES = Decimal('0.01')
@@ -30,6 +32,21 @@ _TWO_PLACES = Decimal('0.01')
 def _round_money(value: Decimal) -> Decimal:
     """Round a Decimal to 2 decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(_TWO_PLACES, rounding=ROUND_HALF_UP)
+
+
+def _balance_delta(amount_clear: Decimal, transaction_type: TransactionType) -> Decimal:
+    """Return the signed impact of a transaction on account balance.
+
+    Income types → positive delta (balance increases)
+    Expense types → negative delta (balance decreases)
+    Neutral types → sign of amount_clear determines direction
+    """
+    if transaction_type in INCOME_TRANSACTION_TYPES:
+        return abs(amount_clear)
+    elif transaction_type in EXPENSE_TRANSACTION_TYPES:
+        return -abs(amount_clear)
+    else:
+        return amount_clear
 
 router = APIRouter()
 
@@ -185,6 +202,11 @@ async def create_transaction(
 
     transaction = Transaction(**data)
     db.add(transaction)
+
+    # Update account current_balance
+    delta = _balance_delta(rounded_amount, transaction_in.transaction_type)
+    account.current_balance = _round_money(account.current_balance + delta)
+
     db.commit()
     db.refresh(transaction)
     return transaction
@@ -256,6 +278,8 @@ async def get_transaction_stats(
     total_expenses = Decimal("0.00")
 
     for t in transactions:
+        if t.amount_clear is None:
+            continue
         amt = Decimal(str(t.amount_clear))
         if t.transaction_type in INCOME_TRANSACTION_TYPES:
             total_income += abs(amt)
@@ -404,6 +428,10 @@ async def update_transaction(
     account = get_by_id(db, Account, transaction.account_id)
     children_for(db, User, FinancialProfile, current_user.id, account.financial_profile_id)
 
+    # Capture old balance impact before any changes
+    old_amount_clear = transaction.amount_clear
+    old_transaction_type = transaction.transaction_type
+
     # Update only provided fields
     update_data = transaction_in.model_dump(exclude_unset=True)
 
@@ -432,6 +460,14 @@ async def update_transaction(
 
     for field, value in update_data.items():
         setattr(transaction, field, value)
+
+    # Update account balance if amount or type changed
+    new_amount_clear = transaction.amount_clear
+    new_transaction_type = transaction.transaction_type
+    if old_amount_clear != new_amount_clear or old_transaction_type != new_transaction_type:
+        old_delta = _balance_delta(old_amount_clear, old_transaction_type)
+        new_delta = _balance_delta(new_amount_clear, new_transaction_type)
+        account.current_balance = _round_money(account.current_balance - old_delta + new_delta)
 
     db.commit()
     db.refresh(transaction)
@@ -474,7 +510,20 @@ async def delete_transaction(
     account = get_by_id(db, Account, transaction.account_id)
     children_for(db, User, FinancialProfile, current_user.id, account.financial_profile_id)
 
+    # Reverse the transaction's impact on account balance
+    delta = _balance_delta(transaction.amount_clear, transaction.transaction_type)
+    account.current_balance = _round_money(account.current_balance - delta)
+
+    import_job_id = transaction.import_job_id
     db.delete(transaction)
+    db.flush()
+
+    if import_job_id is not None:
+        job = db.query(ImportJob).filter(ImportJob.id == import_job_id).first()
+        if job is not None:
+            job.successful_imports = max(0, (job.successful_imports or 0) - 1)
+            job.manually_deleted = (job.manually_deleted or 0) + 1
+
     db.commit()
 
 
@@ -526,8 +575,9 @@ async def bulk_create_transactions(
         for aid in unique_account_ids
     }
 
-    # Create all transactions with rounded amounts
+    # Create all transactions with rounded amounts and accumulate balance deltas per account
     transactions = []
+    account_balance_deltas: dict[UUID, Decimal] = {}
     for transaction_in in transactions_in:
         data = transaction_in.model_dump()
         rounded_amount = _round_money(data['amount'])
@@ -538,6 +588,15 @@ async def bulk_create_transactions(
         transaction = Transaction(**data)
         db.add(transaction)
         transactions.append(transaction)
+
+        delta = _balance_delta(rounded_amount, transaction_in.transaction_type)
+        aid = transaction_in.account_id
+        account_balance_deltas[aid] = account_balance_deltas.get(aid, Decimal("0")) + delta
+
+    # Apply accumulated balance deltas to each account
+    for aid, total_delta in account_balance_deltas.items():
+        acc = accounts[aid]
+        acc.current_balance = _round_money(acc.current_balance + total_delta)
 
     db.commit()
 

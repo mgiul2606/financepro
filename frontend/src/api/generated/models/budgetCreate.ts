@@ -15,6 +15,7 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
+import type { BudgetCategoryCreate } from "./budgetCategoryCreate";
 import type { PeriodType } from "./periodType";
 import type { ScopeType } from "./scopeType";
 
@@ -55,5 +56,5 @@ export interface BudgetCreate {
    */
   alertThresholdPercent?: number;
   /** Optional category allocations for this budget */
-  categoryAllocations?: unknown[] | null;
+  categoryAllocations?: BudgetCategoryCreate[] | null;
 }

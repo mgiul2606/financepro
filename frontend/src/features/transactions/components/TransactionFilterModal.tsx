@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label';
 import { toggleArrayField } from '@/utils/toggleArrayField';
 import { removeEmptyFilters } from '@/utils/filters';
 import { TransactionType } from '@/api/generated/models';
-import { useCategories } from '@/features/categories';
+import { useCategories, useCategoryName } from '@/features/categories';
 import { useAccounts } from '@/features/accounts';
 
 // Types - using the unified type from transactions.types
@@ -42,6 +42,7 @@ export const TransactionFilterModal = ({
   const { t } = useTranslation();
   const { categories, isLoading: categoriesLoading } = useCategories();
   const { accounts, isLoading: accountsLoading } = useAccounts();
+  const getCategoryName = useCategoryName();
 
   const [filters, setFilters] = useState<TransactionUIFilters>(initialFilters || {});
 
@@ -190,7 +191,7 @@ export const TransactionFilterModal = ({
                         : 'bg-background border-border text-foreground hover:border-primary/50'
                     }`}
                   >
-                    {category.name}
+                    {getCategoryName(category)}
                   </button>
                 ))}
               </div>

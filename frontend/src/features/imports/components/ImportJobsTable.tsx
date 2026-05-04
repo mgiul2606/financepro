@@ -65,6 +65,7 @@ export const ImportJobsTable = ({
         const successful = job.successfulImports ?? 0;
         const failed = job.failedImports ?? 0;
         const skipped = job.skippedDuplicates ?? 0;
+        const deleted = (job as ImportJobResponse & { manuallyDeleted?: number }).manuallyDeleted ?? 0;
         return (
           <div className="flex gap-3 text-sm">
             <span className="text-green-600" title={t('imports.successful')}>
@@ -76,6 +77,11 @@ export const ImportJobsTable = ({
             <span className="text-gray-500" title={t('imports.skipped')}>
               {skipped}
             </span>
+            {deleted > 0 && (
+              <span className="text-orange-500" title={t('imports.manuallyDeleted')}>
+                -{deleted}
+              </span>
+            )}
           </div>
         );
       },

@@ -18,6 +18,7 @@ import {
   Upload,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ProfileSelector } from '../../features/profiles/components/ProfileSelector';
 
 export interface NavItem {
@@ -32,47 +33,48 @@ export interface NavSection {
   items: NavItem[];
 }
 
-const navigationSections: NavSection[] = [
-  {
-    items: [
-      { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    ],
-  },
-  {
-    title: 'Financial',
-    items: [
-      { label: 'Accounts', href: '/accounts', icon: Wallet },
-      { label: 'Transactions', href: '/transactions', icon: ArrowLeftRight },
-      { label: 'Recurring', href: '/recurring', icon: RefreshCw },
-      { label: 'Budgets', href: '/budgets', icon: PiggyBank },
-      { label: 'Goals', href: '/goals', icon: Target },
-      { label: 'Assets', href: '/assets', icon: Building },
-    ],
-  },
-  {
-    title: 'Insights',
-    items: [
-      { label: 'Analytics', href: '/analytics', icon: BarChart3 },
-      { label: 'Optimization', href: '/optimization', icon: TrendingUp },
-      { label: 'AI Assistant', href: '/ai-assistant', icon: Bot },
-      { label: 'Import Data', href: '/imports', icon: Upload },
-    ],
-  },
-  {
-    title: 'Settings',
-    items: [
-      { label: 'Settings', href: '/settings', icon: Settings },
-    ],
-  },
-];
-
 export interface SidebarProps {
   onLogout?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   const location = useLocation();
+  const { t } = useTranslation();
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const navigationSections: NavSection[] = [
+    {
+      items: [
+        { label: t('nav.dashboard'), href: '/dashboard', icon: LayoutDashboard },
+      ],
+    },
+    {
+      title: t('nav.financial'),
+      items: [
+        { label: t('nav.accounts'), href: '/accounts', icon: Wallet },
+        { label: t('nav.transactions'), href: '/transactions', icon: ArrowLeftRight },
+        { label: t('nav.recurring'), href: '/recurring', icon: RefreshCw },
+        { label: t('nav.budgets'), href: '/budgets', icon: PiggyBank },
+        { label: t('nav.goals'), href: '/goals', icon: Target },
+        { label: t('nav.assets'), href: '/assets', icon: Building },
+      ],
+    },
+    {
+      title: t('nav.insights'),
+      items: [
+        { label: t('nav.analytics'), href: '/analytics', icon: BarChart3 },
+        { label: t('nav.optimization'), href: '/optimization', icon: TrendingUp },
+        { label: t('nav.aiAssistant'), href: '/ai-assistant', icon: Bot },
+        { label: t('nav.importData'), href: '/imports', icon: Upload },
+      ],
+    },
+    {
+      title: t('nav.settings'),
+      items: [
+        { label: t('nav.settings'), href: '/settings', icon: Settings },
+      ],
+    },
+  ];
 
   const isActive = (href: string) => {
     return location.pathname === href || location.pathname.startsWith(href + '/');
@@ -177,10 +179,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
               'text-neutral-300 hover:text-white hover:bg-neutral-800 transition-all duration-150',
               isCollapsed && 'justify-center'
             )}
-            title={isCollapsed ? 'Logout' : undefined}
+            title={isCollapsed ? t('auth.logout') : undefined}
           >
             <LogOut className="h-5 w-5 flex-shrink-0" />
-            {!isCollapsed && <span className="font-medium text-sm">Logout</span>}
+            {!isCollapsed && <span className="font-medium text-sm">{t('auth.logout')}</span>}
           </button>
         </div>
       )}

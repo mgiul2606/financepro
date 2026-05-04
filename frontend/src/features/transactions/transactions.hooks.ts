@@ -17,6 +17,8 @@ import {
   type UpdateTransactionApiV1TransactionsTransactionIdPatchMutationResult,
   type DeleteTransactionApiV1TransactionsTransactionIdDeleteMutationResult,
 } from '@/api/generated/transactions/transactions';
+import { getListAccountsApiV1AccountsGetQueryKey } from '@/api/generated/accounts/accounts';
+import { getListImportJobsApiV1ImportsGetQueryKey } from '@/api/generated/imports/imports';
 import type {
   TransactionCreate,
   TransactionUpdate,
@@ -354,7 +356,10 @@ export const useTransactionStats = (params?: {
     }
   );
 
-  const isLoading = profileLoading || isAnyQueryLoading(queries);
+  // Use isPending (not isLoading) to cover the React Query v5 'pending+idle'
+  // state that occurs when queries just become enabled but haven't started
+  // fetching yet — isLoading would be false in that window despite no data.
+  const isLoading = profileLoading || queries.some((q) => q.isPending);
   const error = getFirstQueryError(queries);
   const hasData = queries.some((query) => query.data?.data);
 
@@ -377,7 +382,10 @@ const useCreateTransactionBase = createCreateMutationHook<
 >({
   useMutation: useCreateTransactionApiV1TransactionsPost,
   defaultOptions: {
-    invalidateKeys: getListTransactionsApiV1TransactionsGetQueryKey(),
+    invalidateKeys: [
+      getListTransactionsApiV1TransactionsGetQueryKey(),
+      getListAccountsApiV1AccountsGetQueryKey(),
+    ],
   },
 });
 
@@ -408,7 +416,10 @@ const useUpdateTransactionBase = createUpdateMutationHook<
   useMutation: useUpdateTransactionApiV1TransactionsTransactionIdPatch,
   idParamName: 'transactionId',
   defaultOptions: {
-    invalidateKeys: getListTransactionsApiV1TransactionsGetQueryKey(),
+    invalidateKeys: [
+      getListTransactionsApiV1TransactionsGetQueryKey(),
+      getListAccountsApiV1AccountsGetQueryKey(),
+    ],
   },
 });
 
@@ -437,7 +448,11 @@ const useDeleteTransactionBase = createDeleteMutationHook<
   useMutation: useDeleteTransactionApiV1TransactionsTransactionIdDelete,
   idParamName: 'transactionId',
   defaultOptions: {
-    invalidateKeys: getListTransactionsApiV1TransactionsGetQueryKey(),
+    invalidateKeys: [
+      getListTransactionsApiV1TransactionsGetQueryKey(),
+      getListAccountsApiV1AccountsGetQueryKey(),
+      getListImportJobsApiV1ImportsGetQueryKey(),
+    ],
   },
 });
 

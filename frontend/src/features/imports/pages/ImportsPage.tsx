@@ -8,6 +8,17 @@ import { ImportJobsTable } from '../components/ImportJobsTable';
 import { SmartImportWizard } from '../components/SmartImportWizard';
 import { useImports, useDeleteImport } from '../imports.hooks';
 import { useSmartImport } from '../imports.smart-hooks';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import type { ImportJobResponse } from '@/api/generated/models';
 
 /**
  * Imports page component
@@ -17,18 +28,35 @@ export const ImportsPage = () => {
   const { t } = useTranslation();
   const [showWizard, setShowWizard] = useState(true);
   const [wizardKey, setWizardKey] = useState(0);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [jobToDelete, setJobToDelete] = useState<ImportJobResponse | null>(null);
 
   // Hooks for data fetching and mutations
   const { imports, total, isLoading, error: fetchError } = useImports();
   const { deleteImport, isDeleting } = useDeleteImport();
   const { resume } = useSmartImport();
 
-  const handleDelete = async (jobId: string) => {
+  const handleDeleteClick = (jobId: string) => {
+    const job = imports.find((j) => j.id === jobId) ?? null;
+    setJobToDelete(job);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!jobToDelete) return;
     try {
-      await deleteImport(jobId, false);
+      await deleteImport(jobToDelete.id, true);
     } catch {
       // Error is handled by the hook
+    } finally {
+      setDeleteDialogOpen(false);
+      setJobToDelete(null);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteDialogOpen(false);
+    setJobToDelete(null);
   };
 
   const handleResume = useCallback(async (jobId: string) => {
@@ -81,7 +109,7 @@ export const ImportsPage = () => {
           ) : imports.length > 0 ? (
             <ImportJobsTable
               jobs={imports}
-              onDelete={handleDelete}
+              onDelete={handleDeleteClick}
               onResume={handleResume}
               isDeleting={isDeleting}
             />
@@ -96,6 +124,29 @@ export const ImportsPage = () => {
           )}
         </CardBody>
       </Card>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t('imports.deleteDialog.title')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {(jobToDelete?.successfulImports ?? 0) > 0
+                ? t('imports.deleteDialog.withTransactions', { count: jobToDelete?.successfulImports ?? 0 })
+                : t('imports.deleteDialog.noTransactions')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelDelete}>
+              {t('common.cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} disabled={isDeleting}>
+              {t('imports.deleteDialog.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

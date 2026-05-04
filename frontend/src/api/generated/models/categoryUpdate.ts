@@ -15,6 +15,7 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
+import type { CategoryUpdateNameTranslations } from "./categoryUpdateNameTranslations";
 
 /**
  * Schema for updating an existing category.
@@ -35,4 +36,6 @@ export interface CategoryUpdate {
   sortOrder?: number | null;
   /** Whether the category is active */
   isActive?: boolean | null;
+  /** Updated name translations by language code */
+  nameTranslations?: CategoryUpdateNameTranslations;
 }

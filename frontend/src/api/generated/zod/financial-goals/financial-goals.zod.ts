@@ -225,7 +225,7 @@ export const createGoalApiV1GoalsPostBodyTargetAmountOneExclusiveMin = 0;
 export const createGoalApiV1GoalsPostBodyPriorityDefault = 5;
 export const createGoalApiV1GoalsPostBodyPriorityMax = 10;
 
-export const createGoalApiV1GoalsPostBodyScopeTypeDefault = `USER`;
+export const createGoalApiV1GoalsPostBodyScopeTypeDefault = `user`;
 export const createGoalApiV1GoalsPostBodyCurrencyDefault = `USD`;
 export const createGoalApiV1GoalsPostBodyCurrencyRegExp = new RegExp(
   "^[A-Z]{3}$",
@@ -277,7 +277,7 @@ export const CreateGoalApiV1GoalsPostBody = zod
     scopeType: zod
       .string()
       .default(createGoalApiV1GoalsPostBodyScopeTypeDefault)
-      .describe("Scope type: USER, PROFILE, or MULTI_PROFILE"),
+      .describe("Scope type: user, profile, or multi_profile"),
     scopeProfileIds: zod
       .union([zod.array(zod.uuid()), zod.null()])
       .optional()
@@ -723,30 +723,31 @@ export const AddContributionApiV1GoalsGoalIdContributionsPostParams =
     goal_id: zod.uuid(),
   });
 
-export const addContributionApiV1GoalsGoalIdContributionsPostBodyNameMax = 255;
-
-export const addContributionApiV1GoalsGoalIdContributionsPostBodyTargetAmountOneExclusiveMin = 0;
+export const addContributionApiV1GoalsGoalIdContributionsPostBodyAmountOneExclusiveMin = 0;
 
 export const AddContributionApiV1GoalsGoalIdContributionsPostBody = zod
   .object({
-    name: zod
-      .string()
-      .min(1)
-      .max(addContributionApiV1GoalsGoalIdContributionsPostBodyNameMax)
-      .describe("Milestone name"),
-    targetAmount: zod
+    amount: zod
       .union([
         zod
           .number()
           .gt(
-            addContributionApiV1GoalsGoalIdContributionsPostBodyTargetAmountOneExclusiveMin,
+            addContributionApiV1GoalsGoalIdContributionsPostBodyAmountOneExclusiveMin,
           ),
         zod.string(),
       ])
-      .describe("Target amount for this milestone"),
-    targetDate: zod.iso.date().describe("Target date for this milestone"),
+      .describe("Contribution amount (must be positive)"),
+    contributionDate: zod.iso.date().describe("Date of the contribution"),
+    transactionId: zod
+      .union([zod.uuid(), zod.null()])
+      .optional()
+      .describe("Optional linked transaction ID"),
+    notes: zod
+      .union([zod.string(), zod.null()])
+      .optional()
+      .describe("Optional notes for this contribution"),
   })
-  .describe("Schema for creating a new milestone for a goal.");
+  .describe("Schema for creating a new contribution to a goal.");
 
 /**
  * List all contributions for a goal
@@ -782,32 +783,20 @@ export const ListContributionsApiV1GoalsGoalIdContributionsGetQueryParams =
       ),
   });
 
-export const listContributionsApiV1GoalsGoalIdContributionsGetResponseIsCompletedDefault = false;
-
 export const ListContributionsApiV1GoalsGoalIdContributionsGetResponseItem = zod
   .object({
-    id: zod.uuid().describe("Unique milestone identifier"),
+    id: zod.uuid().describe("Unique contribution identifier"),
     goalId: zod.uuid().describe("ID of the parent goal"),
-    name: zod.string().describe("Milestone name"),
-    targetAmount: zod.string().describe("Target amount for this milestone"),
-    targetDate: zod.iso.date().describe("Target date for this milestone"),
-    isCompleted: zod
-      .boolean()
-      .default(
-        listContributionsApiV1GoalsGoalIdContributionsGetResponseIsCompletedDefault,
-      )
-      .describe("Whether the milestone has been completed"),
-    completedAt: zod
-      .union([zod.iso.datetime({}), zod.null()])
+    transactionId: zod
+      .union([zod.uuid(), zod.null()])
       .optional()
-      .describe("When the milestone was completed"),
-    createdAt: zod.iso
-      .datetime({})
-      .describe("Milestone creation timestamp (UTC)"),
+      .describe("Linked transaction ID"),
+    amount: zod.string().describe("Contribution amount"),
+    contributionDate: zod.iso.date().describe("Date of the contribution"),
+    notes: zod.union([zod.string(), zod.null()]).optional().describe("Notes"),
+    createdAt: zod.iso.datetime({}).describe("Creation timestamp"),
   })
-  .describe(
-    "Schema for goal milestone.\nRepresents a smaller achievable step towards the main goal.",
-  );
+  .describe("Schema for goal contribution response.");
 export const ListContributionsApiV1GoalsGoalIdContributionsGetResponse =
   zod.array(ListContributionsApiV1GoalsGoalIdContributionsGetResponseItem);
 

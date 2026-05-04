@@ -37,6 +37,7 @@ class ImportJobResponse(CamelCaseModel):
     successful_imports: Optional[int] = None
     failed_imports: Optional[int] = None
     skipped_duplicates: Optional[int] = None
+    manually_deleted: Optional[int] = None
     error_message: Optional[str] = None
     created_at: str
     completed_at: Optional[str] = None
@@ -105,6 +106,7 @@ async def list_import_jobs(
             successful_imports=job.successful_imports,
             failed_imports=job.failed_imports,
             skipped_duplicates=job.skipped_duplicates,
+            manually_deleted=job.manually_deleted,
             error_message=job.error_message,
             created_at=job.created_at.isoformat(),
             completed_at=job.completed_at.isoformat() if job.completed_at else None
@@ -234,6 +236,7 @@ async def get_import_job(
             successful_imports=job.successful_imports,
             failed_imports=job.failed_imports,
             skipped_duplicates=job.skipped_duplicates,
+            manually_deleted=job.manually_deleted,
             error_message=job.error_message,
             created_at=job.created_at.isoformat(),
             completed_at=job.completed_at.isoformat() if job.completed_at else None

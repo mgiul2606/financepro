@@ -217,7 +217,7 @@ class TransactionClassifier:
 
         # 1. DB merchant matching (if session available or merchants pre-cached)
         if db is not None or self._merchant_cache is not None:
-            result = self._match_db_merchant(desc_lower, db)
+            result = self._match_db_merchant(desc_lower, db, amount)
             if result:
                 return result
 
@@ -239,7 +239,7 @@ class TransactionClassifier:
     # ----- DB merchant lookup ------------------------------------------------
 
     def _match_db_merchant(
-        self, desc_lower: str, db: Optional[Session] = None
+        self, desc_lower: str, db: Optional[Session] = None, amount: Decimal = Decimal("0")
     ) -> Optional[ClassificationResult]:
         """Check description against the merchants table (cached per instance)."""
         # Cache the merchant list to avoid N round-trips to DB
@@ -261,7 +261,7 @@ class TransactionClassifier:
                         confidence_score=0.90,
                         match_method="merchant_exact",
                         suggested_transaction_type=self._infer_transaction_type(
-                            desc_lower, Decimal("0")
+                            desc_lower, amount
                         ),
                     )
         return None
@@ -312,30 +312,40 @@ class TransactionClassifier:
     # ----- transaction type inference ----------------------------------------
 
     def _infer_transaction_type(self, desc_lower: str, amount: Decimal) -> str:
-        """Infer TransactionType from description + sign."""
-        # Salary keywords
+        """Infer TransactionType from description + sign.
+
+        Amount sign is the authoritative source for income vs. expense direction.
+        Keyword rules only apply when the amount sign is consistent with the
+        inferred type (e.g. 'pagamento' only → 'purchase' if amount ≤ 0).
+        Neutral types (bank_transfer) are allowed regardless of sign.
+        """
+        # Salary — income regardless of description nuance
         salary_kw = ["stipendio", "salary", "retribuzione", "cedolino", "busta paga"]
         if any(k in desc_lower for k in salary_kw):
             return "salary"
 
-        # ATM withdrawal
-        if any(k in desc_lower for k in ["prelievo", "atm", "bancomat", "withdrawal"]):
+        # Refund / cashback — income keywords, only when amount > 0
+        if amount > 0 and any(k in desc_lower for k in ["rimborso", "refund", "cashback"]):
+            return "refund"
+
+        # ATM withdrawal — expense only
+        if amount <= 0 and any(k in desc_lower for k in ["prelievo", "atm", "bancomat", "withdrawal"]):
             return "withdrawal"
 
-        # Bank transfer
+        # Bank transfer — neutral (can be either direction)
         if any(k in desc_lower for k in ["bonifico", "bank transfer", "giroconto"]):
             return "bank_transfer"
 
-        # Fee / tax
-        if any(k in desc_lower for k in ["commissione", "canone", "imposta bollo", "spese conto"]):
+        # Fee / tax — expense only
+        if amount <= 0 and any(k in desc_lower for k in ["commissione", "canone", "imposta bollo", "spese conto"]):
             return "fee"
 
-        # POS / purchase
-        if any(k in desc_lower for k in ["pos", "carta", "pagamento", "acquisto"]):
+        # POS / purchase — expense only
+        if amount <= 0 and any(k in desc_lower for k in ["pos", "carta", "pagamento", "acquisto"]):
             return "purchase"
 
-        # SDD / direct debit
-        if any(k in desc_lower for k in ["sdd", "addebito diretto", "domiciliazione", "rid"]):
+        # SDD / direct debit — expense only
+        if amount <= 0 and any(k in desc_lower for k in ["sdd", "addebito diretto", "domiciliazione", "rid"]):
             return "payment"
 
         # Default by sign

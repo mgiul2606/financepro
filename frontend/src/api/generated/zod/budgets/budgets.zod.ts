@@ -170,6 +170,8 @@ export const createBudgetApiV1BudgetsPostBodyAlertThresholdPercentDefault = 80;
 export const createBudgetApiV1BudgetsPostBodyAlertThresholdPercentMin = 0;
 export const createBudgetApiV1BudgetsPostBodyAlertThresholdPercentMax = 100;
 
+export const createBudgetApiV1BudgetsPostBodyCategoryAllocationsOneItemAllocatedAmountOneMin = 0;
+
 export const CreateBudgetApiV1BudgetsPostBody = zod
   .object({
     name: zod
@@ -216,7 +218,24 @@ export const CreateBudgetApiV1BudgetsPostBody = zod
       .default(createBudgetApiV1BudgetsPostBodyAlertThresholdPercentDefault)
       .describe("Percentage of budget to trigger alerts (0-100)"),
     categoryAllocations: zod
-      .union([zod.array(zod.unknown()), zod.null()])
+      .union([
+        zod.array(
+          zod
+            .object({
+              categoryId: zod.uuid(),
+              allocatedAmount: zod.union([
+                zod
+                  .number()
+                  .min(
+                    createBudgetApiV1BudgetsPostBodyCategoryAllocationsOneItemAllocatedAmountOneMin,
+                  ),
+                zod.string(),
+              ]),
+            })
+            .describe("Schema for budget category allocation"),
+        ),
+        zod.null(),
+      ])
       .optional()
       .describe("Optional category allocations for this budget"),
   })
@@ -322,7 +341,7 @@ export const GetBudgetApiV1BudgetsBudgetIdGetResponse = zod
   );
 
 /**
- * Update an existing budget
+ * Update an existing budget. Returns full detail with recalculated spending for current period.
  * @summary Update budget
  */
 export const UpdateBudgetApiV1BudgetsBudgetIdPatchParams = zod.object({
@@ -428,95 +447,145 @@ export const UpdateBudgetApiV1BudgetsBudgetIdPatchBody = zod
     "Schema for updating an existing budget.\nAll fields are optional (partial update).",
   );
 
-export const updateBudgetApiV1BudgetsBudgetIdPatchResponseNameMax = 255;
+export const updateBudgetApiV1BudgetsBudgetIdPatchResponseBudgetNameMax = 255;
 
-export const updateBudgetApiV1BudgetsBudgetIdPatchResponseCurrencyRegExp =
+export const updateBudgetApiV1BudgetsBudgetIdPatchResponseBudgetCurrencyRegExp =
   new RegExp("^[A-Z]{3}$");
-export const updateBudgetApiV1BudgetsBudgetIdPatchResponseRolloverEnabledDefault = false;
-export const updateBudgetApiV1BudgetsBudgetIdPatchResponseIsActiveDefault = true;
+export const updateBudgetApiV1BudgetsBudgetIdPatchResponseBudgetRolloverEnabledDefault = false;
+export const updateBudgetApiV1BudgetsBudgetIdPatchResponseBudgetIsActiveDefault = true;
 
 export const UpdateBudgetApiV1BudgetsBudgetIdPatchResponse = zod
   .object({
-    name: zod
-      .string()
-      .min(1)
-      .max(updateBudgetApiV1BudgetsBudgetIdPatchResponseNameMax)
-      .describe("Budget name"),
-    periodType: zod
-      .enum(["daily", "weekly", "monthly", "quarterly", "yearly", "custom"])
-      .describe("Type of budget period (monthly, quarterly, yearly, custom)"),
-    startDate: zod.iso.date().describe("Start date of the budget period"),
-    endDate: zod
-      .union([zod.iso.date(), zod.null()])
-      .optional()
-      .describe("End date of the budget period (NULL for rolling budgets)"),
-    totalAmount: zod
-      .string()
-      .describe("Total budget amount (must be positive)"),
-    currency: zod
-      .string()
-      .regex(updateBudgetApiV1BudgetsBudgetIdPatchResponseCurrencyRegExp)
-      .describe("ISO 4217 currency code (3 uppercase letters)"),
-    id: zod.uuid().describe("Unique budget identifier"),
-    userId: zod.uuid().describe("ID of the user this budget belongs to"),
-    scopeType: zod
-      .enum(["user", "profile", "multi_profile"])
-      .describe("Scope type (user, profile, multi_profile)"),
-    scopeProfileIds: zod
-      .union([zod.array(zod.uuid()), zod.null()])
-      .optional()
-      .describe(
-        "List of profile IDs when using profile or multi_profile scope",
-      ),
-    rolloverEnabled: zod
-      .boolean()
-      .default(
-        updateBudgetApiV1BudgetsBudgetIdPatchResponseRolloverEnabledDefault,
-      )
-      .describe("Whether unspent amounts rollover to next period"),
-    isActive: zod
-      .boolean()
-      .default(updateBudgetApiV1BudgetsBudgetIdPatchResponseIsActiveDefault)
-      .describe("Whether the budget is currently active"),
-    alertThresholdPercent: zod
-      .number()
-      .describe("Percentage of budget to trigger alerts"),
-    totalSpent: zod
-      .union([zod.string(), zod.null()])
-      .optional()
-      .describe("Total spent against this budget (computed)"),
-    remaining: zod
-      .union([zod.string(), zod.null()])
-      .optional()
-      .describe("Remaining budget amount (computed)"),
-    usagePercentage: zod
-      .union([zod.string(), zod.null()])
-      .optional()
-      .describe("Percentage of budget used (computed)"),
-    categoryAllocations: zod
-      .union([
-        zod.array(
-          zod
-            .object({
-              categoryId: zod.uuid().describe("Category identifier"),
-              categoryName: zod.string().describe("Category name"),
-              allocatedAmount: zod
-                .string()
-                .describe("Amount allocated to this category"),
-            })
-            .describe(
-              "Schema for category allocation within a budget.\nShows how budget amount is distributed across categories.",
+    budget: zod
+      .object({
+        name: zod
+          .string()
+          .min(1)
+          .max(updateBudgetApiV1BudgetsBudgetIdPatchResponseBudgetNameMax)
+          .describe("Budget name"),
+        periodType: zod
+          .enum(["daily", "weekly", "monthly", "quarterly", "yearly", "custom"])
+          .describe(
+            "Type of budget period (monthly, quarterly, yearly, custom)",
+          ),
+        startDate: zod.iso.date().describe("Start date of the budget period"),
+        endDate: zod
+          .union([zod.iso.date(), zod.null()])
+          .optional()
+          .describe("End date of the budget period (NULL for rolling budgets)"),
+        totalAmount: zod
+          .string()
+          .describe("Total budget amount (must be positive)"),
+        currency: zod
+          .string()
+          .regex(
+            updateBudgetApiV1BudgetsBudgetIdPatchResponseBudgetCurrencyRegExp,
+          )
+          .describe("ISO 4217 currency code (3 uppercase letters)"),
+        id: zod.uuid().describe("Unique budget identifier"),
+        userId: zod.uuid().describe("ID of the user this budget belongs to"),
+        scopeType: zod
+          .enum(["user", "profile", "multi_profile"])
+          .describe("Scope type (user, profile, multi_profile)"),
+        scopeProfileIds: zod
+          .union([zod.array(zod.uuid()), zod.null()])
+          .optional()
+          .describe(
+            "List of profile IDs when using profile or multi_profile scope",
+          ),
+        rolloverEnabled: zod
+          .boolean()
+          .default(
+            updateBudgetApiV1BudgetsBudgetIdPatchResponseBudgetRolloverEnabledDefault,
+          )
+          .describe("Whether unspent amounts rollover to next period"),
+        isActive: zod
+          .boolean()
+          .default(
+            updateBudgetApiV1BudgetsBudgetIdPatchResponseBudgetIsActiveDefault,
+          )
+          .describe("Whether the budget is currently active"),
+        alertThresholdPercent: zod
+          .number()
+          .describe("Percentage of budget to trigger alerts"),
+        totalSpent: zod
+          .union([zod.string(), zod.null()])
+          .optional()
+          .describe("Total spent against this budget (computed)"),
+        remaining: zod
+          .union([zod.string(), zod.null()])
+          .optional()
+          .describe("Remaining budget amount (computed)"),
+        usagePercentage: zod
+          .union([zod.string(), zod.null()])
+          .optional()
+          .describe("Percentage of budget used (computed)"),
+        categoryAllocations: zod
+          .union([
+            zod.array(
+              zod
+                .object({
+                  categoryId: zod.uuid().describe("Category identifier"),
+                  categoryName: zod.string().describe("Category name"),
+                  allocatedAmount: zod
+                    .string()
+                    .describe("Amount allocated to this category"),
+                })
+                .describe(
+                  "Schema for category allocation within a budget.\nShows how budget amount is distributed across categories.",
+                ),
             ),
-        ),
-        zod.null(),
-      ])
-      .optional()
-      .describe("Category allocations for this budget"),
-    createdAt: zod.iso.datetime({}).describe("Budget creation timestamp (UTC)"),
-    updatedAt: zod.iso.datetime({}).describe("Last update timestamp (UTC)"),
+            zod.null(),
+          ])
+          .optional()
+          .describe("Category allocations for this budget"),
+        createdAt: zod.iso
+          .datetime({})
+          .describe("Budget creation timestamp (UTC)"),
+        updatedAt: zod.iso.datetime({}).describe("Last update timestamp (UTC)"),
+      })
+      .describe("Budget data"),
+    period: zod
+      .object({
+        start: zod.iso.date().describe("Period start date (inclusive)"),
+        end: zod.iso.date().describe("Period end date (inclusive)"),
+        offset: zod.number().describe("Period offset from current (0=current)"),
+        isCurrent: zod.boolean().describe("Whether this is the current period"),
+        hasPrevious: zod.boolean().describe("Whether a previous period exists"),
+        hasNext: zod.boolean().describe("Whether a next period exists"),
+      })
+      .describe("Current period information"),
+    spending: zod
+      .object({
+        totalAllocated: zod.string().describe("Total budget amount"),
+        totalSpent: zod.string().describe("Total amount spent"),
+        totalRemaining: zod
+          .string()
+          .describe("Total remaining (allocated - spent)"),
+        percentUsed: zod.string().describe("Percentage of budget used"),
+        categories: zod
+          .array(
+            zod
+              .object({
+                categoryId: zod.uuid().describe("Category identifier"),
+                categoryName: zod.string().describe("Category display name"),
+                allocated: zod
+                  .string()
+                  .describe("Amount allocated to this category"),
+                spent: zod.string().describe("Amount spent in this category"),
+                remaining: zod
+                  .string()
+                  .describe("Remaining amount (allocated - spent)"),
+              })
+              .describe("Per-category spending breakdown."),
+          )
+          .optional()
+          .describe("Per-category spending breakdown"),
+      })
+      .describe("Spending breakdown for the period"),
   })
   .describe(
-    "Complete budget schema returned by API endpoints.\nIncludes all fields, current usage, and category allocations.",
+    "Complete budget detail with period navigation and spending.\nThis is the primary response for the budget detail view.",
   );
 
 /**
@@ -526,6 +595,169 @@ export const UpdateBudgetApiV1BudgetsBudgetIdPatchResponse = zod
 export const DeleteBudgetApiV1BudgetsBudgetIdDeleteParams = zod.object({
   budget_id: zod.uuid(),
 });
+
+/**
+ * Get detailed budget info with spending for a specific period. Use period_offset=0 for current period, -1 for previous, +1 for next.
+ * @summary Get budget detail with period navigation
+ */
+export const GetBudgetDetailApiV1BudgetsBudgetIdDetailGetParams = zod.object({
+  budget_id: zod.uuid(),
+});
+
+export const getBudgetDetailApiV1BudgetsBudgetIdDetailGetQueryPeriodOffsetDefault = 0;
+
+export const GetBudgetDetailApiV1BudgetsBudgetIdDetailGetQueryParams =
+  zod.object({
+    period_offset: zod
+      .number()
+      .default(
+        getBudgetDetailApiV1BudgetsBudgetIdDetailGetQueryPeriodOffsetDefault,
+      )
+      .describe("Period offset (0=current, -1=previous, +1=next)"),
+  });
+
+export const getBudgetDetailApiV1BudgetsBudgetIdDetailGetResponseBudgetNameMax = 255;
+
+export const getBudgetDetailApiV1BudgetsBudgetIdDetailGetResponseBudgetCurrencyRegExp =
+  new RegExp("^[A-Z]{3}$");
+export const getBudgetDetailApiV1BudgetsBudgetIdDetailGetResponseBudgetRolloverEnabledDefault = false;
+export const getBudgetDetailApiV1BudgetsBudgetIdDetailGetResponseBudgetIsActiveDefault = true;
+
+export const GetBudgetDetailApiV1BudgetsBudgetIdDetailGetResponse = zod
+  .object({
+    budget: zod
+      .object({
+        name: zod
+          .string()
+          .min(1)
+          .max(
+            getBudgetDetailApiV1BudgetsBudgetIdDetailGetResponseBudgetNameMax,
+          )
+          .describe("Budget name"),
+        periodType: zod
+          .enum(["daily", "weekly", "monthly", "quarterly", "yearly", "custom"])
+          .describe(
+            "Type of budget period (monthly, quarterly, yearly, custom)",
+          ),
+        startDate: zod.iso.date().describe("Start date of the budget period"),
+        endDate: zod
+          .union([zod.iso.date(), zod.null()])
+          .optional()
+          .describe("End date of the budget period (NULL for rolling budgets)"),
+        totalAmount: zod
+          .string()
+          .describe("Total budget amount (must be positive)"),
+        currency: zod
+          .string()
+          .regex(
+            getBudgetDetailApiV1BudgetsBudgetIdDetailGetResponseBudgetCurrencyRegExp,
+          )
+          .describe("ISO 4217 currency code (3 uppercase letters)"),
+        id: zod.uuid().describe("Unique budget identifier"),
+        userId: zod.uuid().describe("ID of the user this budget belongs to"),
+        scopeType: zod
+          .enum(["user", "profile", "multi_profile"])
+          .describe("Scope type (user, profile, multi_profile)"),
+        scopeProfileIds: zod
+          .union([zod.array(zod.uuid()), zod.null()])
+          .optional()
+          .describe(
+            "List of profile IDs when using profile or multi_profile scope",
+          ),
+        rolloverEnabled: zod
+          .boolean()
+          .default(
+            getBudgetDetailApiV1BudgetsBudgetIdDetailGetResponseBudgetRolloverEnabledDefault,
+          )
+          .describe("Whether unspent amounts rollover to next period"),
+        isActive: zod
+          .boolean()
+          .default(
+            getBudgetDetailApiV1BudgetsBudgetIdDetailGetResponseBudgetIsActiveDefault,
+          )
+          .describe("Whether the budget is currently active"),
+        alertThresholdPercent: zod
+          .number()
+          .describe("Percentage of budget to trigger alerts"),
+        totalSpent: zod
+          .union([zod.string(), zod.null()])
+          .optional()
+          .describe("Total spent against this budget (computed)"),
+        remaining: zod
+          .union([zod.string(), zod.null()])
+          .optional()
+          .describe("Remaining budget amount (computed)"),
+        usagePercentage: zod
+          .union([zod.string(), zod.null()])
+          .optional()
+          .describe("Percentage of budget used (computed)"),
+        categoryAllocations: zod
+          .union([
+            zod.array(
+              zod
+                .object({
+                  categoryId: zod.uuid().describe("Category identifier"),
+                  categoryName: zod.string().describe("Category name"),
+                  allocatedAmount: zod
+                    .string()
+                    .describe("Amount allocated to this category"),
+                })
+                .describe(
+                  "Schema for category allocation within a budget.\nShows how budget amount is distributed across categories.",
+                ),
+            ),
+            zod.null(),
+          ])
+          .optional()
+          .describe("Category allocations for this budget"),
+        createdAt: zod.iso
+          .datetime({})
+          .describe("Budget creation timestamp (UTC)"),
+        updatedAt: zod.iso.datetime({}).describe("Last update timestamp (UTC)"),
+      })
+      .describe("Budget data"),
+    period: zod
+      .object({
+        start: zod.iso.date().describe("Period start date (inclusive)"),
+        end: zod.iso.date().describe("Period end date (inclusive)"),
+        offset: zod.number().describe("Period offset from current (0=current)"),
+        isCurrent: zod.boolean().describe("Whether this is the current period"),
+        hasPrevious: zod.boolean().describe("Whether a previous period exists"),
+        hasNext: zod.boolean().describe("Whether a next period exists"),
+      })
+      .describe("Current period information"),
+    spending: zod
+      .object({
+        totalAllocated: zod.string().describe("Total budget amount"),
+        totalSpent: zod.string().describe("Total amount spent"),
+        totalRemaining: zod
+          .string()
+          .describe("Total remaining (allocated - spent)"),
+        percentUsed: zod.string().describe("Percentage of budget used"),
+        categories: zod
+          .array(
+            zod
+              .object({
+                categoryId: zod.uuid().describe("Category identifier"),
+                categoryName: zod.string().describe("Category display name"),
+                allocated: zod
+                  .string()
+                  .describe("Amount allocated to this category"),
+                spent: zod.string().describe("Amount spent in this category"),
+                remaining: zod
+                  .string()
+                  .describe("Remaining amount (allocated - spent)"),
+              })
+              .describe("Per-category spending breakdown."),
+          )
+          .optional()
+          .describe("Per-category spending breakdown"),
+      })
+      .describe("Spending breakdown for the period"),
+  })
+  .describe(
+    "Complete budget detail with period navigation and spending.\nThis is the primary response for the budget detail view.",
+  );
 
 /**
  * Get detailed usage statistics for a budget

@@ -98,6 +98,7 @@ class ImportJob(Base):
     successful_imports: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     failed_imports: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     skipped_duplicates: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    manually_deleted: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, default=0)
 
     # Error tracking
     error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)

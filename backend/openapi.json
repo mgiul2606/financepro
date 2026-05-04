@@ -1847,7 +1847,7 @@
           "Budgets"
         ],
         "summary": "Update budget",
-        "description": "Update an existing budget",
+        "description": "Update an existing budget. Returns full detail with recalculated spending for current period.",
         "operationId": "update_budget_api_v1_budgets__budget_id__patch",
         "security": [
           {
@@ -1882,7 +1882,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/BudgetResponse"
+                  "$ref": "#/components/schemas/BudgetDetailResponse"
                 }
               }
             }
@@ -1926,6 +1926,67 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/budgets/{budget_id}/detail": {
+      "get": {
+        "tags": [
+          "Budgets"
+        ],
+        "summary": "Get budget detail with period navigation",
+        "description": "Get detailed budget info with spending for a specific period. Use period_offset=0 for current period, -1 for previous, +1 for next.",
+        "operationId": "get_budget_detail_api_v1_budgets__budget_id__detail_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "budget_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Budget Id"
+            }
+          },
+          {
+            "name": "period_offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "description": "Period offset (0=current, -1=previous, +1=next)",
+              "default": 0,
+              "title": "Period Offset"
+            },
+            "description": "Period offset (0=current, -1=previous, +1=next)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BudgetDetailResponse"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -2480,7 +2541,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/GoalMilestoneCreate"
+                "$ref": "#/components/schemas/GoalContributionCreate"
               }
             }
           }
@@ -2491,7 +2552,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GoalMilestoneResponse"
+                  "$ref": "#/components/schemas/GoalContributionResponse"
                 }
               }
             }
@@ -2597,7 +2658,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/GoalMilestoneResponse"
+                    "$ref": "#/components/schemas/GoalContributionResponse"
                   },
                   "title": "Response List Contributions Api V1 Goals  Goal Id  Contributions Get"
                 }
@@ -2656,6 +2717,255 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assets/": {
+      "get": {
+        "tags": [
+          "Assets"
+        ],
+        "summary": "List all assets",
+        "description": "Retrieve all assets for the authenticated user, filtered by financial profile",
+        "operationId": "list_assets_api_v1_assets__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "profile_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by financial profile ID",
+              "title": "Profile Id"
+            },
+            "description": "Filter by financial profile ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Assets"
+        ],
+        "summary": "Create new asset",
+        "description": "Create a new asset.",
+        "operationId": "create_asset_api_v1_assets__post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assets/{asset_id}": {
+      "get": {
+        "tags": [
+          "Assets"
+        ],
+        "summary": "Get asset by ID",
+        "description": "Get asset by ID.",
+        "operationId": "get_asset_api_v1_assets__asset_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "asset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Asset Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Assets"
+        ],
+        "summary": "Update asset",
+        "description": "Update an existing asset.",
+        "operationId": "update_asset_api_v1_assets__asset_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "asset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Asset Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Assets"
+        ],
+        "summary": "Delete asset",
+        "description": "Delete an asset.",
+        "operationId": "delete_asset_api_v1_assets__asset_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "asset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Asset Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
           },
           "422": {
             "description": "Validation Error",
@@ -4200,6 +4510,886 @@
           }
         }
       }
+    },
+    "/api/v1/analysis/top-merchants": {
+      "get": {
+        "tags": [
+          "Analysis"
+        ],
+        "summary": "Top merchants by spending",
+        "operationId": "get_top_merchants_api_v1_analysis_top_merchants_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Start Date"
+            }
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "End Date"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 10,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "profile_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Profile Ids"
+            }
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "EUR",
+              "title": "Currency"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TopMerchantsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analysis/anomalies": {
+      "get": {
+        "tags": [
+          "Analysis"
+        ],
+        "summary": "Detect spending anomalies",
+        "operationId": "detect_anomalies_api_v1_analysis_anomalies_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Start Date"
+            }
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "End Date"
+            }
+          },
+          {
+            "name": "sensitivity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(low|medium|high)$",
+              "default": "medium",
+              "title": "Sensitivity"
+            }
+          },
+          {
+            "name": "profile_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Profile Ids"
+            }
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "EUR",
+              "title": "Currency"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnomaliesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analysis/patterns": {
+      "get": {
+        "tags": [
+          "Analysis"
+        ],
+        "summary": "Spending patterns analysis",
+        "operationId": "get_patterns_api_v1_analysis_patterns_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Start Date"
+            }
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "End Date"
+            }
+          },
+          {
+            "name": "profile_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Profile Ids"
+            }
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "EUR",
+              "title": "Currency"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatternsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analysis/categories/{category_id}/breakdown": {
+      "get": {
+        "tags": [
+          "Analysis"
+        ],
+        "summary": "Category spending breakdown",
+        "operationId": "get_category_breakdown_api_v1_analysis_categories__category_id__breakdown_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "category_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Category Id"
+            }
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "Start Date"
+            }
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "title": "End Date"
+            }
+          },
+          {
+            "name": "profile_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Profile Ids"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 1,
+              "default": 15,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "EUR",
+              "title": "Currency"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryBreakdownResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analysis/reports/generate": {
+      "post": {
+        "tags": [
+          "Analysis"
+        ],
+        "summary": "Generate analytics report",
+        "operationId": "generate_report_api_v1_analysis_reports_generate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportMeta"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/analysis/reports/{report_id}/download": {
+      "get": {
+        "tags": [
+          "Analysis"
+        ],
+        "summary": "Download generated report",
+        "operationId": "download_report_api_v1_analysis_reports__report_id__download_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recurring/": {
+      "get": {
+        "tags": [
+          "Recurring Transactions"
+        ],
+        "summary": "List recurring transactions",
+        "description": "Retrieve all recurring transactions for the authenticated user",
+        "operationId": "list_recurring_transactions_api_v1_recurring__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "profile_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by financial profile ID",
+              "title": "Profile Id"
+            },
+            "description": "Filter by financial profile ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringTransactionListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Recurring Transactions"
+        ],
+        "summary": "Create recurring transaction",
+        "description": "Create a new recurring transaction.",
+        "operationId": "create_recurring_transaction_api_v1_recurring__post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecurringTransactionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringTransactionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/recurring/{recurring_id}": {
+      "get": {
+        "tags": [
+          "Recurring Transactions"
+        ],
+        "summary": "Get recurring transaction by ID",
+        "description": "Get a recurring transaction by ID.",
+        "operationId": "get_recurring_transaction_api_v1_recurring__recurring_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "recurring_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Recurring Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringTransactionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Recurring Transactions"
+        ],
+        "summary": "Update recurring transaction",
+        "description": "Update an existing recurring transaction.",
+        "operationId": "update_recurring_transaction_api_v1_recurring__recurring_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "recurring_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Recurring Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecurringTransactionUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringTransactionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Recurring Transactions"
+        ],
+        "summary": "Delete recurring transaction",
+        "description": "Delete a recurring transaction.",
+        "operationId": "delete_recurring_transaction_api_v1_recurring__recurring_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "recurring_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Recurring Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/import/csv/preview": {
+      "post": {
+        "tags": [
+          "Smart Import"
+        ],
+        "summary": "Smart CSV preview",
+        "description": "Upload a CSV, auto-detect format, classify, and reconcile. Returns a preview.",
+        "operationId": "smart_csv_preview_api_v1_import_csv_preview_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_smart_csv_preview_api_v1_import_csv_preview_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SmartImportPreviewResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/import/csv/confirm": {
+      "post": {
+        "tags": [
+          "Smart Import"
+        ],
+        "summary": "Confirm smart CSV import",
+        "description": "Create transactions from the previously previewed CSV data.",
+        "operationId": "smart_csv_confirm_api_v1_import_csv_confirm_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SmartImportConfirmRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SmartImportConfirmResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/import/jobs/{job_id}/resume": {
+      "get": {
+        "tags": [
+          "Smart Import"
+        ],
+        "summary": "Resume a pending import",
+        "description": "Retrieve saved preview data for a pending import job.",
+        "operationId": "resume_import_job_api_v1_import_jobs__job_id__resume_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SmartImportPreviewResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4870,6 +6060,625 @@
           "name": "Updated Account Name"
         }
       },
+      "AmountModel": {
+        "type": "string",
+        "enum": [
+          "fixed",
+          "variable_within_range",
+          "progressive",
+          "seasonal",
+          "formula"
+        ],
+        "title": "AmountModel",
+        "description": "Models for recurring transaction amounts"
+      },
+      "AnomaliesResponse": {
+        "properties": {
+          "anomalies": {
+            "items": {
+              "$ref": "#/components/schemas/AnomalyItem"
+            },
+            "type": "array",
+            "title": "Anomalies"
+          },
+          "periodStart": {
+            "type": "string",
+            "format": "date",
+            "title": "Periodstart"
+          },
+          "periodEnd": {
+            "type": "string",
+            "format": "date",
+            "title": "Periodend"
+          },
+          "totalAnalyzed": {
+            "type": "integer",
+            "title": "Totalanalyzed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "anomalies",
+          "periodStart",
+          "periodEnd",
+          "totalAnalyzed"
+        ],
+        "title": "AnomaliesResponse"
+      },
+      "AnomalyItem": {
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "title": "Transactionid"
+          },
+          "transactionDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Transactiondate"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount"
+          },
+          "categoryName": {
+            "type": "string",
+            "title": "Categoryname"
+          },
+          "categoryAvg": {
+            "type": "number",
+            "title": "Categoryavg"
+          },
+          "categoryStddev": {
+            "type": "number",
+            "title": "Categorystddev"
+          },
+          "deviationFactor": {
+            "type": "number",
+            "title": "Deviationfactor"
+          },
+          "severity": {
+            "type": "string",
+            "title": "Severity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "transactionId",
+          "transactionDate",
+          "description",
+          "amount",
+          "categoryName",
+          "categoryAvg",
+          "categoryStddev",
+          "deviationFactor",
+          "severity"
+        ],
+        "title": "AnomalyItem"
+      },
+      "AssetCreate": {
+        "properties": {
+          "financialProfileId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Financialprofileid",
+            "description": "ID of the financial profile this asset belongs to"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "description": "Asset name"
+          },
+          "assetType": {
+            "$ref": "#/components/schemas/AssetType",
+            "description": "Type of asset"
+          },
+          "purchaseDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purchasedate",
+            "description": "Date when the asset was purchased"
+          },
+          "purchasePrice": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purchaseprice",
+            "description": "Original purchase price"
+          },
+          "currentValue": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Currentvalue",
+            "description": "Current estimated value"
+          },
+          "currentValueMin": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currentvaluemin",
+            "description": "Minimum estimated value (for range valuation)"
+          },
+          "currentValueMax": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currentvaluemax",
+            "description": "Maximum estimated value (for range valuation)"
+          },
+          "valuationMethod": {
+            "$ref": "#/components/schemas/ValuationMethod",
+            "description": "Method used for valuation",
+            "default": "manual"
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "description": "ISO 4217 currency code"
+          },
+          "isLiquid": {
+            "type": "boolean",
+            "title": "Isliquid",
+            "description": "Whether this asset is easily liquidated",
+            "default": false
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity",
+            "description": "Quantity (for fractional assets like stocks, crypto)"
+          },
+          "tickerSymbol": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tickersymbol",
+            "description": "Ticker symbol for quoted assets"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes",
+            "description": "Additional notes about the asset"
+          }
+        },
+        "type": "object",
+        "required": [
+          "financialProfileId",
+          "name",
+          "assetType",
+          "currentValue",
+          "currency"
+        ],
+        "title": "AssetCreate",
+        "description": "Schema for creating a new asset."
+      },
+      "AssetListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/AssetResponse"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "List of assets"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "Total number of assets"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "AssetListResponse",
+        "description": "Schema for list assets response."
+      },
+      "AssetResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "financialProfileId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Financialprofileid"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "assetType": {
+            "$ref": "#/components/schemas/AssetType"
+          },
+          "purchaseDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purchasedate"
+          },
+          "purchasePrice": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purchaseprice"
+          },
+          "currentValue": {
+            "type": "string",
+            "title": "Currentvalue"
+          },
+          "currentValueMin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currentvaluemin"
+          },
+          "currentValueMax": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currentvaluemax"
+          },
+          "valuationMethod": {
+            "$ref": "#/components/schemas/ValuationMethod"
+          },
+          "lastValuationDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lastvaluationdate"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency"
+          },
+          "isLiquid": {
+            "type": "boolean",
+            "title": "Isliquid"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "tickerSymbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tickersymbol"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updatedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "financialProfileId",
+          "name",
+          "assetType",
+          "currentValue",
+          "valuationMethod",
+          "currency",
+          "isLiquid",
+          "createdAt",
+          "updatedAt"
+        ],
+        "title": "AssetResponse",
+        "description": "Complete asset schema returned by API endpoints."
+      },
+      "AssetType": {
+        "type": "string",
+        "enum": [
+          "real_estate",
+          "vehicle",
+          "precious_metal",
+          "stock",
+          "bond",
+          "fund",
+          "etf",
+          "crypto",
+          "artwork",
+          "jewelry",
+          "watch",
+          "other"
+        ],
+        "title": "AssetType",
+        "description": "Types of assets"
+      },
+      "AssetUpdate": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "assetType": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AssetType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "purchaseDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purchasedate"
+          },
+          "purchasePrice": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purchaseprice"
+          },
+          "currentValue": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currentvalue"
+          },
+          "currentValueMin": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currentvaluemin"
+          },
+          "currentValueMax": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currentvaluemax"
+          },
+          "valuationMethod": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ValuationMethod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "isLiquid": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isliquid"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "tickerSymbol": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tickersymbol"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "title": "AssetUpdate",
+        "description": "Schema for updating an existing asset. All fields optional."
+      },
       "Body_import_csv_api_v1_imports__post": {
         "properties": {
           "file": {
@@ -4961,6 +6770,35 @@
           "file"
         ],
         "title": "Body_preview_import_api_v1_imports_preview_post"
+      },
+      "Body_smart_csv_preview_api_v1_import_csv_preview_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary",
+            "title": "File",
+            "description": "CSV file"
+          },
+          "account_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Account Id",
+            "description": "Target account UUID"
+          },
+          "financial_profile_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Financial Profile Id",
+            "description": "Financial profile UUID"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "account_id",
+          "financial_profile_id"
+        ],
+        "title": "Body_smart_csv_preview_api_v1_import_csv_preview_post"
       },
       "BudgetCategoryAllocation": {
         "properties": {
@@ -5065,6 +6903,46 @@
         "title": "BudgetCategoryResponse",
         "description": "Schema for budget category response"
       },
+      "BudgetCategorySpending": {
+        "properties": {
+          "categoryId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Categoryid",
+            "description": "Category identifier"
+          },
+          "categoryName": {
+            "type": "string",
+            "title": "Categoryname",
+            "description": "Category display name"
+          },
+          "allocated": {
+            "type": "string",
+            "title": "Allocated",
+            "description": "Amount allocated to this category"
+          },
+          "spent": {
+            "type": "string",
+            "title": "Spent",
+            "description": "Amount spent in this category"
+          },
+          "remaining": {
+            "type": "string",
+            "title": "Remaining",
+            "description": "Remaining amount (allocated - spent)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "categoryId",
+          "categoryName",
+          "allocated",
+          "spent",
+          "remaining"
+        ],
+        "title": "BudgetCategorySpending",
+        "description": "Per-category spending breakdown."
+      },
       "BudgetComparisonResponse": {
         "properties": {
           "comparisons": {
@@ -5074,17 +6952,17 @@
             "type": "array",
             "title": "Comparisons"
           },
-          "total_budget": {
+          "totalBudget": {
             "type": "number",
-            "title": "Total Budget"
+            "title": "Totalbudget"
           },
-          "total_actual": {
+          "totalActual": {
             "type": "number",
-            "title": "Total Actual"
+            "title": "Totalactual"
           },
-          "overall_variance": {
+          "overallVariance": {
             "type": "number",
-            "title": "Overall Variance"
+            "title": "Overallvariance"
           },
           "currency": {
             "type": "string",
@@ -5094,9 +6972,9 @@
         "type": "object",
         "required": [
           "comparisons",
-          "total_budget",
-          "total_actual",
-          "overall_variance",
+          "totalBudget",
+          "totalActual",
+          "overallVariance",
           "currency"
         ],
         "title": "BudgetComparisonResponse"
@@ -5205,7 +7083,9 @@
           "categoryAllocations": {
             "anyOf": [
               {
-                "items": {},
+                "items": {
+                  "$ref": "#/components/schemas/BudgetCategoryCreate"
+                },
                 "type": "array"
               },
               {
@@ -5238,6 +7118,30 @@
           "total_amount": 2000.0
         }
       },
+      "BudgetDetailResponse": {
+        "properties": {
+          "budget": {
+            "$ref": "#/components/schemas/BudgetResponse",
+            "description": "Budget data"
+          },
+          "period": {
+            "$ref": "#/components/schemas/BudgetPeriodInfo",
+            "description": "Current period information"
+          },
+          "spending": {
+            "$ref": "#/components/schemas/BudgetSpendingInfo",
+            "description": "Spending breakdown for the period"
+          }
+        },
+        "type": "object",
+        "required": [
+          "budget",
+          "period",
+          "spending"
+        ],
+        "title": "BudgetDetailResponse",
+        "description": "Complete budget detail with period navigation and spending.\nThis is the primary response for the budget detail view."
+      },
       "BudgetListResponse": {
         "properties": {
           "items": {
@@ -5258,6 +7162,53 @@
           "total"
         ],
         "title": "BudgetListResponse"
+      },
+      "BudgetPeriodInfo": {
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date",
+            "title": "Start",
+            "description": "Period start date (inclusive)"
+          },
+          "end": {
+            "type": "string",
+            "format": "date",
+            "title": "End",
+            "description": "Period end date (inclusive)"
+          },
+          "offset": {
+            "type": "integer",
+            "title": "Offset",
+            "description": "Period offset from current (0=current)"
+          },
+          "isCurrent": {
+            "type": "boolean",
+            "title": "Iscurrent",
+            "description": "Whether this is the current period"
+          },
+          "hasPrevious": {
+            "type": "boolean",
+            "title": "Hasprevious",
+            "description": "Whether a previous period exists"
+          },
+          "hasNext": {
+            "type": "boolean",
+            "title": "Hasnext",
+            "description": "Whether a next period exists"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start",
+          "end",
+          "offset",
+          "isCurrent",
+          "hasPrevious",
+          "hasNext"
+        ],
+        "title": "BudgetPeriodInfo",
+        "description": "Period navigation information for a budget."
       },
       "BudgetResponse": {
         "properties": {
@@ -5472,6 +7423,47 @@
           "usage_percentage": 62.5,
           "user_id": "550e8400-e29b-41d4-a716-446655440001"
         }
+      },
+      "BudgetSpendingInfo": {
+        "properties": {
+          "totalAllocated": {
+            "type": "string",
+            "title": "Totalallocated",
+            "description": "Total budget amount"
+          },
+          "totalSpent": {
+            "type": "string",
+            "title": "Totalspent",
+            "description": "Total amount spent"
+          },
+          "totalRemaining": {
+            "type": "string",
+            "title": "Totalremaining",
+            "description": "Total remaining (allocated - spent)"
+          },
+          "percentUsed": {
+            "type": "string",
+            "title": "Percentused",
+            "description": "Percentage of budget used"
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/BudgetCategorySpending"
+            },
+            "type": "array",
+            "title": "Categories",
+            "description": "Per-category spending breakdown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "totalAllocated",
+          "totalSpent",
+          "totalRemaining",
+          "percentUsed"
+        ],
+        "title": "BudgetSpendingInfo",
+        "description": "Aggregated spending information for a budget period."
       },
       "BudgetUpdate": {
         "properties": {
@@ -5691,75 +7683,75 @@
       },
       "BudgetVsActual": {
         "properties": {
-          "budget_id": {
+          "budgetId": {
             "type": "string",
-            "title": "Budget Id"
+            "title": "Budgetid"
           },
-          "budget_name": {
+          "budgetName": {
             "type": "string",
-            "title": "Budget Name"
+            "title": "Budgetname"
           },
-          "budget_amount": {
+          "budgetAmount": {
             "type": "number",
-            "title": "Budget Amount"
+            "title": "Budgetamount"
           },
-          "actual_spent": {
+          "actualSpent": {
             "type": "number",
-            "title": "Actual Spent"
+            "title": "Actualspent"
           },
           "variance": {
             "type": "number",
             "title": "Variance"
           },
-          "variance_percentage": {
+          "variancePercentage": {
             "type": "number",
-            "title": "Variance Percentage"
+            "title": "Variancepercentage"
           },
-          "is_over_budget": {
+          "isOverBudget": {
             "type": "boolean",
-            "title": "Is Over Budget"
+            "title": "Isoverbudget"
           }
         },
         "type": "object",
         "required": [
-          "budget_id",
-          "budget_name",
-          "budget_amount",
-          "actual_spent",
+          "budgetId",
+          "budgetName",
+          "budgetAmount",
+          "actualSpent",
           "variance",
-          "variance_percentage",
-          "is_over_budget"
+          "variancePercentage",
+          "isOverBudget"
         ],
         "title": "BudgetVsActual"
       },
       "CashFlowResponse": {
         "properties": {
-          "period_summaries": {
+          "periodSummaries": {
             "items": {
               "$ref": "#/components/schemas/PeriodSummary"
             },
             "type": "array",
-            "title": "Period Summaries"
+            "title": "Periodsummaries"
           },
-          "total_income": {
+          "totalIncome": {
             "type": "number",
-            "title": "Total Income"
+            "title": "Totalincome"
           },
-          "total_expenses": {
+          "totalExpenses": {
             "type": "number",
-            "title": "Total Expenses"
+            "title": "Totalexpenses"
           },
-          "net_cash_flow": {
+          "netCashFlow": {
             "type": "number",
-            "title": "Net Cash Flow"
+            "title": "Netcashflow"
           },
-          "average_monthly_income": {
+          "averageMonthlyIncome": {
             "type": "number",
-            "title": "Average Monthly Income"
+            "title": "Averagemonthlyincome"
           },
-          "average_monthly_expenses": {
+          "averageMonthlyExpenses": {
             "type": "number",
-            "title": "Average Monthly Expenses"
+            "title": "Averagemonthlyexpenses"
           },
           "currency": {
             "type": "string",
@@ -5768,15 +7760,102 @@
         },
         "type": "object",
         "required": [
-          "period_summaries",
-          "total_income",
-          "total_expenses",
-          "net_cash_flow",
-          "average_monthly_income",
-          "average_monthly_expenses",
+          "periodSummaries",
+          "totalIncome",
+          "totalExpenses",
+          "netCashFlow",
+          "averageMonthlyIncome",
+          "averageMonthlyExpenses",
           "currency"
         ],
         "title": "CashFlowResponse"
+      },
+      "CategoryBreakdownItem": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "merchantId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Merchantid"
+          },
+          "totalAmount": {
+            "type": "number",
+            "title": "Totalamount"
+          },
+          "transactionCount": {
+            "type": "integer",
+            "title": "Transactioncount"
+          },
+          "percentage": {
+            "type": "number",
+            "title": "Percentage"
+          },
+          "avgAmount": {
+            "type": "number",
+            "title": "Avgamount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "totalAmount",
+          "transactionCount",
+          "percentage",
+          "avgAmount"
+        ],
+        "title": "CategoryBreakdownItem"
+      },
+      "CategoryBreakdownResponse": {
+        "properties": {
+          "categoryId": {
+            "type": "string",
+            "title": "Categoryid"
+          },
+          "categoryName": {
+            "type": "string",
+            "title": "Categoryname"
+          },
+          "totalCategorySpending": {
+            "type": "number",
+            "title": "Totalcategoryspending"
+          },
+          "breakdown": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryBreakdownItem"
+            },
+            "type": "array",
+            "title": "Breakdown"
+          },
+          "periodStart": {
+            "type": "string",
+            "format": "date",
+            "title": "Periodstart"
+          },
+          "periodEnd": {
+            "type": "string",
+            "format": "date",
+            "title": "Periodend"
+          }
+        },
+        "type": "object",
+        "required": [
+          "categoryId",
+          "categoryName",
+          "totalCategorySpending",
+          "breakdown",
+          "periodStart",
+          "periodEnd"
+        ],
+        "title": "CategoryBreakdownResponse"
       },
       "CategoryCreate": {
         "properties": {
@@ -5854,6 +7933,21 @@
             "title": "Sortorder",
             "description": "Custom sort order for category display",
             "default": 0
+          },
+          "nameTranslations": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nametranslations",
+            "description": "Category name translations by language code, e.g. {'it': 'Spesa', 'en': 'Groceries'}"
           }
         },
         "type": "object",
@@ -5991,6 +8085,21 @@
             "description": "Custom sort order for category display",
             "default": 0
           },
+          "nameTranslations": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nametranslations",
+            "description": "Category name translations by language code, e.g. {'it': 'Spesa', 'en': 'Groceries'}"
+          },
           "id": {
             "type": "string",
             "format": "uuid",
@@ -6055,25 +8164,25 @@
       },
       "CategorySpending": {
         "properties": {
-          "category_id": {
+          "categoryId": {
             "type": "string",
-            "title": "Category Id"
+            "title": "Categoryid"
           },
-          "category_name": {
+          "categoryName": {
             "type": "string",
-            "title": "Category Name"
+            "title": "Categoryname"
           },
-          "total_amount": {
+          "totalAmount": {
             "type": "number",
-            "title": "Total Amount"
+            "title": "Totalamount"
           },
           "percentage": {
             "type": "number",
             "title": "Percentage"
           },
-          "transaction_count": {
+          "transactionCount": {
             "type": "integer",
-            "title": "Transaction Count"
+            "title": "Transactioncount"
           },
           "currency": {
             "type": "string",
@@ -6082,14 +8191,50 @@
         },
         "type": "object",
         "required": [
-          "category_id",
-          "category_name",
-          "total_amount",
+          "categoryId",
+          "categoryName",
+          "totalAmount",
           "percentage",
-          "transaction_count",
+          "transactionCount",
           "currency"
         ],
         "title": "CategorySpending"
+      },
+      "CategoryTrend": {
+        "properties": {
+          "categoryName": {
+            "type": "string",
+            "title": "Categoryname"
+          },
+          "categoryId": {
+            "type": "string",
+            "title": "Categoryid"
+          },
+          "monthlyTotals": {
+            "items": {
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Monthlytotals"
+          },
+          "trend": {
+            "type": "string",
+            "title": "Trend"
+          },
+          "trendPct": {
+            "type": "number",
+            "title": "Trendpct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "categoryName",
+          "categoryId",
+          "monthlyTotals",
+          "trend",
+          "trendPct"
+        ],
+        "title": "CategoryTrend"
       },
       "CategoryUpdate": {
         "properties": {
@@ -6180,6 +8325,21 @@
             ],
             "title": "Isactive",
             "description": "Whether the category is active"
+          },
+          "nameTranslations": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nametranslations",
+            "description": "Updated name translations by language code"
           }
         },
         "type": "object",
@@ -6188,7 +8348,11 @@
         "example": {
           "color": "#3498DB",
           "is_active": true,
-          "name": "Updated Category Name"
+          "name": "Updated Category Name",
+          "name_translations": {
+            "en": "Updated name",
+            "it": "Nome aggiornato"
+          }
         }
       },
       "ChatMessageRequest": {
@@ -6264,6 +8428,46 @@
         ],
         "title": "ChatMessageResponse",
         "description": "Response from chat assistant"
+      },
+      "ClassificationInfo": {
+        "properties": {
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "merchant": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Merchant"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence"
+          },
+          "transactionType": {
+            "type": "string",
+            "title": "Transactiontype"
+          },
+          "matchMethod": {
+            "type": "string",
+            "title": "Matchmethod"
+          }
+        },
+        "type": "object",
+        "required": [
+          "category",
+          "confidence",
+          "transactionType",
+          "matchMethod"
+        ],
+        "title": "ClassificationInfo",
+        "description": "Auto-classification result for a single transaction."
       },
       "ClassificationMetrics": {
         "properties": {
@@ -6487,46 +8691,166 @@
         "title": "ConversationListItem",
         "description": "A conversation in the list"
       },
+      "DayOfWeekSpending": {
+        "properties": {
+          "day": {
+            "type": "integer",
+            "title": "Day"
+          },
+          "dayName": {
+            "type": "string",
+            "title": "Dayname"
+          },
+          "total": {
+            "type": "number",
+            "title": "Total"
+          },
+          "avg": {
+            "type": "number",
+            "title": "Avg"
+          },
+          "transactionCount": {
+            "type": "integer",
+            "title": "Transactioncount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "day",
+          "dayName",
+          "total",
+          "avg",
+          "transactionCount"
+        ],
+        "title": "DayOfWeekSpending"
+      },
+      "DetectedFormatResponse": {
+        "properties": {
+          "encoding": {
+            "type": "string",
+            "title": "Encoding"
+          },
+          "separator": {
+            "type": "string",
+            "title": "Separator"
+          },
+          "dateFormat": {
+            "type": "string",
+            "title": "Dateformat"
+          },
+          "columnMapping": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Columnmapping"
+          },
+          "headerRow": {
+            "type": "integer",
+            "title": "Headerrow"
+          }
+        },
+        "type": "object",
+        "required": [
+          "encoding",
+          "separator",
+          "dateFormat",
+          "columnMapping",
+          "headerRow"
+        ],
+        "title": "DetectedFormatResponse",
+        "description": "Format auto-detected from the uploaded CSV."
+      },
+      "DetectedRecurring": {
+        "properties": {
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "merchantName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Merchantname"
+          },
+          "avgAmount": {
+            "type": "number",
+            "title": "Avgamount"
+          },
+          "occurrenceCount": {
+            "type": "integer",
+            "title": "Occurrencecount"
+          },
+          "estimatedFrequency": {
+            "type": "string",
+            "title": "Estimatedfrequency"
+          },
+          "lastOccurrence": {
+            "type": "string",
+            "format": "date",
+            "title": "Lastoccurrence"
+          },
+          "alreadyTracked": {
+            "type": "boolean",
+            "title": "Alreadytracked"
+          }
+        },
+        "type": "object",
+        "required": [
+          "description",
+          "avgAmount",
+          "occurrenceCount",
+          "estimatedFrequency",
+          "lastOccurrence",
+          "alreadyTracked"
+        ],
+        "title": "DetectedRecurring"
+      },
       "ExpenseAnalysisResponse": {
         "properties": {
-          "total_expenses": {
+          "totalExpenses": {
             "type": "number",
-            "title": "Total Expenses"
+            "title": "Totalexpenses"
           },
           "currency": {
             "type": "string",
             "title": "Currency"
           },
-          "by_category": {
+          "byCategory": {
             "items": {
               "$ref": "#/components/schemas/CategorySpending"
             },
             "type": "array",
-            "title": "By Category"
+            "title": "Bycategory"
           },
-          "period_start": {
+          "periodStart": {
             "type": "string",
             "format": "date",
-            "title": "Period Start"
+            "title": "Periodstart"
           },
-          "period_end": {
+          "periodEnd": {
             "type": "string",
             "format": "date",
-            "title": "Period End"
+            "title": "Periodend"
           },
-          "transaction_count": {
+          "transactionCount": {
             "type": "integer",
-            "title": "Transaction Count"
+            "title": "Transactioncount"
           }
         },
         "type": "object",
         "required": [
-          "total_expenses",
+          "totalExpenses",
           "currency",
-          "by_category",
-          "period_start",
-          "period_end",
-          "transaction_count"
+          "byCategory",
+          "periodStart",
+          "periodEnd",
+          "transactionCount"
         ],
         "title": "ExpenseAnalysisResponse"
       },
@@ -6595,8 +8919,8 @@
           "scopeType": {
             "type": "string",
             "title": "Scopetype",
-            "description": "Scope type: USER, PROFILE, or MULTI_PROFILE",
-            "default": "USER"
+            "description": "Scope type: user, profile, or multi_profile",
+            "default": "user"
           },
           "scopeProfileIds": {
             "anyOf": [
@@ -7489,6 +9813,149 @@
         "title": "ForecastResponse",
         "description": "Forecast response"
       },
+      "Frequency": {
+        "type": "string",
+        "enum": [
+          "daily",
+          "weekly",
+          "biweekly",
+          "monthly",
+          "quarterly",
+          "semiannually",
+          "yearly",
+          "custom"
+        ],
+        "title": "Frequency",
+        "description": "Frequency of recurring transactions"
+      },
+      "GoalContributionCreate": {
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Amount",
+            "description": "Contribution amount (must be positive)"
+          },
+          "contributionDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Contributiondate",
+            "description": "Date of the contribution"
+          },
+          "transactionId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transactionid",
+            "description": "Optional linked transaction ID"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes",
+            "description": "Optional notes for this contribution"
+          }
+        },
+        "type": "object",
+        "required": [
+          "amount",
+          "contributionDate"
+        ],
+        "title": "GoalContributionCreate",
+        "description": "Schema for creating a new contribution to a goal.",
+        "example": {
+          "amount": 500.0,
+          "contribution_date": "2026-03-25",
+          "notes": "Monthly savings"
+        }
+      },
+      "GoalContributionResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id",
+            "description": "Unique contribution identifier"
+          },
+          "goalId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Goalid",
+            "description": "ID of the parent goal"
+          },
+          "transactionId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transactionid",
+            "description": "Linked transaction ID"
+          },
+          "amount": {
+            "type": "string",
+            "title": "Amount",
+            "description": "Contribution amount"
+          },
+          "contributionDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Contributiondate",
+            "description": "Date of the contribution"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes",
+            "description": "Notes"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat",
+            "description": "Creation timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "goalId",
+          "amount",
+          "contributionDate",
+          "createdAt"
+        ],
+        "title": "GoalContributionResponse",
+        "description": "Schema for goal contribution response."
+      },
       "GoalListResponse": {
         "properties": {
           "items": {
@@ -7509,49 +9976,6 @@
           "total"
         ],
         "title": "GoalListResponse"
-      },
-      "GoalMilestoneCreate": {
-        "properties": {
-          "name": {
-            "type": "string",
-            "maxLength": 255,
-            "minLength": 1,
-            "title": "Name",
-            "description": "Milestone name"
-          },
-          "targetAmount": {
-            "anyOf": [
-              {
-                "type": "number",
-                "exclusiveMinimum": 0.0
-              },
-              {
-                "type": "string"
-              }
-            ],
-            "title": "Targetamount",
-            "description": "Target amount for this milestone"
-          },
-          "targetDate": {
-            "type": "string",
-            "format": "date",
-            "title": "Targetdate",
-            "description": "Target date for this milestone"
-          }
-        },
-        "type": "object",
-        "required": [
-          "name",
-          "targetAmount",
-          "targetDate"
-        ],
-        "title": "GoalMilestoneCreate",
-        "description": "Schema for creating a new milestone for a goal.",
-        "example": {
-          "name": "Reach 25k milestone",
-          "target_amount": 25000.0,
-          "target_date": "2025-12-31"
-        }
       },
       "GoalMilestoneResponse": {
         "properties": {
@@ -7777,11 +10201,11 @@
             "type": "string",
             "title": "Id"
           },
-          "financial_profile_id": {
+          "financialProfileId": {
             "type": "string",
-            "title": "Financial Profile Id"
+            "title": "Financialprofileid"
           },
-          "account_id": {
+          "accountId": {
             "anyOf": [
               {
                 "type": "string"
@@ -7790,21 +10214,21 @@
                 "type": "null"
               }
             ],
-            "title": "Account Id"
+            "title": "Accountid"
           },
-          "file_name": {
+          "fileName": {
             "type": "string",
-            "title": "File Name"
+            "title": "Filename"
           },
-          "import_type": {
+          "importType": {
             "type": "string",
-            "title": "Import Type"
+            "title": "Importtype"
           },
           "status": {
             "type": "string",
             "title": "Status"
           },
-          "total_rows": {
+          "totalRows": {
             "anyOf": [
               {
                 "type": "integer"
@@ -7813,9 +10237,9 @@
                 "type": "null"
               }
             ],
-            "title": "Total Rows"
+            "title": "Totalrows"
           },
-          "processed_rows": {
+          "processedRows": {
             "anyOf": [
               {
                 "type": "integer"
@@ -7824,9 +10248,9 @@
                 "type": "null"
               }
             ],
-            "title": "Processed Rows"
+            "title": "Processedrows"
           },
-          "successful_imports": {
+          "successfulImports": {
             "anyOf": [
               {
                 "type": "integer"
@@ -7835,9 +10259,9 @@
                 "type": "null"
               }
             ],
-            "title": "Successful Imports"
+            "title": "Successfulimports"
           },
-          "failed_imports": {
+          "failedImports": {
             "anyOf": [
               {
                 "type": "integer"
@@ -7846,9 +10270,9 @@
                 "type": "null"
               }
             ],
-            "title": "Failed Imports"
+            "title": "Failedimports"
           },
-          "skipped_duplicates": {
+          "skippedDuplicates": {
             "anyOf": [
               {
                 "type": "integer"
@@ -7857,9 +10281,9 @@
                 "type": "null"
               }
             ],
-            "title": "Skipped Duplicates"
+            "title": "Skippedduplicates"
           },
-          "error_message": {
+          "errorMessage": {
             "anyOf": [
               {
                 "type": "string"
@@ -7868,13 +10292,13 @@
                 "type": "null"
               }
             ],
-            "title": "Error Message"
+            "title": "Errormessage"
           },
-          "created_at": {
+          "createdAt": {
             "type": "string",
-            "title": "Created At"
+            "title": "Createdat"
           },
-          "completed_at": {
+          "completedAt": {
             "anyOf": [
               {
                 "type": "string"
@@ -7883,17 +10307,17 @@
                 "type": "null"
               }
             ],
-            "title": "Completed At"
+            "title": "Completedat"
           }
         },
         "type": "object",
         "required": [
           "id",
-          "financial_profile_id",
-          "file_name",
-          "import_type",
+          "financialProfileId",
+          "fileName",
+          "importType",
           "status",
-          "created_at"
+          "createdAt"
         ],
         "title": "ImportJobResponse"
       },
@@ -7906,36 +10330,36 @@
             "type": "array",
             "title": "Headers"
           },
-          "total_rows": {
+          "totalRows": {
             "type": "integer",
-            "title": "Total Rows"
+            "title": "Totalrows"
           },
-          "preview_rows": {
+          "previewRows": {
             "items": {
               "type": "object"
             },
             "type": "array",
-            "title": "Preview Rows"
+            "title": "Previewrows"
           },
-          "suggested_mapping": {
+          "suggestedMapping": {
             "type": "object",
-            "title": "Suggested Mapping"
+            "title": "Suggestedmapping"
           }
         },
         "type": "object",
         "required": [
           "headers",
-          "total_rows",
-          "preview_rows",
-          "suggested_mapping"
+          "totalRows",
+          "previewRows",
+          "suggestedMapping"
         ],
         "title": "ImportPreviewResponse"
       },
       "ImportResultResponse": {
         "properties": {
-          "total_rows": {
+          "totalRows": {
             "type": "integer",
-            "title": "Total Rows"
+            "title": "Totalrows"
           },
           "successful": {
             "type": "integer",
@@ -7959,7 +10383,7 @@
         },
         "type": "object",
         "required": [
-          "total_rows",
+          "totalRows",
           "successful",
           "failed",
           "duplicates",
@@ -7981,44 +10405,44 @@
       },
       "IncomeAnalysisResponse": {
         "properties": {
-          "total_income": {
+          "totalIncome": {
             "type": "number",
-            "title": "Total Income"
+            "title": "Totalincome"
           },
           "currency": {
             "type": "string",
             "title": "Currency"
           },
-          "by_category": {
+          "byCategory": {
             "items": {
               "$ref": "#/components/schemas/CategorySpending"
             },
             "type": "array",
-            "title": "By Category"
+            "title": "Bycategory"
           },
-          "period_start": {
+          "periodStart": {
             "type": "string",
             "format": "date",
-            "title": "Period Start"
+            "title": "Periodstart"
           },
-          "period_end": {
+          "periodEnd": {
             "type": "string",
             "format": "date",
-            "title": "Period End"
+            "title": "Periodend"
           },
-          "transaction_count": {
+          "transactionCount": {
             "type": "integer",
-            "title": "Transaction Count"
+            "title": "Transactioncount"
           }
         },
         "type": "object",
         "required": [
-          "total_income",
+          "totalIncome",
           "currency",
-          "by_category",
-          "period_start",
-          "period_end",
-          "transaction_count"
+          "byCategory",
+          "periodStart",
+          "periodEnd",
+          "transactionCount"
         ],
         "title": "IncomeAnalysisResponse"
       },
@@ -8134,17 +10558,17 @@
             "type": "array",
             "title": "Profiles"
           },
-          "total_income": {
+          "totalIncome": {
             "type": "number",
-            "title": "Total Income"
+            "title": "Totalincome"
           },
-          "total_expenses": {
+          "totalExpenses": {
             "type": "number",
-            "title": "Total Expenses"
+            "title": "Totalexpenses"
           },
-          "total_net_worth": {
+          "totalNetWorth": {
             "type": "number",
-            "title": "Total Net Worth"
+            "title": "Totalnetworth"
           },
           "currency": {
             "type": "string",
@@ -8154,9 +10578,9 @@
         "type": "object",
         "required": [
           "profiles",
-          "total_income",
-          "total_expenses",
-          "total_net_worth",
+          "totalIncome",
+          "totalExpenses",
+          "totalNetWorth",
           "currency"
         ],
         "title": "MultiProfileAnalysisResponse"
@@ -8285,6 +10709,68 @@
         "title": "OptimizationResponse",
         "description": "Optimization insights response"
       },
+      "PatternsResponse": {
+        "properties": {
+          "dayOfWeek": {
+            "items": {
+              "$ref": "#/components/schemas/DayOfWeekSpending"
+            },
+            "type": "array",
+            "title": "Dayofweek"
+          },
+          "busiestDay": {
+            "type": "string",
+            "title": "Busiestday"
+          },
+          "quietestDay": {
+            "type": "string",
+            "title": "Quietestday"
+          },
+          "weekOfMonth": {
+            "items": {
+              "$ref": "#/components/schemas/WeekOfMonthSpending"
+            },
+            "type": "array",
+            "title": "Weekofmonth"
+          },
+          "categoryTrends": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryTrend"
+            },
+            "type": "array",
+            "title": "Categorytrends"
+          },
+          "detectedRecurring": {
+            "items": {
+              "$ref": "#/components/schemas/DetectedRecurring"
+            },
+            "type": "array",
+            "title": "Detectedrecurring"
+          },
+          "periodStart": {
+            "type": "string",
+            "format": "date",
+            "title": "Periodstart"
+          },
+          "periodEnd": {
+            "type": "string",
+            "format": "date",
+            "title": "Periodend"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dayOfWeek",
+          "busiestDay",
+          "quietestDay",
+          "weekOfMonth",
+          "categoryTrends",
+          "detectedRecurring",
+          "periodStart",
+          "periodEnd"
+        ],
+        "title": "PatternsResponse"
+      },
       "PeriodComparisonResponse": {
         "properties": {
           "period1": {
@@ -8293,31 +10779,31 @@
           "period2": {
             "$ref": "#/components/schemas/PeriodSummary"
           },
-          "income_change": {
+          "incomeChange": {
             "type": "number",
-            "title": "Income Change"
+            "title": "Incomechange"
           },
-          "income_change_percentage": {
+          "incomeChangePercentage": {
             "type": "number",
-            "title": "Income Change Percentage"
+            "title": "Incomechangepercentage"
           },
-          "expense_change": {
+          "expenseChange": {
             "type": "number",
-            "title": "Expense Change"
+            "title": "Expensechange"
           },
-          "expense_change_percentage": {
+          "expenseChangePercentage": {
             "type": "number",
-            "title": "Expense Change Percentage"
+            "title": "Expensechangepercentage"
           }
         },
         "type": "object",
         "required": [
           "period1",
           "period2",
-          "income_change",
-          "income_change_percentage",
-          "expense_change",
-          "expense_change_percentage"
+          "incomeChange",
+          "incomeChangePercentage",
+          "expenseChange",
+          "expenseChangePercentage"
         ],
         "title": "PeriodComparisonResponse"
       },
@@ -8327,21 +10813,21 @@
             "type": "string",
             "title": "Period"
           },
-          "total_income": {
+          "totalIncome": {
             "type": "number",
-            "title": "Total Income"
+            "title": "Totalincome"
           },
-          "total_expenses": {
+          "totalExpenses": {
             "type": "number",
-            "title": "Total Expenses"
+            "title": "Totalexpenses"
           },
-          "net_flow": {
+          "netFlow": {
             "type": "number",
-            "title": "Net Flow"
+            "title": "Netflow"
           },
-          "transaction_count": {
+          "transactionCount": {
             "type": "integer",
-            "title": "Transaction Count"
+            "title": "Transactioncount"
           },
           "currency": {
             "type": "string",
@@ -8351,10 +10837,10 @@
         "type": "object",
         "required": [
           "period",
-          "total_income",
-          "total_expenses",
-          "net_flow",
-          "transaction_count",
+          "totalIncome",
+          "totalExpenses",
+          "netFlow",
+          "transactionCount",
           "currency"
         ],
         "title": "PeriodSummary"
@@ -8372,27 +10858,137 @@
         "title": "PeriodType",
         "description": "Budget period types"
       },
+      "PreviewSummary": {
+        "properties": {
+          "totalRows": {
+            "type": "integer",
+            "title": "Totalrows"
+          },
+          "parsedRows": {
+            "type": "integer",
+            "title": "Parsedrows"
+          },
+          "toImport": {
+            "type": "integer",
+            "title": "Toimport"
+          },
+          "duplicates": {
+            "type": "integer",
+            "title": "Duplicates"
+          },
+          "needsReview": {
+            "type": "integer",
+            "title": "Needsreview"
+          },
+          "parseErrors": {
+            "type": "integer",
+            "title": "Parseerrors"
+          }
+        },
+        "type": "object",
+        "required": [
+          "totalRows",
+          "parsedRows",
+          "toImport",
+          "duplicates",
+          "needsReview",
+          "parseErrors"
+        ],
+        "title": "PreviewSummary",
+        "description": "Aggregate stats for the preview response."
+      },
+      "PreviewTransaction": {
+        "properties": {
+          "rowNumber": {
+            "type": "integer",
+            "title": "Rownumber"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "originalDescription": {
+            "type": "string",
+            "title": "Originaldescription"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount"
+          },
+          "balance": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Balance"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "default": "EUR"
+          },
+          "classification": {
+            "$ref": "#/components/schemas/ClassificationInfo"
+          },
+          "reconciliation": {
+            "$ref": "#/components/schemas/ReconciliationInfo"
+          },
+          "isParseable": {
+            "type": "boolean",
+            "title": "Isparseable",
+            "default": true
+          },
+          "parseWarnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Parsewarnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rowNumber",
+          "date",
+          "description",
+          "originalDescription",
+          "amount",
+          "classification",
+          "reconciliation"
+        ],
+        "title": "PreviewTransaction",
+        "description": "A single parsed transaction shown in the preview step."
+      },
       "ProfileSummary": {
         "properties": {
-          "profile_id": {
+          "profileId": {
             "type": "string",
-            "title": "Profile Id"
+            "title": "Profileid"
           },
-          "profile_name": {
+          "profileName": {
             "type": "string",
-            "title": "Profile Name"
+            "title": "Profilename"
           },
-          "total_income": {
+          "totalIncome": {
             "type": "number",
-            "title": "Total Income"
+            "title": "Totalincome"
           },
-          "total_expenses": {
+          "totalExpenses": {
             "type": "number",
-            "title": "Total Expenses"
+            "title": "Totalexpenses"
           },
-          "net_worth": {
+          "netWorth": {
             "type": "number",
-            "title": "Net Worth"
+            "title": "Networth"
           },
           "currency": {
             "type": "string",
@@ -8401,11 +10997,11 @@
         },
         "type": "object",
         "required": [
-          "profile_id",
-          "profile_name",
-          "total_income",
-          "total_expenses",
-          "net_worth",
+          "profileId",
+          "profileName",
+          "totalIncome",
+          "totalExpenses",
+          "netWorth",
           "currency"
         ],
         "title": "ProfileSummary"
@@ -8436,6 +11032,721 @@
         ],
         "title": "QueryIntentEnum",
         "description": "Query intent types"
+      },
+      "ReconciliationInfo": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence",
+            "default": 0.0
+          },
+          "matchedTransactionId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matchedtransactionid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "action",
+          "reason"
+        ],
+        "title": "ReconciliationInfo",
+        "description": "Reconciliation result for a single transaction."
+      },
+      "RecurringTransactionCreate": {
+        "properties": {
+          "financialProfileId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Financialprofileid",
+            "description": "Profile ID"
+          },
+          "accountId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Accountid",
+            "description": "Account ID"
+          },
+          "categoryId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Categoryid",
+            "description": "Default category ID"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Name",
+            "description": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Description"
+          },
+          "transactionType": {
+            "$ref": "#/components/schemas/TransactionType",
+            "description": "Transaction type"
+          },
+          "amountModel": {
+            "$ref": "#/components/schemas/AmountModel",
+            "description": "Amount model",
+            "default": "fixed"
+          },
+          "baseAmount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Baseamount",
+            "description": "Base amount"
+          },
+          "amountMin": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amountmin",
+            "description": "Min amount (variable model)"
+          },
+          "amountMax": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amountmax",
+            "description": "Max amount (variable model)"
+          },
+          "formula": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Formula",
+            "description": "Formula (formula model)"
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "description": "ISO 4217 currency code"
+          },
+          "frequency": {
+            "$ref": "#/components/schemas/Frequency",
+            "description": "Recurrence frequency"
+          },
+          "interval": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Interval",
+            "description": "Frequency multiplier",
+            "default": 1
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Startdate",
+            "description": "Start date"
+          },
+          "endDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enddate",
+            "description": "End date (null = indefinite)"
+          },
+          "autoCreate": {
+            "type": "boolean",
+            "title": "Autocreate",
+            "description": "Auto-create transactions",
+            "default": false
+          },
+          "notificationDaysBefore": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Notificationdaysbefore",
+            "description": "Notification days before",
+            "default": 3
+          },
+          "isActive": {
+            "type": "boolean",
+            "title": "Isactive",
+            "description": "Active status",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "financialProfileId",
+          "accountId",
+          "name",
+          "transactionType",
+          "baseAmount",
+          "currency",
+          "frequency",
+          "startDate"
+        ],
+        "title": "RecurringTransactionCreate",
+        "description": "Schema for creating a new recurring transaction.",
+        "example": {
+          "account_id": "550e8400-e29b-41d4-a716-446655440002",
+          "base_amount": 1200.0,
+          "currency": "EUR",
+          "financial_profile_id": "550e8400-e29b-41d4-a716-446655440001",
+          "frequency": "monthly",
+          "name": "Monthly Rent",
+          "start_date": "2026-01-01",
+          "transaction_type": "purchase"
+        }
+      },
+      "RecurringTransactionListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RecurringTransactionResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "RecurringTransactionListResponse",
+        "description": "List response with pagination."
+      },
+      "RecurringTransactionResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "financialProfileId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Financialprofileid"
+          },
+          "accountId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Accountid"
+          },
+          "categoryId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Categoryid"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "transactionType": {
+            "$ref": "#/components/schemas/TransactionType"
+          },
+          "amountModel": {
+            "$ref": "#/components/schemas/AmountModel"
+          },
+          "baseAmount": {
+            "type": "string",
+            "title": "Baseamount"
+          },
+          "amountMin": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amountmin"
+          },
+          "amountMax": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amountmax"
+          },
+          "formula": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Formula"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency"
+          },
+          "frequency": {
+            "$ref": "#/components/schemas/Frequency"
+          },
+          "interval": {
+            "type": "integer",
+            "title": "Interval"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Startdate"
+          },
+          "endDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enddate"
+          },
+          "nextOccurrenceDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nextoccurrencedate"
+          },
+          "autoCreate": {
+            "type": "boolean",
+            "title": "Autocreate"
+          },
+          "notificationDaysBefore": {
+            "type": "integer",
+            "title": "Notificationdaysbefore"
+          },
+          "isActive": {
+            "type": "boolean",
+            "title": "Isactive"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updatedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "financialProfileId",
+          "accountId",
+          "name",
+          "transactionType",
+          "amountModel",
+          "baseAmount",
+          "currency",
+          "frequency",
+          "interval",
+          "startDate",
+          "autoCreate",
+          "notificationDaysBefore",
+          "isActive",
+          "createdAt",
+          "updatedAt"
+        ],
+        "title": "RecurringTransactionResponse",
+        "description": "Complete recurring transaction response."
+      },
+      "RecurringTransactionUpdate": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "accountId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accountid"
+          },
+          "categoryId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Categoryid"
+          },
+          "transactionType": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TransactionType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "amountModel": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AmountModel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "baseAmount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Baseamount"
+          },
+          "amountMin": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amountmin"
+          },
+          "amountMax": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amountmax"
+          },
+          "formula": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Formula"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "frequency": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Frequency"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "interval": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Interval"
+          },
+          "startDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Startdate"
+          },
+          "endDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enddate"
+          },
+          "autoCreate": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Autocreate"
+          },
+          "notificationDaysBefore": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notificationdaysbefore"
+          },
+          "isActive": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isactive"
+          }
+        },
+        "type": "object",
+        "title": "RecurringTransactionUpdate",
+        "description": "Schema for updating a recurring transaction. All fields optional."
+      },
+      "ReportMeta": {
+        "properties": {
+          "reportType": {
+            "type": "string",
+            "title": "Reporttype"
+          },
+          "periodStart": {
+            "type": "string",
+            "format": "date",
+            "title": "Periodstart"
+          },
+          "periodEnd": {
+            "type": "string",
+            "format": "date",
+            "title": "Periodend"
+          },
+          "rowCount": {
+            "type": "integer",
+            "title": "Rowcount"
+          },
+          "downloadUrl": {
+            "type": "string",
+            "title": "Downloadurl"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reportType",
+          "periodStart",
+          "periodEnd",
+          "rowCount",
+          "downloadUrl"
+        ],
+        "title": "ReportMeta"
+      },
+      "ReportRequest": {
+        "properties": {
+          "reportType": {
+            "type": "string",
+            "title": "Reporttype"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Startdate"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date",
+            "title": "Enddate"
+          },
+          "profileIds": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profileids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reportType",
+          "startDate",
+          "endDate"
+        ],
+        "title": "ReportRequest"
       },
       "SavingsSummary": {
         "properties": {
@@ -8501,6 +11812,127 @@
         ],
         "title": "ScopeType",
         "description": "Scope type for budgets, goals, recommendations"
+      },
+      "SmartImportConfirmRequest": {
+        "properties": {
+          "jobId": {
+            "type": "string",
+            "title": "Jobid"
+          },
+          "userOverrides": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/TransactionOverride"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Useroverrides"
+          },
+          "importFlagged": {
+            "type": "boolean",
+            "title": "Importflagged",
+            "default": false
+          },
+          "excludedRows": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Excludedrows"
+          },
+          "invertAmounts": {
+            "type": "boolean",
+            "title": "Invertamounts",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "jobId"
+        ],
+        "title": "SmartImportConfirmRequest",
+        "description": "Request body for POST /api/v1/import/csv/confirm."
+      },
+      "SmartImportConfirmResponse": {
+        "properties": {
+          "jobId": {
+            "type": "string",
+            "title": "Jobid"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "imported": {
+            "type": "integer",
+            "title": "Imported"
+          },
+          "skippedDuplicates": {
+            "type": "integer",
+            "title": "Skippedduplicates"
+          },
+          "flaggedForReview": {
+            "type": "integer",
+            "title": "Flaggedforreview"
+          },
+          "errors": {
+            "type": "integer",
+            "title": "Errors"
+          }
+        },
+        "type": "object",
+        "required": [
+          "jobId",
+          "status",
+          "imported",
+          "skippedDuplicates",
+          "flaggedForReview",
+          "errors"
+        ],
+        "title": "SmartImportConfirmResponse",
+        "description": "Response from POST /api/v1/import/csv/confirm."
+      },
+      "SmartImportPreviewResponse": {
+        "properties": {
+          "jobId": {
+            "type": "string",
+            "title": "Jobid"
+          },
+          "detectedFormat": {
+            "$ref": "#/components/schemas/DetectedFormatResponse"
+          },
+          "previewTransactions": {
+            "items": {
+              "$ref": "#/components/schemas/PreviewTransaction"
+            },
+            "type": "array",
+            "title": "Previewtransactions"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/PreviewSummary"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Warnings"
+          }
+        },
+        "type": "object",
+        "required": [
+          "jobId",
+          "detectedFormat",
+          "previewTransactions",
+          "summary"
+        ],
+        "title": "SmartImportPreviewResponse",
+        "description": "Response from POST /api/v1/import/csv/preview."
       },
       "SpendingPatternSchema": {
         "properties": {
@@ -8579,21 +12011,21 @@
             "type": "number",
             "title": "Amount"
           },
-          "change_from_previous": {
+          "changeFromPrevious": {
             "type": "number",
-            "title": "Change From Previous"
+            "title": "Changefromprevious"
           },
-          "change_percentage": {
+          "changePercentage": {
             "type": "number",
-            "title": "Change Percentage"
+            "title": "Changepercentage"
           }
         },
         "type": "object",
         "required": [
           "period",
           "amount",
-          "change_from_previous",
-          "change_percentage"
+          "changeFromPrevious",
+          "changePercentage"
         ],
         "title": "SpendingTrend"
       },
@@ -8644,6 +12076,105 @@
           "accessToken"
         ],
         "title": "Token"
+      },
+      "TopMerchantItem": {
+        "properties": {
+          "merchantName": {
+            "type": "string",
+            "title": "Merchantname"
+          },
+          "merchantId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Merchantid"
+          },
+          "logoUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logourl"
+          },
+          "categoryName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Categoryname"
+          },
+          "totalAmount": {
+            "type": "number",
+            "title": "Totalamount"
+          },
+          "transactionCount": {
+            "type": "integer",
+            "title": "Transactioncount"
+          },
+          "percentage": {
+            "type": "number",
+            "title": "Percentage"
+          },
+          "avgTransaction": {
+            "type": "number",
+            "title": "Avgtransaction"
+          }
+        },
+        "type": "object",
+        "required": [
+          "merchantName",
+          "totalAmount",
+          "transactionCount",
+          "percentage",
+          "avgTransaction"
+        ],
+        "title": "TopMerchantItem"
+      },
+      "TopMerchantsResponse": {
+        "properties": {
+          "merchants": {
+            "items": {
+              "$ref": "#/components/schemas/TopMerchantItem"
+            },
+            "type": "array",
+            "title": "Merchants"
+          },
+          "periodStart": {
+            "type": "string",
+            "format": "date",
+            "title": "Periodstart"
+          },
+          "periodEnd": {
+            "type": "string",
+            "format": "date",
+            "title": "Periodend"
+          },
+          "totalExpenses": {
+            "type": "number",
+            "title": "Totalexpenses"
+          }
+        },
+        "type": "object",
+        "required": [
+          "merchants",
+          "periodStart",
+          "periodEnd",
+          "totalExpenses"
+        ],
+        "title": "TopMerchantsResponse"
       },
       "TrainModelRequest": {
         "properties": {
@@ -8920,6 +12451,35 @@
           ],
           "total": 1
         }
+      },
+      "TransactionOverride": {
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "action": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Action"
+          }
+        },
+        "type": "object",
+        "title": "TransactionOverride",
+        "description": "User override for a single row."
       },
       "TransactionResponse": {
         "properties": {
@@ -9396,31 +12956,31 @@
             "type": "number",
             "title": "Average"
           },
-          "min_amount": {
+          "minAmount": {
             "type": "number",
-            "title": "Min Amount"
+            "title": "Minamount"
           },
-          "max_amount": {
+          "maxAmount": {
             "type": "number",
-            "title": "Max Amount"
+            "title": "Maxamount"
           },
           "currency": {
             "type": "string",
             "title": "Currency"
           },
-          "trend_direction": {
+          "trendDirection": {
             "type": "string",
-            "title": "Trend Direction"
+            "title": "Trenddirection"
           }
         },
         "type": "object",
         "required": [
           "trends",
           "average",
-          "min_amount",
-          "max_amount",
+          "minAmount",
+          "maxAmount",
           "currency",
-          "trend_direction"
+          "trendDirection"
         ],
         "title": "TrendAnalysisResponse"
       },
@@ -9549,6 +13109,46 @@
           "type"
         ],
         "title": "ValidationError"
+      },
+      "ValuationMethod": {
+        "type": "string",
+        "enum": [
+          "market_quote",
+          "range",
+          "comparative",
+          "manual",
+          "appraisal"
+        ],
+        "title": "ValuationMethod",
+        "description": "Methods for asset valuation"
+      },
+      "WeekOfMonthSpending": {
+        "properties": {
+          "week": {
+            "type": "integer",
+            "title": "Week"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "total": {
+            "type": "number",
+            "title": "Total"
+          },
+          "avg": {
+            "type": "number",
+            "title": "Avg"
+          }
+        },
+        "type": "object",
+        "required": [
+          "week",
+          "label",
+          "total",
+          "avg"
+        ],
+        "title": "WeekOfMonthSpending"
       }
     },
     "securitySchemes": {

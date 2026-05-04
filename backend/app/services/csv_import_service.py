@@ -54,7 +54,7 @@ COLUMN_PATTERNS: Dict[str, List[str]] = {
         "saldo", "balance", "saldo contabile", "saldo disponibile",
     ],
     "currency": [
-        "divisa", "valuta", "currency", "moneta",
+        "divisa", "currency", "moneta", "devise",
     ],
     "category_hint": [
         "categoria", "category", "tipo operazione", "tipo movimento", "tipo",
@@ -128,6 +128,14 @@ class CSVImportService:
         # 5. Map columns
         column_mapping = self._map_columns(headers)
 
+        # 5b. If currency not found by header name, detect by data values
+        if "currency" not in column_mapping:
+            detected_cur_col = self._detect_currency_column_from_data(
+                text, separator, header_row_idx, headers
+            )
+            if detected_cur_col is not None:
+                column_mapping["currency"] = detected_cur_col
+
         # 6. Detect date format from sample rows
         date_format = self._detect_date_format(text, separator, header_row_idx, column_mapping)
 
@@ -146,7 +154,8 @@ class CSVImportService:
         skipped = 0
 
         lines = text.splitlines()
-        data_lines = lines[header_row_idx + 1:]
+        # Exclude blank lines — they are not data rows and skew the total count
+        data_lines = [ln for ln in lines[header_row_idx + 1:] if ln.strip()]
 
         reader = csv.DictReader(
             data_lines,
@@ -273,6 +282,41 @@ class CSVImportService:
 
         return mapping
 
+    def _detect_currency_column_from_data(
+        self,
+        text: str,
+        separator: str,
+        header_row_idx: int,
+        headers: List[str],
+    ) -> Optional[str]:
+        """
+        Find the currency column by inspecting data values.
+        Returns the header name of the column whose values look like ISO
+        currency codes (3 uppercase alpha chars, e.g. EUR, USD), or None.
+        """
+        lines = text.splitlines()
+        sample_lines = lines[header_row_idx + 1: header_row_idx + 6]
+
+        # col_index → count of rows where value is a 3-letter alpha string
+        currency_hits: Dict[int, int] = {}
+
+        for line in sample_lines:
+            if not line.strip():
+                continue
+            fields = [f.strip().strip('"') for f in line.split(separator)]
+            for idx, value in enumerate(fields):
+                if len(value) == 3 and value.isalpha() and value.upper() == value:
+                    currency_hits[idx] = currency_hits.get(idx, 0) + 1
+
+        if not currency_hits:
+            return None
+
+        best_idx = max(currency_hits, key=lambda i: currency_hits[i])
+        if best_idx < len(headers) and currency_hits[best_idx] >= 1:
+            return headers[best_idx] if headers[best_idx].strip() else None
+
+        return None
+
     # ----- date format detection ---------------------------------------------
 
     def _detect_date_format(
@@ -364,7 +408,9 @@ class CSVImportService:
         currency = "EUR"
         cur_col = mapping.get("currency")
         if cur_col and row.get(cur_col, "").strip():
-            currency = row[cur_col].strip().strip('"').upper()
+            candidate = row[cur_col].strip().strip('"').upper()
+            if len(candidate) == 3 and candidate.isalpha():
+                currency = candidate
 
         raw_data = {k: (v or "") for k, v in row.items() if k}
 

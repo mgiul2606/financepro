@@ -80,6 +80,7 @@ async def create_category(
         color=category_data.color,
         is_income=category_data.is_income,
         sort_order=category_data.sort_order,
+        name_translations=category_data.name_translations or {},
     )
 
     db.add(new_category)

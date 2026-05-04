@@ -1,6 +1,6 @@
 // src/pages/Settings.tsx
 import { useState } from 'react';
-import { User, Bell, Shield, Globe } from 'lucide-react';
+import { User, Bell, Shield, Globe, Tag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
@@ -11,6 +11,7 @@ import { Toggle } from '@/core/components/atomic/Toggle';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePreferences } from '@/contexts/PreferencesContext';
 import { getLocaleFromLanguage, type SupportedCurrency, type SupportedLocale } from '@/utils/currency';
+import { CategoryManagementCard } from '@/features/categories';
 
 export const Settings = () => {
   const { t } = useTranslation();
@@ -120,6 +121,10 @@ export const Settings = () => {
             <TabsTrigger value="preferences">
               <Globe className="h-4 w-4 mr-2" />
               {t('settings.preferences')}
+            </TabsTrigger>
+            <TabsTrigger value="categories">
+              <Tag className="h-4 w-4 mr-2" />
+              {t('settings.categoriesTab')}
             </TabsTrigger>
           </TabsList>
 
@@ -511,6 +516,11 @@ export const Settings = () => {
                 </Button>
               </div>
             </div>
+          </TabsContent>
+
+          {/* Categories Tab */}
+          <TabsContent value="categories">
+            <CategoryManagementCard />
           </TabsContent>
         </Tabs>
       </div>

@@ -15,15 +15,18 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
   DataTag,
   DefinedInitialDataOptions,
   DefinedUseQueryResult,
+  MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
@@ -32,17 +35,27 @@ import type {
   AnalyzeExpensesApiV1AnalysisExpensesGetParams,
   AnalyzeIncomeApiV1AnalysisIncomeGetParams,
   AnalyzeMultiProfileApiV1AnalysisMultiProfileGetParams,
+  AnomaliesResponse,
   BudgetComparisonResponse,
   CashFlowResponse,
+  CategoryBreakdownResponse,
   CompareBudgetVsActualApiV1AnalysisBudgetComparisonGetParams,
   ComparePeriodsApiV1AnalysisPeriodComparisonGetParams,
+  DetectAnomaliesApiV1AnalysisAnomaliesGetParams,
   ExpenseAnalysisResponse,
   GetCashFlowApiV1AnalysisCashFlowGetParams,
+  GetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetParams,
+  GetPatternsApiV1AnalysisPatternsGetParams,
   GetSpendingTrendsApiV1AnalysisTrendsGetParams,
+  GetTopMerchantsApiV1AnalysisTopMerchantsGetParams,
   HTTPValidationError,
   IncomeAnalysisResponse,
   MultiProfileAnalysisResponse,
+  PatternsResponse,
   PeriodComparisonResponse,
+  ReportMeta,
+  ReportRequest,
+  TopMerchantsResponse,
   TrendAnalysisResponse,
 } from ".././models";
 
@@ -1668,6 +1681,1377 @@ export function useComparePeriodsApiV1AnalysisPeriodComparisonGet<
   const queryOptions =
     getComparePeriodsApiV1AnalysisPeriodComparisonGetQueryOptions(
       params,
+      options,
+    );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Top merchants by spending
+ */
+export type getTopMerchantsApiV1AnalysisTopMerchantsGetResponse200 = {
+  data: TopMerchantsResponse;
+  status: 200;
+};
+
+export type getTopMerchantsApiV1AnalysisTopMerchantsGetResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type getTopMerchantsApiV1AnalysisTopMerchantsGetResponseSuccess =
+  getTopMerchantsApiV1AnalysisTopMerchantsGetResponse200 & {
+    headers: Headers;
+  };
+export type getTopMerchantsApiV1AnalysisTopMerchantsGetResponseError =
+  getTopMerchantsApiV1AnalysisTopMerchantsGetResponse422 & {
+    headers: Headers;
+  };
+
+export type getTopMerchantsApiV1AnalysisTopMerchantsGetResponse =
+  | getTopMerchantsApiV1AnalysisTopMerchantsGetResponseSuccess
+  | getTopMerchantsApiV1AnalysisTopMerchantsGetResponseError;
+
+export const getGetTopMerchantsApiV1AnalysisTopMerchantsGetUrl = (
+  params: GetTopMerchantsApiV1AnalysisTopMerchantsGetParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/v1/analysis/top-merchants?${stringifiedParams}`
+    : `/api/v1/analysis/top-merchants`;
+};
+
+export const getTopMerchantsApiV1AnalysisTopMerchantsGet = async (
+  params: GetTopMerchantsApiV1AnalysisTopMerchantsGetParams,
+  options?: RequestInit,
+): Promise<getTopMerchantsApiV1AnalysisTopMerchantsGetResponse> => {
+  return customInstance<getTopMerchantsApiV1AnalysisTopMerchantsGetResponse>(
+    getGetTopMerchantsApiV1AnalysisTopMerchantsGetUrl(params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetTopMerchantsApiV1AnalysisTopMerchantsGetQueryKey = (
+  params?: GetTopMerchantsApiV1AnalysisTopMerchantsGetParams,
+) => {
+  return [
+    `/api/v1/analysis/top-merchants`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getGetTopMerchantsApiV1AnalysisTopMerchantsGetQueryOptions = <
+  TData = Awaited<
+    ReturnType<typeof getTopMerchantsApiV1AnalysisTopMerchantsGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  params: GetTopMerchantsApiV1AnalysisTopMerchantsGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTopMerchantsApiV1AnalysisTopMerchantsGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetTopMerchantsApiV1AnalysisTopMerchantsGetQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getTopMerchantsApiV1AnalysisTopMerchantsGet>>
+  > = ({ signal }) =>
+    getTopMerchantsApiV1AnalysisTopMerchantsGet(params, {
+      signal,
+      ...requestOptions,
+    });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getTopMerchantsApiV1AnalysisTopMerchantsGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetTopMerchantsApiV1AnalysisTopMerchantsGetQueryResult =
+  NonNullable<
+    Awaited<ReturnType<typeof getTopMerchantsApiV1AnalysisTopMerchantsGet>>
+  >;
+export type GetTopMerchantsApiV1AnalysisTopMerchantsGetQueryError =
+  HTTPValidationError;
+
+export function useGetTopMerchantsApiV1AnalysisTopMerchantsGet<
+  TData = Awaited<
+    ReturnType<typeof getTopMerchantsApiV1AnalysisTopMerchantsGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  params: GetTopMerchantsApiV1AnalysisTopMerchantsGetParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTopMerchantsApiV1AnalysisTopMerchantsGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof getTopMerchantsApiV1AnalysisTopMerchantsGet>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof getTopMerchantsApiV1AnalysisTopMerchantsGet>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTopMerchantsApiV1AnalysisTopMerchantsGet<
+  TData = Awaited<
+    ReturnType<typeof getTopMerchantsApiV1AnalysisTopMerchantsGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  params: GetTopMerchantsApiV1AnalysisTopMerchantsGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTopMerchantsApiV1AnalysisTopMerchantsGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<
+            ReturnType<typeof getTopMerchantsApiV1AnalysisTopMerchantsGet>
+          >,
+          TError,
+          Awaited<
+            ReturnType<typeof getTopMerchantsApiV1AnalysisTopMerchantsGet>
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetTopMerchantsApiV1AnalysisTopMerchantsGet<
+  TData = Awaited<
+    ReturnType<typeof getTopMerchantsApiV1AnalysisTopMerchantsGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  params: GetTopMerchantsApiV1AnalysisTopMerchantsGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTopMerchantsApiV1AnalysisTopMerchantsGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Top merchants by spending
+ */
+
+export function useGetTopMerchantsApiV1AnalysisTopMerchantsGet<
+  TData = Awaited<
+    ReturnType<typeof getTopMerchantsApiV1AnalysisTopMerchantsGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  params: GetTopMerchantsApiV1AnalysisTopMerchantsGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getTopMerchantsApiV1AnalysisTopMerchantsGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getGetTopMerchantsApiV1AnalysisTopMerchantsGetQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Detect spending anomalies
+ */
+export type detectAnomaliesApiV1AnalysisAnomaliesGetResponse200 = {
+  data: AnomaliesResponse;
+  status: 200;
+};
+
+export type detectAnomaliesApiV1AnalysisAnomaliesGetResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type detectAnomaliesApiV1AnalysisAnomaliesGetResponseSuccess =
+  detectAnomaliesApiV1AnalysisAnomaliesGetResponse200 & {
+    headers: Headers;
+  };
+export type detectAnomaliesApiV1AnalysisAnomaliesGetResponseError =
+  detectAnomaliesApiV1AnalysisAnomaliesGetResponse422 & {
+    headers: Headers;
+  };
+
+export type detectAnomaliesApiV1AnalysisAnomaliesGetResponse =
+  | detectAnomaliesApiV1AnalysisAnomaliesGetResponseSuccess
+  | detectAnomaliesApiV1AnalysisAnomaliesGetResponseError;
+
+export const getDetectAnomaliesApiV1AnalysisAnomaliesGetUrl = (
+  params: DetectAnomaliesApiV1AnalysisAnomaliesGetParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/v1/analysis/anomalies?${stringifiedParams}`
+    : `/api/v1/analysis/anomalies`;
+};
+
+export const detectAnomaliesApiV1AnalysisAnomaliesGet = async (
+  params: DetectAnomaliesApiV1AnalysisAnomaliesGetParams,
+  options?: RequestInit,
+): Promise<detectAnomaliesApiV1AnalysisAnomaliesGetResponse> => {
+  return customInstance<detectAnomaliesApiV1AnalysisAnomaliesGetResponse>(
+    getDetectAnomaliesApiV1AnalysisAnomaliesGetUrl(params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getDetectAnomaliesApiV1AnalysisAnomaliesGetQueryKey = (
+  params?: DetectAnomaliesApiV1AnalysisAnomaliesGetParams,
+) => {
+  return [`/api/v1/analysis/anomalies`, ...(params ? [params] : [])] as const;
+};
+
+export const getDetectAnomaliesApiV1AnalysisAnomaliesGetQueryOptions = <
+  TData = Awaited<ReturnType<typeof detectAnomaliesApiV1AnalysisAnomaliesGet>>,
+  TError = HTTPValidationError,
+>(
+  params: DetectAnomaliesApiV1AnalysisAnomaliesGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof detectAnomaliesApiV1AnalysisAnomaliesGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getDetectAnomaliesApiV1AnalysisAnomaliesGetQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof detectAnomaliesApiV1AnalysisAnomaliesGet>>
+  > = ({ signal }) =>
+    detectAnomaliesApiV1AnalysisAnomaliesGet(params, {
+      signal,
+      ...requestOptions,
+    });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof detectAnomaliesApiV1AnalysisAnomaliesGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type DetectAnomaliesApiV1AnalysisAnomaliesGetQueryResult = NonNullable<
+  Awaited<ReturnType<typeof detectAnomaliesApiV1AnalysisAnomaliesGet>>
+>;
+export type DetectAnomaliesApiV1AnalysisAnomaliesGetQueryError =
+  HTTPValidationError;
+
+export function useDetectAnomaliesApiV1AnalysisAnomaliesGet<
+  TData = Awaited<ReturnType<typeof detectAnomaliesApiV1AnalysisAnomaliesGet>>,
+  TError = HTTPValidationError,
+>(
+  params: DetectAnomaliesApiV1AnalysisAnomaliesGetParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof detectAnomaliesApiV1AnalysisAnomaliesGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof detectAnomaliesApiV1AnalysisAnomaliesGet>>,
+          TError,
+          Awaited<ReturnType<typeof detectAnomaliesApiV1AnalysisAnomaliesGet>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useDetectAnomaliesApiV1AnalysisAnomaliesGet<
+  TData = Awaited<ReturnType<typeof detectAnomaliesApiV1AnalysisAnomaliesGet>>,
+  TError = HTTPValidationError,
+>(
+  params: DetectAnomaliesApiV1AnalysisAnomaliesGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof detectAnomaliesApiV1AnalysisAnomaliesGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof detectAnomaliesApiV1AnalysisAnomaliesGet>>,
+          TError,
+          Awaited<ReturnType<typeof detectAnomaliesApiV1AnalysisAnomaliesGet>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useDetectAnomaliesApiV1AnalysisAnomaliesGet<
+  TData = Awaited<ReturnType<typeof detectAnomaliesApiV1AnalysisAnomaliesGet>>,
+  TError = HTTPValidationError,
+>(
+  params: DetectAnomaliesApiV1AnalysisAnomaliesGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof detectAnomaliesApiV1AnalysisAnomaliesGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Detect spending anomalies
+ */
+
+export function useDetectAnomaliesApiV1AnalysisAnomaliesGet<
+  TData = Awaited<ReturnType<typeof detectAnomaliesApiV1AnalysisAnomaliesGet>>,
+  TError = HTTPValidationError,
+>(
+  params: DetectAnomaliesApiV1AnalysisAnomaliesGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof detectAnomaliesApiV1AnalysisAnomaliesGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getDetectAnomaliesApiV1AnalysisAnomaliesGetQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Spending patterns analysis
+ */
+export type getPatternsApiV1AnalysisPatternsGetResponse200 = {
+  data: PatternsResponse;
+  status: 200;
+};
+
+export type getPatternsApiV1AnalysisPatternsGetResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type getPatternsApiV1AnalysisPatternsGetResponseSuccess =
+  getPatternsApiV1AnalysisPatternsGetResponse200 & {
+    headers: Headers;
+  };
+export type getPatternsApiV1AnalysisPatternsGetResponseError =
+  getPatternsApiV1AnalysisPatternsGetResponse422 & {
+    headers: Headers;
+  };
+
+export type getPatternsApiV1AnalysisPatternsGetResponse =
+  | getPatternsApiV1AnalysisPatternsGetResponseSuccess
+  | getPatternsApiV1AnalysisPatternsGetResponseError;
+
+export const getGetPatternsApiV1AnalysisPatternsGetUrl = (
+  params: GetPatternsApiV1AnalysisPatternsGetParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/v1/analysis/patterns?${stringifiedParams}`
+    : `/api/v1/analysis/patterns`;
+};
+
+export const getPatternsApiV1AnalysisPatternsGet = async (
+  params: GetPatternsApiV1AnalysisPatternsGetParams,
+  options?: RequestInit,
+): Promise<getPatternsApiV1AnalysisPatternsGetResponse> => {
+  return customInstance<getPatternsApiV1AnalysisPatternsGetResponse>(
+    getGetPatternsApiV1AnalysisPatternsGetUrl(params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetPatternsApiV1AnalysisPatternsGetQueryKey = (
+  params?: GetPatternsApiV1AnalysisPatternsGetParams,
+) => {
+  return [`/api/v1/analysis/patterns`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetPatternsApiV1AnalysisPatternsGetQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPatternsApiV1AnalysisPatternsGet>>,
+  TError = HTTPValidationError,
+>(
+  params: GetPatternsApiV1AnalysisPatternsGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPatternsApiV1AnalysisPatternsGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetPatternsApiV1AnalysisPatternsGetQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getPatternsApiV1AnalysisPatternsGet>>
+  > = ({ signal }) =>
+    getPatternsApiV1AnalysisPatternsGet(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getPatternsApiV1AnalysisPatternsGet>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetPatternsApiV1AnalysisPatternsGetQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getPatternsApiV1AnalysisPatternsGet>>
+>;
+export type GetPatternsApiV1AnalysisPatternsGetQueryError = HTTPValidationError;
+
+export function useGetPatternsApiV1AnalysisPatternsGet<
+  TData = Awaited<ReturnType<typeof getPatternsApiV1AnalysisPatternsGet>>,
+  TError = HTTPValidationError,
+>(
+  params: GetPatternsApiV1AnalysisPatternsGetParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPatternsApiV1AnalysisPatternsGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPatternsApiV1AnalysisPatternsGet>>,
+          TError,
+          Awaited<ReturnType<typeof getPatternsApiV1AnalysisPatternsGet>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetPatternsApiV1AnalysisPatternsGet<
+  TData = Awaited<ReturnType<typeof getPatternsApiV1AnalysisPatternsGet>>,
+  TError = HTTPValidationError,
+>(
+  params: GetPatternsApiV1AnalysisPatternsGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPatternsApiV1AnalysisPatternsGet>>,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getPatternsApiV1AnalysisPatternsGet>>,
+          TError,
+          Awaited<ReturnType<typeof getPatternsApiV1AnalysisPatternsGet>>
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetPatternsApiV1AnalysisPatternsGet<
+  TData = Awaited<ReturnType<typeof getPatternsApiV1AnalysisPatternsGet>>,
+  TError = HTTPValidationError,
+>(
+  params: GetPatternsApiV1AnalysisPatternsGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPatternsApiV1AnalysisPatternsGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Spending patterns analysis
+ */
+
+export function useGetPatternsApiV1AnalysisPatternsGet<
+  TData = Awaited<ReturnType<typeof getPatternsApiV1AnalysisPatternsGet>>,
+  TError = HTTPValidationError,
+>(
+  params: GetPatternsApiV1AnalysisPatternsGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<ReturnType<typeof getPatternsApiV1AnalysisPatternsGet>>,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions = getGetPatternsApiV1AnalysisPatternsGetQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Category spending breakdown
+ */
+export type getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetResponse200 =
+  {
+    data: CategoryBreakdownResponse;
+    status: 200;
+  };
+
+export type getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetResponse422 =
+  {
+    data: HTTPValidationError;
+    status: 422;
+  };
+
+export type getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetResponseSuccess =
+  getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetResponse200 & {
+    headers: Headers;
+  };
+export type getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetResponseError =
+  getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetResponse422 & {
+    headers: Headers;
+  };
+
+export type getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetResponse =
+
+    | getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetResponseSuccess
+    | getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetResponseError;
+
+export const getGetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetUrl =
+  (
+    categoryId: string,
+    params: GetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetParams,
+  ) => {
+    const normalizedParams = new URLSearchParams();
+
+    Object.entries(params || {}).forEach(([key, value]) => {
+      if (value !== undefined) {
+        normalizedParams.append(
+          key,
+          value === null ? "null" : value.toString(),
+        );
+      }
+    });
+
+    const stringifiedParams = normalizedParams.toString();
+
+    return stringifiedParams.length > 0
+      ? `/api/v1/analysis/categories/${categoryId}/breakdown?${stringifiedParams}`
+      : `/api/v1/analysis/categories/${categoryId}/breakdown`;
+  };
+
+export const getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGet =
+  async (
+    categoryId: string,
+    params: GetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetParams,
+    options?: RequestInit,
+  ): Promise<getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetResponse> => {
+    return customInstance<getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetResponse>(
+      getGetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetUrl(
+        categoryId,
+        params,
+      ),
+      {
+        ...options,
+        method: "GET",
+      },
+    );
+  };
+
+export const getGetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetQueryKey =
+  (
+    categoryId: string,
+    params?: GetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetParams,
+  ) => {
+    return [
+      `/api/v1/analysis/categories/${categoryId}/breakdown`,
+      ...(params ? [params] : []),
+    ] as const;
+  };
+
+export const getGetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetQueryOptions =
+  <
+    TData = Awaited<
+      ReturnType<
+        typeof getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGet
+      >
+    >,
+    TError = HTTPValidationError,
+  >(
+    categoryId: string,
+    params: GetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetParams,
+    options?: {
+      query?: Partial<
+        UseQueryOptions<
+          Awaited<
+            ReturnType<
+              typeof getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGet
+            >
+          >,
+          TError,
+          TData
+        >
+      >;
+      request?: SecondParameter<typeof customInstance>;
+    },
+  ) => {
+    const { query: queryOptions, request: requestOptions } = options ?? {};
+
+    const queryKey =
+      queryOptions?.queryKey ??
+      getGetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetQueryKey(
+        categoryId,
+        params,
+      );
+
+    const queryFn: QueryFunction<
+      Awaited<
+        ReturnType<
+          typeof getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGet
+        >
+      >
+    > = ({ signal }) =>
+      getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGet(
+        categoryId,
+        params,
+        { signal, ...requestOptions },
+      );
+
+    return {
+      queryKey,
+      queryFn,
+      enabled: !!categoryId,
+      ...queryOptions,
+    } as UseQueryOptions<
+      Awaited<
+        ReturnType<
+          typeof getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGet
+        >
+      >,
+      TError,
+      TData
+    > & { queryKey: DataTag<QueryKey, TData, TError> };
+  };
+
+export type GetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetQueryResult =
+  NonNullable<
+    Awaited<
+      ReturnType<
+        typeof getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGet
+      >
+    >
+  >;
+export type GetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetQueryError =
+  HTTPValidationError;
+
+export function useGetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGet<
+  TData = Awaited<
+    ReturnType<
+      typeof getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGet
+    >
+  >,
+  TError = HTTPValidationError,
+>(
+  categoryId: string,
+  params: GetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetParams,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGet
+          >
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<
+            ReturnType<
+              typeof getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGet
+            >
+          >,
+          TError,
+          Awaited<
+            ReturnType<
+              typeof getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGet
+            >
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGet<
+  TData = Awaited<
+    ReturnType<
+      typeof getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGet
+    >
+  >,
+  TError = HTTPValidationError,
+>(
+  categoryId: string,
+  params: GetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGet
+          >
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<
+            ReturnType<
+              typeof getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGet
+            >
+          >,
+          TError,
+          Awaited<
+            ReturnType<
+              typeof getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGet
+            >
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useGetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGet<
+  TData = Awaited<
+    ReturnType<
+      typeof getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGet
+    >
+  >,
+  TError = HTTPValidationError,
+>(
+  categoryId: string,
+  params: GetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGet
+          >
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Category spending breakdown
+ */
+
+export function useGetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGet<
+  TData = Awaited<
+    ReturnType<
+      typeof getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGet
+    >
+  >,
+  TError = HTTPValidationError,
+>(
+  categoryId: string,
+  params: GetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetParams,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGet
+          >
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getGetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetQueryOptions(
+      categoryId,
+      params,
+      options,
+    );
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<
+    TData,
+    TError
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Generate analytics report
+ */
+export type generateReportApiV1AnalysisReportsGeneratePostResponse200 = {
+  data: ReportMeta;
+  status: 200;
+};
+
+export type generateReportApiV1AnalysisReportsGeneratePostResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type generateReportApiV1AnalysisReportsGeneratePostResponseSuccess =
+  generateReportApiV1AnalysisReportsGeneratePostResponse200 & {
+    headers: Headers;
+  };
+export type generateReportApiV1AnalysisReportsGeneratePostResponseError =
+  generateReportApiV1AnalysisReportsGeneratePostResponse422 & {
+    headers: Headers;
+  };
+
+export type generateReportApiV1AnalysisReportsGeneratePostResponse =
+  | generateReportApiV1AnalysisReportsGeneratePostResponseSuccess
+  | generateReportApiV1AnalysisReportsGeneratePostResponseError;
+
+export const getGenerateReportApiV1AnalysisReportsGeneratePostUrl = () => {
+  return `/api/v1/analysis/reports/generate`;
+};
+
+export const generateReportApiV1AnalysisReportsGeneratePost = async (
+  reportRequest: ReportRequest,
+  options?: RequestInit,
+): Promise<generateReportApiV1AnalysisReportsGeneratePostResponse> => {
+  return customInstance<generateReportApiV1AnalysisReportsGeneratePostResponse>(
+    getGenerateReportApiV1AnalysisReportsGeneratePostUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(reportRequest),
+    },
+  );
+};
+
+export const getGenerateReportApiV1AnalysisReportsGeneratePostMutationOptions =
+  <TError = HTTPValidationError, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof generateReportApiV1AnalysisReportsGeneratePost>
+      >,
+      TError,
+      { data: ReportRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  }): UseMutationOptions<
+    Awaited<ReturnType<typeof generateReportApiV1AnalysisReportsGeneratePost>>,
+    TError,
+    { data: ReportRequest },
+    TContext
+  > => {
+    const mutationKey = ["generateReportApiV1AnalysisReportsGeneratePost"];
+    const { mutation: mutationOptions, request: requestOptions } = options
+      ? options.mutation &&
+        "mutationKey" in options.mutation &&
+        options.mutation.mutationKey
+        ? options
+        : { ...options, mutation: { ...options.mutation, mutationKey } }
+      : { mutation: { mutationKey }, request: undefined };
+
+    const mutationFn: MutationFunction<
+      Awaited<
+        ReturnType<typeof generateReportApiV1AnalysisReportsGeneratePost>
+      >,
+      { data: ReportRequest }
+    > = (props) => {
+      const { data } = props ?? {};
+
+      return generateReportApiV1AnalysisReportsGeneratePost(
+        data,
+        requestOptions,
+      );
+    };
+
+    return { mutationFn, ...mutationOptions };
+  };
+
+export type GenerateReportApiV1AnalysisReportsGeneratePostMutationResult =
+  NonNullable<
+    Awaited<ReturnType<typeof generateReportApiV1AnalysisReportsGeneratePost>>
+  >;
+export type GenerateReportApiV1AnalysisReportsGeneratePostMutationBody =
+  ReportRequest;
+export type GenerateReportApiV1AnalysisReportsGeneratePostMutationError =
+  HTTPValidationError;
+
+/**
+ * @summary Generate analytics report
+ */
+export const useGenerateReportApiV1AnalysisReportsGeneratePost = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<
+        ReturnType<typeof generateReportApiV1AnalysisReportsGeneratePost>
+      >,
+      TError,
+      { data: ReportRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof generateReportApiV1AnalysisReportsGeneratePost>>,
+  TError,
+  { data: ReportRequest },
+  TContext
+> => {
+  return useMutation(
+    getGenerateReportApiV1AnalysisReportsGeneratePostMutationOptions(options),
+    queryClient,
+  );
+};
+/**
+ * @summary Download generated report
+ */
+export type downloadReportApiV1AnalysisReportsReportIdDownloadGetResponse200 = {
+  data: unknown;
+  status: 200;
+};
+
+export type downloadReportApiV1AnalysisReportsReportIdDownloadGetResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type downloadReportApiV1AnalysisReportsReportIdDownloadGetResponseSuccess =
+  downloadReportApiV1AnalysisReportsReportIdDownloadGetResponse200 & {
+    headers: Headers;
+  };
+export type downloadReportApiV1AnalysisReportsReportIdDownloadGetResponseError =
+  downloadReportApiV1AnalysisReportsReportIdDownloadGetResponse422 & {
+    headers: Headers;
+  };
+
+export type downloadReportApiV1AnalysisReportsReportIdDownloadGetResponse =
+  | downloadReportApiV1AnalysisReportsReportIdDownloadGetResponseSuccess
+  | downloadReportApiV1AnalysisReportsReportIdDownloadGetResponseError;
+
+export const getDownloadReportApiV1AnalysisReportsReportIdDownloadGetUrl = (
+  reportId: string,
+) => {
+  return `/api/v1/analysis/reports/${reportId}/download`;
+};
+
+export const downloadReportApiV1AnalysisReportsReportIdDownloadGet = async (
+  reportId: string,
+  options?: RequestInit,
+): Promise<downloadReportApiV1AnalysisReportsReportIdDownloadGetResponse> => {
+  return customInstance<downloadReportApiV1AnalysisReportsReportIdDownloadGetResponse>(
+    getDownloadReportApiV1AnalysisReportsReportIdDownloadGetUrl(reportId),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getDownloadReportApiV1AnalysisReportsReportIdDownloadGetQueryKey =
+  (reportId: string) => {
+    return [`/api/v1/analysis/reports/${reportId}/download`] as const;
+  };
+
+export const getDownloadReportApiV1AnalysisReportsReportIdDownloadGetQueryOptions =
+  <
+    TData = Awaited<
+      ReturnType<typeof downloadReportApiV1AnalysisReportsReportIdDownloadGet>
+    >,
+    TError = HTTPValidationError,
+  >(
+    reportId: string,
+    options?: {
+      query?: Partial<
+        UseQueryOptions<
+          Awaited<
+            ReturnType<
+              typeof downloadReportApiV1AnalysisReportsReportIdDownloadGet
+            >
+          >,
+          TError,
+          TData
+        >
+      >;
+      request?: SecondParameter<typeof customInstance>;
+    },
+  ) => {
+    const { query: queryOptions, request: requestOptions } = options ?? {};
+
+    const queryKey =
+      queryOptions?.queryKey ??
+      getDownloadReportApiV1AnalysisReportsReportIdDownloadGetQueryKey(
+        reportId,
+      );
+
+    const queryFn: QueryFunction<
+      Awaited<
+        ReturnType<typeof downloadReportApiV1AnalysisReportsReportIdDownloadGet>
+      >
+    > = ({ signal }) =>
+      downloadReportApiV1AnalysisReportsReportIdDownloadGet(reportId, {
+        signal,
+        ...requestOptions,
+      });
+
+    return {
+      queryKey,
+      queryFn,
+      enabled: !!reportId,
+      ...queryOptions,
+    } as UseQueryOptions<
+      Awaited<
+        ReturnType<typeof downloadReportApiV1AnalysisReportsReportIdDownloadGet>
+      >,
+      TError,
+      TData
+    > & { queryKey: DataTag<QueryKey, TData, TError> };
+  };
+
+export type DownloadReportApiV1AnalysisReportsReportIdDownloadGetQueryResult =
+  NonNullable<
+    Awaited<
+      ReturnType<typeof downloadReportApiV1AnalysisReportsReportIdDownloadGet>
+    >
+  >;
+export type DownloadReportApiV1AnalysisReportsReportIdDownloadGetQueryError =
+  HTTPValidationError;
+
+export function useDownloadReportApiV1AnalysisReportsReportIdDownloadGet<
+  TData = Awaited<
+    ReturnType<typeof downloadReportApiV1AnalysisReportsReportIdDownloadGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  reportId: string,
+  options: {
+    query: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof downloadReportApiV1AnalysisReportsReportIdDownloadGet
+          >
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<
+            ReturnType<
+              typeof downloadReportApiV1AnalysisReportsReportIdDownloadGet
+            >
+          >,
+          TError,
+          Awaited<
+            ReturnType<
+              typeof downloadReportApiV1AnalysisReportsReportIdDownloadGet
+            >
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): DefinedUseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useDownloadReportApiV1AnalysisReportsReportIdDownloadGet<
+  TData = Awaited<
+    ReturnType<typeof downloadReportApiV1AnalysisReportsReportIdDownloadGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  reportId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof downloadReportApiV1AnalysisReportsReportIdDownloadGet
+          >
+        >,
+        TError,
+        TData
+      >
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<
+            ReturnType<
+              typeof downloadReportApiV1AnalysisReportsReportIdDownloadGet
+            >
+          >,
+          TError,
+          Awaited<
+            ReturnType<
+              typeof downloadReportApiV1AnalysisReportsReportIdDownloadGet
+            >
+          >
+        >,
+        "initialData"
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+export function useDownloadReportApiV1AnalysisReportsReportIdDownloadGet<
+  TData = Awaited<
+    ReturnType<typeof downloadReportApiV1AnalysisReportsReportIdDownloadGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  reportId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof downloadReportApiV1AnalysisReportsReportIdDownloadGet
+          >
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+};
+/**
+ * @summary Download generated report
+ */
+
+export function useDownloadReportApiV1AnalysisReportsReportIdDownloadGet<
+  TData = Awaited<
+    ReturnType<typeof downloadReportApiV1AnalysisReportsReportIdDownloadGet>
+  >,
+  TError = HTTPValidationError,
+>(
+  reportId: string,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<
+        Awaited<
+          ReturnType<
+            typeof downloadReportApiV1AnalysisReportsReportIdDownloadGet
+          >
+        >,
+        TError,
+        TData
+      >
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient,
+): UseQueryResult<TData, TError> & {
+  queryKey: DataTag<QueryKey, TData, TError>;
+} {
+  const queryOptions =
+    getDownloadReportApiV1AnalysisReportsReportIdDownloadGetQueryOptions(
+      reportId,
       options,
     );
 

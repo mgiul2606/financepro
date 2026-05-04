@@ -8,6 +8,13 @@
  * profile_id filtering.
  */
 
+// Components
+export { CategoryForm } from './components/CategoryForm';
+export { CategoryManagementCard } from './components/CategoryManagementCard';
+
+// Utilities
+export { useCategoryName } from './useCategoryName';
+
 // Hooks
 export {
   useCategories,

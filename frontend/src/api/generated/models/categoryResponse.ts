@@ -15,6 +15,7 @@
 All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  * OpenAPI spec version: 1.0.0
  */
+import type { CategoryResponseNameTranslations } from "./categoryResponseNameTranslations";
 import type { EntityWithId } from "../../../hooks/useCrudModal";
 
 /**
@@ -38,6 +39,8 @@ export interface CategoryResponse extends EntityWithId {
   isIncome?: boolean;
   /** Custom sort order for category display */
   sortOrder?: number;
+  /** Category name translations by language code, e.g. {'it': 'Spesa', 'en': 'Groceries'} */
+  nameTranslations?: CategoryResponseNameTranslations;
   /** Unique category identifier */
   id: string;
   /** ID of the user this category belongs to */

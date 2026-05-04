@@ -17,17 +17,19 @@ All endpoints (except `/auth/*`) require Bearer JWT token authentication.
  */
 
 /**
- * Schema for creating a new milestone for a goal.
+ * Period navigation information for a budget.
  */
-export interface GoalMilestoneCreate {
-  /**
-   * Milestone name
-   * @minLength 1
-   * @maxLength 255
-   */
-  name: string;
-  /** Target amount for this milestone */
-  targetAmount: number | string;
-  /** Target date for this milestone */
-  targetDate: string;
+export interface BudgetPeriodInfo {
+  /** Period start date (inclusive) */
+  start: string;
+  /** Period end date (inclusive) */
+  end: string;
+  /** Period offset from current (0=current) */
+  offset: number;
+  /** Whether this is the current period */
+  isCurrent: boolean;
+  /** Whether a previous period exists */
+  hasPrevious: boolean;
+  /** Whether a next period exists */
+  hasNext: boolean;
 }

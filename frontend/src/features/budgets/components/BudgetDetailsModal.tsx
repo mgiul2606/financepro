@@ -17,6 +17,7 @@ import { EmptyState } from '@/core/components/composite/EmptyState';
 import { Spinner } from '@/core/components/atomic/Spinner';
 import type { Budget } from '../budgets.types';
 import { useBudgetDetail } from '../budgets.hooks';
+import { useCategories, useCategoryName } from '@/features/categories';
 
 interface BudgetDetailsModalProps {
   budget: Budget;
@@ -36,6 +37,9 @@ export const BudgetDetailsModal = ({
     isOpen ? budget.id : null,
     periodOffset
   );
+  const { categories: userCategories } = useCategories();
+  const getCategoryName = useCategoryName();
+  const categoriesById = Object.fromEntries(userCategories.map((c) => [c.id, c]));
 
   const handlePrevious = useCallback(() => {
     setPeriodOffset((prev) => prev - 1);
@@ -243,7 +247,9 @@ export const BudgetDetailsModal = ({
                     >
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-neutral-900">
-                          {cat.categoryName}
+                          {categoriesById[cat.categoryId]
+                            ? getCategoryName(categoriesById[cat.categoryId])
+                            : cat.categoryName}
                         </span>
                         <Badge
                           variant={

@@ -300,3 +300,225 @@ export const ComparePeriodsApiV1AnalysisPeriodComparisonGetResponse =
     expenseChange: zod.number(),
     expenseChangePercentage: zod.number(),
   });
+
+/**
+ * @summary Top merchants by spending
+ */
+export const getTopMerchantsApiV1AnalysisTopMerchantsGetQueryLimitDefault = 10;
+export const getTopMerchantsApiV1AnalysisTopMerchantsGetQueryLimitMax = 50;
+
+export const getTopMerchantsApiV1AnalysisTopMerchantsGetQueryCurrencyDefault = `EUR`;
+
+export const GetTopMerchantsApiV1AnalysisTopMerchantsGetQueryParams =
+  zod.object({
+    start_date: zod.iso.date(),
+    end_date: zod.iso.date(),
+    limit: zod
+      .number()
+      .min(1)
+      .max(getTopMerchantsApiV1AnalysisTopMerchantsGetQueryLimitMax)
+      .default(getTopMerchantsApiV1AnalysisTopMerchantsGetQueryLimitDefault),
+    profile_ids: zod.union([zod.array(zod.uuid()), zod.null()]).optional(),
+    currency: zod
+      .string()
+      .default(getTopMerchantsApiV1AnalysisTopMerchantsGetQueryCurrencyDefault),
+  });
+
+export const GetTopMerchantsApiV1AnalysisTopMerchantsGetResponse = zod.object({
+  merchants: zod.array(
+    zod.object({
+      merchantName: zod.string(),
+      merchantId: zod.union([zod.string(), zod.null()]).optional(),
+      logoUrl: zod.union([zod.string(), zod.null()]).optional(),
+      categoryName: zod.union([zod.string(), zod.null()]).optional(),
+      totalAmount: zod.number(),
+      transactionCount: zod.number(),
+      percentage: zod.number(),
+      avgTransaction: zod.number(),
+    }),
+  ),
+  periodStart: zod.iso.date(),
+  periodEnd: zod.iso.date(),
+  totalExpenses: zod.number(),
+});
+
+/**
+ * @summary Detect spending anomalies
+ */
+export const detectAnomaliesApiV1AnalysisAnomaliesGetQuerySensitivityDefault = `medium`;
+export const detectAnomaliesApiV1AnalysisAnomaliesGetQuerySensitivityRegExp =
+  new RegExp("^(low|medium|high)$");
+export const detectAnomaliesApiV1AnalysisAnomaliesGetQueryCurrencyDefault = `EUR`;
+
+export const DetectAnomaliesApiV1AnalysisAnomaliesGetQueryParams = zod.object({
+  start_date: zod.iso.date(),
+  end_date: zod.iso.date(),
+  sensitivity: zod
+    .string()
+    .regex(detectAnomaliesApiV1AnalysisAnomaliesGetQuerySensitivityRegExp)
+    .default(detectAnomaliesApiV1AnalysisAnomaliesGetQuerySensitivityDefault),
+  profile_ids: zod.union([zod.array(zod.uuid()), zod.null()]).optional(),
+  currency: zod
+    .string()
+    .default(detectAnomaliesApiV1AnalysisAnomaliesGetQueryCurrencyDefault),
+});
+
+export const DetectAnomaliesApiV1AnalysisAnomaliesGetResponse = zod.object({
+  anomalies: zod.array(
+    zod.object({
+      transactionId: zod.string(),
+      transactionDate: zod.iso.date(),
+      description: zod.string(),
+      amount: zod.number(),
+      categoryName: zod.string(),
+      categoryAvg: zod.number(),
+      categoryStddev: zod.number(),
+      deviationFactor: zod.number(),
+      severity: zod.string(),
+    }),
+  ),
+  periodStart: zod.iso.date(),
+  periodEnd: zod.iso.date(),
+  totalAnalyzed: zod.number(),
+});
+
+/**
+ * @summary Spending patterns analysis
+ */
+export const getPatternsApiV1AnalysisPatternsGetQueryCurrencyDefault = `EUR`;
+
+export const GetPatternsApiV1AnalysisPatternsGetQueryParams = zod.object({
+  start_date: zod.iso.date(),
+  end_date: zod.iso.date(),
+  profile_ids: zod.union([zod.array(zod.uuid()), zod.null()]).optional(),
+  currency: zod
+    .string()
+    .default(getPatternsApiV1AnalysisPatternsGetQueryCurrencyDefault),
+});
+
+export const GetPatternsApiV1AnalysisPatternsGetResponse = zod.object({
+  dayOfWeek: zod.array(
+    zod.object({
+      day: zod.number(),
+      dayName: zod.string(),
+      total: zod.number(),
+      avg: zod.number(),
+      transactionCount: zod.number(),
+    }),
+  ),
+  busiestDay: zod.string(),
+  quietestDay: zod.string(),
+  weekOfMonth: zod.array(
+    zod.object({
+      week: zod.number(),
+      label: zod.string(),
+      total: zod.number(),
+      avg: zod.number(),
+    }),
+  ),
+  categoryTrends: zod.array(
+    zod.object({
+      categoryName: zod.string(),
+      categoryId: zod.string(),
+      monthlyTotals: zod.array(zod.looseObject({})),
+      trend: zod.string(),
+      trendPct: zod.number(),
+    }),
+  ),
+  detectedRecurring: zod.array(
+    zod.object({
+      description: zod.string(),
+      merchantName: zod.union([zod.string(), zod.null()]).optional(),
+      avgAmount: zod.number(),
+      occurrenceCount: zod.number(),
+      estimatedFrequency: zod.string(),
+      lastOccurrence: zod.iso.date(),
+      alreadyTracked: zod.boolean(),
+    }),
+  ),
+  periodStart: zod.iso.date(),
+  periodEnd: zod.iso.date(),
+});
+
+/**
+ * @summary Category spending breakdown
+ */
+export const GetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetParams =
+  zod.object({
+    category_id: zod.uuid(),
+  });
+
+export const getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetQueryLimitDefault = 15;
+export const getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetQueryLimitMax = 50;
+
+export const getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetQueryCurrencyDefault = `EUR`;
+
+export const GetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetQueryParams =
+  zod.object({
+    start_date: zod.iso.date(),
+    end_date: zod.iso.date(),
+    profile_ids: zod.union([zod.array(zod.uuid()), zod.null()]).optional(),
+    limit: zod
+      .number()
+      .min(1)
+      .max(
+        getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetQueryLimitMax,
+      )
+      .default(
+        getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetQueryLimitDefault,
+      ),
+    currency: zod
+      .string()
+      .default(
+        getCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetQueryCurrencyDefault,
+      ),
+  });
+
+export const GetCategoryBreakdownApiV1AnalysisCategoriesCategoryIdBreakdownGetResponse =
+  zod.object({
+    categoryId: zod.string(),
+    categoryName: zod.string(),
+    totalCategorySpending: zod.number(),
+    breakdown: zod.array(
+      zod.object({
+        label: zod.string(),
+        merchantId: zod.union([zod.string(), zod.null()]).optional(),
+        totalAmount: zod.number(),
+        transactionCount: zod.number(),
+        percentage: zod.number(),
+        avgAmount: zod.number(),
+      }),
+    ),
+    periodStart: zod.iso.date(),
+    periodEnd: zod.iso.date(),
+  });
+
+/**
+ * @summary Generate analytics report
+ */
+export const GenerateReportApiV1AnalysisReportsGeneratePostBody = zod.object({
+  reportType: zod.string(),
+  startDate: zod.iso.date(),
+  endDate: zod.iso.date(),
+  profileIds: zod.union([zod.array(zod.uuid()), zod.null()]).optional(),
+});
+
+export const GenerateReportApiV1AnalysisReportsGeneratePostResponse =
+  zod.object({
+    reportType: zod.string(),
+    periodStart: zod.iso.date(),
+    periodEnd: zod.iso.date(),
+    rowCount: zod.number(),
+    downloadUrl: zod.string(),
+  });
+
+/**
+ * @summary Download generated report
+ */
+export const DownloadReportApiV1AnalysisReportsReportIdDownloadGetParams =
+  zod.object({
+    report_id: zod.string(),
+  });
+
+export const DownloadReportApiV1AnalysisReportsReportIdDownloadGetResponse =
+  zod.unknown();

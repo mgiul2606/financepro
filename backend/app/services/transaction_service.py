@@ -29,6 +29,7 @@ from app.models import (
     FinancialProfile,
     Account,
     Merchant,
+    ImportJob,
     TransactionType,
     TransactionSource,
     SecurityLevel
@@ -389,7 +390,16 @@ class TransactionService:
             bool: True if deleted
         """
         transaction, _ = self.get_transaction(transaction_id)
+        import_job_id = transaction.import_job_id
         self.db.delete(transaction)
+        self.db.flush()
+
+        if import_job_id is not None:
+            job = self.db.query(ImportJob).filter(ImportJob.id == import_job_id).first()
+            if job is not None:
+                job.successful_imports = max(0, (job.successful_imports or 0) - 1)
+                job.manually_deleted = (job.manually_deleted or 0) + 1
+
         self.db.commit()
         return True
 

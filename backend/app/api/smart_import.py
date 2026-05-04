@@ -417,7 +417,7 @@ async def smart_csv_preview(
         file_path="",
         import_type=ImportType.CSV,
         status=ImportStatus.PENDING,
-        total_rows=parse_result.total_rows,
+        total_rows=parse_result.parsed_rows,
         mapping_config={
             "detected_format": {
                 "encoding": detected.get("encoding", "utf-8"),

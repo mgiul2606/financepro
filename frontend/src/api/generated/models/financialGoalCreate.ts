@@ -42,7 +42,7 @@ export interface FinancialGoalCreate {
    * @maximum 10
    */
   priority?: number;
-  /** Scope type: USER, PROFILE, or MULTI_PROFILE */
+  /** Scope type: user, profile, or multi_profile */
   scopeType?: string;
   /** Profile IDs for PROFILE or MULTI_PROFILE scope */
   scopeProfileIds?: string[] | null;

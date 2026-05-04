@@ -11,6 +11,7 @@ import {
   listImportJobsApiV1ImportsGet,
   type listImportJobsApiV1ImportsGetResponse,
 } from '@/api/generated/imports/imports';
+import { getListTransactionsApiV1TransactionsGetQueryKey } from '@/api/generated/transactions/transactions';
 import type {
   ImportJobResponse,
   ImportJobListResponse,
@@ -150,6 +151,9 @@ export const useDeleteImport = () => {
       onSuccess: () => {
         queryClient.invalidateQueries({
           queryKey: getListImportJobsApiV1ImportsGetQueryKey(),
+        });
+        queryClient.invalidateQueries({
+          queryKey: getListTransactionsApiV1TransactionsGetQueryKey(),
         });
       },
     },

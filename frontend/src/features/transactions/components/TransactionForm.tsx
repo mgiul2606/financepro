@@ -27,7 +27,7 @@ import { transactionCreateSchema, transactionUpdateSchema } from '../transaction
 import type { TransactionCreate, TransactionUpdate, TransactionResponse } from '@/api/generated/models';
 import { TRANSACTION_TYPE_OPTIONS, CURRENCY_OPTIONS } from '../transactions.constants';
 import { buildUpdatePayload } from '@/lib/form-utils';
-import { useCategories } from '@/features/categories';
+import { useCategories, useCategoryName } from '@/features/categories';
 import { useAccounts } from '@/features/accounts';
 
 // Conditional props based on mode
@@ -69,11 +69,12 @@ export const TransactionForm = ({
   // Load categories and accounts for dropdowns
   const { categories, isLoading: categoriesLoading } = useCategories();
   const { accounts, isLoading: accountsLoading } = useAccounts();
+  const getCategoryName = useCategoryName();
 
   // Build category options
   const categoryOptions = categories.map((category) => ({
     value: category.id,
-    label: category.name,
+    label: getCategoryName(category),
   }));
 
   // Build account options with account type info

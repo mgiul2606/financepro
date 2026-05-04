@@ -340,7 +340,8 @@ class ImportService:
 
         # Optional fields
         if 'currency' in mapping:
-            parsed['currency'] = row.get(mapping['currency'], 'EUR').strip() or 'EUR'
+            raw_currency = row.get(mapping['currency'], '').strip()[:3].upper()
+            parsed['currency'] = raw_currency if (len(raw_currency) == 3 and raw_currency.isalpha()) else 'EUR'
         else:
             parsed['currency'] = 'EUR'
 
@@ -508,6 +509,7 @@ class ImportService:
         merchant_id = None
         merchant_name = parsed_data.get('merchant_name')
         if merchant_name:
+            merchant_name = merchant_name[:255]
             merchant_id = self._find_or_create_merchant(merchant_name)
 
         # Handle encryption for HS profiles
@@ -537,20 +539,29 @@ class ImportService:
             source=TransactionSource.IMPORT_CSV,
             amount=encrypted_amount,
             amount_clear=amount,
-            currency=parsed_data.get('currency', profile.default_currency),
+            currency=self._sanitize_currency(parsed_data.get('currency'), profile.default_currency),
             amount_in_profile_currency=round_money(amount),  # TODO: Apply exchange rate if different currency
             description=encrypted_description,
             description_clear=parsed_data['description'][:255] if parsed_data['description'] else None,
             merchant_name=merchant_name,
             notes=encrypted_notes,
             import_job_id=job.id,
-            external_id=parsed_data.get('external_id')
+            external_id=(parsed_data.get('external_id') or '')[:255] or None
         )
 
         self.db.add(tx)
         self.db.flush()
 
         return tx
+
+    def _sanitize_currency(self, value: Optional[str], default: Optional[str] = None) -> str:
+        """Return a valid 3-letter ISO currency code, falling back to default or EUR."""
+        for candidate in (value, default, 'EUR'):
+            if candidate:
+                code = candidate.strip()[:3].upper()
+                if len(code) == 3 and code.isalpha():
+                    return code
+        return 'EUR'
 
     def _find_or_create_merchant(self, merchant_name: str) -> Optional[UUID]:
         """Find existing merchant or create new one."""
@@ -570,7 +581,7 @@ class ImportService:
 
         # Create new merchant
         merchant = Merchant(
-            canonical_name=merchant_name.strip(),
+            canonical_name=merchant_name.strip()[:255],
             usage_count=1
         )
         self.db.add(merchant)

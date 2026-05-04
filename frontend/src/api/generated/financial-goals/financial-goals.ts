@@ -35,9 +35,9 @@ import type {
   FinancialGoalCreate,
   FinancialGoalResponse,
   FinancialGoalUpdate,
+  GoalContributionCreate,
+  GoalContributionResponse,
   GoalListResponse,
-  GoalMilestoneCreate,
-  GoalMilestoneResponse,
   GoalProgressResponse,
   HTTPValidationError,
   ListContributionsApiV1GoalsGoalIdContributionsGetParams,
@@ -1036,7 +1036,7 @@ export function useGetGoalProgressApiV1GoalsGoalIdProgressGet<
  * @summary Add contribution
  */
 export type addContributionApiV1GoalsGoalIdContributionsPostResponse201 = {
-  data: GoalMilestoneResponse;
+  data: GoalContributionResponse;
   status: 201;
 };
 
@@ -1066,7 +1066,7 @@ export const getAddContributionApiV1GoalsGoalIdContributionsPostUrl = (
 
 export const addContributionApiV1GoalsGoalIdContributionsPost = async (
   goalId: string,
-  goalMilestoneCreate: GoalMilestoneCreate,
+  goalContributionCreate: GoalContributionCreate,
   options?: RequestInit,
 ): Promise<addContributionApiV1GoalsGoalIdContributionsPostResponse> => {
   return customInstance<addContributionApiV1GoalsGoalIdContributionsPostResponse>(
@@ -1075,7 +1075,7 @@ export const addContributionApiV1GoalsGoalIdContributionsPost = async (
       ...options,
       method: "POST",
       headers: { "Content-Type": "application/json", ...options?.headers },
-      body: JSON.stringify(goalMilestoneCreate),
+      body: JSON.stringify(goalContributionCreate),
     },
   );
 };
@@ -1087,7 +1087,7 @@ export const getAddContributionApiV1GoalsGoalIdContributionsPostMutationOptions 
         ReturnType<typeof addContributionApiV1GoalsGoalIdContributionsPost>
       >,
       TError,
-      { goalId: string; data: GoalMilestoneCreate },
+      { goalId: string; data: GoalContributionCreate },
       TContext
     >;
     request?: SecondParameter<typeof customInstance>;
@@ -1096,7 +1096,7 @@ export const getAddContributionApiV1GoalsGoalIdContributionsPostMutationOptions 
       ReturnType<typeof addContributionApiV1GoalsGoalIdContributionsPost>
     >,
     TError,
-    { goalId: string; data: GoalMilestoneCreate },
+    { goalId: string; data: GoalContributionCreate },
     TContext
   > => {
     const mutationKey = ["addContributionApiV1GoalsGoalIdContributionsPost"];
@@ -1112,7 +1112,7 @@ export const getAddContributionApiV1GoalsGoalIdContributionsPostMutationOptions 
       Awaited<
         ReturnType<typeof addContributionApiV1GoalsGoalIdContributionsPost>
       >,
-      { goalId: string; data: GoalMilestoneCreate }
+      { goalId: string; data: GoalContributionCreate }
     > = (props) => {
       const { goalId, data } = props ?? {};
 
@@ -1131,7 +1131,7 @@ export type AddContributionApiV1GoalsGoalIdContributionsPostMutationResult =
     Awaited<ReturnType<typeof addContributionApiV1GoalsGoalIdContributionsPost>>
   >;
 export type AddContributionApiV1GoalsGoalIdContributionsPostMutationBody =
-  GoalMilestoneCreate;
+  GoalContributionCreate;
 export type AddContributionApiV1GoalsGoalIdContributionsPostMutationError =
   HTTPValidationError;
 
@@ -1148,7 +1148,7 @@ export const useAddContributionApiV1GoalsGoalIdContributionsPost = <
         ReturnType<typeof addContributionApiV1GoalsGoalIdContributionsPost>
       >,
       TError,
-      { goalId: string; data: GoalMilestoneCreate },
+      { goalId: string; data: GoalContributionCreate },
       TContext
     >;
     request?: SecondParameter<typeof customInstance>;
@@ -1157,7 +1157,7 @@ export const useAddContributionApiV1GoalsGoalIdContributionsPost = <
 ): UseMutationResult<
   Awaited<ReturnType<typeof addContributionApiV1GoalsGoalIdContributionsPost>>,
   TError,
-  { goalId: string; data: GoalMilestoneCreate },
+  { goalId: string; data: GoalContributionCreate },
   TContext
 > => {
   return useMutation(
@@ -1170,7 +1170,7 @@ export const useAddContributionApiV1GoalsGoalIdContributionsPost = <
  * @summary List contributions
  */
 export type listContributionsApiV1GoalsGoalIdContributionsGetResponse200 = {
-  data: GoalMilestoneResponse[];
+  data: GoalContributionResponse[];
   status: 200;
 };
 

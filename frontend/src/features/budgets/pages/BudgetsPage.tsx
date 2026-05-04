@@ -5,10 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardBody, CardFooter } from '@/core/components/atomic/Card';
 import { Button } from '@/core/components/atomic/Button';
-import { Badge } from '@/core/components/atomic/Badge';
 import { CurrencyText, PercentageText, DateText } from '@/core/components/atomic';
 import { EmptyState } from '@/core/components/composite/EmptyState';
-import { Spinner } from '@/core/components/atomic/Spinner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Alert } from '@/components/ui/alert';
 import { useQueryClient } from '@tanstack/react-query';
@@ -118,33 +116,40 @@ export const BudgetsPage: React.FC = () => {
   };
 
   // Utilities
-  const getProgressColor = (spent: number, total: number) => {
-    const percentage = (spent / total) * 100;
-    if (percentage >= 100) return 'bg-red-600';
-    if (percentage >= 80) return 'bg-yellow-500';
-    return 'bg-green-600';
+  const getProgressColor = (percentage: number) => {
+    if (percentage >= 100) return 'bg-rose-600';
+    if (percentage >= 80) return 'bg-amber-500';
+    return 'bg-emerald-600';
   };
 
-  const getBadgeVariant = (percentage: number) => {
-    if (percentage >= 100) return 'danger' as const;
-    if (percentage >= 80) return 'warning' as const;
-    return 'success' as const;
+  const getPercentageBadgeClass = (percentage: number) => {
+    if (percentage >= 100)
+      return 'bg-rose-50 text-rose-700 text-xs font-semibold px-2 py-0.5 rounded-full';
+    if (percentage >= 80)
+      return 'bg-amber-50 text-amber-700 text-xs font-semibold px-2 py-0.5 rounded-full';
+    return 'bg-emerald-50 text-emerald-700 text-xs font-semibold px-2 py-0.5 rounded-full';
   };
 
-  // Loading state
+  // Loading state — skeleton grid
   if (isLoading) {
     return (
-      <div className="p-8 flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <Spinner size="lg" />
-          <p className="mt-4 text-gray-600">{t('common.loadingEntity', { entity: t('nav.budgets').toLowerCase() })}</p>
+      <div className="min-h-full flex flex-col bg-gray-50">
+        <div className="flex-1 overflow-y-auto p-8 space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="rounded-xl bg-white shadow-sm border border-gray-100 animate-pulse h-48"
+              />
+            ))}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="min-h-full flex flex-col bg-gray-50">
       <PageHeader
         title={t('budgets.title')}
         subtitle={t('budgets.subtitle')}
@@ -161,7 +166,7 @@ export const BudgetsPage: React.FC = () => {
         }
       />
 
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto p-8 space-y-8">
         {/* Error Alert */}
         {loadError && (
           <Alert variant="destructive" className="mb-6">
@@ -175,7 +180,7 @@ export const BudgetsPage: React.FC = () => {
         )}
 
         {/* Empty State */}
-        {!isLoading && budgets && budgets.length === 0 ? (
+        {budgets && budgets.length === 0 ? (
           <EmptyState
             icon={<AlertCircle />}
             title={t('budgets.noBudgets')}
@@ -194,14 +199,14 @@ export const BudgetsPage: React.FC = () => {
               const remaining = parseFloat(budget.totalAmount) - parseFloat(budget.totalSpent ?? '0');
 
               return (
-                <Card key={budget.id} variant="elevated">
+                <Card key={budget.id} variant="elevated" className="rounded-xl">
                   <CardHeader
                     title={budget.name}
                     subtitle={budget.periodType}
                     action={
-                      <Badge variant={getBadgeVariant(percentage)} size="sm">
+                      <span className={getPercentageBadgeClass(percentage)}>
                         <PercentageText value={percentage} decimals={0} />
-                      </Badge>
+                      </span>
                     }
                   />
 
@@ -209,42 +214,40 @@ export const BudgetsPage: React.FC = () => {
                     {/* Progress Bar */}
                     <div className="mb-4">
                       <div className="flex justify-between text-sm mb-2">
-                        <span className="text-neutral-600">{t('budgets.spent')}</span>
-                        <span className="font-semibold">
+                        <span className="text-sm text-gray-500">{t('budgets.spent')}</span>
+                        <span className="font-semibold text-gray-900">
                           <CurrencyText value={parseFloat(budget.totalSpent ?? '0')} />
                         </span>
                       </div>
-                      <div className="w-full h-2 bg-neutral-200 rounded-full overflow-hidden">
+                      <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
                         <div
-                          className={`h-full transition-all duration-300 ${getProgressColor(parseFloat(budget.totalSpent ?? '0'), parseFloat(budget.totalAmount))}`}
+                          className={`h-full transition-all duration-300 ${getProgressColor(percentage)}`}
                           style={{ width: `${Math.min(percentage, 100)}%` }}
                         />
                       </div>
                     </div>
 
                     {/* Budget Info */}
-                    <div className="space-y-2 text-sm">
+                    <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-neutral-600">{t('budgets.amount')}</span>
-                        <span className="font-medium">
+                        <span className="text-sm text-gray-500">{t('budgets.amount')}</span>
+                        <span className="font-semibold text-gray-900">
                           <CurrencyText value={parseFloat(budget.totalAmount)} />
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-neutral-600">{t('budgets.remaining')}</span>
-                        <span
-                          className={`font-medium ${remaining >= 0 ? 'text-green-600' : 'text-red-600'}`}
-                        >
+                        <span className="text-sm text-gray-500">{t('budgets.remaining')}</span>
+                        <span className={`font-semibold ${remaining >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                           <CurrencyText value={remaining} />
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-neutral-600">{t('budgets.period')}</span>
-                        <span className="font-medium capitalize">{budget.periodType}</span>
+                        <span className="text-sm text-gray-500">{t('budgets.period')}</span>
+                        <span className="font-semibold text-gray-900 capitalize">{budget.periodType}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-neutral-600">{t('budgets.dates')}</span>
-                        <span className="font-medium text-xs">
+                        <span className="text-sm text-gray-500">{t('budgets.dates')}</span>
+                        <span className="font-semibold text-gray-900 text-xs">
                           <DateText value={budget.startDate} />{budget.endDate && <> - <DateText value={budget.endDate} /></>}
                         </span>
                       </div>
@@ -252,7 +255,7 @@ export const BudgetsPage: React.FC = () => {
                   </CardBody>
 
                   {/* Action Buttons */}
-                  <CardFooter className="mt-4 pt-4 border-t border-gray-200">
+                  <CardFooter className="mt-4 pt-4 border-t border-gray-100">
                     <div className="flex gap-2">
                       <Button
                         variant="ghost"
@@ -260,6 +263,7 @@ export const BudgetsPage: React.FC = () => {
                         leftIcon={<Eye size={16} />}
                         onClick={() => setDetailsBudget({ ...budget, rolloverEnabled: budget.rolloverEnabled ?? false, isActive: budget.isActive ?? true })}
                         fullWidth
+                        className="hover:text-indigo-600 hover:bg-indigo-50"
                       >
                         {t('budgets.viewDetails')}
                       </Button>
@@ -269,6 +273,7 @@ export const BudgetsPage: React.FC = () => {
                         leftIcon={<Edit size={16} />}
                         onClick={() => setEditingBudget({ ...budget, rolloverEnabled: budget.rolloverEnabled ?? false, isActive: budget.isActive ?? true })}
                         fullWidth
+                        className="hover:text-indigo-600 hover:bg-indigo-50"
                       >
                         {t('common.edit')}
                       </Button>
@@ -278,7 +283,7 @@ export const BudgetsPage: React.FC = () => {
                         leftIcon={<Trash2 size={16} />}
                         onClick={() => handleDelete(budget)}
                         fullWidth
-                        className="text-red-600 hover:bg-red-50"
+                        className="hover:text-rose-600 hover:bg-rose-50"
                       >
                         {t('common.delete')}
                       </Button>
