@@ -14,11 +14,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CurrencyText } from '@/core/components/formatters';
 import { EmptyState } from '@/core/components/composite/EmptyState';
-import { Spinner } from '@/core/components/atomic/Spinner';
+import { Spinner } from '@/components/ui/spinner';
 import type { Budget } from '../budgets.types';
 import { useBudgetDetail } from '../budgets.hooks';
 import { useCategories, useCategoryName } from '@/features/categories';
-import { getProgressBarClass } from '@/lib/finance-colors';
+import { getProgressBarClass, getAmountClass } from '@/lib/finance-colors';
 
 interface BudgetDetailsModalProps {
   budget: Budget;
@@ -104,7 +104,6 @@ export const BudgetDetailsModal = ({
                         ? 'warning'
                         : 'success'
                   }
-                  size="sm"
                 >
                   {percentage.toFixed(0)}%
                 </Badge>
@@ -137,14 +136,14 @@ export const BudgetDetailsModal = ({
                   <p className="text-xs text-neutral-600 mb-1">{t('budgets.spent')}</p>
                   <CurrencyText
                     value={totalSpent.toString()}
-                    className="text-lg font-bold text-red-600"
+                    className="text-lg font-bold text-expense"
                   />
                 </div>
                 <div className="text-center p-3 bg-white rounded-lg border border-neutral-200">
                   <p className="text-xs text-neutral-600 mb-1">{t('budgets.remaining')}</p>
                   <CurrencyText
                     value={remaining.toString()}
-                    className={`text-lg font-bold ${remaining >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                    className={`text-lg font-bold ${getAmountClass(remaining)}`}
                   />
                 </div>
               </div>
@@ -254,7 +253,6 @@ export const BudgetDetailsModal = ({
                                 ? 'warning'
                                 : 'success'
                           }
-                          size="sm"
                         >
                           {catPercent.toFixed(0)}%
                         </Badge>
@@ -269,7 +267,7 @@ export const BudgetDetailsModal = ({
                         <span>
                           <CurrencyText value={catSpent.toString()} /> / <CurrencyText value={catAllocated.toString()} />
                         </span>
-                        <span className={catRemaining >= 0 ? 'text-green-600' : 'text-red-600'}>
+                        <span className={getAmountClass(catRemaining)}>
                           {t('budgets.remaining')}: <CurrencyText value={catRemaining.toString()} />
                         </span>
                       </div>

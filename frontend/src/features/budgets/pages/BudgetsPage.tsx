@@ -4,9 +4,10 @@ import { Plus, AlertCircle, Edit, Trash2, RefreshCw, Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardBody, CardFooter } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CurrencyText, PercentageText, DateText } from '@/core/components/formatters';
-import { getProgressBarClass } from '@/lib/finance-colors';
+import { getProgressBarClass, getProgressVariant, getAmountClass } from '@/lib/finance-colors';
 import { EmptyState } from '@/core/components/composite/EmptyState';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Alert } from '@/components/ui/alert';
@@ -116,15 +117,6 @@ export const BudgetsPage: React.FC = () => {
     }
   };
 
-  // Utilities
-  const getPercentageBadgeClass = (percentage: number) => {
-    if (percentage >= 100)
-      return 'bg-rose-50 text-rose-700 text-xs font-semibold px-2 py-0.5 rounded-full';
-    if (percentage >= 80)
-      return 'bg-amber-50 text-amber-700 text-xs font-semibold px-2 py-0.5 rounded-full';
-    return 'bg-emerald-50 text-emerald-700 text-xs font-semibold px-2 py-0.5 rounded-full';
-  };
-
   // Loading state — skeleton grid
   if (isLoading) {
     return (
@@ -199,9 +191,9 @@ export const BudgetsPage: React.FC = () => {
                     <CardTitle>{budget.name}</CardTitle>
                     <CardDescription>{budget.periodType}</CardDescription>
                     <CardAction>
-                      <span className={getPercentageBadgeClass(percentage)}>
+                      <Badge variant={getProgressVariant(percentage)}>
                         <PercentageText value={percentage} decimals={0} />
-                      </span>
+                      </Badge>
                     </CardAction>
                   </CardHeader>
 
@@ -232,7 +224,7 @@ export const BudgetsPage: React.FC = () => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-500">{t('budgets.remaining')}</span>
-                        <span className={`font-semibold ${remaining >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        <span className={`font-semibold ${getAmountClass(remaining)}`}>
                           <CurrencyText value={remaining} />
                         </span>
                       </div>
