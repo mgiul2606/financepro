@@ -18,6 +18,7 @@ import { Spinner } from '@/core/components/atomic/Spinner';
 import type { Budget } from '../budgets.types';
 import { useBudgetDetail } from '../budgets.hooks';
 import { useCategories, useCategoryName } from '@/features/categories';
+import { getProgressBarClass } from '@/lib/finance-colors';
 
 interface BudgetDetailsModalProps {
   budget: Budget;
@@ -117,13 +118,7 @@ export const BudgetDetailsModal = ({
                 </div>
                 <div className="w-full h-3 bg-neutral-200 rounded-full overflow-hidden">
                   <div
-                    className={`h-full transition-all duration-300 ${
-                      percentage >= 100
-                        ? 'bg-red-600'
-                        : percentage >= 80
-                          ? 'bg-yellow-500'
-                          : 'bg-green-600'
-                    }`}
+                    className={`h-full transition-all duration-300 ${getProgressBarClass(percentage)}`}
                     style={{ width: `${Math.min(percentage, 100)}%` }}
                   />
                 </div>
@@ -266,13 +261,7 @@ export const BudgetDetailsModal = ({
                       </div>
                       <div className="w-full h-2 bg-neutral-200 rounded-full overflow-hidden mb-2">
                         <div
-                          className={`h-full transition-all duration-300 ${
-                            catPercent >= 100
-                              ? 'bg-red-600'
-                              : catPercent >= 80
-                                ? 'bg-yellow-500'
-                                : 'bg-green-600'
-                          }`}
+                          className={`h-full transition-all duration-300 ${getProgressBarClass(catPercent)}`}
                           style={{ width: `${Math.min(catPercent, 100)}%` }}
                         />
                       </div>
