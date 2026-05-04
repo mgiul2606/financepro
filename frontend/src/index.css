@@ -121,6 +121,15 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-income: var(--color-income);
+  --color-income-subtle: var(--color-income-subtle);
+  --color-income-foreground: var(--color-income-foreground);
+  --color-expense: var(--color-expense);
+  --color-expense-subtle: var(--color-expense-subtle);
+  --color-expense-foreground: var(--color-expense-foreground);
+  --color-warning-finance: var(--color-warning-finance);
+  --color-warning-finance-subtle: var(--color-warning-finance-subtle);
+  --color-warning-finance-foreground: var(--color-warning-finance-foreground);
 }
 
 :root {
@@ -246,15 +255,15 @@
 @utility text-expense-foreground {
   color: var(--color-expense-foreground);
 }
-@utility bg-finance-warning {
+@utility bg-warning-finance {
   background-color: var(--color-warning-finance);
 }
-@utility bg-finance-warning-subtle {
+@utility bg-warning-finance-subtle {
   background-color: var(--color-warning-finance-subtle);
 }
-@utility text-finance-warning {
+@utility text-warning-finance {
   color: var(--color-warning-finance);
 }
-@utility text-finance-warning-foreground {
+@utility text-warning-finance-foreground {
   color: var(--color-warning-finance-foreground);
 }
