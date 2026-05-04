@@ -381,7 +381,7 @@ export const Dashboard = () => {
                           <p className="font-medium text-gray-900">{goal.name}</p>
                           <p className="text-xs text-gray-500">{goal.goalType}</p>
                         </div>
-                        <Badge variant={goal.status === 'completed' ? 'success' : 'info'} size="sm">
+                        <Badge variant={goal.status === 'completed' ? 'success' : 'info'}>
                           {goal.status}
                         </Badge>
                       </div>

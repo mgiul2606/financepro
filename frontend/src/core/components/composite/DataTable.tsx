@@ -1,7 +1,7 @@
 import { useState, ReactNode } from 'react';
 import { clsx } from 'clsx';
 import { ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
-import { Spinner } from '../atomic/Spinner';
+import { Spinner } from '@/components/ui/spinner';
 
 export interface Column<T> {
   key: string;
@@ -102,7 +102,7 @@ export function DataTable<T extends Record<string, any>>({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Spinner size="lg" label="Loading data..." />
+        <Spinner size="lg" />
       </div>
     );
   }

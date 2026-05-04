@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { clsx } from 'clsx';
-import { Button } from '../atomic/Button';
+import { Button } from '@/components/ui/button';
 
 export interface EmptyStateProps {
   icon?: ReactNode;
@@ -42,9 +42,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 
       {action && (
         <Button
-          variant="primary"
+          variant="default"
           onClick={action.onClick}
-          leftIcon={action.icon}
         >
           {action.label}
         </Button>
