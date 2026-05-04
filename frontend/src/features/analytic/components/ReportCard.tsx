@@ -5,9 +5,9 @@
  */
 import { FileText, Download, TrendingUp, TrendingDown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardHeader, CardBody, CardFooter } from '@/core/components/atomic/Card';
-import { Badge } from '@/core/components/atomic/Badge';
-import { Button } from '@/core/components/atomic/Button';
+import { Card, CardHeader, CardTitle, CardAction, CardBody, CardFooter } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import type { FinancialReport } from '../analytic.types';
 import type { ReportTypeValue } from '../analytic.constants';
 import { REPORT_TYPE_OPTIONS } from '../analytic.constants';
@@ -34,19 +34,19 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onView, onDownlo
 
   return (
     <Card variant="elevated" hoverable={!!onView}>
-      <CardHeader
-        title={
+      <CardHeader>
+        <CardTitle>
           <div className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-blue-600" />
             <span>{report.title}</span>
           </div>
-        }
-        action={
-          <Badge variant="primary" size="sm">
+        </CardTitle>
+        <CardAction>
+          <Badge variant="default">
             {t(getReportTypeLabel(report.type))}
           </Badge>
-        }
-      />
+        </CardAction>
+      </CardHeader>
       <CardBody>
         <div className="space-y-4">
           <div className="text-sm text-neutral-600">

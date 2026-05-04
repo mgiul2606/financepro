@@ -2,8 +2,8 @@
 import { useTranslation } from 'react-i18next';
 import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
 
-import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
-import { Button } from '@/core/components/atomic/Button';
+import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardBody } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -68,12 +68,12 @@ export const CategoryManagementCard = () => {
   return (
     <>
       <Card variant="bordered">
-        <CardHeader
-          title={t('categories.title')}
-          subtitle={t('categories.subtitle')}
-          action={
+        <CardHeader>
+          <CardTitle>{t('categories.title')}</CardTitle>
+          <CardDescription>{t('categories.subtitle')}</CardDescription>
+          <CardAction>
             <Button
-              variant="primary"
+              variant="default"
               size="sm"
               onClick={() => crud.openCreateModal()}
               disabled={crud.isCreating}
@@ -81,8 +81,8 @@ export const CategoryManagementCard = () => {
               <PlusCircle className="mr-1.5 h-4 w-4" />
               {t('categories.newCategory')}
             </Button>
-          }
-        />
+          </CardAction>
+        </CardHeader>
         <CardBody>
           {loadError && (
             <Alert className="mb-4 border-rose-200 bg-rose-50 text-rose-800">
@@ -101,7 +101,7 @@ export const CategoryManagementCard = () => {
               <p className="text-sm font-medium text-gray-500">{t('categories.noCategories')}</p>
               <p className="mt-1 text-xs text-gray-400">{t('categories.noCategoriesDesc')}</p>
               <Button
-                variant="primary"
+                variant="default"
                 size="sm"
                 className="mt-4"
                 onClick={() => crud.openCreateModal()}
@@ -263,7 +263,7 @@ export const CategoryManagementCard = () => {
               {t('common.cancel')}
             </Button>
             <Button
-              variant="primary"
+              variant="default"
               type="submit"
               form="category-form"
               disabled={crud.isCreating}
@@ -315,7 +315,7 @@ export const CategoryManagementCard = () => {
               {t('common.cancel')}
             </Button>
             <Button
-              variant="primary"
+              variant="default"
               type="submit"
               form="category-form"
               disabled={crud.isUpdating}

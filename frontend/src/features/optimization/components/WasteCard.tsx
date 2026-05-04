@@ -1,7 +1,7 @@
 import { AlertCircle, Trash2, TrendingDown } from 'lucide-react';
-import { Card, CardHeader, CardBody, CardFooter } from '@/core/components/atomic/Card';
-import { Badge } from '@/core/components/atomic/Badge';
-import { Button } from '@/core/components/atomic/Button';
+import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardBody, CardFooter } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import type { WasteDetection } from '../optimization.types';
 import { usePreferences } from '@/contexts/PreferencesContext';
 import { formatCurrency, formatDate } from '@/utils/currency';
@@ -36,25 +36,25 @@ export const WasteCard: React.FC<WasteCardProps> = ({ waste, onTakeAction }) => 
   const { preferences } = usePreferences();
   return (
     <Card variant="bordered" className="border-orange-200 bg-orange-50/30">
-      <CardHeader
-        title={
+      <CardHeader>
+        <CardTitle>
           <div className="flex items-center gap-2">
             <Trash2 className="h-5 w-5 text-orange-600" />
             <span>{waste.merchantName}</span>
           </div>
-        }
-        subtitle={waste.category}
-        action={
-          <Badge variant={usageColors[waste.usageFrequency]} size="sm">
+        </CardTitle>
+        <CardDescription>{waste.category}</CardDescription>
+        <CardAction>
+          <Badge variant={usageColors[waste.usageFrequency] === 'danger' ? 'destructive' : usageColors[waste.usageFrequency]}>
             {usageLabels[waste.usageFrequency]}
           </Badge>
-        }
-      />
+        </CardAction>
+      </CardHeader>
       <CardBody>
         <div className="space-y-3">
           <div>
             <p className="text-xs text-neutral-600 mb-1">{wasteTypeLabels[waste.type]}</p>
-            <Badge variant="secondary" size="sm">
+            <Badge variant="secondary">
               {waste.frequency === 'monthly' && 'Mensile'}
               {waste.frequency === 'yearly' && 'Annuale'}
               {waste.frequency === 'quarterly' && 'Trimestrale'}
@@ -112,7 +112,7 @@ export const WasteCard: React.FC<WasteCardProps> = ({ waste, onTakeAction }) => 
       </CardBody>
       {onTakeAction && (
         <CardFooter>
-          <Button variant="primary" size="sm" fullWidth onClick={onTakeAction}>
+          <Button variant="default" size="sm" fullWidth onClick={onTakeAction}>
             Prendi Provvedimenti
           </Button>
         </CardFooter>

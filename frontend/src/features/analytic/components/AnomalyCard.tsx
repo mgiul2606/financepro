@@ -5,8 +5,8 @@
  */
 import { AlertTriangle, TrendingUp, MapPin, Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
-import { Badge } from '@/core/components/atomic/Badge';
+import { Card, CardHeader, CardTitle, CardAction, CardBody } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import type { AnomalyDetection, BadgeVariant } from '../analytic.types';
 import type { AnomalyTypeValue, SeverityValue } from '../analytic.constants';
 import { ANOMALY_TYPE_OPTIONS, SEVERITY_OPTIONS } from '../analytic.constants';
@@ -52,19 +52,19 @@ export const AnomalyCard: React.FC<AnomalyCardProps> = ({ anomaly, onViewDetails
       onClick={onViewDetails}
       className="transition-all"
     >
-      <CardHeader
-        title={
+      <CardHeader>
+        <CardTitle>
           <div className="flex items-center gap-2">
             <Icon className="h-5 w-5 text-orange-600" />
             <span>{t(getAnomalyTypeLabel(anomaly.anomalyType))}</span>
           </div>
-        }
-        action={
-          <Badge variant={getSeverityVariant(anomaly.severity)} size="sm">
+        </CardTitle>
+        <CardAction>
+          <Badge variant={getSeverityVariant(anomaly.severity) as 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' | 'info'}>
             {t(getSeverityLabel(anomaly.severity))}
           </Badge>
-        }
-      />
+        </CardAction>
+      </CardHeader>
       <CardBody>
         <div className="space-y-3">
           <div className="flex items-center justify-between">

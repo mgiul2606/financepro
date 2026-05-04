@@ -5,7 +5,7 @@
  */
 import { TrendingUp, TrendingDown, DollarSign, CreditCard, Target, Calendar } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Card } from '@/core/components/atomic/Card';
+import { Card } from '@/components/ui/card';
 import type { AnalyticOverview } from '../analytic.types';
 import { usePreferences } from '@/contexts/PreferencesContext';
 import { formatCurrency } from '@/utils/currency';

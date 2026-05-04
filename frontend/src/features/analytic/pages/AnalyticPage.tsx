@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
-import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
+import { Card, CardHeader, CardTitle, CardBody } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/core/components/atomic/Tabs';
-import { Spinner } from '@/core/components/atomic/Spinner';
-import { Button } from '@/core/components/atomic/Button';
-import { CurrencyText } from '@/core/components/atomic';
+import { Spinner } from '@/components/ui/spinner';
+import { Button } from '@/components/ui/button';
+import { CurrencyText } from '@/core/components/formatters';
 import { formatCurrency } from '@/utils/currency';
 import { usePreferences } from '@/contexts/PreferencesContext';
 import { LineChart, PieChart, BarChart, PieChartDataPoint } from '@/core/components/composite/charts';
@@ -71,7 +71,7 @@ export const AnalyticPage = () => {
             <Button variant="secondary" leftIcon={<Filter className="h-4 w-4" />}>
               {t('analytics.filters')}
             </Button>
-            <Button variant="primary" leftIcon={<Download className="h-4 w-4" />}>
+            <Button variant="default" leftIcon={<Download className="h-4 w-4" />}>
               {t('common.export')}
             </Button>
           </>
@@ -110,7 +110,7 @@ export const AnalyticPage = () => {
           <div className="space-y-6">
             {overviewLoading ? (
               <div className="flex justify-center py-12">
-                <Spinner size="lg" label={t('analytics.loadingOverview')} />
+                <Spinner size="lg" />
               </div>
             ) : overviewError ? (
               <Alert variant="destructive">
@@ -143,7 +143,7 @@ export const AnalyticPage = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Time Series Chart */}
                   <Card variant="elevated">
-                    <CardHeader title={t('analytics.incomeExpensesTrend')} />
+                    <CardHeader><CardTitle>{t('analytics.incomeExpensesTrend')}</CardTitle></CardHeader>
                     <CardBody>
                       {timeSeriesLoading ? (
                         <Spinner />
@@ -166,7 +166,7 @@ export const AnalyticPage = () => {
 
                   {/* Category Breakdown */}
                   <Card variant="elevated">
-                    <CardHeader title={t('analytics.categoryDistribution')} />
+                    <CardHeader><CardTitle>{t('analytics.categoryDistribution')}</CardTitle></CardHeader>
                     <CardBody>
                       {categoriesLoading ? (
                         <Spinner />
@@ -250,7 +250,7 @@ export const AnalyticPage = () => {
         {activeTab === 'trends' && (
           <div className="space-y-6">
             <Card variant="elevated">
-              <CardHeader title={t('analytics.temporalTrend')} />
+              <CardHeader><CardTitle>{t('analytics.temporalTrend')}</CardTitle></CardHeader>
               <CardBody>
                 {timeSeriesLoading ? (
                   <Spinner />
@@ -284,7 +284,7 @@ export const AnalyticPage = () => {
           <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card variant="elevated">
-                <CardHeader title={t('analytics.categoryBreakdown')} />
+                <CardHeader><CardTitle>{t('analytics.categoryBreakdown')}</CardTitle></CardHeader>
                 <CardBody>
                   {categoriesLoading ? (
                     <Spinner />
@@ -303,7 +303,7 @@ export const AnalyticPage = () => {
               </Card>
 
               <Card variant="elevated">
-                <CardHeader title={t('analytics.categoryByAmount')} />
+                <CardHeader><CardTitle>{t('analytics.categoryByAmount')}</CardTitle></CardHeader>
                 <CardBody>
                   {categoriesLoading ? (
                     <Spinner />
@@ -324,7 +324,7 @@ export const AnalyticPage = () => {
 
             {/* Category Details Table */}
             <Card variant="elevated">
-              <CardHeader title={t('analytics.categoryDetails')} />
+              <CardHeader><CardTitle>{t('analytics.categoryDetails')}</CardTitle></CardHeader>
               <CardBody>
                 {categoriesLoading ? (
                   <Spinner />
@@ -379,7 +379,7 @@ export const AnalyticPage = () => {
         {activeTab === 'merchants' && (
           <div className="space-y-6">
             <Card variant="elevated">
-              <CardHeader title={t('analytics.topMerchants')} />
+              <CardHeader><CardTitle>{t('analytics.topMerchants')}</CardTitle></CardHeader>
               <CardBody>
                 {merchantsLoading ? (
                   <Spinner />
@@ -528,7 +528,7 @@ export const AnalyticPage = () => {
                 {/* Day of Week spending */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <Card variant="elevated">
-                    <CardHeader title={t('analytics.dayOfWeekSpending')} />
+                    <CardHeader><CardTitle>{t('analytics.dayOfWeekSpending')}</CardTitle></CardHeader>
                     <CardBody>
                       <BarChart
                         data={patternsData.dayOfWeek.map((d) => ({
@@ -558,7 +558,7 @@ export const AnalyticPage = () => {
 
                   {/* Week of Month spending */}
                   <Card variant="elevated">
-                    <CardHeader title={t('analytics.weekOfMonthSpending')} />
+                    <CardHeader><CardTitle>{t('analytics.weekOfMonthSpending')}</CardTitle></CardHeader>
                     <CardBody>
                       <BarChart
                         data={patternsData.weekOfMonth.map((w) => ({
@@ -582,7 +582,7 @@ export const AnalyticPage = () => {
                 {/* Category Trends */}
                 {patternsData.categoryTrends.length > 0 && (
                   <Card variant="elevated">
-                    <CardHeader title={t('analytics.categoryTrends')} />
+                    <CardHeader><CardTitle>{t('analytics.categoryTrends')}</CardTitle></CardHeader>
                     <CardBody>
                       <div className="overflow-x-auto">
                         <table className="w-full">
@@ -625,7 +625,7 @@ export const AnalyticPage = () => {
                 {/* Detected Recurring */}
                 {patternsData.detectedRecurring.length > 0 && (
                   <Card variant="elevated">
-                    <CardHeader title={t('analytics.detectedRecurring')} />
+                    <CardHeader><CardTitle>{t('analytics.detectedRecurring')}</CardTitle></CardHeader>
                     <CardBody>
                       <div className="space-y-3">
                         {patternsData.detectedRecurring.map((rec, idx) => (
@@ -702,7 +702,7 @@ export const AnalyticPage = () => {
                       <Icon className="h-10 w-10 text-purple-500 mx-auto mb-3" />
                       <h4 className="font-semibold text-neutral-900 mb-2">{label}</h4>
                       <Button
-                        variant="primary"
+                        variant="default"
                         size="sm"
                         leftIcon={<Download className="h-4 w-4" />}
                         loading={isGenerating}
@@ -733,7 +733,7 @@ export const AnalyticPage = () => {
                     </div>
                     <div className="flex gap-2">
                       <Button
-                        variant="primary"
+                        variant="default"
                         size="sm"
                         leftIcon={<Download className="h-4 w-4" />}
                         onClick={() => {

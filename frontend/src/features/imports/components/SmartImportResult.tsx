@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, XCircle, AlertTriangle, ArrowRight, RotateCcw } from 'lucide-react';
-import { Button } from '@/core/components/atomic/Button';
-import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardDescription, CardBody } from '@/components/ui/card';
 import type { SmartConfirmResult } from '../imports.smart-types';
 
 interface SmartImportResultProps {
@@ -19,16 +19,16 @@ export const SmartImportResult = ({ result, onReset }: SmartImportResultProps) =
 
   return (
     <Card variant="bordered">
-      <CardHeader
-        title={t('smartImport.result.title')}
-        subtitle={
-          isSuccess
+      <CardHeader>
+        <CardTitle>{t('smartImport.result.title')}</CardTitle>
+        <CardDescription>
+          {isSuccess
             ? t('smartImport.result.subtitleSuccess')
             : isPartial
               ? t('smartImport.result.subtitlePartial')
-              : t('smartImport.result.subtitleFailed')
-        }
-      />
+              : t('smartImport.result.subtitleFailed')}
+        </CardDescription>
+      </CardHeader>
       <CardBody>
         <div className="space-y-6">
           {/* Status icon */}
@@ -72,7 +72,7 @@ export const SmartImportResult = ({ result, onReset }: SmartImportResultProps) =
               {t('smartImport.result.importAnother')}
             </Button>
             <Button
-              variant="primary"
+              variant="default"
               onClick={() => navigate('/transactions')}
               rightIcon={<ArrowRight className="h-4 w-4" />}
             >

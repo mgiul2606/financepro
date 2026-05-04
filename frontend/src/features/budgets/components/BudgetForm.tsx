@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { DollarSign, Calendar, Plus, X } from 'lucide-react';
 import { FormField, SelectField } from '@/components/ui/FormField';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/core/components/atomic/Button';
+import { Button } from '@/components/ui/button';
 import { useCategories } from '@/features/categories/categories.hooks';
 import type { Budget, BudgetCreate, BudgetUpdate, PeriodType } from '../budgets.types';
 import {

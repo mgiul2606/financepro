@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Filter } from 'lucide-react';
 import { Modal, ModalFooter } from '@/components/ui/Modal';
-import { Button } from '@/core/components/atomic/Button';
+import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/FormField';
 import type { AnalyticFilters } from '../analytic.types';
 import { ANALYTIC_CATEGORY_OPTIONS } from '../analytic.constants';
@@ -69,7 +69,7 @@ export const AnalyticsFilterModal = ({
           <Button variant="secondary" onClick={onClose}>
             {t('common.cancel')}
           </Button>
-          <Button variant="primary" onClick={handleApply} leftIcon={<Filter />}>
+          <Button variant="default" onClick={handleApply} leftIcon={<Filter />}>
             {t('transactions.filters.apply')}
           </Button>
         </ModalFooter>

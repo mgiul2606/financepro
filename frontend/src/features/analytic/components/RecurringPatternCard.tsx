@@ -5,8 +5,8 @@
  */
 import { Repeat, TrendingUp, Calendar } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
-import { Badge } from '@/core/components/atomic/Badge';
+import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardBody } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import type { RecurringPattern, BadgeVariant, ConfidenceBadgeInfo } from '../analytic.types';
 import type { FrequencyValue } from '../analytic.constants';
 import { FREQUENCY_OPTIONS, CONFIDENCE_THRESHOLDS } from '../analytic.constants';
@@ -39,20 +39,20 @@ export const RecurringPatternCard: React.FC<RecurringPatternCardProps> = ({ patt
 
   return (
     <Card variant="default" className="h-full">
-      <CardHeader
-        title={
+      <CardHeader>
+        <CardTitle>
           <div className="flex items-center gap-2">
             <Repeat className="h-5 w-5 text-blue-600" />
             <span className="truncate">{pattern.merchantName}</span>
           </div>
-        }
-        subtitle={pattern.category}
-        action={
-          <Badge variant={confidenceBadge.variant as BadgeVariant} size="sm">
+        </CardTitle>
+        <CardDescription>{pattern.category}</CardDescription>
+        <CardAction>
+          <Badge variant={confidenceBadge.variant as 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' | 'info'}>
             {t(confidenceBadge.label)}
           </Badge>
-        }
-      />
+        </CardAction>
+      </CardHeader>
       <CardBody>
         <div className="space-y-3">
           <div className="flex items-center justify-between">

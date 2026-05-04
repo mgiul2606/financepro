@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, AlertTriangle, CheckCircle, XCircle, ArrowUpDown } from 'lucide-react';
-import { Button } from '@/core/components/atomic/Button';
-import { Badge } from '@/core/components/atomic/Badge';
-import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardHeader, CardTitle, CardBody } from '@/components/ui/card';
 import type { SmartPreviewData, PreviewTransactionItem } from '../imports.smart-types';
 import { usePreferences } from '@/contexts/PreferencesContext';
 import { formatCurrency } from '@/utils/currency';
@@ -131,12 +131,12 @@ export const SmartImportPreview = ({
   const reconciliationBadge = (tx: PreviewTransactionItem) => {
     const action = effectiveAction(tx);
     if (action === 'skip') {
-      return <Badge variant="danger" size="sm">{t('smartImport.preview.duplicate')}</Badge>;
+      return <Badge variant="destructive">{t('smartImport.preview.duplicate')}</Badge>;
     }
     if (action === 'flag') {
-      return <Badge variant="warning" size="sm">{t('smartImport.preview.needsReview')}</Badge>;
+      return <Badge variant="warning">{t('smartImport.preview.needsReview')}</Badge>;
     }
-    return <Badge variant="success" size="sm">{t('smartImport.preview.new')}</Badge>;
+    return <Badge variant="success">{t('smartImport.preview.new')}</Badge>;
   };
 
   const allChecked = excludedRows.size === 0;
@@ -145,7 +145,7 @@ export const SmartImportPreview = ({
     <div className="space-y-4">
       {/* Detected format info */}
       <Card variant="bordered">
-        <CardHeader title={t('smartImport.preview.detectedFormat')} />
+        <CardHeader><CardTitle>{t('smartImport.preview.detectedFormat')}</CardTitle></CardHeader>
         <CardBody>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div>
@@ -229,7 +229,7 @@ export const SmartImportPreview = ({
 
       {/* Transactions table */}
       <Card variant="bordered">
-        <CardHeader title={t('smartImport.preview.transactions')} />
+        <CardHeader><CardTitle>{t('smartImport.preview.transactions')}</CardTitle></CardHeader>
         <CardBody>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -391,7 +391,7 @@ export const SmartImportPreview = ({
           {t('common.back')}
         </Button>
         <Button
-          variant="primary"
+          variant="default"
           onClick={() => onConfirm(overrides, importFlagged, Array.from(excludedRows), invertAmounts)}
           isLoading={isImporting}
           disabled={isImporting || counts.toImport === 0}

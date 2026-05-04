@@ -6,9 +6,9 @@
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, TrendingUp, Calendar, DollarSign, Tag, Store, Clock } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
-import { Card, CardBody } from '@/core/components/atomic/Card';
-import { Badge } from '@/core/components/atomic/Badge';
-import { CurrencyText } from '@/core/components/atomic/CurrencyText';
+import { Card, CardBody } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { CurrencyText } from '@/core/components/formatters';
 import type { AnomalyDetection, BadgeVariant } from '../analytic.types';
 import type { AnomalyTypeValue, SeverityValue } from '../analytic.constants';
 import { SEVERITY_OPTIONS } from '../analytic.constants';
@@ -86,7 +86,7 @@ export const AnomalyDetailsModal = ({
                   <h3 className="font-semibold">
                     {t(`analytics.anomalyTypes.${anomaly.anomalyType}`)}
                   </h3>
-                  <Badge variant={getSeverityVariant(anomaly.severity)} size="sm">
+                  <Badge variant={getSeverityVariant(anomaly.severity) as 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' | 'info'}>
                     {t(`analytics.severity.${anomaly.severity}`)}
                   </Badge>
                 </div>
@@ -130,7 +130,7 @@ export const AnomalyDetailsModal = ({
                   <Tag className="h-4 w-4" />
                   <span className="text-sm">{t('transactions.category')}</span>
                 </div>
-                <Badge variant="secondary" size="sm">
+                <Badge variant="secondary">
                   {anomaly.category}
                 </Badge>
               </div>

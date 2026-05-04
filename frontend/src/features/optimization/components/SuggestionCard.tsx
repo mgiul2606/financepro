@@ -1,7 +1,7 @@
 import { Lightbulb, CheckCircle2, X, ChevronRight } from 'lucide-react';
-import { Card, CardHeader, CardBody, CardFooter } from '@/core/components/atomic/Card';
-import { Badge } from '@/core/components/atomic/Badge';
-import { Button } from '@/core/components/atomic/Button';
+import { Card, CardHeader, CardTitle, CardAction, CardBody, CardFooter } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import type { OptimizationSuggestion } from '../optimization.types';
 import { usePreferences } from '@/contexts/PreferencesContext';
 import { formatCurrency, formatDate } from '@/utils/currency';
@@ -48,8 +48,8 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
           : ''
       }
     >
-      <CardHeader
-        title={
+      <CardHeader>
+        <CardTitle>
           <div className="flex items-start gap-2">
             {suggestion.status === 'implemented' ? (
               <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
@@ -58,18 +58,18 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
             )}
             <span className="flex-1">{suggestion.title}</span>
           </div>
-        }
-        action={
+        </CardTitle>
+        <CardAction>
           <div className="flex items-center gap-2">
-            <Badge variant="secondary" size="sm">
+            <Badge variant="secondary">
               {categoryLabels[suggestion.category]}
             </Badge>
-            <Badge variant={priorityBadge.variant} size="sm">
+            <Badge variant={priorityBadge.variant === 'danger' ? 'destructive' : priorityBadge.variant}>
               {priorityBadge.label}
             </Badge>
           </div>
-        }
-      />
+        </CardAction>
+      </CardHeader>
       <CardBody>
         <div className="space-y-4">
           <p className="text-sm text-neutral-700">{suggestion.description}</p>
@@ -142,7 +142,7 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
               </Button>
             )}
             {onImplement && (
-              <Button variant="primary" size="sm" onClick={onImplement}>
+              <Button variant="default" size="sm" onClick={onImplement}>
                 Implementa
               </Button>
             )}

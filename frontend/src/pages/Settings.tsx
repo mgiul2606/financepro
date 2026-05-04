@@ -3,10 +3,10 @@ import { useState } from 'react';
 import { User, Bell, Shield, Globe, Tag } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
-import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
+import { Card, CardHeader, CardTitle, CardDescription, CardBody } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/core/components/atomic/Tabs';
 import { FormField, SelectField } from '@/components/ui/FormField';
-import { Button } from '@/core/components/atomic/Button';
+import { Button } from '@/components/ui/button';
 import { Toggle } from '@/core/components/atomic/Toggle';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePreferences } from '@/contexts/PreferencesContext';
@@ -131,10 +131,10 @@ export const Settings = () => {
           {/* Profile Tab */}
           <TabsContent value="profile">
             <Card variant="bordered">
-              <CardHeader
-                title={t('settings.profileInformation')}
-                subtitle={t('settings.profileInformationDesc')}
-              />
+              <CardHeader>
+                <CardTitle>{t('settings.profileInformation')}</CardTitle>
+                <CardDescription>{t('settings.profileInformationDesc')}</CardDescription>
+              </CardHeader>
               <CardBody>
                 <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                   <FormField
@@ -166,7 +166,7 @@ export const Settings = () => {
                   />
 
                   <div className="pt-4">
-                    <Button variant="primary" onClick={handleSavePreferences}>
+                    <Button variant="default" onClick={handleSavePreferences}>
                       {t('settings.saveChanges')}
                     </Button>
                   </div>
@@ -178,10 +178,10 @@ export const Settings = () => {
           {/* Notifications Tab */}
           <TabsContent value="notifications">
             <Card variant="bordered">
-              <CardHeader
-                title={t('settings.notificationPreferences')}
-                subtitle={t('settings.notificationPreferencesDesc')}
-              />
+              <CardHeader>
+                <CardTitle>{t('settings.notificationPreferences')}</CardTitle>
+                <CardDescription>{t('settings.notificationPreferencesDesc')}</CardDescription>
+              </CardHeader>
               <CardBody>
                 <div className="space-y-6">
                   <div className="flex items-center justify-between py-3 border-b border-gray-200">
@@ -300,7 +300,7 @@ export const Settings = () => {
                   </div>
 
                   <div className="pt-4">
-                    <Button variant="primary" onClick={handleSavePreferences}>
+                    <Button variant="default" onClick={handleSavePreferences}>
                       {t('settings.savePreferences')}
                     </Button>
                   </div>
@@ -313,10 +313,10 @@ export const Settings = () => {
           <TabsContent value="security">
             <div className="space-y-6">
               <Card variant="bordered">
-                <CardHeader
-                  title={t('settings.changePassword')}
-                  subtitle={t('settings.changePasswordDesc')}
-                />
+                <CardHeader>
+                  <CardTitle>{t('settings.changePassword')}</CardTitle>
+                  <CardDescription>{t('settings.changePasswordDesc')}</CardDescription>
+                </CardHeader>
                 <CardBody>
                   <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                     <FormField
@@ -339,17 +339,17 @@ export const Settings = () => {
                     />
 
                     <div className="pt-4">
-                      <Button variant="primary">{t('settings.updatePassword')}</Button>
+                      <Button variant="default">{t('settings.updatePassword')}</Button>
                     </div>
                   </form>
                 </CardBody>
               </Card>
 
               <Card variant="bordered">
-                <CardHeader
-                  title={t('settings.twoFactor')}
-                  subtitle={t('settings.twoFactorDesc')}
-                />
+                <CardHeader>
+                  <CardTitle>{t('settings.twoFactor')}</CardTitle>
+                  <CardDescription>{t('settings.twoFactorDesc')}</CardDescription>
+                </CardHeader>
                 <CardBody>
                   <p className="text-sm text-gray-600 mb-4">
                     {t('settings.twoFactorDisabled')}
@@ -359,10 +359,10 @@ export const Settings = () => {
               </Card>
 
               <Card variant="bordered">
-                <CardHeader
-                  title={t('settings.activeSessions')}
-                  subtitle={t('settings.activeSessionsDesc')}
-                />
+                <CardHeader>
+                  <CardTitle>{t('settings.activeSessions')}</CardTitle>
+                  <CardDescription>{t('settings.activeSessionsDesc')}</CardDescription>
+                </CardHeader>
                 <CardBody>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between p-3 rounded-lg border border-gray-200">
@@ -387,10 +387,10 @@ export const Settings = () => {
             <div className="space-y-6">
               {/* Language & Localization */}
               <Card variant="bordered">
-                <CardHeader
-                  title={t('settings.language')}
-                  subtitle={t('settings.languageDesc')}
-                />
+                <CardHeader>
+                  <CardTitle>{t('settings.language')}</CardTitle>
+                  <CardDescription>{t('settings.languageDesc')}</CardDescription>
+                </CardHeader>
                 <CardBody>
                   <div className="space-y-4">
                     <SelectField
@@ -426,10 +426,10 @@ export const Settings = () => {
 
               {/* Application Preferences */}
               <Card variant="bordered">
-                <CardHeader
-                  title={t('settings.applicationPreferences')}
-                  subtitle={t('settings.applicationPreferencesDesc')}
-                />
+                <CardHeader>
+                  <CardTitle>{t('settings.applicationPreferences')}</CardTitle>
+                  <CardDescription>{t('settings.applicationPreferencesDesc')}</CardDescription>
+                </CardHeader>
                 <CardBody>
                   <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                     <SelectField
@@ -465,10 +465,10 @@ export const Settings = () => {
 
               {/* Analytics Preferences */}
               <Card variant="bordered">
-                <CardHeader
-                  title={t('settings.analytics')}
-                  subtitle={t('settings.defaultDateRangeDesc')}
-                />
+                <CardHeader>
+                  <CardTitle>{t('settings.analytics')}</CardTitle>
+                  <CardDescription>{t('settings.defaultDateRangeDesc')}</CardDescription>
+                </CardHeader>
                 <CardBody>
                   <SelectField
                     label={t('settings.defaultDateRange')}
@@ -491,10 +491,10 @@ export const Settings = () => {
 
               {/* AI Preferences */}
               <Card variant="bordered">
-                <CardHeader
-                  title={t('settings.aiPreferences')}
-                  subtitle={t('settings.aiProactivityDesc')}
-                />
+                <CardHeader>
+                  <CardTitle>{t('settings.aiPreferences')}</CardTitle>
+                  <CardDescription>{t('settings.aiProactivityDesc')}</CardDescription>
+                </CardHeader>
                 <CardBody>
                   <SelectField
                     label={t('settings.aiProactivity')}
@@ -511,7 +511,7 @@ export const Settings = () => {
               </Card>
 
               <div className="pt-4">
-                <Button variant="primary" onClick={handleSavePreferences}>
+                <Button variant="default" onClick={handleSavePreferences}>
                   {t('settings.savePreferences')}
                 </Button>
               </div>

@@ -1,7 +1,7 @@
 import { Target, CheckCircle2, Circle, TrendingUp } from 'lucide-react';
-import { Card, CardHeader, CardBody, CardFooter } from '@/core/components/atomic/Card';
-import { Badge } from '@/core/components/atomic/Badge';
-import { Button } from '@/core/components/atomic/Button';
+import { Card, CardHeader, CardTitle, CardAction, CardBody, CardFooter } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import type { SavingsStrategy } from '../optimization.types';
 import { usePreferences } from '@/contexts/PreferencesContext';
 import { formatCurrency, formatDate } from '@/utils/currency';
@@ -50,24 +50,24 @@ export const SavingsStrategyCard: React.FC<SavingsStrategyCardProps> = ({
         isCompleted ? 'border-2 border-green-200 bg-green-50/30' : isActive ? 'border-blue-300' : ''
       }
     >
-      <CardHeader
-        title={
+      <CardHeader>
+        <CardTitle>
           <div className="flex items-center gap-2">
             <Target className={`h-5 w-5 ${isActive ? 'text-blue-600' : 'text-neutral-600'}`} />
             <span>{strategy.title}</span>
           </div>
-        }
-        action={
+        </CardTitle>
+        <CardAction>
           <div className="flex items-center gap-2">
-            <Badge variant={difficultyConfig[strategy.difficulty].variant} size="sm">
+            <Badge variant={difficultyConfig[strategy.difficulty].variant === 'danger' ? 'destructive' : difficultyConfig[strategy.difficulty].variant}>
               {difficultyConfig[strategy.difficulty].label}
             </Badge>
-            <Badge variant={impactConfig[strategy.impact].variant} size="sm">
+            <Badge variant={impactConfig[strategy.impact].variant}>
               {impactConfig[strategy.impact].label}
             </Badge>
           </div>
-        }
-      />
+        </CardAction>
+      </CardHeader>
       <CardBody>
         <div className="space-y-4">
           <p className="text-sm text-neutral-700">{strategy.description}</p>
@@ -75,7 +75,7 @@ export const SavingsStrategyCard: React.FC<SavingsStrategyCardProps> = ({
           {strategy.targetCategory && (
             <div className="flex items-center gap-2">
               <span className="text-xs text-neutral-600">Categoria:</span>
-              <Badge variant="secondary" size="sm">
+              <Badge variant="secondary">
                 {strategy.targetCategory}
               </Badge>
             </div>
@@ -169,7 +169,7 @@ export const SavingsStrategyCard: React.FC<SavingsStrategyCardProps> = ({
       {!isCompleted && (
         <CardFooter>
           {strategy.status === 'suggested' && onStart ? (
-            <Button variant="primary" size="sm" fullWidth onClick={onStart}>
+            <Button variant="default" size="sm" fullWidth onClick={onStart}>
               Inizia Strategia
             </Button>
           ) : isActive && onContinue ? (

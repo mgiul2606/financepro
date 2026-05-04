@@ -3,10 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { usePreferences } from '@/contexts/PreferencesContext';
 import { formatCurrency } from '@/utils/currency';
 import { PageHeader } from '@/core/components/composite/PageHeader';
-import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
+import { Card, CardHeader, CardTitle, CardAction, CardBody } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/core/components/atomic/Tabs';
-import { Spinner } from '@/core/components/atomic/Spinner';
-import { Button } from '@/core/components/atomic/Button';
+import { Spinner } from '@/components/ui/spinner';
+import { Button } from '@/components/ui/button';
 import {
   useOptimizationOverview,
   useOptimizationSuggestions,
@@ -69,7 +69,7 @@ export const OptimizationPage = () => {
           { label: t('optimization.title') },
         ]}
         actions={
-          <Button variant="primary" leftIcon={<Sparkles className="h-4 w-4" />}>
+          <Button variant="default" leftIcon={<Sparkles className="h-4 w-4" />}>
             {t('optimization.generateSuggestions')}
           </Button>
         }
@@ -92,7 +92,7 @@ export const OptimizationPage = () => {
           <div className="space-y-6">
             {overviewLoading ? (
               <div className="flex justify-center py-12">
-                <Spinner size="lg" label={t('optimization.loadingOverview')} />
+                <Spinner size="lg" />
               </div>
             ) : overview ? (
               <>
@@ -187,7 +187,7 @@ export const OptimizationPage = () => {
                         <p className="text-sm text-neutral-600 mb-3">
                           {overview.wasteDetected.unusedSubscriptions} {t('optimization.unusedSubscriptionsDetected')}
                         </p>
-                        <Button variant="primary" size="sm" onClick={() => setActiveTab('waste')}>
+                        <Button variant="default" size="sm" onClick={() => setActiveTab('waste')}>
                           {t('optimization.viewAction')}
                         </Button>
                       </div>
@@ -204,7 +204,7 @@ export const OptimizationPage = () => {
                         <p className="text-sm text-neutral-600 mb-3">
                           {strategies?.filter((s) => s.status === 'active').length || 0} {t('optimization.activeStrategies')}
                         </p>
-                        <Button variant="primary" size="sm" onClick={() => setActiveTab('strategies')}>
+                        <Button variant="default" size="sm" onClick={() => setActiveTab('strategies')}>
                           {t('optimization.startAction')}
                         </Button>
                       </div>
@@ -221,7 +221,7 @@ export const OptimizationPage = () => {
                         <p className="text-sm text-neutral-600 mb-3">
                           {alternatives?.length || 0} {t('optimization.cheaperAlternativesFound')}
                         </p>
-                        <Button variant="primary" size="sm" onClick={() => setActiveTab('alternatives')}>
+                        <Button variant="default" size="sm" onClick={() => setActiveTab('alternatives')}>
                           {t('optimization.exploreAction')}
                         </Button>
                       </div>
@@ -231,14 +231,14 @@ export const OptimizationPage = () => {
 
                 {/* Top Suggestions Preview */}
                 <Card variant="elevated">
-                  <CardHeader
-                    title={t('optimization.prioritySuggestions')}
-                    action={
+                  <CardHeader>
+                    <CardTitle>{t('optimization.prioritySuggestions')}</CardTitle>
+                    <CardAction>
                       <Button variant="ghost" size="sm" onClick={() => setActiveTab('suggestions')}>
                         {t('analytics.viewAll')}
                       </Button>
-                    }
-                  />
+                    </CardAction>
+                  </CardHeader>
                   <CardBody>
                     {suggestionsLoading ? (
                       <Spinner />
@@ -550,7 +550,7 @@ export const OptimizationPage = () => {
                         </div>
 
                         <div className="flex items-center gap-3 pt-3 border-t border-neutral-200">
-                          <Button variant="primary" size="sm">
+                          <Button variant="default" size="sm">
                             {t('optimization.requestQuote')}
                           </Button>
                           <Button variant="ghost" size="sm">

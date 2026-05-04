@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle } from 'lucide-react';
-import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
+import { Card, CardHeader, CardTitle, CardDescription, CardBody } from '@/components/ui/card';
 import { useProfileContext } from '@/contexts/ProfileContext';
 import { useAccounts } from '@/features/accounts';
 import { ImportUploadZone } from './ImportUploadZone';
@@ -156,10 +156,10 @@ export const SmartImportWizard = ({ activeJobs = [] }: SmartImportWizardProps) =
       {/* Step 1: Upload */}
       {step === 'upload' && (
         <Card variant="bordered">
-          <CardHeader
-            title={t('smartImport.upload.title')}
-            subtitle={t('smartImport.upload.subtitle')}
-          />
+          <CardHeader>
+            <CardTitle>{t('smartImport.upload.title')}</CardTitle>
+            <CardDescription>{t('smartImport.upload.subtitle')}</CardDescription>
+          </CardHeader>
           <CardBody>
             <div className="space-y-4">
               {/* Account selector */}

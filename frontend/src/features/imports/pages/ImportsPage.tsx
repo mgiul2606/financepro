@@ -2,8 +2,8 @@ import { useState, useCallback } from 'react';
 import { CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
-import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
-import { Button } from '@/core/components/atomic/Button';
+import { Card, CardHeader, CardTitle, CardDescription, CardBody } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { ImportJobsTable } from '../components/ImportJobsTable';
 import { SmartImportWizard } from '../components/SmartImportWizard';
 import { useImports, useDeleteImport } from '../imports.hooks';
@@ -84,7 +84,7 @@ export const ImportsPage = () => {
         </div>
       ) : (
         <div className="mb-6">
-          <Button variant="primary" onClick={() => setShowWizard(true)}>
+          <Button variant="default" onClick={() => setShowWizard(true)}>
             {t('smartImport.startNew')}
           </Button>
         </div>
@@ -92,10 +92,10 @@ export const ImportsPage = () => {
 
       {/* Import History */}
       <Card variant="bordered">
-        <CardHeader
-          title={t('imports.importHistory')}
-          subtitle={t('imports.recentImports', { count: total })}
-        />
+        <CardHeader>
+          <CardTitle>{t('imports.importHistory')}</CardTitle>
+          <CardDescription>{t('imports.recentImports', { count: total })}</CardDescription>
+        </CardHeader>
         <CardBody>
           {isLoading ? (
             <div className="text-center py-8">

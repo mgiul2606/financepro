@@ -49,7 +49,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 
 // Custom components
-import { CurrencyText } from '@/core/components/atomic';
+import { CurrencyText } from '@/core/components/formatters';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useCrudModal } from '@/hooks/useCrudModal';
 

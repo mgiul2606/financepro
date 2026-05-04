@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { FileText, Trash2, Play } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { DataTable, type Column } from '@/core/components/composite/DataTable';
-import { Button } from '@/core/components/atomic/Button';
+import { Button } from '@/components/ui/button';
 import type { ImportJobResponse } from '@/api/generated/models';
 import { ImportStatusBadge } from './ImportStatusBadge';
 import { calculateProgress } from '../imports.hooks';

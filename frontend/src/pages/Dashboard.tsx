@@ -2,11 +2,11 @@
 import { Wallet, Target, PiggyBank, TrendingUp, ArrowUpRight, ArrowDownRight, AlertCircle, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
-import { Card, CardHeader, CardBody } from '@/core/components/atomic/Card';
-import { Button } from '@/core/components/atomic/Button';
-import { Badge } from '@/core/components/atomic/Badge';
-import { Spinner } from '@/core/components/atomic/Spinner';
-import { CurrencyText, PercentageText } from '@/core/components/atomic';
+import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardBody } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Spinner } from '@/components/ui/spinner';
+import { CurrencyText, PercentageText } from '@/core/components/formatters';
 import { useNavigate } from 'react-router-dom';
 import { useAccounts } from '@/features/accounts';
 import { useBudgets } from '@/features/budgets';
@@ -84,7 +84,7 @@ export const Dashboard = () => {
           <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('common.errorLoadingData')}</h3>
           <p className="text-sm text-gray-600 mb-6">{t('dashboard.errorLoading')}</p>
           <Button
-            variant="primary"
+            variant="default"
             leftIcon={<RefreshCw className="h-4 w-4" />}
             onClick={() => {
               refetchAccounts();
@@ -216,15 +216,15 @@ export const Dashboard = () => {
         {/* Recent Accounts */}
         <div className="rounded-xl shadow-sm border border-gray-100 bg-white">
           <Card variant="bordered" className="border-0 shadow-none rounded-xl">
-            <CardHeader
-              title={t('nav.accounts')}
-              subtitle={`${accounts.length} ${t('dashboard.total')}`}
-              action={
+            <CardHeader>
+              <CardTitle>{t('nav.accounts')}</CardTitle>
+              <CardDescription>{`${accounts.length} ${t('dashboard.total')}`}</CardDescription>
+              <CardAction>
                 <Button variant="ghost" size="sm" onClick={() => navigate('/accounts')}>
                   {t('dashboard.viewAll')}
                 </Button>
-              }
-            />
+              </CardAction>
+            </CardHeader>
             <CardBody className="pt-0">
               <div className="space-y-1">
                 {accounts.slice(0, 3).map((account) => {
@@ -286,15 +286,15 @@ export const Dashboard = () => {
         {/* Recent Budgets */}
         <div className="rounded-xl shadow-sm border border-gray-100 bg-white">
           <Card variant="bordered" className="border-0 shadow-none rounded-xl">
-            <CardHeader
-              title={t('nav.budgets')}
-              subtitle={`${budgets?.length || 0} ${t('dashboard.active')}`}
-              action={
+            <CardHeader>
+              <CardTitle>{t('nav.budgets')}</CardTitle>
+              <CardDescription>{`${budgets?.length || 0} ${t('dashboard.active')}`}</CardDescription>
+              <CardAction>
                 <Button variant="ghost" size="sm" onClick={() => navigate('/budgets')}>
                   {t('dashboard.viewAll')}
                 </Button>
-              }
-            />
+              </CardAction>
+            </CardHeader>
             <CardBody className="pt-0">
               <div className="space-y-2">
                 {budgets?.slice(0, 3).map((budget) => {
@@ -357,15 +357,15 @@ export const Dashboard = () => {
         {/* Recent Goals */}
         <div className="rounded-xl shadow-sm border border-gray-100 bg-white lg:col-span-2">
           <Card variant="bordered" className="border-0 shadow-none rounded-xl">
-            <CardHeader
-              title={t('nav.goals')}
-              subtitle={`${activeGoals} ${t('dashboard.inProgress')}`}
-              action={
+            <CardHeader>
+              <CardTitle>{t('nav.goals')}</CardTitle>
+              <CardDescription>{`${activeGoals} ${t('dashboard.inProgress')}`}</CardDescription>
+              <CardAction>
                 <Button variant="ghost" size="sm" onClick={() => navigate('/goals')}>
                   {t('dashboard.viewAll')}
                 </Button>
-              }
-            />
+              </CardAction>
+            </CardHeader>
             <CardBody className="pt-0">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {goals?.slice(0, 4).map((goal) => {

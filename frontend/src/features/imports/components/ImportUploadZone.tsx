@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { Upload, FileText, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/core/components/atomic/Button';
+import { Button } from '@/components/ui/button';
 import { FILE_ACCEPT, MAX_FILE_SIZE, MAX_FILE_SIZE_DISPLAY, SUPPORTED_FORMATS } from '../imports.constants';
 
 interface ImportUploadZoneProps {
@@ -180,7 +180,7 @@ export const ImportUploadZone = ({
               {t('common.cancel')}
             </Button>
             <Button
-              variant="primary"
+              variant="default"
               onClick={onUpload}
             >
               {t('imports.startImport')}

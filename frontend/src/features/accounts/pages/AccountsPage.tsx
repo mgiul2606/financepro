@@ -14,7 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 
 // Custom components (kept minimal)
-import { CurrencyText, PercentageText } from '@/core/components/atomic';
+import { CurrencyText, PercentageText } from '@/core/components/formatters';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useCrudModal } from '@/hooks/useCrudModal';
 
