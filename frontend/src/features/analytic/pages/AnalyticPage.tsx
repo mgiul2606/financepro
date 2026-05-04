@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardTitle, CardBody } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger } from '@/core/components/atomic/Tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
 import { CurrencyText } from '@/core/components/formatters';

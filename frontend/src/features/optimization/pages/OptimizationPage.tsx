@@ -4,7 +4,7 @@ import { usePreferences } from '@/contexts/PreferencesContext';
 import { formatCurrency } from '@/utils/currency';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardTitle, CardAction, CardBody } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger } from '@/core/components/atomic/Tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
 import {
