@@ -9,11 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { CurrencyText, PercentageText, DateText } from '@/core/components/formatters';
 import { EmptyState } from '@/core/components/composite/EmptyState';
 import { Spinner } from '@/components/ui/spinner';
-import { Modal } from '@/components/ui/Modal';
-import { DialogFooter } from '@/components/ui/dialog';
 import { Alert } from '@/components/ui/alert';
 import { useConfirm } from '@/hooks/useConfirm';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { GoalForm } from '../components/GoalForm';
 import { GoalContributionForm } from '../components/GoalContributionForm';
 import { useGoals, useCreateGoal, useUpdateGoal, useDeleteGoal, useAddGoalContribution } from '../goals.hooks';
@@ -205,7 +203,7 @@ export const GoalsPage: React.FC = () => {
                       <div className="flex justify-between">
                         <span className="text-neutral-600">{t('budgets.remaining')}</span>
                         <span
-                          className={`font-medium ${remaining > 0 ? 'text-blue-600' : 'text-green-600'}`}
+                          className={`font-medium ${remaining > 0 ? 'text-muted-foreground' : 'text-income'}`}
                         >
                           <CurrencyText value={remaining} currency={goal.currency as SupportedCurrency} />
                         </span>
@@ -253,7 +251,7 @@ export const GoalsPage: React.FC = () => {
                         size="sm"
                         leftIcon={<Trash2 size={16} />}
                         onClick={() => handleDelete(goal)}
-                        className="text-red-600 hover:bg-red-50"
+                        className="text-expense hover:bg-expense-subtle"
                       >
                         {t('common.delete')}
                       </Button>
@@ -267,13 +265,17 @@ export const GoalsPage: React.FC = () => {
       </div>
 
       {/* Create Modal */}
-      <Modal
-        open={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        title={t('goals.createGoal')}
-        size="md"
-        preventClose={createMutation.isCreating}
-        footer={
+      <Dialog open={showCreateModal} onOpenChange={(open) => !open && !createMutation.isCreating && setShowCreateModal(false)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('goals.createGoal')}</DialogTitle>
+          </DialogHeader>
+          <GoalForm
+            onSubmit={handleCreate}
+            isLoading={createMutation.isCreating}
+            error={createMutation.error ? t('goals.errors.createFailed') : undefined}
+            onClearError={createMutation.reset}
+          />
           <DialogFooter>
             <Button
               variant="secondary"
@@ -291,53 +293,43 @@ export const GoalsPage: React.FC = () => {
               {t('goals.createGoal')}
             </Button>
           </DialogFooter>
-        }
-      >
-        <GoalForm
-          onSubmit={handleCreate}
-          isLoading={createMutation.isCreating}
-          error={createMutation.error ? t('goals.errors.createFailed') : undefined}
-          onClearError={createMutation.reset}
-        />
-      </Modal>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Modal */}
-      {editingGoal && (
-        <Modal
-          open={true}
-          onClose={() => setEditingGoal(null)}
-          title={t('goals.editGoal')}
-          size="md"
-          preventClose={updateMutation.isUpdating}
-          footer={
-            <DialogFooter>
-              <Button
-                variant="secondary"
-                onClick={() => setEditingGoal(null)}
-                disabled={updateMutation.isUpdating}
-              >
-                {t('common.cancel')}
-              </Button>
-              <Button
-                variant="default"
-                type="submit"
-                form="goal-form"
-                isLoading={updateMutation.isUpdating}
-              >
-                {t('common.saveChanges')}
-              </Button>
-            </DialogFooter>
-          }
-        >
-          <GoalForm
-            goal={editingGoal}
-            onSubmit={handleUpdate}
-            isLoading={updateMutation.isUpdating}
-            error={updateMutation.error ? t('goals.errors.updateFailed') : undefined}
-            onClearError={updateMutation.reset}
-          />
-        </Modal>
-      )}
+      <Dialog open={!!editingGoal} onOpenChange={(open) => !open && !updateMutation.isUpdating && setEditingGoal(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('goals.editGoal')}</DialogTitle>
+          </DialogHeader>
+          {editingGoal && (
+            <GoalForm
+              goal={editingGoal}
+              onSubmit={handleUpdate}
+              isLoading={updateMutation.isUpdating}
+              error={updateMutation.error ? t('goals.errors.updateFailed') : undefined}
+              onClearError={updateMutation.reset}
+            />
+          )}
+          <DialogFooter>
+            <Button
+              variant="secondary"
+              onClick={() => setEditingGoal(null)}
+              disabled={updateMutation.isUpdating}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              variant="default"
+              type="submit"
+              form="goal-form"
+              isLoading={updateMutation.isUpdating}
+            >
+              {t('common.saveChanges')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Contribution Modal */}
       <Dialog
