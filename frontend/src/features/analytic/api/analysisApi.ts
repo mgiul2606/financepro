@@ -127,6 +127,7 @@ interface DateRangeParams {
   end_date: string;
   profile_ids?: string[];
   currency?: string;
+  [key: string]: string | number | string[] | undefined;
 }
 
 function buildQueryString(params: Record<string, string | number | string[] | undefined>): string {
@@ -216,9 +217,9 @@ export async function generateReport(
 
 export function useTopMerchants(
   params: DateRangeParams & { limit?: number },
-  options?: { query?: Partial<UseQueryOptions> },
+  options?: { query?: Partial<UseQueryOptions<ApiResponse<TopMerchantsResponse>>> },
 ) {
-  return useQuery({
+  return useQuery<ApiResponse<TopMerchantsResponse>>({
     queryKey: ['/api/v1/analysis/top-merchants', params],
     queryFn: ({ signal }) => fetchTopMerchants(params, { signal }),
     ...options?.query,
@@ -227,9 +228,9 @@ export function useTopMerchants(
 
 export function useAnomaliesApi(
   params: DateRangeParams & { sensitivity?: string },
-  options?: { query?: Partial<UseQueryOptions> },
+  options?: { query?: Partial<UseQueryOptions<ApiResponse<AnomaliesResponse>>> },
 ) {
-  return useQuery({
+  return useQuery<ApiResponse<AnomaliesResponse>>({
     queryKey: ['/api/v1/analysis/anomalies', params],
     queryFn: ({ signal }) => fetchAnomalies(params, { signal }),
     ...options?.query,
@@ -238,9 +239,9 @@ export function useAnomaliesApi(
 
 export function usePatternsApi(
   params: DateRangeParams,
-  options?: { query?: Partial<UseQueryOptions> },
+  options?: { query?: Partial<UseQueryOptions<ApiResponse<PatternsResponse>>> },
 ) {
-  return useQuery({
+  return useQuery<ApiResponse<PatternsResponse>>({
     queryKey: ['/api/v1/analysis/patterns', params],
     queryFn: ({ signal }) => fetchPatterns(params, { signal }),
     ...options?.query,
@@ -250,9 +251,9 @@ export function usePatternsApi(
 export function useCategoryBreakdownApi(
   categoryId: string,
   params: DateRangeParams & { limit?: number },
-  options?: { query?: Partial<UseQueryOptions> },
+  options?: { query?: Partial<UseQueryOptions<ApiResponse<CategoryBreakdownResponse>>> },
 ) {
-  return useQuery({
+  return useQuery<ApiResponse<CategoryBreakdownResponse>>({
     queryKey: ['/api/v1/analysis/categories/breakdown', categoryId, params],
     queryFn: ({ signal }) => fetchCategoryBreakdown(categoryId, params, { signal }),
     enabled: !!categoryId,

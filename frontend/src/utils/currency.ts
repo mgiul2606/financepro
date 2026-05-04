@@ -58,7 +58,7 @@ export const formatCurrency = (
     currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-    useGrouping:'always',
+    useGrouping: 'always' as unknown as boolean,
     ...sanitizedOptions,
   }).format(numValue);
 };
@@ -111,7 +111,7 @@ export const formatNumber = (
   return new Intl.NumberFormat(locale, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-    useGrouping: 'always',
+    useGrouping: 'always' as unknown as boolean,
     ...sanitizedOptions,
   }).format(numValue);
 };
@@ -185,7 +185,7 @@ export const formatCompactNumber = (
     notation: 'compact',
     compactDisplay: 'short',
     maximumFractionDigits: 1,
-    useGrouping: 'always',
+    useGrouping: 'always' as unknown as boolean,
   }).format(numValue);
 };
 
