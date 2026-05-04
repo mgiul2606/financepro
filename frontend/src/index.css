@@ -4,16 +4,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@layer base {
-  * {
-    border-color: hsl(var(--border));
-  }
-  body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-  }
-}
-
 /* Tailwind v4 Custom Utilities for shadcn/ui */
 @utility border-border {
   border-color: hsl(var(--border));
