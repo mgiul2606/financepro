@@ -7,7 +7,7 @@ import { Repeat, TrendingUp, Calendar } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardBody } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import type { RecurringPattern, BadgeVariant, ConfidenceBadgeInfo } from '../analytic.types';
+import type { RecurringPattern, ConfidenceBadgeInfo } from '../analytic.types';
 import type { FrequencyValue } from '../analytic.constants';
 import { FREQUENCY_OPTIONS, CONFIDENCE_THRESHOLDS } from '../analytic.constants';
 import { usePreferences } from '@/contexts/PreferencesContext';

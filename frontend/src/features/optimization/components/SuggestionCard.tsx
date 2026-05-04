@@ -16,8 +16,8 @@ export interface SuggestionCardProps {
 const priorityConfig = {
   low: { variant: 'info' as const, label: 'Bassa' },
   medium: { variant: 'warning' as const, label: 'Media' },
-  high: { variant: 'danger' as const, label: 'Alta' },
-  critical: { variant: 'danger' as const, label: 'Critica' },
+  high: { variant: 'destructive' as const, label: 'Alta' },
+  critical: { variant: 'destructive' as const, label: 'Critica' },
 };
 
 const categoryLabels = {
@@ -64,7 +64,7 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
             <Badge variant="secondary">
               {categoryLabels[suggestion.category]}
             </Badge>
-            <Badge variant={priorityBadge.variant === 'danger' ? 'destructive' : priorityBadge.variant}>
+            <Badge variant={priorityBadge.variant}>
               {priorityBadge.label}
             </Badge>
           </div>
@@ -126,7 +126,7 @@ export const SuggestionCard: React.FC<SuggestionCardProps> = ({
         </div>
       </CardBody>
       {suggestion.status === 'active' && (
-        <CardFooter align="between">
+        <CardFooter className="justify-between">
           <Button
             variant="ghost"
             size="sm"

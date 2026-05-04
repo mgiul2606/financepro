@@ -48,9 +48,8 @@ export const AnomalyCard: React.FC<AnomalyCardProps> = ({ anomaly, onViewDetails
   return (
     <Card
       variant="bordered"
-      hoverable={!!onViewDetails}
       onClick={onViewDetails}
-      className="transition-all"
+      className={`transition-all${onViewDetails ? ' hover:shadow-md cursor-pointer' : ''}`}
     >
       <CardHeader>
         <CardTitle>

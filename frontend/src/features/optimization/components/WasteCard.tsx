@@ -26,7 +26,7 @@ const usageLabels = {
 };
 
 const usageColors = {
-  never: 'danger' as const,
+  never: 'destructive' as const,
   rarely: 'warning' as const,
   occasionally: 'info' as const,
   frequently: 'success' as const,
@@ -45,7 +45,7 @@ export const WasteCard: React.FC<WasteCardProps> = ({ waste, onTakeAction }) => 
         </CardTitle>
         <CardDescription>{waste.category}</CardDescription>
         <CardAction>
-          <Badge variant={usageColors[waste.usageFrequency] === 'danger' ? 'destructive' : usageColors[waste.usageFrequency]}>
+          <Badge variant={usageColors[waste.usageFrequency]}>
             {usageLabels[waste.usageFrequency]}
           </Badge>
         </CardAction>

@@ -33,7 +33,7 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onView, onDownlo
   const isPositive = report.summary.netSavings > 0;
 
   return (
-    <Card variant="elevated" hoverable={!!onView}>
+    <Card variant="elevated" className={onView ? 'hover:shadow-md cursor-pointer' : ''}>
       <CardHeader>
         <CardTitle>
           <div className="flex items-center gap-2">
@@ -108,7 +108,7 @@ export const ReportCard: React.FC<ReportCardProps> = ({ report, onView, onDownlo
           )}
         </div>
       </CardBody>
-      <CardFooter align="between">
+      <CardFooter className="justify-between">
         <Button variant="ghost" size="sm" onClick={onView}>
           {t('common.view')}
         </Button>

@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PageHeader } from '@/core/components/composite/PageHeader';
 import { Card, CardHeader, CardTitle, CardBody } from '@/components/ui/card';
+import { Alert } from '@/components/ui/alert';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Spinner } from '@/components/ui/spinner';
 import { Button } from '@/components/ui/button';
@@ -696,7 +697,7 @@ export const AnalyticPage = () => {
                 { type: 'category_breakdown', icon: BarChart3, label: t('analytics.reportTypes.categoryBreakdown') },
                 { type: 'full_report', icon: FileText, label: t('analytics.reportTypes.fullReport') },
               ].map(({ type, icon: Icon, label }) => (
-                <Card key={type} variant="elevated" hoverable>
+                <Card key={type} variant="elevated" className="hover:shadow-md cursor-pointer">
                   <CardBody>
                     <div className="text-center py-4">
                       <Icon className="h-10 w-10 text-purple-500 mx-auto mb-3" />
@@ -705,7 +706,7 @@ export const AnalyticPage = () => {
                         variant="default"
                         size="sm"
                         leftIcon={<Download className="h-4 w-4" />}
-                        loading={isGenerating}
+                        isLoading={isGenerating}
                         onClick={() => generateReport(type, filters.dateFrom, filters.dateTo)}
                       >
                         {t('analytics.generate')}

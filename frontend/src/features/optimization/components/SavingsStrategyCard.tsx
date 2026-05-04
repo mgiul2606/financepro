@@ -15,7 +15,7 @@ export interface SavingsStrategyCardProps {
 const difficultyConfig = {
   easy: { variant: 'success' as const, label: 'Facile' },
   medium: { variant: 'warning' as const, label: 'Media' },
-  hard: { variant: 'danger' as const, label: 'Difficile' },
+  hard: { variant: 'destructive' as const, label: 'Difficile' },
 };
 
 const impactConfig = {
@@ -59,7 +59,7 @@ export const SavingsStrategyCard: React.FC<SavingsStrategyCardProps> = ({
         </CardTitle>
         <CardAction>
           <div className="flex items-center gap-2">
-            <Badge variant={difficultyConfig[strategy.difficulty].variant === 'danger' ? 'destructive' : difficultyConfig[strategy.difficulty].variant}>
+            <Badge variant={difficultyConfig[strategy.difficulty].variant}>
               {difficultyConfig[strategy.difficulty].label}
             </Badge>
             <Badge variant={impactConfig[strategy.impact].variant}>
