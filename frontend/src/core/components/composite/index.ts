@@ -16,6 +16,9 @@ export type { IconCircleProps } from './IconCircle';
 export { ProgressBar } from './ProgressBar';
 export type { ProgressVariant } from './ProgressBar';
 
+export { StatusBadge } from './StatusBadge';
+export type { BadgeStatus } from './StatusBadge';
+
 // Charts
 export { LineChart, BarChart, PieChart, AreaChart } from './charts';
 export type {
