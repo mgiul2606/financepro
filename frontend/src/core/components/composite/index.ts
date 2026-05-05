@@ -10,6 +10,9 @@ export type { PageHeaderProps, BreadcrumbItem } from './PageHeader';
 export { EmptyState } from './EmptyState';
 export type { EmptyStateProps } from './EmptyState';
 
+export { IconCircle } from './IconCircle';
+export type { IconCircleProps } from './IconCircle';
+
 // Charts
 export { LineChart, BarChart, PieChart, AreaChart } from './charts';
 export type {
