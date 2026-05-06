@@ -13,6 +13,9 @@ export type { EmptyStateProps } from './EmptyState';
 export { IconCircle } from './IconCircle';
 export type { IconCircleProps } from './IconCircle';
 
+export { StatCard } from './StatCard';
+export type { ColorScheme } from './StatCard';
+
 export { ProgressBar } from './ProgressBar';
 export type { ProgressVariant } from './ProgressBar';
 
