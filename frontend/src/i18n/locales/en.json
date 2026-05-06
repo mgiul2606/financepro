@@ -379,6 +379,11 @@
       "medium": "Medium",
       "high": "High"
     },
+    "status": {
+      "active": "Active",
+      "completed": "Completed",
+      "paused": "Paused"
+    },
     "categories": {
       "savings": "Savings",
       "investment": "Investment",

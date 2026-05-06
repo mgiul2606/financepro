@@ -86,7 +86,7 @@ const GoalTile = ({ goal, onClick }: { goal: FinancialGoalResponse; onClick: () 
           <p className="font-medium text-foreground">{goal.name}</p>
           <p className="text-xs text-muted-foreground">{goal.goalType}</p>
         </div>
-        <Badge variant={goal.status === 'completed' ? 'success' : 'info'}>{goal.status}</Badge>
+        <Badge variant={goal.status === 'completed' ? 'success' : 'info'}>{t(`goals.status.${goal.status}`)}</Badge>
       </div>
       <div className="space-y-2">
         <div className="flex justify-between text-sm">

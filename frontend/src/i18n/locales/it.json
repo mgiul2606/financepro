@@ -379,6 +379,11 @@
       "medium": "Media",
       "high": "Alta"
     },
+    "status": {
+      "active": "Attivo",
+      "completed": "Completato",
+      "paused": "In pausa"
+    },
     "categories": {
       "savings": "Risparmi",
       "investment": "Investimento",

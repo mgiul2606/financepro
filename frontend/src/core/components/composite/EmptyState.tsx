@@ -29,15 +29,15 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       )}
     >
       {icon && (
-        <div className="mb-4 text-neutral-400 [&>svg]:h-16 [&>svg]:w-16">
+        <div className="mb-4 text-muted-foreground/70 [&>svg]:h-16 [&>svg]:w-16">
           {icon}
         </div>
       )}
 
-      <h3 className="text-lg font-semibold text-neutral-900 mb-2">{title}</h3>
+      <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
 
       {description && (
-        <p className="text-neutral-600 max-w-md mb-6">{description}</p>
+        <p className="text-muted-foreground max-w-md mb-6">{description}</p>
       )}
 
       {action && (
