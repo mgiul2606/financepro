@@ -25,6 +25,9 @@ export type { BadgeStatus } from './StatusBadge';
 export { PageStateWrapper } from './PageStateWrapper';
 export type { PageStateWrapperProps } from './PageStateWrapper';
 
+export { SectionCard } from './SectionCard';
+export type { SectionCardProps } from './SectionCard';
+
 // Charts
 export { LineChart, BarChart, PieChart, AreaChart } from './charts';
 export type {
