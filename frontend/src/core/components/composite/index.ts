@@ -19,6 +19,9 @@ export type { ProgressVariant } from './ProgressBar';
 export { StatusBadge } from './StatusBadge';
 export type { BadgeStatus } from './StatusBadge';
 
+export { PageStateWrapper } from './PageStateWrapper';
+export type { PageStateWrapperProps } from './PageStateWrapper';
+
 // Charts
 export { LineChart, BarChart, PieChart, AreaChart } from './charts';
 export type {
