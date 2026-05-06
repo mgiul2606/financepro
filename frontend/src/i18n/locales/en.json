@@ -379,10 +379,13 @@
       "medium": "Medium",
       "high": "High"
     },
-    "status": {
+    "statuses": {
       "active": "Active",
       "completed": "Completed",
-      "paused": "Paused"
+      "paused": "Paused",
+      "not_started": "Not Started",
+      "in_progress": "In Progress",
+      "cancelled": "Cancelled"
     },
     "categories": {
       "savings": "Savings",
